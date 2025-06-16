@@ -2,6 +2,10 @@
   "name": "tax-advisor",
   "private": true,
   "version": "0.0.0",
+  "author": {
+    "name": "Ahmad Hassan (AhmadCoderX)",
+    "email": "heyahmadhassan@gmail.com"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
