@@ -100,7 +100,7 @@ const NDA = () => {
   return (
     <>
       <div
-        className=" font-sans flex flex-col bg-no-repeat bg-cover md:bg-[url('@/assets/Bg_Hero.png')] bg-[url('@/assets/Bg-mob.png')] pt-8 pb-4 sm:pb-28  px-2 md:px-8 md:pt-8  "
+        className=" font-sans flex flex-col bg-no-repeat bg-cover  pt-8 pb-4 sm:pb-28  px-2 md:px-8 md:pt-8  "
         style={{
           backgroundSize: "100% 100%",
           backgroundPosition: "center",
