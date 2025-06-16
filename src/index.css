@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .isolate-styles {
+    all: unset;
+  }
+}
+@font-face {
+  font-family: "Afacad";
+  src: url("./assets/fonts/Afacad/Afacad-VariableFont_wght.ttf")
+    format("truetype");
+}
+
+* {
+  font-family: afacad, sans-serif;
+}
+
+.test {
+  border: 2px solid red;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background: #b4dfc5;
+  color: #000;
+  border: 2px solid #2563eb;
+}
+
+.btn-secondary:hover {
+  background: #a0cfae;
+  transform: scale(1.05);
+}
+
+/* For WebKit-based browsers (Chrome, Safari, Edge) */
+/* ::-webkit-scrollbar { */
+/* width: 12px;  */
+/* Width of vertical scrollbar */
+/* height: 12px; */
+/* Height of horizontal scrollbar */
+/* } */
+
+::-webkit-scrollbar-track {
+  background: #2f81e9;
+  /* Background of the scrollbar track */
+  /* border-radius: 10px; Rounded corners for the track */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #000000;
+  /* Color of the scrollbar thumb */
+  border-radius: 10px;
+  /* Roundness of the scrollbar thumb */
+  /* border: 3px solid #2F81E9; */
+  /* Padding around thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #000000;
+  /* Color of the scrollbar thumb when hovered */
+}
+
+::-webkit-scrollbar-button {
+  /* background-color: #CDCDCD; */
+  /* Color of the scrollbar arrow buttons */
+  /* border-radius: 50%; */
+  /* Making arrows rounded */
+  /* height: 12px; */
+  /* Size of the arrow buttons */
+  /* width: 6px; */
+  /* border: 2px solid #CDCDCD; */
+  /* Padding around the arrow buttons */
+}
+
+::-webkit-scrollbar-button:hover {
+  background-color: #000000;
+  /* Color when the scrollbar arrow buttons are hovered */
+}
+
+::-webkit-scrollbar-corner {
+  background-color: #000000;
+  /* Corner between horizontal and vertical scrollbars */
+}
+
+/* For Firefox */
+/* * { */
+/* scrollbar-width: thin; Makes the scrollbar thinner */
+/* scrollbar-color: #888 #f0f0f0; Thumb color and track color */
+/* } */
+
+/* Scrollbar for both horizontal and vertical scrolling */
+*::-webkit-scrollbar {
+  width: 7px;
+  /* height: 2px; */
+}
+
+*::-webkit-scrollbar-track {
+  background: #cdcdcd;
+  border-radius: 5px;
+
+  /* Rounded corners for the track */
+}
+
+*::-webkit-scrollbar-thumb {
+  /* background-color: #888; */
+  border-radius: 5px;
+  /* border: 1px solid #cdcdcd; */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  /* background-color: #555; */
+}
+
+*::-webkit-scrollbar-button {
+  /* background-color: #888; */
+  /* border-radius: 50%; */
+  /* height: 12px; */
+  /* width: 12px; */
+  /* border: 2px solid #f0f0f0; */
+}
+
+*::-webkit-scrollbar-button:hover {
+  /* background-color: #555; */
+}
+
+*::-webkit-scrollbar-corner {
+  /* background-color: #f0f0f0; */
+}

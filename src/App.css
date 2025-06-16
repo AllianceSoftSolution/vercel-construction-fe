@@ -1,0 +1,41 @@
+/* Target the ReactQuill container */
+.custom-quill .ql-container {
+  /** border-radius: 12px;
+   border: none; Remove the default border 
+   overflow: hidden; Ensure content stays within the rounded corners **/
+  border-radius: 0 0 5px 5px;
+}
+
+/* Remove border from the toolbar */
+.custom-quill .ql-toolbar {
+  border-radius: 5px 5px 0 0;
+  /* border: none; */
+}
+
+.test {
+  border: 2px solid red !important;
+}
+
+.custom-mobile-stepper .MuiMobileStepper-progress {
+  background-color: #d9d9d9;
+  height: 10px !important;
+  border-radius: 10px !important;
+  width: 100% !important;
+}
+
+.custom-mobile-stepper .MuiMobileStepper-progress span {
+  background-color: #0074bd;
+  height: 10px !important;
+  border-radius: 10px !important;
+}
+
+.slick-dots li button:before {
+  opacity: 0 !important;
+  color: gray !important;
+}
+
+.slick-dots li.slick-active button:before {
+  opacity: 0;
+
+  color: gray !important;
+}
