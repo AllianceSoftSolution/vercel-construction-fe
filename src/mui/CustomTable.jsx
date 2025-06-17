@@ -1,53 +1,42 @@
 import React from "react";
 
-const CustomTable = ({
-  columns = [],
-  data = [],
-  onRowActionClick = () => {},
-}) => {
+const CustomTable = ({ columns = [], data = [] }) => {
   return (
     <div className="w-full overflow-x-auto mt-4">
       <div className="min-w-[768px]">
-        <table className="w-full table-fixed text-left border-separate border-spacing-y-3">
+        <table className="w-full overflow-x-auto text-left border-separate border-spacing-y-3">
           <thead>
             <tr className="text-gray-700">
+              <th className="px-4 py-3">
+                <input type="checkbox" />
+              </th>
               {columns.map((col, idx) => (
                 <th key={idx} className="px-4 py-3">
                   {col.header}
                 </th>
               ))}
-              {onRowActionClick && <th className="px-4 py-3">Action</th>}
             </tr>
           </thead>
           <tbody>
             {data.map((row, rowIndex) => (
               <tr
                 key={row.id || rowIndex}
-                className="bg-white text-sm text-gray-700 border border-[#cdcdcd] rounded-xl"
+                className="bg-[#EBEBEB] text-sm text-gray-700 border border-[#cdcdcd] rounded-xl"
                 style={{
                   border: "2px solid #cdcdcd",
                   borderRadius: "12px",
                 }}
               >
+                <td className="px-4 py-3 rounded-l-xl">
+                  <input type="checkbox" />
+                </td>
                 {columns.map((col, colIndex) => (
-                  <td
-                    key={colIndex}
-                    className={`px-4 py-3 ${
-                      colIndex === 0 ? "rounded-l-xl" : ""
-                    } ${colIndex === columns.length - 1 ? "rounded-r-xl" : ""}`}
-                  >
+                  <td key={colIndex} className={`px-4 py-3`}>
                     {col.render
                       ? col.render(row[col.accessor], row)
                       : row[col.accessor]}
                   </td>
                 ))}
-                {onRowActionClick && (
-                  <td className="px-4 py-3 rounded-r-xl">
-                    <div className="flex gap-3 items-center">
-                      {onRowActionClick(row)}
-                    </div>
-                  </td>
-                )}
               </tr>
             ))}
           </tbody>

@@ -10,6 +10,7 @@ export default {
       },
       colors: {
         primary: "#FC8908",
+        buttonColor: "#222222",
       },
     },
   },
