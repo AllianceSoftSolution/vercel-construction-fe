@@ -18,24 +18,28 @@ import NoTableDataFound from "./NoTableDataFound";
 // Custom styling for the Table component
 const StyledTable = styled(Table)(({ theme }) => ({
   "& .MuiTableCell-head": {
-    color: "#130901",
+    color: "#444444",
     fontWeight: "600",
-    textWrap: "nowrap",
-    backgroundColor: "transparent",
+    whiteSpace: "nowrap",
+    backgroundColor: "#EBEBEB",
+    border: "1px solid #EBEBEB",
+    border: "rounded",
     "&:first-of-type": {
-      borderTopLeftRadius: "0px",
-      borderBottomLeftRadius: "0px",
+      borderTopLeftRadius: "7px",
+      borderBottomLeftRadius: "7px",
     },
     "&:last-of-type": {
-      borderTopRightRadius: "0px",
-      borderBottomRightRadius: "0px",
+      borderTopRightRadius: "7px",
+      borderBottomRightRadius: "7px",
     },
   },
   "& .MuiTableRow-root": {
     backgroundColor: "transparent",
+    border: "1px solid #ccc",
+    border: "rounded",
   },
   "& .MuiTableCell-root": {
-    borderBottom: `none`,
+    // borderBottom: "none", // remove default bottom border on cells if needed
   },
   "& .MuiTableCell-body": {
     color: "#130901",
@@ -160,37 +164,13 @@ const SimpleTable = ({
       <CustomTableContainer component={Paper} elevation={0}>
         <StyledTable
           sx={{
-            borderCollapse: "separate", // allow row spacing :contentReference[oaicite:0]{index=0}
-            borderSpacing: "0 12px", // vertical gap between rows :contentReference[oaicite:1]{index=1}
-            "& .MuiTableCell-root": {
-              borderBottom: "none", // remove default cell borders for clean outer border :contentReference[oaicite:2]{index=2}
-            },
+            "& .MuiTableCell-head": headerStyles,
           }}
         >
           <TableHead>
             <TableRow>
               {showCheckbox && (
-                <TableCell
-                  padding="checkbox"
-                  sx={{
-                    // 1) border + radius on each header cell
-                    border: "2px solid #cdcdcd",
-                    backgroundColor: "transparent",
-
-                    // 2) only round left/right corners on first/last
-                    ...(idx === 0 && {
-                      borderTopLeftRadius: 8,
-                      borderBottomLeftRadius: 8,
-                    }),
-                    ...(idx === columns.length - 1 && {
-                      borderTopRightRadius: 8,
-                      borderBottomRightRadius: 8,
-                    }),
-
-                    // 3) hide the inner bottom border (so only the outer shows)
-                    borderBottom: "none",
-                  }}
-                >
+                <TableCell padding="checkbox">
                   <CustomCheckbox
                     indeterminate={isIndeterminate}
                     checked={isAllSelected}
@@ -213,22 +193,7 @@ const SimpleTable = ({
               data.length > 0 &&
               data?.map((row, rowIndex) => (
                 <React.Fragment key={row.id}>
-                  <TableRow
-                    sx={{
-                      display: "table-row",
-                      width: "100%",
-                      boxSizing: "border-box",
-
-                      // same border + radius
-                      border: "2px solid #cdcdcd",
-                      borderRadius: "8px",
-
-                      // vertical spacing between cards
-                      "&:not(:last-of-type)": {
-                        marginBottom: "12px",
-                      },
-                    }}
-                  >
+                  <TableRow>
                     {showCheckbox && (
                       <TableCell padding="checkbox">
                         <CustomCheckbox
@@ -252,6 +217,19 @@ const SimpleTable = ({
                       </TableCell>
                     ))}
                   </TableRow>
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length + (showCheckbox ? 1 : 0)}
+                      padding="none"
+                    >
+                      <DashedLineSVG
+                        width="100%"
+                        height="0.8px"
+                        dashWidth="7"
+                        spaceWidth="5"
+                      />
+                    </TableCell>
+                  </TableRow>
                 </React.Fragment>
               ))}
 
@@ -259,19 +237,7 @@ const SimpleTable = ({
               paginatedData.length > 0 &&
               paginatedData?.map((row, rowIndex) => (
                 <React.Fragment key={row.id}>
-                  <TableRow
-                    sx={{
-                      border: "2px solid #cdcdcd", // custom border :contentReference[oaicite:2]{index=2}
-                      borderRadius: 1, // theme.spacing(1) * theme.shape.borderRadius :contentReference[oaicite:3]{index=3}
-                      "&:not(:last-of-type)": {
-                        // add margin-bottom except on last row
-                        marginBottom: 1,
-                      },
-                      display: "table", // ensure full-width row wrapper :contentReference[oaicite:4]{index=4}
-                      width: "100%",
-                      boxSizing: "border-box",
-                    }}
-                  >
+                  <TableRow>
                     {showCheckbox && (
                       <TableCell padding="checkbox">
                         <CustomCheckbox
@@ -294,6 +260,19 @@ const SimpleTable = ({
                         />
                       </TableCell>
                     ))}
+                  </TableRow>
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length + (showCheckbox ? 1 : 0)}
+                      padding="none"
+                    >
+                      {/* <DashedLineSVG
+                        width="100%"
+                        height="0.8px"
+                        dashWidth="7"
+                        spaceWidth="5"
+                      /> */}
+                    </TableCell>
                   </TableRow>
                 </React.Fragment>
               ))}

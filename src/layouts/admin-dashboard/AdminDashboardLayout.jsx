@@ -92,20 +92,18 @@ const adminDashboardLayout = ({ role }) => {
   const [activePath, setActivePath] = useState("");
 
   return (
-    <div className="flex h-screen bg-[#FFFFFF]">
+    <div className="flex h-screen bg-[#FFFFFF] overflow-hidden">
       <div
         className={`${
-          sidebarOpen || isDesktop
-            ? "w-[200px] lg:w-[240px] h-[calc(100vh-0px)]"
-            : "w-0"
-        } bg-[#F7F7F7] transition-all duration-300 ease-in-out fixed z-10 lg:relative`}
+          sidebarOpen || isDesktop ? "w-[200px] lg:w-[240px] h-screen" : "w-0"
+        } bg-[#F7F7F7] transition-all duration-300 ease-in-out fixed top-0 left-0 z-10`}
       >
-        <div className="flex flex-col  md:items-center md:justify-between">
-          {/* Logo */}
+        <div className="flex flex-col h-full md:items-center md:justify-between">
+          {/* Logo and toggle */}
           <div
             className={`flex $${
               sidebarOpen ? "justify-end" : "justify-center"
-            }  justify-end items-end`}
+            } justify-end items-end`}
           >
             {sidebarOpen ? (
               <li
@@ -122,54 +120,43 @@ const adminDashboardLayout = ({ role }) => {
                   setSidebarOpen(true);
                 }}
                 className="text-white text-center py-4 flex items-center justify-center"
-              >
-                {/* <Menu className="mr-2" /> */}
-              </li>
+              ></li>
             )}
           </div>
 
           <div className="w-[50%]">
-            <div className="flex-col    items-center justify-center ">
+            <div className="flex-col items-center justify-center">
               <div className="w-full flex items-center justify-center gap-x-4">
                 <img src={logo} alt="Logo" className="w-32 lg:w-40" />
               </div>
-
               <div
-                className={
-                  `${!sidebarOpen ? "hidden" : ""}` +
-                  " flex flex-col items-center  "
-                }
+                className={`${
+                  !sidebarOpen ? "hidden" : ""
+                } flex flex-col items-center`}
               ></div>
             </div>
           </div>
 
-          {/* Sidebar Menu Items */}
+          {/* Sidebar Menu */}
           <div className="flex-grow w-full mt-4 overflow-y-auto max-h-[calc(100vh-150px)]">
-            <ul className="space-y-2 px-6 ">
-              {sideBarItems.map((item, index) => {
-                // Get the icon component reference
-                const IconComponent = item.icon;
-                return (
-                  <SideBarItem
-                    key={index}
-                    onClick={() => {
-                      navigate(item.path);
-                      setSidebarOpen(false);
-                      setActivePath(item.path);
-                    }}
-                    iconSrc={<item.icon size={20} />} // Render the icon dynamically
-                    text={item.label}
-                    isActive={activePath === item.path}
-                    bgColor="primary"
-                    textColor="black"
-                  />
-                );
-              })}
+            <ul className="space-y-2 px-6">
+              {sideBarItems.map((item, index) => (
+                <SideBarItem
+                  key={index}
+                  onClick={() => {
+                    navigate(item.path);
+                    setSidebarOpen(false);
+                    setActivePath(item.path);
+                  }}
+                  iconSrc={<item.icon size={20} />}
+                  text={item.label}
+                  isActive={activePath === item.path}
+                  bgColor="primary"
+                  textColor="black"
+                />
+              ))}
             </ul>
-
-            {/* Optional Divider */}
             <div className="mt-6 border-t border-gray-300"></div>
-
             <div className="flex justify-center items-center">
               <button className="text-white bg-[#222222] rounded-[10px] mt-10 px-5 py-3 flex items-center justify-center w-[80%]">
                 Log Out
@@ -179,14 +166,17 @@ const adminDashboardLayout = ({ role }) => {
         </div>
       </div>
 
-      <div className="flex-1   md:ml-0 rounded   flex-col ">
+      {/* Main Content */}
+      <div
+        className={`flex-1 ml-0 lg:ml-[240px] flex flex-col overflow-y-auto h-screen`}
+      >
         <div className="w-full flex flex-col lg:flex-row justify-between items-center px-4 py-3 gap-4 lg:gap-0">
-          {/* logo */}
+          {/* Logo */}
           <div className="w-[30%] flex items-center justify-start gap-x-4">
             <img src={logo} alt="Logo" className="w-24 h-16" />
             <span className="text-[#444444] text-3xl font-semibold">RADC</span>
           </div>
-          {/* search bar */}{" "}
+          {/* Search and Icons */}
           <div className="w-[70%] flex gap-x-4 items-center">
             <div className="relative w-full max-w-xl">
               <input
@@ -198,30 +188,25 @@ const adminDashboardLayout = ({ role }) => {
                 <FaSearch className="text-sm" />
               </div>
             </div>
-            {/* icons */}
             <div className="flex gap-x-3">
               <IoMdNotifications className="w-10 h-10 rounded-full border-[0.5px] border-gray-300 text-gray-300 p-1" />
               <IoMdSettings className="w-10 h-10 rounded-full border-[0.5px] border-gray-300 text-gray-300 p-1" />
             </div>
-            {/* Profile section */}
             <div className="flex flex-col">
               <p className="font-semibold text-black whitespace-nowrap">
                 John Smith
               </p>
               <p className="text-[#7A7A7A] text-sm text-right">ADMIN</p>
             </div>
-
             <div className="flex items-center">
               <img src={Profile} alt="Profile Icon" className="w-12 sm:w-16" />
             </div>
           </div>
         </div>
 
-        <div
-          style={{}}
-          className="flex-1 w-full overflow-y-auto h-[calc(100vh-146px)]   p-8 "
-        >
-          <div className="  bg-[#fcfcfc] border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 flex flex-col">
+        {/* Scrollable Main Content */}
+        <div className="flex-1 w-full overflow-y-auto p-8">
+          <div className="bg-[#fcfcfc] border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
             <Outlet />
           </div>
         </div>

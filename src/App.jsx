@@ -23,6 +23,8 @@ import Materials from "./layouts/admin-dashboard/screens/Materials";
 import Accounts from "./layouts/admin-dashboard/screens/Accounts";
 import Vendors from "./layouts/admin-dashboard/screens/Vendors";
 import AddUser from "./layouts/admin-dashboard/screens/Forms/AddUser";
+import AddProduct from "./layouts/admin-dashboard/screens/Forms/AddProduct";
+import AddStore from "./layouts/admin-dashboard/screens/Forms/AddStore";
 
 const theme = createTheme({
   typography: {
@@ -53,12 +55,14 @@ const adminRoutes = [
     children: [
       { path: "", element: <AdminDashboard /> }, // Default child (Dashboard)
       { path: "user-Management", element: <UserManagement /> },
-      {path: "user-Management/addUser", element: <AddUser/>},
+      { path: "user-Management/addUser", element: <AddUser /> },
       { path: "project-Management", element: <ProjectManagement /> },
       { path: "demands", element: <Demands /> },
       { path: "pOS", element: <POs /> },
       { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
       { path: "materials", element: <Materials /> },
+      { path: "materials/addProduct", element: <AddProduct /> },
       { path: "accounts", element: <Accounts /> },
       { path: "vendors", element: <Vendors /> },
     ],

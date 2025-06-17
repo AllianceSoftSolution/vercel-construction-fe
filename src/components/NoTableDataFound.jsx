@@ -1,5 +1,5 @@
 import React from "react";
-import noTableDataImage from "../assets/no-data-found.png";
+// import noTableDataImage from "../assets/no-data-found.png";
 
 const NoTableDataFound = () => {
   return (

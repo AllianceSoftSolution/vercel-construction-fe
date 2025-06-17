@@ -7,6 +7,9 @@ import CustomTable from "../../../mui/CustomTable";
 import { useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import ActionModal from "../../admin-dashboard/screens/users/modals/ActionModal";
+import SimpleTable from "../../../components/SimpleTable";
+import AnalyticsCard from "../../../mui/AnalyticsCard";
+import { IoMdArrowDropdown } from "react-icons/io";
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -17,58 +20,50 @@ const UserManagement = () => {
     setShowModal(true);
   };
 
-  const columns = [
-    { header: "ID", accessor: "id" },
-    { header: "Name", accessor: "name" },
-    { header: "Email", accessor: "email" },
-    { header: "Phone Number", accessor: "phoneNumber" },
-    { header: "Join date", accessor: "joinDate" },
-    { header: "Status", accessor: "status" },
-    { header: "Role", accessor: "role" },
-    { header: "Note", accessor: "note" },
-    {
-      header: "Action",
-      accessor: "action",
-      render: () => (
-        <BsThreeDotsVertical
-          className="cursor-pointer text-xl"
-          onClick={handleActionClick}
-        />
-      ),
-    },
-  ];
-
   const data = [
     {
       id: 1,
-      name: "Ahmed Raza",
-      email: "aa@example.com",
-      phoneNumber: "0300-1234567",
-      joinDate: "2025-06-15",
+      refNo: "REF-001",
+      project: "Bridge Construction",
+      material: "Cement",
+      section: "A1",
+      qty: 120,
       status: "Pending",
-      role: "Project Manager",
-      note: "Awaiting document submission",
+      cmName: "Ahmed Raza",
+      date: "2025-06-15",
     },
     {
       id: 2,
-      name: "Fatima Khan",
-      email: "fa@example.com",
-      phoneNumber: "0301-7654321",
-      joinDate: "2025-06-14",
+      refNo: "REF-002",
+      project: "Highway Expansion",
+      material: "Steel",
+      section: "B2",
+      qty: 250,
       status: "Approved",
-      role: "Engineer",
-      note: "Joined recently",
+      cmName: "Fatima Khan",
+      date: "2025-06-14",
     },
     {
       id: 3,
-      name: "Hassan Ali",
-      email: "ha@example.com",
-      phoneNumber: "0321-4567890",
-      joinDate: "2025-06-13",
+      refNo: "REF-003",
+      project: "Metro Rail",
+      material: "Concrete",
+      section: "C3",
+      qty: 300,
       status: "In Progress",
-      role: "Supervisor",
-      note: "Assigned to Metro Rail",
+      cmName: "Hassan Ali",
+      date: "2025-06-13",
     },
+  ];
+  const columns = [
+    { headerName: "Ref No", field: "refNo" },
+    { headerName: "Projects", field: "project" },
+    { headerName: "Materials", field: "material" },
+    { headerName: "Sections", field: "section" },
+    { headerName: "Qty", field: "qty" },
+    { headerName: "Status", field: "status" },
+    { headerName: "CM Name", field: "cmName" },
+    { headerName: "Date", field: "date" },
   ];
 
   return (
@@ -87,19 +82,29 @@ const UserManagement = () => {
       <h2 className="text-2xl font-semibold text-primary">
         Total Users Overview
       </h2>
-      <div className="p-4">
-        <CustomCardComponent
-          icon={FaBoxesStacked}
-          label="Site Manager"
-          count="04"
-          countColor="#FC8908"
-          percentage="+5%"
-          percentageColor="#00C49F"
-        />{" "}
+      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <AnalyticsCard
+          label={"Total Projects"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
+        <AnalyticsCard
+          label={"Approved Demands"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
+        <AnalyticsCard
+          label={"Rejected Demands"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
       </div>
       <div>
-        <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <CustomTable columns={columns} data={data} />
+        <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
+        <SimpleTable columns={columns} data={data} cellComponents={{}} />
       </div>
 
       {/* ✅ Your Modal Rendering */}

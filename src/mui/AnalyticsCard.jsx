@@ -4,9 +4,9 @@ const AnalyticsCard = ({
   icon: Icon,
   label,
   count,
-  countColor,
   percentage,
   percentageColor = "#008A05",
+  countColor = "#FC8908",
 }) => {
   return (
     <div className="flex flex-col justify-center items-center gap-x-3 p-3 gap-y-4 bg-white rounded-lg w-full ">
@@ -16,9 +16,9 @@ const AnalyticsCard = ({
         </div>
         <p className="font-bold text-[20px]">{label}</p>
       </div>
-      <div className="flex justify-between items-center w-full ">
+      <div className="flex justify-center items-center w-full gap-x-20  ">
         <p className="font-bold text-[14px]" style={{ color: percentageColor }}>
-          {percentage} %
+          {percentage}
         </p>
         <p
           className="font-bold text-[15px] flex justify-end"
