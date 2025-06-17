@@ -9,6 +9,7 @@ import { IoStorefrontSharp } from "react-icons/io5";
 import CustomCardComponent from "../../../mui/CustomCardComponent";
 import CustomTable from "../../../mui/CustomTable";
 import TopBar from "../../../components/ui/TopBar";
+import AnalyticsCard from "../../../mui/AnalyticsCard";
 function AdminDashboard() {
   const cardsData = [
     {
@@ -98,8 +99,43 @@ function AdminDashboard() {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <h2 className="text-2xl font-semibold text-primary ">Overview</h2>
 
-      <div className=" p-4">
-        <CustomCardComponent cards={cardsData} />
+      <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <AnalyticsCard
+          label={"Total Projects"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
+        <AnalyticsCard
+          label={"Approved Demands"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
+        <AnalyticsCard
+          label={"Rejected Demands"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
+        <AnalyticsCard
+          label={"Total POs Created"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
+        <AnalyticsCard
+          label={"Total Amount Paid"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
+        <AnalyticsCard
+          label={"Balance Amount"}
+          icon={IoMdArrowDropdown}
+          count={10}
+          percentage={10}
+        />
       </div>
 
       {/* table */}
