@@ -110,15 +110,7 @@ const UserManagement = () => {
       </div>
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{}}
-          showCheckbox={true}
-          showActionColumn={true}
-          onActionClick={handleActionClick}
-          renderActionMenu={null}
-        />
+        <SimpleTable columns={columns} data={data} cellComponents={{}} />
       </div>
 
       {showModal && (

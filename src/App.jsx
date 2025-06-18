@@ -26,7 +26,7 @@ import AddUser from "./layouts/admin-dashboard/screens/Forms/AddUser";
 import AddProduct from "./layouts/admin-dashboard/screens/Forms/AddProduct";
 import AddStore from "./layouts/admin-dashboard/screens/Forms/AddStore";
 import AddProject from "./layouts/admin-dashboard/screens/Forms/AddProject";
-import ProjectDetailPage from "./layouts/admin-dashboard/screens/DetailPage.jsx/ProjectDetailPage";
+import ProjectDetailPage from "./layouts/admin-dashboard/screens/Projects/ProjectDetailPage";
 
 const theme = createTheme({
   typography: {
