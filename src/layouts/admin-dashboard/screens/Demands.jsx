@@ -1,6 +1,10 @@
 import React from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import { IconButton } from "@mui/material";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { FaUserEdit } from "react-icons/fa";
+import DropdownButton from "../../../comments/components/DropdownButton";
 
 const Demands = () => {
   const data = [
@@ -16,6 +20,7 @@ const Demands = () => {
       status: "Pending",
       approvedBy: "Owner",
       fulfilled: 12,
+      action: "id-here",
     },
     {
       id: 2,
@@ -29,6 +34,7 @@ const Demands = () => {
       status: "Approved",
       approvedBy: "Site Manager",
       fulfilled: 13,
+      action: "id-here",
     },
     {
       id: 3,
@@ -42,6 +48,7 @@ const Demands = () => {
       status: "In Progress",
       approvedBy: "Owner",
       fulfilled: 12,
+      action: "id-here",
     },
   ];
   const columns = [
@@ -55,19 +62,38 @@ const Demands = () => {
     { headerName: "Status", field: "status" },
     { headerName: "Approved By", field: "approvedBy" },
     { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Action", field: "action" },
   ];
+
+  const CustomActionComponent = ({ data }) => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[{ label: "Manage Demand", onClick: () => alert("Manage") }]}
+        // onClick={handleActionClick}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Demands"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: CustomActionComponent }}
+        />
       </div>
     </div>
   );
