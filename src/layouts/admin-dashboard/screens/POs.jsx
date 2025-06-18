@@ -1,12 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import DropdownButton from "../../../comments/components/DropdownButton";
+import { IconButton } from "@mui/material";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { IoIosEye } from "react-icons/io";
+import { RiFileEditFill } from "react-icons/ri";
+import ChangeVendor from "./users/modals/ChangeVendor";
 
 const PurchaseOrder = () => {
+  const [isVendorModalOpen, setVendorModalOpen] = useState(false);
+
   const data = [
     {
       id: 1,
-      no: "REF001",
+      demandId: "001",
+      demandName: "Cement",
       project: "Bridge Construction",
       material: "Cement",
       section: "A1",
@@ -14,12 +23,12 @@ const PurchaseOrder = () => {
       unit: "ton",
       poQty: 100,
       status: "Pending",
-      approvedBy: "Owner",
-      fulfilled: 12,
+      assingedVendors: "Owner",
     },
     {
       id: 2,
-      no: "REF002",
+      demandId: "002",
+      demandName: "Cement",
       project: "Highway Expansion",
       material: "Steel",
       section: "B2",
@@ -27,12 +36,11 @@ const PurchaseOrder = () => {
       unit: "ton",
       poQty: 100,
       status: "Approved",
-      approvedBy: "Site Manager",
-      fulfilled: 13,
     },
     {
       id: 3,
-      no: "REF003",
+      demandId: "003",
+      demandName: "Cement",
       project: "Metro Rail",
       material: "Concrete",
       section: "C3",
@@ -40,21 +48,21 @@ const PurchaseOrder = () => {
       unit: "ton",
       poQty: 100,
       status: "In Progress",
-      approvedBy: "Owner",
-      fulfilled: 12,
+      assingedVendors: "Owner",
     },
   ];
+
   const columns = [
-    { headerName: "No", field: "no" },
+    { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
+    { headerName: "Demand ", field: "demandName" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Status", field: "status" },
-    { headerName: "Approved By", field: "approvedBy" },
-    { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "action" },
   ];
 
@@ -63,14 +71,13 @@ const PurchaseOrder = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          { label: "View", onClick: () => alert("View"), icon: <IoIosEye /> },
           {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaUserEdit />,
+            label: "Change Vendor",
+            onClick: () => setVendorModalOpen(true),
+            icon: <RiFileEditFill />,
           },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -78,16 +85,15 @@ const PurchaseOrder = () => {
       </DropdownButton>
     );
   };
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Purchase Orders"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        // showExport={true}
         showFilter={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* table */}
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
@@ -95,6 +101,12 @@ const PurchaseOrder = () => {
           cellComponents={{ action: CustomActionComponent }}
         />
       </div>
+
+      {/* Modal */}
+      <ChangeVendor
+        open={isVendorModalOpen}
+        onClose={() => setVendorModalOpen(false)}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { TextField, InputAdornment } from "@mui/material";
+import { TextField, InputAdornment, MenuItem } from "@mui/material";
 import clsx from "clsx";
 
 const CustomTextField = React.forwardRef(
@@ -22,45 +22,63 @@ const CustomTextField = React.forwardRef(
       subLabel,
       error,
       helperText,
+      select = false,
+      required,
       ...props
     },
     ref
   ) => {
+    const showCustomInput = !select && !rows;
+
     return (
       <div className={clsx("flex flex-col gap-y-1 w-full", className)}>
         <TextField
           inputRef={ref}
-          type={rows === "" ? type : undefined}
+          select={select}
+          type={showCustomInput ? type : undefined}
           variant="outlined"
-          multiline={rows !== ""}
-          rows={rows === "" ? undefined : rows}
+          multiline={!select && rows !== ""}
+          rows={showCustomInput ? undefined : rows}
           size="small"
           name={name}
+          label={
+            !showCustomInput ? (
+              <>
+                {label} {required && <span className="text-red-500">*</span>}
+              </>
+            ) : undefined
+          }
           className={clsx("rounded-lg", classInput)}
-          placeholder="" // we’ll add custom placeholder manually
+          placeholder={showCustomInput ? "" : undefined}
           error={!!error}
           helperText={error ? helperText : subLabel || ""}
           InputProps={{
-            startAdornment: startAdornment ? (
-              <InputAdornment position="start">{startAdornment}</InputAdornment>
-            ) : null,
-            endAdornment: endAdornment ? (
-              <InputAdornment position="end">{endAdornment}</InputAdornment>
-            ) : null,
-            inputComponent: ({ inputRef, ...inputProps }) => (
-              <div className="w-full h-full px-3 pt-3 pb-2 flex flex-col justify-start">
-                <label className="text-sm text-gray-500 font-medium">
-                  {label}{" "}
-                  {props.required && <span className="text-red-500">*</span>}
-                </label>
-                <input
-                  ref={inputRef}
-                  {...inputProps}
-                  className="outline-none border-none text-gray-800 placeholder-gray-400 text-base bg-transparent mt-1"
-                  placeholder={placeholder}
-                />
-              </div>
-            ),
+            startAdornment:
+              startAdornment && !select ? (
+                <InputAdornment position="start">
+                  {startAdornment}
+                </InputAdornment>
+              ) : null,
+            endAdornment:
+              endAdornment && !select ? (
+                <InputAdornment position="end">{endAdornment}</InputAdornment>
+              ) : null,
+            inputComponent: showCustomInput
+              ? ({ inputRef, ...inputProps }) => (
+                  <div className="w-full h-full px-3 pt-3 pb-2 flex flex-col justify-start">
+                    <label className="text-sm text-gray-500 font-medium">
+                      {label}{" "}
+                      {required && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      ref={inputRef}
+                      {...inputProps}
+                      className="outline-none border-none text-gray-800 placeholder-gray-400 text-base bg-transparent mt-1"
+                      placeholder={placeholder}
+                    />
+                  </div>
+                )
+              : undefined,
           }}
           {...(field || {})}
           onChange={(e) => {
@@ -70,7 +88,7 @@ const CustomTextField = React.forwardRef(
           sx={{
             "& .MuiOutlinedInput-root": {
               padding: 0,
-              alignItems: "flex-start",
+              alignItems: select ? "center" : "flex-start",
               "& fieldset": {
                 borderColor: error ? "#f87171" : "#d1d5db",
               },
@@ -98,7 +116,9 @@ const CustomTextField = React.forwardRef(
             ...sx,
           }}
           {...props}
-        />
+        >
+          {select ? children : null}
+        </TextField>
       </div>
     );
   }
