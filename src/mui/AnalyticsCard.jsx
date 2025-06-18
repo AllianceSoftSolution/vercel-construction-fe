@@ -16,7 +16,7 @@ const AnalyticsCard = ({
         </div>
         <p className="font-bold text-[20px]">{label}</p>
       </div>
-      <div className="flex justify-center items-center w-full gap-x-20  ">
+      <div className="flex justify-between items-center w-full gap-x-20  ">
         <p className="font-bold text-[14px]" style={{ color: percentageColor }}>
           {percentage}
         </p>
