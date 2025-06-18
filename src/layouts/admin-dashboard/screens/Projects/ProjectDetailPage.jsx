@@ -1,19 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { useNavigate } from "react-router-dom";
-import { MdEdit } from "react-icons/md";
-import { MdDelete } from "react-icons/md";
-import ProjectInfoCard from "../../../../components/ui/ProjectInfoCard";
-import ProjectDescriptionCard from "../../../../components/ui/ProjectDescriptionCard";
-import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
-import Search from "../../../../assets/construction/Search.png";
-import MemberInfoCard from "../../../../mui/MemberInfoCard";
-import manager from "../../../../assets/construction/manager.png";
+import { Tabs, Tab, Box } from "@mui/material";
+
+import ProjectInformationTab from "./tabs/ProjectInformationTab";
+import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
+import SectionTab from "./tabs/SectionTab";
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
+  const [tabIndex, setTabIndex] = useState(0);
 
-  const hasMemberInfo = false;
+  const handleTabChange = (event, newValue) => {
+    setTabIndex(newValue);
+  };
 
   return (
     <div>
@@ -27,55 +27,48 @@ const ProjectDetailPage = () => {
         }
       />
 
-      <ProjectInfoCard
-        title="Project Information"
-        status="IN-PROGRESS"
-        onDelete={() => console.log("delete")}
-        onEdit={() => console.log("edit")}
-        projectName="Project Name Here"
-        projectCode="123"
-        section="4"
-        amount="$12333"
-        date="12/04/2025"
-        projectLocation="United Kingdom 11 street Real Estate London"
-        projectStatus="IN-PROGRESS"
-      />
+      <Box
+        sx={{
+          mt: 2,
+          backgroundColor: "#f7f7f7",
+          borderRadius: "12px",
+          px: 2,
+        }}
+      >
+        <Tabs
+          value={tabIndex}
+          onChange={handleTabChange}
+          textColor="inherit"
+          TabIndicatorProps={{
+            style: {
+              backgroundColor: "#FC8908",
+              height: 4,
+              borderRadius: "4px",
+            },
+          }}
+          aria-label="project detail tabs"
+          sx={{
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontWeight: 500,
+              color: "#6B7280",
+            },
+            "& .Mui-selected": {
+              color: "#FC8908 !important",
+            },
+          }}
+        >
+          <Tab label="Project Information" />
+          <Tab label="Associated Members" />
+          <Tab label="Sections" />
+        </Tabs>
+      </Box>
 
-      <ProjectDescriptionCard
-        title="Project Description"
-        description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
-        onEdit={() => console.log("edit description")}
-      />
-
-      <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
-        Members Overview
-      </h4>
-
-      {hasMemberInfo ? (
-        <MemberInfoCard
-          title="General information - Store Head"
-          image={manager}
-          name="Manager name here"
-          phone="+92 300 000 090"
-          role="Store Head"
-          email="example@gmail.com"
-          joiningDate="January 8, 2001"
-          id="9090"
-          address="addresshere"
-          country="United State"
-          // flag={ukFlag}
-          linkedStores={["Store A", "Store B", "Store C"]}
-        />
-      ) : (
-        <MemebersOverviewCard
-          title="General Information"
-          subTitle="Project Manager"
-          linkText="Assign Project Manager"
-          onLinkClick={() => alert("Link clicked!")}
-          imageSrc={Search}
-          imageAlt="Search Illustration"
-        />
-      )}
+      <Box sx={{ mt: 3 }}>
+        {tabIndex === 0 && <ProjectInformationTab />}
+        {tabIndex === 1 && <AssociatedMembersTab />}
+        {tabIndex === 2 && <SectionTab />}
+      </Box>
     </div>
   );
 };
