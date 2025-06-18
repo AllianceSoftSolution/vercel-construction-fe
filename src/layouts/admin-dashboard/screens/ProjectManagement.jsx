@@ -1,8 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import { useNavigate } from "react-router-dom";
+import ActionModal from "./users/modals/ActionModal";
+import { FaUserEdit } from "react-icons/fa";
+import { BsThreeDotsVertical } from "react-icons/bs";
+
+import DropdownButton from "../../../comments/components/DropdownButton";
+import { IconButton } from "@mui/material";
 
 const ProjectManagement = () => {
+  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+
+  const handleActionClick = () => {
+    setShowModal(true);
+  };
   const data = [
     {
       id: 1,
@@ -13,8 +26,8 @@ const ProjectManagement = () => {
       section: "A1",
       amount: 120000,
       status: "Pending",
-
       date: "2025-06-15",
+      action: "id-here",
     },
     {
       id: 2,
@@ -26,6 +39,7 @@ const ProjectManagement = () => {
       amount: 2500000,
       status: "Approved",
       date: "2025-06-14",
+      action: "id-here",
     },
     {
       id: 3,
@@ -37,6 +51,7 @@ const ProjectManagement = () => {
       amount: 3000000,
       status: "In Progress",
       date: "2025-06-13",
+      action: "id-here",
     },
   ];
   const columns = [
@@ -48,7 +63,28 @@ const ProjectManagement = () => {
     { headerName: "Construction Amount", field: "amount" },
     { headerName: "Status", field: "status" },
     { headerName: "Date", field: "date" },
+    { headerName: "Action", field: "action" },
   ];
+  const CustomActionComponent = ({ data }) => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          {
+            label: "Delete ",
+            onClick: () => alert("Delete"),
+            icon: <FaUserEdit />,
+          },
+        ]}
+        // onClick={handleActionClick}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -58,14 +94,50 @@ const ProjectManagement = () => {
         showFilter={true}
         buttonText="Create Project"
         onButtonClick={() =>
-          navigate("/admin-dashboard/user-management/addUser")
+          navigate("/admin-dashboard/project-Management/addProject")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: CustomActionComponent }}
+          // showCheckbox={true}
+        />
       </div>
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl relative">
+            <button
+              className="absolute top-2 right-3 text-lg font-bold"
+              onClick={() => setShowModal(false)}
+            >
+              &times;
+            </button>
+            <ActionModal
+              showProfile={false}
+              buttonText="View Project Details"
+              onButtonClick={() => navigate("123")}
+              actions={[
+                {
+                  type: "edit",
+                  icon: <FaUserEdit />,
+                  label: "Edit",
+                  onClick: () => console.log("Edit clicked"),
+                },
+                {
+                  type: "delete",
+                  icon: <RiDeleteBin5Fill />,
+                  label: "Delete",
+                  onClick: () => console.log("Delete clicked"),
+                },
+              ]}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

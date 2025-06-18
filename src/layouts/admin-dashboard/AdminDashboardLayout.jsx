@@ -206,7 +206,7 @@ const adminDashboardLayout = ({ role }) => {
 
         {/* Scrollable Main Content */}
         <div className="flex-1 w-full overflow-y-auto p-8">
-          <div className="bg-[#fcfcfc] border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
+          <div className=" p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
             <Outlet />
           </div>
         </div>

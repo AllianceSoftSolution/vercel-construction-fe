@@ -1,7 +1,13 @@
-import React, { useState } from "react";
-import { Button, Menu, MenuItem } from "@mui/material";
+import React, { useState, isValidElement, cloneElement } from "react";
+import { Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
+import clsx from "clsx";
 
-const DropdownButton = ({ children, items }) => {
+const DropdownButton = ({
+  children,
+  items = [],
+  className = "",
+  buttonProps = {},
+}) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event) => {
@@ -12,29 +18,43 @@ const DropdownButton = ({ children, items }) => {
     setAnchorEl(null);
   };
 
+  const isCustomElement = isValidElement(children);
+
   return (
     <div>
-      <Button
-        aria-controls="dropdown-menu"
-        aria-haspopup="true"
-        onClick={handleClick}
-        variant="contained"
-        disableElevation
-        className="bg-[#0074BD] px-8 py-2 text-white"
-        sx={{ borderRadius: "999px" }}
-      >
-        {children}
-      </Button>
+      {isCustomElement ? (
+        cloneElement(children, {
+          onClick: handleClick,
+          ...buttonProps,
+        })
+      ) : (
+        <button
+          onClick={handleClick}
+          className={clsx(
+            "px-6 py-2 rounded-full transition-all text-white bg-black hover:bg-gray-800",
+            className
+          )}
+          {...buttonProps}
+        >
+          {children}
+        </button>
+      )}
+
       <Menu
-        id="dropdown-menu"
         anchorEl={anchorEl}
-        keepMounted
         open={Boolean(anchorEl)}
         onClose={handleClose}
-        sx={{
-          p: 0,
-          "& .MuiMenu-list": {
-            p: 0,
+        MenuListProps={{
+          disablePadding: true,
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+            mt: 1,
+            overflow: "hidden",
+            minWidth: "200px",
+            bgcolor: "#fff",
           },
         }}
       >
@@ -42,14 +62,31 @@ const DropdownButton = ({ children, items }) => {
           <MenuItem
             key={index}
             onClick={() => {
-              item.onClick();
+              item.onClick?.();
               handleClose();
             }}
             sx={{
-              bgcolor: "#f5f5f5",
+              px: 1.5,
+              py: 1.2,
+              borderBottom:
+                index < items.length - 1 ? "1px solid #eee" : "none",
+              "&:hover": {
+                backgroundColor: "#f5f5f5",
+              },
             }}
           >
-            {typeof item.label === "string" ? item.label : item.label()}
+            {item.icon && (
+              <ListItemIcon sx={{ color: "#333" }}>{item.icon}</ListItemIcon>
+            )}
+            <ListItemText
+              primary={
+                typeof item.label === "string" ? item.label : item.label()
+              }
+              primaryTypographyProps={{
+                fontSize: 15,
+                fontWeight: 500,
+              }}
+            />
           </MenuItem>
         ))}
       </Menu>

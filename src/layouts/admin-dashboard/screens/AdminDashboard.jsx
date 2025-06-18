@@ -73,19 +73,19 @@ function AdminDashboard() {
       <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <AnalyticsCard
           label={"Total Projects"}
-          icon={IoMdArrowDropdown}
+          icon={FaBoxesStacked}
           count={10}
           percentage={10}
         />
         <AnalyticsCard
           label={"Approved Demands"}
-          icon={IoMdArrowDropdown}
+          icon={FaHandHoldingHeart}
           count={10}
           percentage={10}
         />
         <AnalyticsCard
           label={"Rejected Demands"}
-          icon={IoMdArrowDropdown}
+          icon={FaHandHoldingHeart}
           count={10}
           percentage={10}
         />

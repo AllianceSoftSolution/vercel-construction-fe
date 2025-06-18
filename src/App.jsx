@@ -25,6 +25,8 @@ import Vendors from "./layouts/admin-dashboard/screens/Vendors";
 import AddUser from "./layouts/admin-dashboard/screens/Forms/AddUser";
 import AddProduct from "./layouts/admin-dashboard/screens/Forms/AddProduct";
 import AddStore from "./layouts/admin-dashboard/screens/Forms/AddStore";
+import AddProject from "./layouts/admin-dashboard/screens/Forms/AddProject";
+import ProjectDetailPage from "./layouts/admin-dashboard/screens/DetailPage.jsx/ProjectDetailPage";
 
 const theme = createTheme({
   typography: {
@@ -57,6 +59,8 @@ const adminRoutes = [
       { path: "user-Management", element: <UserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "project-Management", element: <ProjectManagement /> },
+      { path: "project-Management/addProject", element: <AddProject /> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "demands", element: <Demands /> },
       { path: "pOS", element: <POs /> },
       { path: "store", element: <Store /> },
