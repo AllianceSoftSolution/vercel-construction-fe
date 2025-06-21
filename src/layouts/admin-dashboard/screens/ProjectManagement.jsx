@@ -96,6 +96,10 @@ const ProjectManagement = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
+        filterOptions={["Completed", "In-Progress", "Cancelled"]}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
         buttonText="Create Project"
         onButtonClick={() =>
           navigate("/admin-dashboard/project-Management/addProject")

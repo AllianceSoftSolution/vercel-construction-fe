@@ -1,18 +1,85 @@
 import React, { useState } from "react";
 import ProjectInfoCard from "../../../../../components/ui/ProjectInfoCard";
 import ProjectDescriptionCard from "../../../../../components/ui/ProjectDescriptionCard";
-import MemebersOverviewCard from "../../../../../mui/MembersOverviewCard";
-import MemberInfoCard from "../../../../../mui/MemberInfoCard";
-import manager from "../../../../../assets/construction/manager.png";
-import Search from "../../../../../assets/construction/Search.png";
-import AddMemberModal from "../../users/modals/AddMemberModal";
-
+import { IconButton } from "@mui/material";
+import DropdownButton from "@/comments/components/DropdownButton";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
+import SimpleTable from "../../../../../components/SimpleTable";
+import { BsThreeDotsVertical } from "react-icons/bs";
 const ProjectInformationTab = () => {
-  const [hasMemberInfo, sethasMemberInfo] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-
-  const handleLinkClick = () => {
-    setShowModal(true);
+  const data = [
+    {
+      id: 1,
+      iD: "01",
+      name: "Ahmed Raza",
+      email: "c@gmail.com",
+      phone: 123456789,
+      role: "Project Manager",
+      status: "Pending",
+      note: "Ahmed Raza",
+      date: "2025-06-15",
+    },
+    {
+      id: 2,
+      iD: "02",
+      name: "Ahmed Raza",
+      email: "c@gmail.com",
+      phone: 123456789,
+      role: "Construction Manager",
+      status: "Approved",
+      note: "Fatima Khan",
+      date: "2025-06-14",
+    },
+    {
+      id: 3,
+      iD: "03",
+      name: "Ahmed Raza",
+      email: "c@gmail.com",
+      phone: 123456789,
+      role: "Site Manager",
+      status: "In Progress",
+      note: "Hassan Ali",
+      date: "2025-06-13",
+    },
+  ];
+  const columns = [
+    { headerName: "ID", field: "iD" },
+    { headerName: "Name", field: "name" },
+    { headerName: "Email", field: "email" },
+    { headerName: "Phone Number", field: "phone" },
+    { headerName: "Role", field: "role" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Note", field: "note" },
+    { headerName: "Date", field: "date" },
+    {
+      headerName: "Action",
+      field: "action",
+    },
+  ];
+  const CustomActionComponent = ({ data }) => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "View Detail",
+            onClick: () => navigate("123"),
+            icon: <FaEye />,
+          },
+          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          {
+            label: "Delete ",
+            onClick: () => alert("Delete"),
+            icon: <FaTrash />,
+          },
+        ]}
+        // onClick={handleActionClick}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
   };
   return (
     <>
@@ -29,43 +96,23 @@ const ProjectInformationTab = () => {
         projectLocation="United Kingdom 11 street Real Estate London"
         projectStatus="IN-PROGRESS"
       />
-
       <ProjectDescriptionCard
         title="Project Description"
         description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
         onEdit={() => console.log("edit description")}
       />
-
-      <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
-        Members Overview
-      </h4>
-
-      {hasMemberInfo ? (
-        <MemberInfoCard
-          title="General information - Store Head"
-          image={manager}
-          name="Manager name here"
-          phone="+92 300 000 090"
-          role="Store Head"
-          email="example@gmail.com"
-          joiningDate="January 8, 2001"
-          id="9090"
-          address="addresshere"
-          country="United State"
-          linkedStores={["Store A", "Store B", "Store C"]}
-        />
-      ) : (
-        <MemebersOverviewCard
-          title="General Information"
-          subTitle="Project Manager"
-          linkText="Assign Project Manager"
-          onLinkClick={handleLinkClick}
-          imageSrc={Search}
-          imageAlt="Search Illustration"
-        />
-      )}
-      {/* Modal */}
-      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+      <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
+      <SimpleTable
+        columns={columns}
+        data={data}
+        cellComponents={{ action: CustomActionComponent }}
+      />{" "}
+      <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
+      <SimpleTable
+        columns={columns}
+        data={data}
+        cellComponents={{ action: CustomActionComponent }}
+      />
     </>
   );
 };

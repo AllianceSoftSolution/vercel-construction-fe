@@ -16,6 +16,11 @@ const SectionDetailPage = () => {
         className="bg-[#FF0000] font-semibold"
         items={[
           {
+            label: "View Store",
+            onClick: () => navigate("123"),
+            icon: <FaUserEdit />,
+          },
+          {
             label: "Edit",
             onClick: () => alert("Edit"),
             icon: <FaUserEdit />,
@@ -79,42 +84,7 @@ const SectionDetailPage = () => {
     { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
-  const data1 = [
-    {
-      id: 1,
-      storeId: "1",
-      storeName: "Name",
-      storeAddress:
-        "address show here(Lorem Ipsum is simply dummy text of the printing and typesetting industry.)",
-      status: "Pending",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      storeId: "2",
-      storeName: "Name",
-      storeAddress:
-        "address show here(Lorem Ipsum is simply dummy text of the printing and typesetting industry.)",
-      status: "Approved",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      storeId: "3",
-      storeName: "Name",
-      storeAddress:
-        "address show here(Lorem Ipsum is simply dummy text of the printing and typesetting industry.)",
-      status: "In Progress",
-      action: "id-here",
-    },
-  ];
-  const columns2 = [
-    { headerName: "Store ID", field: "storeId" },
-    { headerName: "Store Name", field: "storeName" },
-    { headerName: "Store Address", field: "storeAddress" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Action", field: "action" },
-  ];
+
   return (
     <div className="mt-4">
       <TopBar
@@ -165,23 +135,13 @@ const SectionDetailPage = () => {
         </div>
       </div>
       <TopBar
-        title="List Project Construction Manager "
+        title="Construction Managers "
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        buttonText="Add CM"
       />
       <SimpleTable
         data={data}
         columns={columns}
-        cellComponents={{ action: CustomActionComponent }}
-      />
-      <TopBar
-        title="Linked Stores"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Create Store"
-        onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
-      />
-      <SimpleTable
-        data={data1}
-        columns={columns2}
         cellComponents={{ action: CustomActionComponent }}
       />
     </div>
