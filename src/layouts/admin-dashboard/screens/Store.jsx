@@ -1,54 +1,110 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { IconButton } from "@mui/material";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { FaUserEdit } from "react-icons/fa";
+import DropdownButton from "../../../comments/components/DropdownButton";
+import AddMemberModal from "./users/modals/AddMemberModal";
 
 const Stores = () => {
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+
+  const handleLinkClick = () => {
+    setShowModal(true);
+  };
+  const CustomActionComponent = ({ data }) => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "View",
+            onClick: () => navigate("123"),
+            icon: <FaUserEdit />,
+          },
+          {
+            label: "Delete ",
+            onClick: () => alert("Delete"),
+            icon: <FaUserEdit />,
+          },
+          {
+            label: "Assign Store Incharge",
+            onClick: () => handleLinkClick(),
+            icon: <FaUserEdit />,
+          },
+          {
+            label: "Assign Accountant",
+            onClick: () => navigate("123"),
+            icon: <FaUserEdit />,
+          },
+        ]}
+        // onClick={handleActionClick}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
   const data = [
     {
       id: 1,
-      refNo: "REF-001",
+      storeId: "ST-001",
+      storeName: "name here",
       project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
+      storeHead: "Ahmad",
+      storeIncharge: "Ali",
+      manager: "Hasan",
+      accountant: "Ahmed",
       status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
     },
     {
       id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
+      storeId: "ST-001",
+      storeName: "name here",
+      project: "Bridge Construction",
+      storeHead: "Ahmad",
+      storeIncharge: "Ali",
+      manager: "Hasan",
+      accountant: "Ahmed",
+      status: "Pending",
     },
     {
       id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
+      storeId: "ST-001",
+      storeName: "name here",
+      project: "Bridge Construction",
+      storeHead: "Ahmad",
+      storeIncharge: "Ali",
+      manager: "Hasan",
+      accountant: "Ahmed",
+      status: "Pending",
+    },
+    {
+      id: 4,
+      storeId: "ST-001",
+      storeName: "name here",
+      project: "Bridge Construction",
+      storeHead: "Ahmad",
+      storeIncharge: "Ali",
+      manager: "Hasan",
+      accountant: "Ahmed",
+      status: "Pending",
     },
   ];
   const columns = [
-    { headerName: "Ref No", field: "refNo" },
-    { headerName: "Projects", field: "project" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
+    { headerName: "Store Id", field: "storeId" },
+    { headerName: "Store Name", field: "storeName" },
+    { headerName: "Project", field: "project" },
+    { headerName: "Store Head", field: "storeHead" },
+    { headerName: "Store Incharge", field: "storeIncharge" },
+    { headerName: "Manager", field: "manager" },
+    { headerName: "Accountant", field: "accountant" },
     { headerName: "Status", field: "status" },
-    { headerName: "CM Name", field: "cmName" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Action", field: "action" },
   ];
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -63,8 +119,13 @@ const Stores = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: CustomActionComponent }}
+        />
       </div>
+      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
     </div>
   );
 };

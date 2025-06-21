@@ -4,8 +4,10 @@ import CustomCardComponent from "../../../mui/CustomCardComponent";
 import {
   FaBan,
   FaBoxesStacked,
+  FaEye,
   FaHandHoldingHeart,
   FaToolbox,
+  FaTrash,
 } from "react-icons/fa6";
 import { IoPersonCircle, IoStorefrontSharp } from "react-icons/io5";
 import CustomTable from "../../../mui/CustomTable";
@@ -17,6 +19,9 @@ import AnalyticsCard from "../../../mui/AnalyticsCard";
 import { FaPeopleLine } from "react-icons/fa6";
 import { FaUserEdit } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
+import { IconButton } from "@mui/material";
+import DropdownButton from "../../../comments/components/DropdownButton";
+
 const UserManagement = () => {
   const navigate = useNavigate();
 
@@ -70,8 +75,51 @@ const UserManagement = () => {
     { headerName: "Status", field: "status" },
     { headerName: "Note", field: "note" },
     { headerName: "Date", field: "date" },
+    {
+      headerName: "Action",
+      field: "action",
+    },
   ];
-
+  const CustomActionComponent = ({ data }) => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "Add Note",
+            // onClick: () => alert(""),
+            // icon: <FaUserEdit />,
+          },
+          {
+            label: "View Detail",
+            onClick: () => navigate("123"),
+            icon: <FaEye />,
+          },
+          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          {
+            label: "Delete ",
+            onClick: () => alert("Delete"),
+            icon: <FaTrash />,
+          },
+          {
+            label: "Ban",
+            // onClick: () => alert("Delete"),
+            icon: <IoPersonCircle />,
+          },
+          {
+            label: "Suspend Account",
+            // onClick: () => alert("Delete"),
+            icon: <FaBan />,
+          },
+        ]}
+        // onClick={handleActionClick}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -110,7 +158,11 @@ const UserManagement = () => {
       </div>
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: CustomActionComponent }}
+        />
       </div>
 
       {showModal && (

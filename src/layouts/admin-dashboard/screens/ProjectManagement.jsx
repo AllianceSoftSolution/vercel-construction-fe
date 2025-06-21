@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import ActionModal from "./users/modals/ActionModal";
 import { FaUserEdit } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
-
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 
@@ -70,6 +69,11 @@ const ProjectManagement = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
+          {
+            label: "View Detail Page",
+            onClick: () => navigate("123"),
+            icon: <FaUserEdit />,
+          },
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
           {
             label: "Delete ",

@@ -39,7 +39,7 @@ const MemberInfoCard = ({
           <span className="text-sm text-[#5A5A5A] leading-[18px]">{phone}</span>
         </div>
       </div>
-
+      <div></div>
       <div className="flex">
         <Info label="Member Role" value={role} />
         <Info label="Email" value={email} />

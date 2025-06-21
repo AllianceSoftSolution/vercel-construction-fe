@@ -1,8 +1,14 @@
 import React from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import DropdownButton from "@/comments/components/DropdownButton";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
+import { IconButton } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Demands = () => {
+  const navigate = useNavigate();
   const data = [
     {
       id: 1,
@@ -55,7 +61,37 @@ const Demands = () => {
     { headerName: "Status", field: "status" },
     { headerName: "Approved By", field: "approvedBy" },
     { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Action", field: "action" },
   ];
+  const CustomActionComponent = ({ data }) => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "View Detail",
+            onClick: () => navigate("123"),
+            icon: <FaEye />,
+          },
+          {
+            label: "Edit",
+            onClick: () => alert("Edit"),
+            icon: <FaUserEdit />,
+          },
+          {
+            label: "Delete ",
+            onClick: () => alert("Delete"),
+            icon: <FaTrash />,
+          },
+        ]}
+        // onClick={handleActionClick}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -67,7 +103,11 @@ const Demands = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: CustomActionComponent }}
+        />
       </div>
     </div>
   );

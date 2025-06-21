@@ -27,13 +27,13 @@ const TopBar = ({
       </div>
 
       <div className="flex items-center gap-2">
-        {/* {showExport && (
+        {showExport && (
           <div className="flex items-center border-[0.5px] border-[#CDC9C9] rounded-lg p-2 bg-[#FFFFFF] gap-x-2 whitespace-nowrap">
             <CiExport className="text-[#979797]" />
             <p className="text-[#979797]">Export</p>
             <IoMdArrowDropdown className="text-[#979797] border-[0.5px] border-[#979797] rounded-full" />
           </div>
-        )} */}
+        )}
 
         {showFilter && (
           <div className="flex items-center border-[0.5px] border-[#CDC9C9] rounded-lg p-2 bg-[#FFFFFF] gap-x-2 whitespace-nowrap">
