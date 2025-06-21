@@ -113,6 +113,10 @@ const Stores = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
+        filterOptions={["ON-GOING", "Pending", "Not Started"]}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
         buttonText="Add New Store"
         onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
       />

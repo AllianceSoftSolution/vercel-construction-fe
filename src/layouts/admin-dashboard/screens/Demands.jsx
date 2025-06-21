@@ -102,6 +102,10 @@ const Demands = () => {
         detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
+        filterOptions={["Approved", "Rejected", "Pending"]}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}

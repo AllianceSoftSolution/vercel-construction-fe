@@ -57,6 +57,10 @@ const Payables = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
+        filterOptions={["Assinged", "Not-Assinged"]}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
       />
       <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
         <AnalyticsCard

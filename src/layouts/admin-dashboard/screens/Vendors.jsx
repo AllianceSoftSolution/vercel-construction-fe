@@ -85,6 +85,10 @@ const Vendors = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
+        filterOptions={["Active", "Inactive"]}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
         buttonText="Add Vendors"
         onButtonClick={() => navigate("/admin-dashboard/vendors/addVendor")}
       />

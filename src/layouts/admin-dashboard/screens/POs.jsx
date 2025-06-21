@@ -97,6 +97,10 @@ const PurchaseOrder = () => {
         title="Purchase Orders"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showFilter={true}
+        filterOptions={["Completed", "Partial", "Pending"]}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="overflow-x-auto">

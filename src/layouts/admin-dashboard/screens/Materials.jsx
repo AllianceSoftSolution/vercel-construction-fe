@@ -35,8 +35,8 @@ const Materials = () => {
       <TopBar
         title="Materials"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        // showExport={true}
-        showFilter={true}
+        showExport={true}
+        // showFilter={true}
         buttonText="Add Product"
         onButtonClick={() => navigate("/admin-dashboard/materials/addProduct")}
       />

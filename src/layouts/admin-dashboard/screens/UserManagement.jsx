@@ -127,6 +127,16 @@ const UserManagement = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
         showFilter={true}
+        filterOptions={[
+          "Project Manager",
+          "Const Manager",
+          "Site Manager",
+          "Store-INCHARGE",
+          "Accountant",
+        ]}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
         buttonText="Create New User"
         onButtonClick={() =>
           navigate("/admin-dashboard/user-management/addUser")
