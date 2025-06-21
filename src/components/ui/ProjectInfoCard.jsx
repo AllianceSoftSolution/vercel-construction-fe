@@ -1,5 +1,8 @@
 import React from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
+import { IconButton } from "@mui/material";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import DropdownButton from "../../comments/components/DropdownButton";
 
 const ProjectInfoCard = ({
   title,
@@ -13,25 +16,53 @@ const ProjectInfoCard = ({
   date,
   projectLocation,
   projectStatus,
+  showIcons = true,
+  showStatusDropdown = false,
 }) => {
+  const StatusDropdown = () => (
+    <DropdownButton
+      className="bg-white border border-gray-300"
+      items={[
+        {
+          label: "Pending",
+        },
+        {
+          label: "Approved",
+        },
+        {
+          label: "Rejected",
+        },
+      ]}
+    >
+      <IconButton size="small">
+        <BsThreeDotsVertical className="text-white" />
+      </IconButton>
+    </DropdownButton>
+  );
+
   return (
     <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
       <div className="flex justify-between">
         <h3 className="text-xl font-semibold text-[#444444]">{title}</h3>
-        <div className="flex gap-x-4">
+        <div className="flex gap-x-4 items-center">
           {status && (
-            <button className="bg-[#0252AD] text-white px-6 py-2 rounded-full">
+            <div className="bg-[#0252AD] text-white px-6 py-2 rounded-full flex items-center gap-2">
               {status}
-            </button>
+              {showStatusDropdown && <StatusDropdown />}
+            </div>
           )}
-          <MdDelete
-            onClick={onDelete}
-            className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
-          />
-          <MdEdit
-            onClick={onEdit}
-            className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
-          />
+          {showIcons && (
+            <>
+              <MdDelete
+                onClick={onDelete}
+                className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
+              />
+              <MdEdit
+                onClick={onEdit}
+                className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
+              />
+            </>
+          )}
         </div>
       </div>
 

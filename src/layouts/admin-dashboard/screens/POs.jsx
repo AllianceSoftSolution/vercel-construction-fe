@@ -7,10 +7,11 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
 import ChangeVendor from "./users/modals/ChangeVendor";
+import { useNavigate } from "react-router-dom";
 
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
-
+  const navigate = useNavigate();
   const data = [
     {
       id: 1,
@@ -71,7 +72,11 @@ const PurchaseOrder = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          { label: "View", onClick: () => alert("View"), icon: <IoIosEye /> },
+          {
+            label: "View",
+            onClick: () => navigate("123"),
+            icon: <IoIosEye />,
+          },
           {
             label: "Change Vendor",
             onClick: () => setVendorModalOpen(true),

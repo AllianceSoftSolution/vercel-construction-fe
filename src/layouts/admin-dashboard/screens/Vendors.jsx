@@ -1,8 +1,13 @@
 import React from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import { useNavigate } from "react-router-dom";
+import { IconButton } from "@mui/material";
+import DropdownButton from "@/comments/components/DropdownButton";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 const Vendors = () => {
+  const navigate = useNavigate();
   const data = [
     {
       id: 1,
@@ -47,7 +52,32 @@ const Vendors = () => {
     { headerName: "Address", field: "address" },
     { headerName: "Status", field: "status" },
     { headerName: "Date", field: "date" },
+    { headerName: "Action", field: "action" },
   ];
+  const CustomActionComponent = ({ data }) => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "View Detail",
+            onClick: () => navigate("123"),
+            // icon: <FaUserEdit />,
+          },
+          {
+            label: "Delete ",
+            // onClick: () => alert("Delete"),
+            // icon: <FaTrash />,
+          },
+        ]}
+        // onClick={handleActionClick}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -56,11 +86,16 @@ const Vendors = () => {
         // showExport={true}
         showFilter={true}
         buttonText="Add Vendors"
+        onButtonClick={() => navigate("/admin-dashboard/vendors/addVendor")}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: CustomActionComponent }}
+        />
       </div>
     </div>
   );

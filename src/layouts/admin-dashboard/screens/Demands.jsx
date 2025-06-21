@@ -1,12 +1,14 @@
 import React from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
-import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaUserEdit } from "react-icons/fa";
-import DropdownButton from "../../../comments/components/DropdownButton";
+import DropdownButton from "@/comments/components/DropdownButton";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
+import { IconButton } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Demands = () => {
+  const navigate = useNavigate();
   const data = [
     {
       id: 1,
@@ -64,12 +66,27 @@ const Demands = () => {
     { headerName: "Fulfilled", field: "fulfilled" },
     { headerName: "Action", field: "action" },
   ];
-
   const CustomActionComponent = ({ data }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
-        items={[{ label: "Manage Demand", onClick: () => alert("Manage") }]}
+        items={[
+          {
+            label: "View Detail",
+            onClick: () => navigate("123"),
+            icon: <FaEye />,
+          },
+          {
+            label: "Edit",
+            onClick: () => alert("Edit"),
+            icon: <FaUserEdit />,
+          },
+          {
+            label: "Delete ",
+            onClick: () => alert("Delete"),
+            icon: <FaTrash />,
+          },
+        ]}
         // onClick={handleActionClick}
       >
         <IconButton>

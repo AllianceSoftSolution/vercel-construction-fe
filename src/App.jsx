@@ -27,7 +27,14 @@ import AddProduct from "./layouts/admin-dashboard/screens/Forms/AddProduct";
 import AddStore from "./layouts/admin-dashboard/screens/Forms/AddStore";
 import AddProject from "./layouts/admin-dashboard/screens/Forms/AddProject";
 import ProjectDetailPage from "./layouts/admin-dashboard/screens/Projects/ProjectDetailPage";
-import DemandDetail from "./layouts/admin-dashboard/screens/Demands/DemandDetail";
+import MemberDetailPage from "./layouts/admin-dashboard/screens/Projects/MemberDetailPage";
+import DemandDetailPage from "./layouts/admin-dashboard/screens/Projects/DemandDetailPage";
+import PurchaseOrderDetailPage from "./layouts/admin-dashboard/screens/Projects/PurchaseOrderDetailPage";
+import StoreDetail from "./layouts/admin-dashboard/screens/Projects/StoreDetail";
+import AddVendor from "./layouts/admin-dashboard/screens/Forms/AddVendor";
+import SectionTab from "./layouts/admin-dashboard/screens/Projects/tabs/SectionTab";
+import SectionDetailPage from "./layouts/admin-dashboard/screens/Projects/SectionDetailPage";
+import VendorDetailPage from "./layouts/admin-dashboard/screens/Projects/VendorDetailPage";
 
 const theme = createTheme({
   typography: {
@@ -59,19 +66,25 @@ const adminRoutes = [
       { path: "", element: <AdminDashboard /> }, // Default child (Dashboard)
       { path: "user-Management", element: <UserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
       { path: "project-Management", element: <ProjectManagement /> },
       { path: "project-Management/addProject", element: <AddProject /> },
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
       { path: "demands", element: <Demands /> },
-      { path: "demands/:id", element: <DemandDetail /> },
-
+      { path: "demands/:id", element: <DemandDetailPage /> },
       { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
       { path: "store", element: <Store /> },
       { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
       { path: "materials", element: <Materials /> },
       { path: "materials/addProduct", element: <AddProduct /> },
       { path: "accounts", element: <Accounts /> },
       { path: "vendors", element: <Vendors /> },
+      { path: "vendors/addVendor", element: <AddVendor /> },
+      { path: "vendors/:id", element: <VendorDetailPage /> },
     ],
   },
 ];

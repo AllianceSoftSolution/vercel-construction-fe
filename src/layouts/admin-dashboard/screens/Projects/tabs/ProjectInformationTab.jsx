@@ -5,10 +5,15 @@ import MemebersOverviewCard from "../../../../../mui/MembersOverviewCard";
 import MemberInfoCard from "../../../../../mui/MemberInfoCard";
 import manager from "../../../../../assets/construction/manager.png";
 import Search from "../../../../../assets/construction/Search.png";
+import AddMemberModal from "../../users/modals/AddMemberModal";
 
 const ProjectInformationTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
+  const handleLinkClick = () => {
+    setShowModal(true);
+  };
   return (
     <>
       <ProjectInfoCard
@@ -54,11 +59,13 @@ const ProjectInformationTab = () => {
           title="General Information"
           subTitle="Project Manager"
           linkText="Assign Project Manager"
-          onLinkClick={() => sethasMemberInfo(true)}
+          onLinkClick={handleLinkClick}
           imageSrc={Search}
           imageAlt="Search Illustration"
         />
       )}
+      {/* Modal */}
+      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
     </>
   );
 };

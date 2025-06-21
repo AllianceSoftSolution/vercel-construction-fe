@@ -50,6 +50,7 @@ const AddProject = () => {
             }
             fullWidth
             name="status"
+            placeholder="Enter Project Status"
           />{" "}
           <h3 className="text-xl font-semibold text-[#12141D] ">
             Project Site Address Detail
