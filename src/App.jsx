@@ -72,6 +72,7 @@ const adminRoutes = [
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
+    
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <DemandDetailPage /> },
       { path: "pOS", element: <POs /> },

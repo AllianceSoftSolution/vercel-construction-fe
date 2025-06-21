@@ -10,20 +10,23 @@ import MemberInfoCard from "../../../../../mui/MemberInfoCard";
 import manager from "../../../../../assets/construction/manager.png";
 import Search from "../../../../../assets/construction/Search.png";
 import AddMemberModal from "../../users/modals/AddMemberModal";
+import DropdownButton from "../../../../../comments/components/DropdownButton";
+
+
 
 const SectionTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
 
-  const handleLinkClick = () => {
-    setShowModal(true);
-  };
+  // const handleLinkClick = () => {
+  //   setShowModal(true);
+  // };
   const navigate = useNavigate();
   const actions = [
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("123"),
+      onClick: () => navigate("/admin-dashboard/sections/:id"),
     },
     {
       label: "Edit Project Section",
@@ -87,14 +90,16 @@ const SectionTab = () => {
           title="General Information"
           subTitle="Project Manager"
           linkText="Assign Project Manager"
-          onLinkClick={handleLinkClick}
+          // onLinkClick={handleLinkClick}
           imageSrc={Search}
           imageAlt="Search Illustration"
         />
       )}
+      
+      
       {/* Modal */}
-      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-      <SectionDetailPage />
+      {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
+      {/* <SectionDetailPage /> */}
     </div>
   );
 };

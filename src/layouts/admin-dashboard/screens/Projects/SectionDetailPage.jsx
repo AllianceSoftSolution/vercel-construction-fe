@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import ProjectInfoCard from "../../../../components/ui/ProjectInfoCard";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -7,6 +7,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { useNavigate } from "react-router-dom";
+import AddMemberModal from "../users/modals/AddMemberModal";
 
 const SectionDetailPage = () => {
   const navigate = useNavigate();
@@ -84,7 +85,10 @@ const SectionDetailPage = () => {
     { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
-
+  const [showModal, setShowModal] = useState(false);
+  const handleLinkClick = () => {
+    setShowModal(true);
+  };
   return (
     <div className="mt-4">
       <TopBar
@@ -138,7 +142,9 @@ const SectionDetailPage = () => {
         title="Construction Managers "
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         buttonText="Add CM"
+        onButtonClick={handleLinkClick}
       />
+      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
       <SimpleTable
         data={data}
         columns={columns}

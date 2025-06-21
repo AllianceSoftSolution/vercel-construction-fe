@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { CiExport } from "react-icons/ci";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
+import Button from "../Button";
 
 const TopBar = ({
   title = "",
@@ -121,12 +122,13 @@ const TopBar = ({
         )}
 
         {buttonText && (
-          <button
-            className="bg-primary text-white px-4 py-2 rounded-lg w-fit"
-            onClick={onButtonClick}
-          >
-            {buttonText}
-          </button>
+          // <button
+          //   className="bg-primary text-white px-4 py-2 rounded-lg w-fit"
+          //   onClick={onButtonClick}
+          // >
+          //   {buttonText}
+          // </button>
+          <Button buttonText={buttonText} onClick={onButtonClick}/>
         )}
       </div>
     </div>

@@ -6,6 +6,8 @@ import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import SimpleTable from "../../../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import Button from "../../../../../components/Button";
+import AddMemberModal from "../../users/modals/AddMemberModal";
 const ProjectInformationTab = () => {
   const data = [
     {
@@ -57,6 +59,8 @@ const ProjectInformationTab = () => {
     },
   ];
   const CustomActionComponent = ({ data }) => {
+    const [showModal, setShowModal] = useState(false);
+
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
@@ -81,6 +85,10 @@ const ProjectInformationTab = () => {
       </DropdownButton>
     );
   };
+  const [showModal, setShowModal] = useState(false);
+  const handleLinkClick = () => {
+    setShowModal(true);
+  };
   return (
     <>
       <ProjectInfoCard
@@ -101,7 +109,11 @@ const ProjectInformationTab = () => {
         description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
         onEdit={() => console.log("edit description")}
       />
-      <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
+        <Button buttonText={"Create Site Incharge"} onClick={handleLinkClick} />
+        {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+      </div>
       <SimpleTable
         columns={columns}
         data={data}
