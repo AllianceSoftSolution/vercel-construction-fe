@@ -2,9 +2,9 @@ import React from "react";
 import TopBar from "@/components/ui/TopBar";
 import CustomTextField from "@/mui/CustomTextField";
 
-const AddMemberModal = ({ onClose }) => {
+const AddMemberModal = ({ onClose, onAddUserClick }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed  inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white w-full max-w-[450px] max-h-[90vh] border-[0.5px] border-[#CDC9C9] rounded-2xl p-0 flex flex-col overflow-hidden">
         {/* TopBar stays fixed at the top of the modal */}
         <div className="p-4 border-b border-[#CDCDCD]">
@@ -66,7 +66,7 @@ const AddMemberModal = ({ onClose }) => {
             >
               Cancel
             </button>
-            <button className="bg-primary px-8 py-2 rounded-lg font-medium text-white">
+            <button onClick={onAddUserClick} className="bg-primary px-8 py-2 rounded-lg font-medium text-white">
               Save & Add User
             </button>
           </div>

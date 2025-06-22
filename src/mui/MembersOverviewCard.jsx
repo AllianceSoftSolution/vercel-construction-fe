@@ -1,7 +1,18 @@
 import React, { useState } from "react";
 import DropdownButton from "../comments/components/DropdownButton";
 import AddMemberModal from "../layouts/admin-dashboard/screens/users/modals/AddMemberModal";
+import AssignProjectManagerModal from "../components/AssignProjectManagerModal";
+import Button from "../components/Button";
+import { Box, Modal } from "@mui/material";
 
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "600px",
+  boxShadow: 24,
+};
 const MembersOverviewCard = ({
   title = "General Information",
   subTitle = "",
@@ -10,8 +21,12 @@ const MembersOverviewCard = ({
   imageSrc = "",
   imageAlt = "",
   className = "",
+  onManagerClick
 }) => {
   const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   return (
     <div
@@ -26,19 +41,20 @@ const MembersOverviewCard = ({
           // <button onClick={onLinkClick} className="text-primary underline">
           //   {linkText}
           // </button>
-          <DropdownButton
-            className=" "
-            items={[
-              { _id: "1234", name: "Ahad Ali" },
-              { _id: "12324", name: "Hassan" },
-              { _id: "12234", name: "Ahmad" },
-            ].map(({ _id, name }) => ({
-              label: name,
-              onClick: () => setShowModal(_id),
-            }))}
-          >
-            {linkText}
-          </DropdownButton>
+          <>
+          
+            <button onClick={handleOpen} className="text-primary underline" >{linkText}</button>
+            <Modal
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+            >
+              <Box sx={style}>
+                <AssignProjectManagerModal onManagerClick={onManagerClick}  onCreateClick={(bool)=>{setShowModal(bool) ; setOpen(false)}}/>
+              </Box>
+            </Modal>
+          </>
         )}
         {Boolean(showModal) && (
           <AddMemberModal onClose={() => setShowModal(false)} />

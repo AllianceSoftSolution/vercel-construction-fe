@@ -11,11 +11,17 @@ import manager from "../../../../../assets/construction/manager.png";
 import Search from "../../../../../assets/construction/Search.png";
 import AddMemberModal from "../../users/modals/AddMemberModal";
 import DropdownButton from "../../../../../comments/components/DropdownButton";
-
+import CustomModal from "../../../../../comments/components/CustomModal";
+import { Box, Modal, Typography } from "@mui/material";
+import Button from "../../../../../components/Button";
+import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
+import { Height } from "@mui/icons-material";
 
 
 const SectionTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
+ 
+
   // const [showModal, setShowModal] = useState(false);
 
   // const handleLinkClick = () => {
@@ -41,6 +47,7 @@ const SectionTab = () => {
   ];
   return (
     <div>
+     
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
@@ -93,10 +100,9 @@ const SectionTab = () => {
           // onLinkClick={handleLinkClick}
           imageSrc={Search}
           imageAlt="Search Illustration"
+          onManagerClick={(id)=>sethasMemberInfo(id)}
         />
       )}
-      
-      
       {/* Modal */}
       {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
       {/* <SectionDetailPage /> */}
