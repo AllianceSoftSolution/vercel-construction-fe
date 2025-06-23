@@ -79,9 +79,9 @@ const adminDashboardLayout = ({ role }) => {
       path: "/admin-dashboard/materials",
     },
     {
-      label: "Accounts",
+      label: "Payables",
       icon: IoPeopleSharp,
-      path: "/admin-dashboard/accounts",
+      path: "/admin-dashboard/payables",
     },
     {
       label: "Vendors",
@@ -170,14 +170,14 @@ const adminDashboardLayout = ({ role }) => {
       <div
         className={`flex-1 ml-0 lg:ml-[240px] flex flex-col overflow-y-auto h-screen`}
       >
-        <div className="w-full flex flex-col lg:flex-row justify-between items-center px-4 py-3 gap-4 lg:gap-0">
+        <div className="w-full flex justify-between items-center border-b px-8 py-3 ">
           {/* Logo */}
-          <div className="w-[30%] flex items-center justify-start gap-x-4">
+          <div className="flex items-center ">
             <img src={logo} alt="Logo" className="w-24 h-16" />
             <span className="text-[#444444] text-3xl font-semibold">RADC</span>
           </div>
           {/* Search and Icons */}
-          <div className="w-[70%] flex gap-x-4 items-center">
+          <div className=" flex items-center gap-5">
             <div className="relative w-full max-w-xl">
               <input
                 type="text"
@@ -199,7 +199,7 @@ const adminDashboardLayout = ({ role }) => {
               <p className="text-[#7A7A7A] text-sm text-right">ADMIN</p>
             </div>
             <div className="flex items-center">
-              <img src={Profile} alt="Profile Icon" className="w-12 sm:w-16" />
+              <img src={Profile} alt="Profile Icon" className="w-28" />
             </div>
           </div>
         </div>
@@ -208,6 +208,7 @@ const adminDashboardLayout = ({ role }) => {
         <div className="flex-1 w-full overflow-y-auto p-8">
           <div className=" p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
             <Outlet />
+            
           </div>
         </div>
       </div>
