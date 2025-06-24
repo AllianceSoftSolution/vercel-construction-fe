@@ -42,13 +42,24 @@ const TransactionModal = ({ open, onClose }) => (
     <Box sx={style} className="bg-white p-5 rounded-xl">
       <h1 className="text-3xl font-semibold mb-4">Transaction Details</h1>
       <div className="flex flex-col gap-5">
-        <CustomTextField label="Total Balance" placeholder="Enter Total Balance" />
-        <CustomTextField label="Received Balance" placeholder="Enter Received Balance" />
+        <CustomTextField
+          label="Total Balance"
+          placeholder="Enter Total Balance"
+        />
+        <CustomTextField
+          label="Received Balance"
+          placeholder="Enter Received Balance"
+        />
         <label className="text-sm font-medium text-gray-700">Upload File</label>
         <input type="file" className="border border-gray-300 rounded p-2" />
       </div>
       <div className="flex justify-end gap-3 mt-6">
-        <Button buttonText="Cancel" onClick={onClose} />
+        <button
+          className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
+          onClick={onClose}
+        >
+          Cancel
+        </button>
         <Button buttonText="Submit" />
       </div>
     </Box>
@@ -57,13 +68,22 @@ const TransactionModal = ({ open, onClose }) => (
 
 const CustomActionComponent = () => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const onNavigation = () => {
+    navigate("/admin-dashboard/payables/details/23232");
+  };
   return (
     <>
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
-        items={[{ label: "Add Price", onClick: () => setOpen(true) }]}
+        items={[
+          { label: "Add Price", onClick: () => setOpen(true) },
+          { label: "Details", onClick: onNavigation },
+        ]}
       >
-        <IconButton><BsThreeDotsVertical /></IconButton>
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
       </DropdownButton>
       <AddPriceModal open={open} onClose={() => setOpen(false)} />
     </>
@@ -72,13 +92,22 @@ const CustomActionComponent = () => {
 
 const ActionComforRegPOs = () => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const onNavigation = () => {
+    navigate("/admin-dashboard/payables/details/45435");
+  };
   return (
     <>
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
-        items={[{ label: "Transaction to Add", onClick: () => setOpen(true) }]}
+        items={[
+          { label: "Transaction to Add", onClick: () => setOpen(true) },
+          { label: "Details", onClick: onNavigation },
+        ]}
       >
-        <IconButton><BsThreeDotsVertical /></IconButton>
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
       </DropdownButton>
       <TransactionModal open={open} onClose={() => setOpen(false)} />
     </>
@@ -87,16 +116,18 @@ const ActionComforRegPOs = () => {
 const ActionComForPayableDetails = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const onNavigation=()=>{
-    navigate('/admin-dashboard/payables/details/:id')
-  }
+  const onNavigation = () => {
+    navigate("/admin-dashboard/payables/details/:id");
+  };
   return (
     <>
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[{ label: "Details", onClick: onNavigation }]}
       >
-        <IconButton><BsThreeDotsVertical /></IconButton>
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
       </DropdownButton>
       <TransactionModal open={open} onClose={() => setOpen(false)} />
     </>
@@ -132,35 +163,56 @@ const Payables = () => {
 
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
-    
       <TopBar
         title="Payables"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showFilter={true}
         filterOptions={["Assigned", "Not-Assigned"]}
-        onFilterChange={(selected) => console.log("Selected Filters:", selected)}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
       />
 
       <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
-        <AnalyticsCard label="Total Payables" icon={IoMdArrowDropdown} count={120000} />
-        <AnalyticsCard label="Total Paid" icon={IoMdArrowDropdown} count={250000} />
-        <AnalyticsCard label="Balance Remaining" icon={IoMdArrowDropdown} count={1900000} />
+        <AnalyticsCard
+          label="Total Payables"
+          icon={IoMdArrowDropdown}
+          count={120000}
+        />
+        <AnalyticsCard
+          label="Total Paid"
+          icon={IoMdArrowDropdown}
+          count={250000}
+        />
+        <AnalyticsCard
+          label="Balance Remaining"
+          icon={IoMdArrowDropdown}
+          count={1900000}
+        />
       </div>
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 
-      <div className="overflow-x-auto">
+      {/* <div className="overflow-x-auto">
         <SimpleTable columns={columns} data={data} cellComponents={{action: ActionComForPayableDetails}} />
-      </div>
+      </div> */}
 
       <div className="mt-16">
         <h1 className="text-2xl mb-5 font-bold">New Purchase Orders</h1>
-        <SimpleTable columns={columns} data={data} cellComponents={{ action: CustomActionComponent }} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: CustomActionComponent }}
+        />
       </div>
 
       <div className="mt-16">
         <h1 className="text-2xl mb-5 font-bold">Regular POs</h1>
-        <SimpleTable columns={columns} data={data} cellComponents={{ action: ActionComforRegPOs }} />
+        <SimpleTable
+          columns={columns}
+          data={data}
+          cellComponents={{ action: ActionComforRegPOs }}
+        />
       </div>
     </div>
   );
