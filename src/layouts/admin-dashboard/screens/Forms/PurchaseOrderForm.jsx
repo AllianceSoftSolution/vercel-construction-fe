@@ -23,6 +23,7 @@ import {
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
 import { MdAdd, MdDelete } from "react-icons/md";
+import CustomSelect from "../../../../mui/CustomSelect";
 
 const style = {
   position: "absolute",
@@ -48,6 +49,7 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
       vendor: "",
       product: "",
       quantity: "",
+      total:"50"
     };
     setFormSections([...formSections, newSection]);
   };
@@ -68,17 +70,11 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
 
   const renderFormSection = (section, index) => (
     <Box key={section.id} mb={4} borderRadius={20}>
-      <CustomTextField
-        Select
-        value={vendor}
-        handleChange={handleVendorChange}
-        margin="normal"
-        helperText={!vendor ? "Please select a vendor" : ""}
-      >
-        <MenuItem>He</MenuItem>
-        <MenuItem>He</MenuItem>
-        <MenuItem>He</MenuItem>
-      </CustomTextField>
+      <CustomSelect label="Select you vendor"   fullWidth name="name" select>
+        <MenuItem value="1">Hassan</MenuItem>
+        <MenuItem value="2">Ahmad</MenuItem>
+        <MenuItem value="2">Ahad</MenuItem>
+      </CustomSelect>
 
       <CustomTextField
         fullWidth
@@ -95,6 +91,15 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
         margin="normal"
         label="Quantity"
         value={section.quantity}
+        onChange={(e) =>
+          updateFormSection(section.id, "quantity", e.target.value)
+        }
+      />
+      <CustomTextField
+        fullWidth
+        margin="normal"
+        label="Total"
+        value={section.total}
         onChange={(e) =>
           updateFormSection(section.id, "quantity", e.target.value)
         }

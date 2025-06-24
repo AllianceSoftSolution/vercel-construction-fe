@@ -7,6 +7,7 @@ import { FaFacebookF } from "react-icons/fa";
 import { FaLinkedinIn } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { MenuItem } from "@mui/material";
+import CustomSelect from "../../../mui/CustomSelect";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -55,29 +56,11 @@ const Login = () => {
               name="Password"
               placeholder="Enter Your Password"
             />
-            <div className="w-64">
-              <CustomTextField
-                label="Select your role"
-                select
-                value={selectedOption}
-                handleChange={handleDropdownChange}
-                helperText={
-                  selectedOption === "" ? "This field is required" : ""
-                }
-              >
-                <MenuItem
-                  value=""
-                  onClick={() => navigate("/siteincharge-dashboard")}
-                >
-                  Site-Incharge Dashboard
-                </MenuItem>
-                <MenuItem
-                  value=""
-                  onClick={() => navigate("/admin-dashboard")}
-                >
-                  Admin Dashboard
-                </MenuItem>
-              </CustomTextField>
+            <div className="">
+              <CustomSelect label="Role" fullWidth name="name" select>
+                <MenuItem value="1" onClick={()=> navigate('/admin-dashboard')}>Admin Dashboard</MenuItem>
+                <MenuItem value="2" onClick={()=> navigate('/siteincharge-dashboard')}>Site-Incharge Dashboard</MenuItem>
+              </CustomSelect>
             </div>
             {/* button */}
             <div className="bg-primary text-white flex justify-center items-center font-semibold text-[16px] rounded-xl">
