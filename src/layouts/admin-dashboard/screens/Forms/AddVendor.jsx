@@ -1,8 +1,10 @@
 import React from "react";
 import TopBar from "@/components/ui/TopBar";
 import CustomTextField from "@/mui/CustomTextField";
+import { useNavigate } from "react-router-dom";
 
 const AddVendor = () => {
+  const navigate = useNavigate();
   return (
     <div>
       <TopBar title="Add Vendor" detail="Add New Vendor" />
@@ -42,10 +44,16 @@ const AddVendor = () => {
         </div>
       </div>{" "}
       <div className="flex gap-4 w-full mt-8">
-        <button className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] ">
+        <button
+          className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] "
+          onClick={() => navigate(-1)}
+        >
           Back
         </button>
-        <button className="bg-primary  px-10 py-2 rounded-lg font-medium text-white ">
+        <button
+          className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
+          onClick={() => navigate(-1)}
+        >
           Save
         </button>
       </div>
