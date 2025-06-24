@@ -75,34 +75,7 @@ const SectionTab = () => {
           dropdownActions={actions}
         />
       </div>{" "}
-      <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
-        Members Overview
-      </h4>
-      {hasMemberInfo ? (
-        <MemberInfoCard
-          title="General information - Store Head"
-          image={manager}
-          name="Manager name here"
-          phone="+92 300 000 090"
-          role="Store Head"
-          email="example@gmail.com"
-          joiningDate="January 8, 2001"
-          id="9090"
-          address="addresshere"
-          country="United State"
-          linkedStores={["Store A", "Store B", "Store C"]}
-        />
-      ) : (
-        <MemebersOverviewCard
-          title="General Information"
-          subTitle="Project Manager"
-          linkText="Assign Project Manager"
-          // onLinkClick={handleLinkClick}
-          imageSrc={Search}
-          imageAlt="Search Illustration"
-          onManagerClick={(id)=>sethasMemberInfo(id)}
-        />
-      )}
+      
       {/* Modal */}
       {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
       {/* <SectionDetailPage /> */}

@@ -85,7 +85,7 @@ const adminRoutes = [
       { path: "materials", element: <Materials /> },
       { path: "materials/addProduct", element: <AddProduct /> },
       { path: "payables", element: <Payables /> },
-      { path: "payables/details", element: <PayableDetails /> },
+      { path: "payables/details/:id", element: <PayableDetails /> },
       { path: "vendors", element: <Vendors /> },
       { path: "vendors/addVendor", element: <AddVendor /> },
       { path: "vendors/:id", element: <VendorDetailPage /> },

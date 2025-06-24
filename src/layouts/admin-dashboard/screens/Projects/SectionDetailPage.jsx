@@ -2,13 +2,26 @@ import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import ProjectInfoCard from "../../../../components/ui/ProjectInfoCard";
 import SimpleTable from "../../../../components/SimpleTable";
-import { IconButton } from "@mui/material";
+import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { useNavigate } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
+import MemberInfoCard from "../../../../mui/MemberInfoCard";
+import MemebersOverviewCard from "../../../../../src/mui/MembersOverviewCard";
+import manager from "../../../../../src/assets/construction/manager.png";
+import Search from "../../../../../src/assets/construction/Search.png";
+import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
 
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "600px",
+  boxShadow: 24,
+};
 const SectionDetailPage = () => {
   const navigate = useNavigate();
   const CustomActionComponent = ({ data }) => {
@@ -86,6 +99,11 @@ const SectionDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
   const [showModal, setShowModal] = useState(false);
+  const [hasMemberInfo, sethasMemberInfo] = useState(false);
+  const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const handleLinkClick = () => {
     setShowModal(true);
   };
@@ -138,18 +156,94 @@ const SectionDetailPage = () => {
           </div>
         </div>
       </div>
-      <TopBar
-        title="Construction Managers "
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Add CM"
-        onButtonClick={handleLinkClick}
-      />
-      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-      <SimpleTable
-        data={data}
-        columns={columns}
-        cellComponents={{ action: CustomActionComponent }}
-      />
+      <div>
+        <h4 className="mt-10 text-[#12141D] font-semibold text-xl">
+          Members Overview
+        </h4>
+        <div className="flex gap-5">
+          {hasMemberInfo ? (
+            <MemberInfoCard
+              title="General information - Store Head"
+              image={manager}
+              name="Manager name here"
+              phone="+92 300 000 090"
+              role="Store Head"
+              email="example@gmail.com"
+              joiningDate="January 8, 2001"
+              id="9090"
+              address="addresshere"
+              country="United State"
+              linkedStores={["Store A", "Store B", "Store C"]}
+            />
+          ) : (
+            <MemebersOverviewCard
+              title="General Information"
+              subTitle="Project Manager"
+              linkText="Assign Project Manager"
+              // onLinkClick={handleLinkClick}
+              imageSrc={Search}
+              imageAlt="Search Illustration"
+              onManagerClick={(id) => sethasMemberInfo(id)}
+            />
+          )}
+          {hasStoreHeadInfo ? (
+            <MemberInfoCard
+              title="General information - Store Head"
+              image={manager}
+              name="Manager name here"
+              phone="+92 300 000 090"
+              role="Store Head"
+              email="example@gmail.com"
+              joiningDate="January 8, 2001"
+              id="9090"
+              address="addresshere"
+              country="United State"
+              linkedStores={["Store A", "Store B", "Store C"]}
+            />
+          ) : (
+            <MemebersOverviewCard
+              title="General Information"
+              subTitle="Store Head"
+              linkText="Assign Store Head"
+              // onLinkClick={handleLinkClick}
+              imageSrc={Search}
+              imageAlt="Search Illustration"
+              onManagerClick={(id) => setHasStoreHeadInfo(id)}
+            />
+          )}
+        </div>
+      </div>
+      <div className="mt-10">
+        <TopBar
+          title="Construction Managers "
+          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+          buttonText="Add CM"
+          onButtonClick={handleOpen}
+        />
+        {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+        <div>
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <AssignProjectManagerModal
+                onCreateClick={(bool) => {
+                  setShowModal(bool);
+                  setOpen(false);
+                }}
+              />
+            </Box>
+          </Modal>
+        </div>
+        <SimpleTable
+          data={data}
+          columns={columns}
+          cellComponents={{ action: CustomActionComponent }}
+        />
+      </div>
     </div>
   );
 };
