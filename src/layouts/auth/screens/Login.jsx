@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import loginLogo from "../../../assets/construction/loginLogo.png";
 import CustomTextField from "../../../mui/CustomTextField";
@@ -6,9 +6,16 @@ import { CiGlobe } from "react-icons/ci";
 import { FaFacebookF } from "react-icons/fa";
 import { FaLinkedinIn } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
+import { MenuItem } from "@mui/material";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const [selectedOption, setSelectedOption] = useState("");
+
+  const handleDropdownChange = (event) => {
+    setSelectedOption(event.target.value);
+  };
   return (
     // main div
     <div className="h-screen w-full bg-white flex flex-col">
@@ -48,6 +55,30 @@ const Login = () => {
               name="Password"
               placeholder="Enter Your Password"
             />
+            <div className="w-64">
+              <CustomTextField
+                label="Select your role"
+                select
+                value={selectedOption}
+                handleChange={handleDropdownChange}
+                helperText={
+                  selectedOption === "" ? "This field is required" : ""
+                }
+              >
+                <MenuItem
+                  value=""
+                  onClick={() => navigate("/siteincharge-dashboard")}
+                >
+                  Site-Incharge Dashboard
+                </MenuItem>
+                <MenuItem
+                  value=""
+                  onClick={() => navigate("/admin-dashboard")}
+                >
+                  Admin Dashboard
+                </MenuItem>
+              </CustomTextField>
+            </div>
             {/* button */}
             <div className="bg-primary text-white flex justify-center items-center font-semibold text-[16px] rounded-xl">
               <button

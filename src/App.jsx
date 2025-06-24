@@ -37,6 +37,14 @@ import SectionDetailPage from "./layouts/admin-dashboard/screens/Projects/Sectio
 import VendorDetailPage from "./layouts/admin-dashboard/screens/Projects/VendorDetailPage";
 import Payables from "./layouts/admin-dashboard/screens/Payables";
 import PayableDetails from "./layouts/admin-dashboard/screens/Projects/PayableDetail";
+import SiteInchargeDashboardLayout from "./layouts/siteIncharge-dashboard/SiteInchargeDashboardLayout";
+import SiteInchargeDashbaord from "./layouts/siteIncharge-dashboard/components/SiteInchargeDashbaord";
+import SInchargeProjectManagement from "./layouts/siteIncharge-dashboard/components/SInchargeProjectManagement";
+import SInchargeUserManagement from "./layouts/siteIncharge-dashboard/components/SInchargeUserManagement";
+import SInchargeSectionTab from "./layouts/siteIncharge-dashboard/components/Projects/tabs/SInchargeSectionTab";
+import SiAddProject from "./layouts/siteIncharge-dashboard/components/Forms/SiAddProject";
+
+
 
 const theme = createTheme({
   typography: {
@@ -74,7 +82,7 @@ const adminRoutes = [
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
-    
+
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <DemandDetailPage /> },
       { path: "pOS", element: <POs /> },
@@ -93,15 +101,41 @@ const adminRoutes = [
   },
 ];
 
+const siteInchargeRoutes = [
+  {
+    path: "siteincharge-dashboard",
+    element: <SiteInchargeDashboardLayout />,
+    children: [
+      { path: "", element: <SiteInchargeDashbaord /> },
+      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "project-Management/addProject", element: <SiAddProject/> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
+    ],
+  },
+];
+
 const getRoutesByRole = (role) => {
   switch (role) {
     case "ADM":
-      return [...commonRoutes, ...adminRoutes];
+      return [...commonRoutes, ...adminRoutes, ...siteInchargeRoutes];
     // case "USR":
     //   return [...commonRoutes, ...studentRoutes];
     default:
       // return commonRoutes;
-      return [...commonRoutes, ...adminRoutes];
+      return [...commonRoutes, ...adminRoutes, ...siteInchargeRoutes];
   }
 };
 

@@ -21,14 +21,13 @@ import Profile from "../../assets/construction/profile.png";
 import { IoMdNotifications } from "react-icons/io";
 import { IoMdSettings } from "react-icons/io";
 
-const adminDashboardLayout = ({ role }) => {
+const SiteInchargeDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg"));
   const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
 
-  // rvnLvnValue
   const navigate = useNavigate();
   useEffect(() => {
     setSidebarOpen(false);
@@ -46,48 +45,35 @@ const adminDashboardLayout = ({ role }) => {
     {
       label: "Dashboard",
       icon: MdSpaceDashboard,
-      path: "/admin-dashboard",
+      path: "/siteincharge-dashboard",
     },
     {
       label: "User Management",
       icon: FaUserTie,
-      path: "/admin-dashboard/user-management",
+      path: "/siteincharge-dashboard/user-management",
     },
     {
       label: "Project Management",
       icon: FaBoxesStacked,
-      path: "/admin-dashboard/project-management",
+      path: "/siteincharge-dashboard/project-management",
     },
     {
       label: "Demands",
       icon: FaHandHoldingHeart,
-      path: "/admin-dashboard/demands",
+      path: "/siteincharge-dashboard/demands",
     },
     {
       label: "POs",
       icon: FaToolbox,
-      path: "/admin-dashboard/pos",
+      path: "/siteincharge-dashboard/pos",
     },
     {
       label: "Store",
       icon: IoStorefrontSharp,
-      path: "/admin-dashboard/store",
+      path: "/siteincharge-dashboard/store",
     },
-    {
-      label: "Materials",
-      icon: FaDiceD6,
-      path: "/admin-dashboard/materials",
-    },
-    {
-      label: "Payables",
-      icon: IoPeopleSharp,
-      path: "/admin-dashboard/payables",
-    },
-    {
-      label: "Vendors",
-      icon: IoPeopleSharp,
-      path: "/admin-dashboard/vendors",
-    },
+   
+   
   ];
   const [activePath, setActivePath] = useState("");
 
@@ -194,9 +180,9 @@ const adminDashboardLayout = ({ role }) => {
             </div>
             <div className="flex flex-col">
               <p className="font-semibold text-black whitespace-nowrap">
-                John Smith
+                John Doe
               </p>
-              <p className="text-[#7A7A7A] text-sm text-right">ADMIN</p>
+              <p className="text-[#7A7A7A] text-sm text-right">SITEINCHARGE</p>
             </div>
             <div className="flex items-center">
               <img src={Profile} alt="Profile Icon" className="w-28" />
@@ -216,4 +202,4 @@ const adminDashboardLayout = ({ role }) => {
   );
 };
 
-export default adminDashboardLayout;
+export default SiteInchargeDashboardLayout;
