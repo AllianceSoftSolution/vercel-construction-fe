@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import ProjectInfoCard from "../../../../components/ui/ProjectInfoCard";
 import SimpleTable from "../../../../components/SimpleTable";
-import { IconButton } from "@mui/material";
+import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
@@ -12,7 +12,16 @@ import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MemebersOverviewCard from "../../../../../src/mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
+import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
 
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "600px",
+  boxShadow: 24,
+};
 const SectionDetailPage = () => {
   const navigate = useNavigate();
   const CustomActionComponent = ({ data }) => {
@@ -92,6 +101,9 @@ const SectionDetailPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
   const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const handleLinkClick = () => {
     setShowModal(true);
   };
@@ -206,9 +218,26 @@ const SectionDetailPage = () => {
           title="Construction Managers "
           detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
           buttonText="Add CM"
-          onButtonClick={handleLinkClick}
+          onButtonClick={handleOpen}
         />
         {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+        <div>
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <AssignProjectManagerModal
+                onCreateClick={(bool) => {
+                  setShowModal(bool);
+                  setOpen(false);
+                }}
+              />
+            </Box>
+          </Modal>
+        </div>
         <SimpleTable
           data={data}
           columns={columns}
