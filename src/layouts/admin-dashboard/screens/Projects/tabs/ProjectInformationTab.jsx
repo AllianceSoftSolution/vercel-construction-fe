@@ -1,11 +1,24 @@
 import React, { useState } from "react";
 import ProjectInfoCard from "../../../../../components/ui/ProjectInfoCard";
 import ProjectDescriptionCard from "../../../../../components/ui/ProjectDescriptionCard";
-import { IconButton } from "@mui/material";
+import { Box, IconButton, Modal } from "@mui/material";
 import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import SimpleTable from "../../../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import Button from "../../../../../components/Button";
+import AddMemberModal from "../../users/modals/AddMemberModal";
+import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
+import { useSearchParams } from "react-router-dom";
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "600px",
+  boxShadow: 24,
+};
 const ProjectInformationTab = () => {
   const data = [
     {
@@ -57,6 +70,8 @@ const ProjectInformationTab = () => {
     },
   ];
   const CustomActionComponent = ({ data }) => {
+    const [showModal, setShowModal] = useState(false);
+
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
@@ -81,6 +96,32 @@ const ProjectInformationTab = () => {
       </DropdownButton>
     );
   };
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [showModal, setShowModal] = useState(
+    searchParams?.get("isLinkOpen") == "true" ? true : false
+  );
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleLinkClick = () => {
+    setShowModal(true);
+    setSearchParams({ isLinkOpen: true });
+  };
+  const handleSubmit = () => {
+    handleClose();
+    setShowModal(false);
+  };
+
+  const closeAddUserFormModal = () => {
+    setShowModal(false);
+
+    setSearchParams({
+      isLinkOpen: "false",
+    });
+  };
   return (
     <>
       <ProjectInfoCard
@@ -101,13 +142,44 @@ const ProjectInformationTab = () => {
         description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
         onEdit={() => console.log("edit description")}
       />
-      <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
+        <Button buttonText={"Create Site Incharge"} onClick={handleLinkClick} />
+        {showModal && (
+          <AddMemberModal
+            onAddUserClick={setOpen}
+            onClose={closeAddUserFormModal}
+          />
+        )}
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <AssignSectionModal
+              handleSubmit={() => {
+                handleSubmit();
+                closeAddUserFormModal();
+              }}
+              handleCancel={() => {
+                handleClose();
+                closeAddUserFormModal();
+              }}
+            />
+          </Box>
+        </Modal>
+      </div>
       <SimpleTable
         columns={columns}
         data={data}
         cellComponents={{ action: CustomActionComponent }}
       />{" "}
-      <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
+        <Button buttonText={"Create An Accountant"} onClick={handleLinkClick} />
+      </div>
       <SimpleTable
         columns={columns}
         data={data}

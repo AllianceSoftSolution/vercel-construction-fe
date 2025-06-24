@@ -22,6 +22,7 @@ const Demands = () => {
       status: "Pending",
       approvedBy: "Owner",
       fulfilled: 12,
+      action: "id-here",
     },
     {
       id: 2,
@@ -35,6 +36,7 @@ const Demands = () => {
       status: "Approved",
       approvedBy: "Site Manager",
       fulfilled: 13,
+      action: "id-here",
     },
     {
       id: 3,
@@ -48,6 +50,7 @@ const Demands = () => {
       status: "In Progress",
       approvedBy: "Owner",
       fulfilled: 12,
+      action: "id-here",
     },
   ];
   const columns = [
@@ -96,7 +99,7 @@ const Demands = () => {
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Demands"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
         filterOptions={["Approved", "Rejected", "Pending"]}

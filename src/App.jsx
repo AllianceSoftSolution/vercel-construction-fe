@@ -20,7 +20,7 @@ import Demands from "./layouts/admin-dashboard/screens/Demands";
 import POs from "./layouts/admin-dashboard/screens/POs";
 import Store from "./layouts/admin-dashboard/screens/Store";
 import Materials from "./layouts/admin-dashboard/screens/Materials";
-import Accounts from "./layouts/admin-dashboard/screens/Accounts";
+import Accounts from "./layouts/admin-dashboard/screens/Payables";
 import Vendors from "./layouts/admin-dashboard/screens/Vendors";
 import AddUser from "./layouts/admin-dashboard/screens/Forms/AddUser";
 import AddProduct from "./layouts/admin-dashboard/screens/Forms/AddProduct";
@@ -35,6 +35,8 @@ import AddVendor from "./layouts/admin-dashboard/screens/Forms/AddVendor";
 import SectionTab from "./layouts/admin-dashboard/screens/Projects/tabs/SectionTab";
 import SectionDetailPage from "./layouts/admin-dashboard/screens/Projects/SectionDetailPage";
 import VendorDetailPage from "./layouts/admin-dashboard/screens/Projects/VendorDetailPage";
+import Payables from "./layouts/admin-dashboard/screens/Payables";
+import PayableDetails from "./layouts/admin-dashboard/screens/Projects/PayableDetail";
 
 const theme = createTheme({
   typography: {
@@ -72,6 +74,7 @@ const adminRoutes = [
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
+    
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <DemandDetailPage /> },
       { path: "pOS", element: <POs /> },
@@ -81,7 +84,8 @@ const adminRoutes = [
       { path: "store/:id", element: <StoreDetail /> },
       { path: "materials", element: <Materials /> },
       { path: "materials/addProduct", element: <AddProduct /> },
-      { path: "accounts", element: <Accounts /> },
+      { path: "payables", element: <Payables /> },
+      { path: "payables/details/:id", element: <PayableDetails /> },
       { path: "vendors", element: <Vendors /> },
       { path: "vendors/addVendor", element: <AddVendor /> },
       { path: "vendors/:id", element: <VendorDetailPage /> },

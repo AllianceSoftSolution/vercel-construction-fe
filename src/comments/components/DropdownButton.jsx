@@ -62,7 +62,7 @@ const DropdownButton = ({
           <MenuItem
             key={index}
             onClick={() => {
-              item.onClick?.();
+              item.onClick?.(item.label);
               handleClose();
             }}
             sx={{
