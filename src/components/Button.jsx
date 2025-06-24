@@ -3,7 +3,7 @@ import React from "react";
 function Button({ buttonText, onClick, className }) {
   return (
     <button
-      className={`bg-primary text-white px-4 py-2 rounded-lg w-fit ${className}`}
+      className={`bg-primary text-white px-6 py-1 text-[16px] rounded-lg w-fit ${className}`}
       onClick={onClick}
     >
       {buttonText}
