@@ -68,19 +68,16 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
 
   const renderFormSection = (section, index) => (
     <Box key={section.id} mb={4} borderRadius={20}>
-    
       <CustomTextField
-        
+        Select
         value={vendor}
         handleChange={handleVendorChange}
         margin="normal"
         helperText={!vendor ? "Please select a vendor" : ""}
       >
-        
-        <option value="">-- Choose --</option>
-        <option value="vendor1">Vendor 1</option>
-        <option value="vendor2">Vendor 2</option>
-        <option value="vendor3">Vendor 3</option>
+        <MenuItem>He</MenuItem>
+        <MenuItem>He</MenuItem>
+        <MenuItem>He</MenuItem>
       </CustomTextField>
 
       <CustomTextField

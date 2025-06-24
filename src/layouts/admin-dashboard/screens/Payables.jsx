@@ -88,7 +88,7 @@ const ActionComForPayableDetails = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const onNavigation=()=>{
-    navigate('/admin-dashboard/payables/details')
+    navigate('/admin-dashboard/payables/details/:id')
   }
   return (
     <>

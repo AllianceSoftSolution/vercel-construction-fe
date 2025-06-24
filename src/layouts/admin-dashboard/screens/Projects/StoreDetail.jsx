@@ -152,7 +152,7 @@ const PurchaseOrderDetail = () => {
                     onClick={() => console.log(option.label)}
                     className="w-full bg-white border border-[#ebebeb] rounded-2xl p-6 flex items-center gap-4 hover:bg-[#ebebeb] transition-colors"
                   >
-                    <div className="w-6 h-6 border-2 border-[#cdcdcd] rounded bg-white" />
+                    {/* <div className="w-6 h-6 border-2 border-[#cdcdcd] rounded bg-white" /> */}
                     <span className="text-xl font-medium text-[#222222]">
                       {option.label}
                     </span>
@@ -177,7 +177,7 @@ const PurchaseOrderDetail = () => {
         buttonText="Add Store"
       />
 
-      {/* Store Details Header */}
+   
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex justify-between">
           <p className="text-[#444444] font-semibold text-xl">Order Name Here</p>

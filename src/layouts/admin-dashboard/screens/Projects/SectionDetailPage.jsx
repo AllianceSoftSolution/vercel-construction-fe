@@ -8,6 +8,10 @@ import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { useNavigate } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
+import MemberInfoCard from "../../../../mui/MemberInfoCard";
+import MemebersOverviewCard from "../../../../../src/mui/MembersOverviewCard";
+import manager from "../../../../../src/assets/construction/manager.png";
+import Search from "../../../../../src/assets/construction/Search.png";
 
 const SectionDetailPage = () => {
   const navigate = useNavigate();
@@ -86,6 +90,8 @@ const SectionDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
   const [showModal, setShowModal] = useState(false);
+  const [hasMemberInfo, sethasMemberInfo] = useState(false);
+  const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
   const handleLinkClick = () => {
     setShowModal(true);
   };
@@ -138,18 +144,77 @@ const SectionDetailPage = () => {
           </div>
         </div>
       </div>
-      <TopBar
-        title="Construction Managers "
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Add CM"
-        onButtonClick={handleLinkClick}
-      />
-      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-      <SimpleTable
-        data={data}
-        columns={columns}
-        cellComponents={{ action: CustomActionComponent }}
-      />
+      <div>
+        <h4 className="mt-10 text-[#12141D] font-semibold text-xl">
+          Members Overview
+        </h4>
+        <div className="flex gap-5">
+          {hasMemberInfo ? (
+            <MemberInfoCard
+              title="General information - Store Head"
+              image={manager}
+              name="Manager name here"
+              phone="+92 300 000 090"
+              role="Store Head"
+              email="example@gmail.com"
+              joiningDate="January 8, 2001"
+              id="9090"
+              address="addresshere"
+              country="United State"
+              linkedStores={["Store A", "Store B", "Store C"]}
+            />
+          ) : (
+            <MemebersOverviewCard
+              title="General Information"
+              subTitle="Project Manager"
+              linkText="Assign Project Manager"
+              // onLinkClick={handleLinkClick}
+              imageSrc={Search}
+              imageAlt="Search Illustration"
+              onManagerClick={(id) => sethasMemberInfo(id)}
+            />
+          )}
+          {hasStoreHeadInfo ? (
+            <MemberInfoCard
+              title="General information - Store Head"
+              image={manager}
+              name="Manager name here"
+              phone="+92 300 000 090"
+              role="Store Head"
+              email="example@gmail.com"
+              joiningDate="January 8, 2001"
+              id="9090"
+              address="addresshere"
+              country="United State"
+              linkedStores={["Store A", "Store B", "Store C"]}
+            />
+          ) : (
+            <MemebersOverviewCard
+              title="General Information"
+              subTitle="Store Head"
+              linkText="Assign Store Head"
+              // onLinkClick={handleLinkClick}
+              imageSrc={Search}
+              imageAlt="Search Illustration"
+              onManagerClick={(id) => setHasStoreHeadInfo(id)}
+            />
+          )}
+        </div>
+      </div>
+      <div className="mt-10">
+        <TopBar
+          title="Construction Managers "
+          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+          buttonText="Add CM"
+          onButtonClick={handleLinkClick}
+        />
+        {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+        <SimpleTable
+          data={data}
+          columns={columns}
+          cellComponents={{ action: CustomActionComponent }}
+        />
+      </div>
     </div>
   );
 };
