@@ -8,6 +8,7 @@ import DropdownButton from "../../../../comments/components/DropdownButton";
 import ReasonModal from "../Demands/ReasonModal";
 import PurchaseOrderForm from "../Forms/PurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
+import Button from "../../../../components/Button";
 
 const style = {
   position: "absolute",
@@ -106,7 +107,7 @@ const DemandDetails = () => {
           <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
           <div className="flex gap-x-2 items-center">
             <div
-              className={`text-white px-8 py-2 rounded-full ${
+              className={`text-white px-8 py-2 rounded-lg  ${
                 status === "Approved"
                   ? "bg-green-600"
                   : status === "Rejected"
@@ -118,12 +119,11 @@ const DemandDetails = () => {
             </div>
 
             {status === "Approved" && (
-              <button
+              <Button
                 onClick={() => setOpenPurchaseModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-full"
-              >
-                Create Purchase Order
-              </button>
+                className="bg-primary text-white px-4 py-2 "
+                buttonText={"Create Purchase Order"}
+              />
             )}
 
             <CustomActionComponent />
@@ -198,6 +198,7 @@ const DemandDetails = () => {
           storeName="Head Store"
           totalQty={80}
           material="Cement"
+          showButton
         />
         <DemandQuantityCard
           storeName="CM Store"

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Button from "./Button";
 
-export default function DemandQuantityCard({ storeName, totalQty, material }) {
+export default function DemandQuantityCard({ storeName, totalQty, material, showButton }) {
   const [isOpen, setIsOpen] = useState(false);
   const [assignedQty, setAssignedQty] = useState("");
 
@@ -12,7 +12,7 @@ export default function DemandQuantityCard({ storeName, totalQty, material }) {
     }
 
     alert(
-      `✅ ${assignedQty} units of ${material} assigned from ${storeName} store`
+      `${assignedQty} units of ${material} assigned from ${storeName} store`
     );
     setIsOpen(false);
     setAssignedQty("");
@@ -24,14 +24,15 @@ export default function DemandQuantityCard({ storeName, totalQty, material }) {
       <p className="text-gray-600 mt-2">Material: {material}</p>
       <p className="text-gray-600">Available Quantity: {totalQty}</p>
 
-      <button
-        onClick={() => setIsOpen(true)}
-        className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium"
-      >
-        Assign & Approve
-      </button>
+      {showButton && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium"
+        >
+          Assign & Approve
+        </button>
+      )}
 
-      {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
@@ -51,17 +52,16 @@ export default function DemandQuantityCard({ storeName, totalQty, material }) {
             />
 
             <div className="flex justify-end gap-3 mt-6">
-              <Button
+              <button
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800"
+                className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000]s"
                 buttonText={"Cancel"}
-              />
+              >
+                {" "}
+                Cancel
+              </button>
 
-              <Button
-                onClick={handleApprove}
-                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold"
-                buttonText={"Approve"}
-              />
+              <Button onClick={handleApprove} buttonText={"Approve"} />
             </div>
           </div>
         </div>

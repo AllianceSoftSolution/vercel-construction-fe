@@ -1,12 +1,9 @@
-"use client";
-
 import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   IconButton,
   MenuItem,
   Select,
@@ -16,8 +13,25 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { ArrowBack, ExpandMore, Add, Delete } from "@mui/icons-material";
+import {
+  ArrowBack,
+  ExpandMore,
+  Add,
+  Delete,
+  Height,
+} from "@mui/icons-material";
 import CustomTextField from "../../../../mui/CustomTextField";
+import Button from "../../../../components/Button";
+import { MdAdd, MdDelete } from "react-icons/md";
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  boxShadow: 24,
+  borderRadius: 20,
+};
 
 export default function PurchaseOrderForm({ isOpen, onClose }) {
   const [vendor, setVendor] = useState("");
@@ -53,22 +67,22 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
   };
 
   const renderFormSection = (section, index) => (
-    <Box key={section.id} mb={4}>
-      {/* Vendor Dropdown */}
+    <Box key={section.id} mb={4} borderRadius={20}>
+    
       <CustomTextField
-        label="Add Vendor"
+        
         value={vendor}
         handleChange={handleVendorChange}
         margin="normal"
         helperText={!vendor ? "Please select a vendor" : ""}
       >
+        
         <option value="">-- Choose --</option>
         <option value="vendor1">Vendor 1</option>
         <option value="vendor2">Vendor 2</option>
         <option value="vendor3">Vendor 3</option>
       </CustomTextField>
 
-      {/* Product Field */}
       <CustomTextField
         fullWidth
         margin="normal"
@@ -89,18 +103,18 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
         }
       />
 
-      <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
+      <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
         {formSections.length > 1 && (
           <IconButton
             onClick={() => removeFormSection(section.id)}
             color="error"
           >
-            <Delete />
+            <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
           </IconButton>
         )}
         {index === formSections.length - 1 && (
           <IconButton onClick={addFormSection} color="primary">
-            <Add />
+            <MdAdd className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
           </IconButton>
         )}
       </Box>
@@ -108,10 +122,8 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
   );
 
   return (
-    <Box sx={{ px: 4,borderRadius:12 }} >
-      
-
-      <Dialog open={isOpen} onClose={onClose} maxWidth="md" fullWidth>
+    <Box sx={style}>
+      <Dialog open={isOpen} onClose={onClose} fullWidth>
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={2}>
             {/* <IconButton onClick={() => setIsOpen(false)} size="small">
@@ -133,12 +145,18 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
         </DialogContent>
 
         <DialogActions>
-          <Button variant="outlined" onClick={() => onClose}>
+          <button
+            variant="outlined"
+            className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000]"
+            onClick={() => onClose}
+          >
             Back
-          </Button>
-          <Button variant="contained" color="warning">
-            Create Purchase Order
-          </Button>
+          </button>
+          <Button
+            buttonText={"Create Purchase Order"}
+            variant="contained"
+            color="warning"
+          />
         </DialogActions>
       </Dialog>
     </Box>
