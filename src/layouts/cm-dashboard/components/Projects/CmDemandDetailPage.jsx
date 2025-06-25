@@ -6,7 +6,7 @@ import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import ReasonModal from "../Demands/ReasonModal";
-import PurchaseOrderForm from "../Forms/PurchaseOrderForm";
+import PurchaseOrderForm from "../Forms/CmPurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
 import Button from "../../../../components/Button";
 
@@ -19,7 +19,7 @@ const style = {
   boxShadow: 24,
 };
 
-const CmDemandDetails = () => {
+const CmDemandDetailPage = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
   const [status, setStatus] = useState("Pending");
@@ -61,11 +61,9 @@ const CmDemandDetails = () => {
         items={[
           {
             label: "Rejected",
-     
           },
           {
             label: "Approved",
-            
           },
         ]}
       >
@@ -106,7 +104,7 @@ const CmDemandDetails = () => {
         <div className="flex justify-between">
           <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
           <div className="flex gap-x-2 items-center">
-            {/* <div
+            <div
               className={`text-white px-8 py-2 rounded-lg  ${
                 status === "Approved"
                   ? "bg-green-600"
@@ -116,7 +114,7 @@ const CmDemandDetails = () => {
               }`}
             >
               {status}
-            </div> */}
+            </div>
 
             {/* {status === "Approved" && (
               <Button
@@ -212,5 +210,4 @@ const CmDemandDetails = () => {
   );
 };
 
-export default CmDemandDetails;
- 
+export default CmDemandDetailPage;

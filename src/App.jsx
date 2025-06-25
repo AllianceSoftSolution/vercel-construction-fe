@@ -72,6 +72,9 @@ import CmStoreDetail from "./layouts/cm-dashboard/components/Projects/CmStoreDet
 import CmAddStore from "./layouts/cm-dashboard/components/Forms/CmAddStore";
 import CmStores from "./layouts/cm-dashboard/components/CmStore";
 import CmDemands from "./layouts/cm-dashboard/components/CmDemands";
+import CmSectionTab from "./layouts/cm-dashboard/components/Projects/tabs/CmSectionTab";
+import CmDemandDetails from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
+import CmDemandDetailPage from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
 
 
 const theme = createTheme({
@@ -194,11 +197,11 @@ const constructionManagerRoutes = [
       { path: "project-Management", element: <CmProjectManagement/> },
       { path: "project-Management/addProject", element: <CmAddProject/> },
       { path: "project-Management/:id", element: <CmProjectDetailPage /> },
-      { path: "sections", element: <SectionTab /> },
+      { path: "sections", element: <CmSectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
 
       { path: "demands", element: <CmDemands /> },
-      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "demands/:id", element: <CmDemandDetailPage /> },
       { path: "pOS", element: <POs /> },
       { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
       { path: "store", element: <CmStores /> },

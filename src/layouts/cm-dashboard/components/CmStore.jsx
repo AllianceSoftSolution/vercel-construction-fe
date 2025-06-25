@@ -118,7 +118,7 @@ const CmStores = () => {
           console.log("Selected Filters:", selected)
         }
         buttonText="Add New Store"
-        onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
+        onButtonClick={() => navigate("/construction-manager-dashboard/store/addStore")}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}

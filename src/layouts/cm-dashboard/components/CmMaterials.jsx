@@ -38,7 +38,7 @@ const CmMaterials = () => {
         showExport={true}
         // showFilter={true}
         buttonText="Add Product"
-        onButtonClick={() => navigate("/admin-dashboard/materials/addProduct")}
+        onButtonClick={() => navigate("/construction-manager-dashboard/materials/addProduct")}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}

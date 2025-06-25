@@ -19,28 +19,10 @@ const CmAddProduct = () => {
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* Upload Image Section */}
-      <div className="flex flex-col gap-y-2">
-        <h4 className="text-[#12141D] font-semibold">Upload Image</h4>
-      </div>
+      
       {/* form */}
       <div className="flex flex-col gap-4">
-        <div className="relative w-[100px] h-[100px]">
-          <div className="w-full h-full bg-white border-[0.5px] border-[#CDC9C9] rounded-full overflow-hidden"></div>
-          <label
-            htmlFor="upload"
-            className="absolute -bottom-2 right-1 cursor-pointer"
-          >
-            <div className="w-10 h-10 bg-white  rounded-2xl flex items-center justify-center">
-              <img src={uploadIcon} size={25} />
-            </div>
-          </label>
-          <input
-            id="upload"
-            type="file"
-            className="hidden"
-            onChange={(e) => console.log(e.target.files[0])}
-          />
-        </div>
+        
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <CustomTextField
             label={
