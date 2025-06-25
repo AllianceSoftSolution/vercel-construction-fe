@@ -45,37 +45,37 @@ const CmDashboardLayout = ({ role }) => {
     {
       label: "Dashboard",
       icon: MdSpaceDashboard,
-      path: "/construction-manager-dashbaord",
+      path: "/construction-manager-dashboard",
     },
     {
       label: "User Management",
       icon: FaUserTie,
-      path: "/construction-manager-dashbaord/user-management",
+      path: "/construction-manager-dashboard/user-management",
     },
     {
       label: "Project Management",
       icon: FaBoxesStacked,
-      path: "/construction-manager-dashbaord/project-management",
+      path: "/construction-manager-dashboard/project-management",
     },
     {
       label: "Demands",
       icon: FaHandHoldingHeart,
-      path: "/construction-manager-dashbaord/demands",
+      path: "/construction-manager-dashboard/demands",
     },
     {
       label: "POs",
       icon: FaToolbox,
-      path: "/construction-manager-dashbaord/pos",
+      path: "/construction-manager-dashboard/pos",
     },
     {
       label: "Store",
       icon: IoStorefrontSharp,
-      path: "/construction-manager-dashbaord/store",
+      path: "/construction-manager-dashboard/store",
     },
     {
       label: "Materials",
       icon: FaDiceD6,
-      path: "/construction-manager-dashbaord/materials",
+      path: "/construction-manager-dashboard/materials",
     },
   ];
   const [activePath, setActivePath] = useState("");

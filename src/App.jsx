@@ -63,6 +63,15 @@ import PmStores from "./layouts/pm-dashboard/component/PmStore";
 import CmDashboardLayout from "./layouts/cm-dashboard/CmDashboardLayout";
 import CmDashboard from "./layouts/cm-dashboard/components/CmDashboard";
 import CmProjectManagement from "./layouts/cm-dashboard/components/CmProjectManagement";
+import CmAddProject from "./layouts/cm-dashboard/components/Forms/CmAddProject";
+import CmProjectDetailPage from "./layouts/cm-dashboard/components/Projects/CmProjectDetailPage";
+import CmUserManagement from "./layouts/cm-dashboard/components/CmUserManagement";
+import CmMaterials from "./layouts/cm-dashboard/components/CmMaterials";
+import CmAddProduct from "./layouts/cm-dashboard/components/Forms/CmAddProduct";
+import CmStoreDetail from "./layouts/cm-dashboard/components/Projects/CmStoreDetail";
+import CmAddStore from "./layouts/cm-dashboard/components/Forms/CmAddStore";
+import CmStores from "./layouts/cm-dashboard/components/CmStore";
+import CmDemands from "./layouts/cm-dashboard/components/CmDemands";
 
 
 const theme = createTheme({
@@ -179,22 +188,24 @@ const constructionManagerRoutes = [
     element: <CmDashboardLayout />,
     children: [
       { path: "", element: <CmDashboard /> },
-      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management", element: <CmUserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "user-Management/:id", element: <MemberDetailPage /> },
       { path: "project-Management", element: <CmProjectManagement/> },
       { path: "project-Management/addProject", element: <CmAddProject/> },
-      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "project-Management/:id", element: <CmProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
 
-      { path: "demands", element: <Demands /> },
+      { path: "demands", element: <CmDemands /> },
       { path: "demands/:id", element: <DemandDetailPage /> },
       { path: "pOS", element: <POs /> },
       { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
-      { path: "store", element: <Store /> },
-      { path: "store/addStore", element: <AddStore /> },
-      { path: "store/:id", element: <StoreDetail /> },
+      { path: "store", element: <CmStores /> },
+      { path: "store/addStore", element: <CmAddStore /> },
+      { path: "store/:id", element: <CmStoreDetail /> },
+      { path: "materials", element: <CmMaterials /> },
+      { path: "materials/addProduct", element: <CmAddProduct /> },
     ],
   },
 ];

@@ -102,7 +102,7 @@ const CmProjectManagement = () => {
         }
         buttonText="Create Project"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-Management/addProject")
+          navigate("/construction-manager-dashboard/project-Management/addProject")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>

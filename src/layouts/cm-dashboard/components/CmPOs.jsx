@@ -9,7 +9,7 @@ import { RiFileEditFill } from "react-icons/ri";
 import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate } from "react-router-dom";
 
-const PurchaseOrder = () => {
+const CmPos = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const navigate = useNavigate();
   const data = [
@@ -120,4 +120,4 @@ const PurchaseOrder = () => {
   );
 };
 
-export default PurchaseOrder;
+export default CmPos;

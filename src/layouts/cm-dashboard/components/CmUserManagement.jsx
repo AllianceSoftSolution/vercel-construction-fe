@@ -139,7 +139,7 @@ const CmUserManagement = () => {
         }
         buttonText="Create New User"
         onButtonClick={() =>
-          navigate("/admin-dashboard/user-management/addUser")
+          navigate("/construction-manager-dashboard/user-management/addUser")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>

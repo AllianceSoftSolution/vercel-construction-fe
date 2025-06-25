@@ -5,7 +5,7 @@ import { Tabs, Tab, Box } from "@mui/material";
 
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
 import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
-import SectionTab from "./tabs/SectionTab";
+import SectionTab from "./tabs/CmSectionTab";
 
 const CmProjectDetailPage = () => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const CmProjectDetailPage = () => {
         showExport={true}
         buttonText="Create Project"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
+          navigate("/construction-manager-dashboard/project-management/addProject")
         }
       />
 
@@ -74,3 +74,4 @@ const CmProjectDetailPage = () => {
 };
 
 export default CmProjectDetailPage;
+ 

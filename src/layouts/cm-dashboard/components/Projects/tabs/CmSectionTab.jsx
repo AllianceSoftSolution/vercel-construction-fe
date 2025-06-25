@@ -18,7 +18,7 @@ import AssignProjectManagerModal from "../../../../../components/AssignProjectMa
 import { Height } from "@mui/icons-material";
 
 
-const SectionTab = () => {
+const CmSectionTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
  
 
@@ -32,7 +32,7 @@ const SectionTab = () => {
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/admin-dashboard/sections/:id"),
+      onClick: () => navigate("/construction-manager-dashboard/sections/23232"),
     },
     {
       label: "Edit Project Section",
@@ -53,7 +53,7 @@ const SectionTab = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         buttonText="Create Project Section"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
+          navigate("/construction-manager-dashboard/project-management/addProject")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -83,4 +83,4 @@ const SectionTab = () => {
   );
 };
 
-export default SectionTab;
+export default CmSectionTab;
