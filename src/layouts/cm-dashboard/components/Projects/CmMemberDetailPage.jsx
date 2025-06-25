@@ -147,3 +147,4 @@ const CmMemberDetailPage = () => {
 };
 
 export default CmMemberDetailPage;
+ 

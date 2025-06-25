@@ -301,3 +301,4 @@ const InfoRow = ({ label, value }) => (
 );
 
 export default CmStoreDetail;
+ 
