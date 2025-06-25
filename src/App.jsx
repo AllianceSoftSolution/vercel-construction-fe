@@ -43,7 +43,26 @@ import SInchargeProjectManagement from "./layouts/siteIncharge-dashboard/compone
 import SInchargeUserManagement from "./layouts/siteIncharge-dashboard/components/SInchargeUserManagement";
 import SInchargeSectionTab from "./layouts/siteIncharge-dashboard/components/Projects/tabs/SInchargeSectionTab";
 import SiAddProject from "./layouts/siteIncharge-dashboard/components/Forms/SiAddProject";
-
+import PmDashboardLayout from "./layouts/pm-dashboard/PmDashboardLayout";
+import PmDashboard from "./layouts/pm-dashboard/component/PmDashboard";
+import StoreInchargeDashboardLayout from "./layouts/storeIncharge-dashboard/StoreInchargeDashboardLayout";
+import StoreInchargeDashboard from "./layouts/storeIncharge-dashboard/components/StoreInchargeDashboard";
+import AccountantDashboardLayout from "./layouts/acountant/AccountantDashbaordLayout";
+import AccountantDashboard from "./layouts/acountant/components/AccountantDashboard";
+import PmProjectDetailPage from "./layouts/pm-dashboard/component/Projects/PmProjectDetailPage";
+import PmDemandDetails from "./layouts/pm-dashboard/component/Projects/PmDemandDetailPage";
+import PmAddUser from "./layouts/pm-dashboard/component/Forms/PmAddUser";
+import PmAddStore from "./layouts/pm-dashboard/component/Forms/PmAddStore";
+import PmStoreDetail from "./layouts/pm-dashboard/component/Projects/PmStoreDetail";
+import PmMaterials from "./layouts/pm-dashboard/component/PmMaterials";
+import PmAddProduct from "./layouts/pm-dashboard/component/Forms/PmAddProduct";
+import PmUserManagement from "./layouts/pm-dashboard/component/pmUserManagement";
+import PmProjectManagement from "./layouts/pm-dashboard/component/PmProjectManagement";
+import PmAddProject from "./layouts/pm-dashboard/component/Forms/PmAddProject";
+import PmStores from "./layouts/pm-dashboard/component/PmStore";
+import CmDashboardLayout from "./layouts/cm-dashboard/CmDashboardLayout";
+import CmDashboard from "./layouts/cm-dashboard/components/CmDashboard";
+import CmProjectManagement from "./layouts/cm-dashboard/components/CmProjectManagement";
 
 
 const theme = createTheme({
@@ -111,7 +130,7 @@ const siteInchargeRoutes = [
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "user-Management/:id", element: <MemberDetailPage /> },
       { path: "project-Management", element: <SInchargeProjectManagement /> },
-      { path: "project-Management/addProject", element: <SiAddProject/> },
+      { path: "project-Management/addProject", element: <SiAddProject /> },
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
@@ -127,15 +146,133 @@ const siteInchargeRoutes = [
   },
 ];
 
+const projectManagerRoutes = [
+  {
+    path: "project-manager-dashboard",
+    element: <PmDashboardLayout />,
+    children: [
+      { path: "", element: <PmDashboard /> },
+      { path: "user-Management", element: <PmUserManagement /> },
+      { path: "user-Management/addUser", element: <PmAddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <PmProjectManagement /> },
+      { path: "project-Management/addProject", element: <PmAddProject /> },
+      { path: "project-Management/:id", element: <PmProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <PmDemandDetails /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <PmStores /> },
+      { path: "store/addStore", element: <PmAddStore /> },
+      { path: "store/:id", element: <PmStoreDetail /> },
+      { path: "materials", element: <PmMaterials /> },
+      { path: "materials/addProduct", element: <PmAddProduct /> },
+    ],
+  },
+];
+const constructionManagerRoutes = [
+  {
+    path: "construction-manager-dashboard",
+    element: <CmDashboardLayout />,
+    children: [
+      { path: "", element: <CmDashboard /> },
+      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <CmProjectManagement/> },
+      { path: "project-Management/addProject", element: <CmAddProject/> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
+    ],
+  },
+];
+const storeInchargeRoutes = [
+  {
+    path: "store-incharge-dashboard",
+    element: <StoreInchargeDashboardLayout />,
+    children: [
+      { path: "", element: <StoreInchargeDashboard /> },
+      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "project-Management/addProject", element: <SiAddProject /> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
+    ],
+  },
+];
+const accountantRoutes = [
+  {
+    path: "accountant-dashboard",
+    element: <AccountantDashboardLayout />,
+    children: [
+      { path: "", element: <AccountantDashboard /> },
+      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "project-Management/addProject", element: <SiAddProject /> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
+    ],
+  },
+];
 const getRoutesByRole = (role) => {
   switch (role) {
     case "ADM":
-      return [...commonRoutes, ...adminRoutes, ...siteInchargeRoutes];
+      return [
+        ...commonRoutes,
+        ...adminRoutes,
+        ...siteInchargeRoutes,
+        ...projectManagerRoutes,
+        ...constructionManagerRoutes,
+        ...storeInchargeRoutes,
+        ...accountantRoutes
+      ];
     // case "USR":
     //   return [...commonRoutes, ...studentRoutes];
     default:
       // return commonRoutes;
-      return [...commonRoutes, ...adminRoutes, ...siteInchargeRoutes];
+      return [
+        ...commonRoutes,
+        ...adminRoutes,
+        ...siteInchargeRoutes,
+        ...projectManagerRoutes,
+        ...constructionManagerRoutes,
+        ...storeInchargeRoutes,
+        ...accountantRoutes
+      ];
   }
 };
 

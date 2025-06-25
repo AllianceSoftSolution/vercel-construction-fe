@@ -1,17 +1,10 @@
 import React from "react";
-import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { CiExport } from "react-icons/ci";
 import { FaBoxesStacked } from "react-icons/fa6";
 import { FaHandHoldingHeart } from "react-icons/fa";
-import { FaToolbox } from "react-icons/fa";
-import { IoStorefrontSharp } from "react-icons/io5";
-import CustomCardComponent from "../../../mui/CustomCardComponent";
-import CustomTable from "../../../mui/CustomTable";
 import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
-function AdminDashboard() {
+function PmDashboard() {
   const data = [
     {
       id: 1,
@@ -62,7 +55,7 @@ function AdminDashboard() {
     <div className="md:px-2 mx-2 h-full md:mx-0 ">
       {/* Header */}
       <TopBar
-        title="Admin Dashboard"
+        title="Project-Manager Dashboard"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
       />
@@ -112,4 +105,4 @@ function AdminDashboard() {
   );
 }
 
-export default AdminDashboard;
+export default PmDashboard;
