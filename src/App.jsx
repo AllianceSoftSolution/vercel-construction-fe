@@ -37,6 +37,42 @@ import SectionDetailPage from "./layouts/admin-dashboard/screens/Projects/Sectio
 import VendorDetailPage from "./layouts/admin-dashboard/screens/Projects/VendorDetailPage";
 import Payables from "./layouts/admin-dashboard/screens/Payables";
 import PayableDetails from "./layouts/admin-dashboard/screens/Projects/PayableDetail";
+import SiteInchargeDashboardLayout from "./layouts/siteIncharge-dashboard/SiteInchargeDashboardLayout";
+import SiteInchargeDashbaord from "./layouts/siteIncharge-dashboard/components/SiteInchargeDashbaord";
+import SInchargeProjectManagement from "./layouts/siteIncharge-dashboard/components/SInchargeProjectManagement";
+import SInchargeUserManagement from "./layouts/siteIncharge-dashboard/components/SInchargeUserManagement";
+import SInchargeSectionTab from "./layouts/siteIncharge-dashboard/components/Projects/tabs/SInchargeSectionTab";
+import SiAddProject from "./layouts/siteIncharge-dashboard/components/Forms/SiAddProject";
+import PmDashboardLayout from "./layouts/pm-dashboard/PmDashboardLayout";
+import PmDashboard from "./layouts/pm-dashboard/component/PmDashboard";
+import StoreInchargeDashboardLayout from "./layouts/storeIncharge-dashboard/StoreInchargeDashboardLayout";
+import StoreInchargeDashboard from "./layouts/storeIncharge-dashboard/components/StoreInchargeDashboard";
+import AccountantDashboardLayout from "./layouts/acountant/AccountantDashbaordLayout";
+import AccountantDashboard from "./layouts/acountant/components/AccountantDashboard";
+import PmProjectDetailPage from "./layouts/pm-dashboard/component/Projects/PmProjectDetailPage";
+import PmDemandDetails from "./layouts/pm-dashboard/component/Projects/PmDemandDetailPage";
+import PmAddUser from "./layouts/pm-dashboard/component/Forms/PmAddUser";
+import PmAddStore from "./layouts/pm-dashboard/component/Forms/PmAddStore";
+import PmStoreDetail from "./layouts/pm-dashboard/component/Projects/PmStoreDetail";
+import PmMaterials from "./layouts/pm-dashboard/component/PmMaterials";
+import PmAddProduct from "./layouts/pm-dashboard/component/Forms/PmAddProduct";
+import PmUserManagement from "./layouts/pm-dashboard/component/pmUserManagement";
+import PmProjectManagement from "./layouts/pm-dashboard/component/PmProjectManagement";
+import PmAddProject from "./layouts/pm-dashboard/component/Forms/PmAddProject";
+import PmStores from "./layouts/pm-dashboard/component/PmStore";
+import CmDashboardLayout from "./layouts/cm-dashboard/CmDashboardLayout";
+import CmDashboard from "./layouts/cm-dashboard/components/CmDashboard";
+import CmProjectManagement from "./layouts/cm-dashboard/components/CmProjectManagement";
+import CmAddProject from "./layouts/cm-dashboard/components/Forms/CmAddProject";
+import CmProjectDetailPage from "./layouts/cm-dashboard/components/Projects/CmProjectDetailPage";
+import CmUserManagement from "./layouts/cm-dashboard/components/CmUserManagement";
+import CmMaterials from "./layouts/cm-dashboard/components/CmMaterials";
+import CmAddProduct from "./layouts/cm-dashboard/components/Forms/CmAddProduct";
+import CmStoreDetail from "./layouts/cm-dashboard/components/Projects/CmStoreDetail";
+import CmAddStore from "./layouts/cm-dashboard/components/Forms/CmAddStore";
+import CmStores from "./layouts/cm-dashboard/components/CmStore";
+import CmDemands from "./layouts/cm-dashboard/components/CmDemands";
+
 
 const theme = createTheme({
   typography: {
@@ -74,7 +110,7 @@ const adminRoutes = [
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
-    
+
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <DemandDetailPage /> },
       { path: "pOS", element: <POs /> },
@@ -93,15 +129,161 @@ const adminRoutes = [
   },
 ];
 
+const siteInchargeRoutes = [
+  {
+    path: "siteincharge-dashboard",
+    element: <SiteInchargeDashboardLayout />,
+    children: [
+      { path: "", element: <SiteInchargeDashbaord /> },
+      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "project-Management/addProject", element: <SiAddProject /> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
+    ],
+  },
+];
+
+const projectManagerRoutes = [
+  {
+    path: "project-manager-dashboard",
+    element: <PmDashboardLayout />,
+    children: [
+      { path: "", element: <PmDashboard /> },
+      { path: "user-Management", element: <PmUserManagement /> },
+      { path: "user-Management/addUser", element: <PmAddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <PmProjectManagement /> },
+      { path: "project-Management/addProject", element: <PmAddProject /> },
+      { path: "project-Management/:id", element: <PmProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <PmDemandDetails /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <PmStores /> },
+      { path: "store/addStore", element: <PmAddStore /> },
+      { path: "store/:id", element: <PmStoreDetail /> },
+      { path: "materials", element: <PmMaterials /> },
+      { path: "materials/addProduct", element: <PmAddProduct /> },
+    ],
+  },
+];
+const constructionManagerRoutes = [
+  {
+    path: "construction-manager-dashboard",
+    element: <CmDashboardLayout />,
+    children: [
+      { path: "", element: <CmDashboard /> },
+      { path: "user-Management", element: <CmUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <CmProjectManagement/> },
+      { path: "project-Management/addProject", element: <CmAddProject/> },
+      { path: "project-Management/:id", element: <CmProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <CmDemands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <CmStores /> },
+      { path: "store/addStore", element: <CmAddStore /> },
+      { path: "store/:id", element: <CmStoreDetail /> },
+      { path: "materials", element: <CmMaterials /> },
+      { path: "materials/addProduct", element: <CmAddProduct /> },
+    ],
+  },
+];
+const storeInchargeRoutes = [
+  {
+    path: "store-incharge-dashboard",
+    element: <StoreInchargeDashboardLayout />,
+    children: [
+      { path: "", element: <StoreInchargeDashboard /> },
+      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "project-Management/addProject", element: <SiAddProject /> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
+    ],
+  },
+];
+const accountantRoutes = [
+  {
+    path: "accountant-dashboard",
+    element: <AccountantDashboardLayout />,
+    children: [
+      { path: "", element: <AccountantDashboard /> },
+      { path: "user-Management", element: <SInchargeUserManagement /> },
+      { path: "user-Management/addUser", element: <AddUser /> },
+      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "project-Management/addProject", element: <SiAddProject /> },
+      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "sections", element: <SectionTab /> },
+      { path: "sections/:id", element: <SectionDetailPage /> },
+
+      { path: "demands", element: <Demands /> },
+      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "pOS", element: <POs /> },
+      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "store", element: <Store /> },
+      { path: "store/addStore", element: <AddStore /> },
+      { path: "store/:id", element: <StoreDetail /> },
+    ],
+  },
+];
 const getRoutesByRole = (role) => {
   switch (role) {
     case "ADM":
-      return [...commonRoutes, ...adminRoutes];
+      return [
+        ...commonRoutes,
+        ...adminRoutes,
+        ...siteInchargeRoutes,
+        ...projectManagerRoutes,
+        ...constructionManagerRoutes,
+        ...storeInchargeRoutes,
+        ...accountantRoutes
+      ];
     // case "USR":
     //   return [...commonRoutes, ...studentRoutes];
     default:
       // return commonRoutes;
-      return [...commonRoutes, ...adminRoutes];
+      return [
+        ...commonRoutes,
+        ...adminRoutes,
+        ...siteInchargeRoutes,
+        ...projectManagerRoutes,
+        ...constructionManagerRoutes,
+        ...storeInchargeRoutes,
+        ...accountantRoutes
+      ];
   }
 };
 

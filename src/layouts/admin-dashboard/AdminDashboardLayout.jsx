@@ -158,7 +158,7 @@ const adminDashboardLayout = ({ role }) => {
             </ul>
             <div className="mt-6 border-t border-gray-300"></div>
             <div className="flex justify-center items-center">
-              <button className="text-white bg-[#222222] rounded-[10px] mt-10 px-5 py-3 flex items-center justify-center w-[80%]">
+              <button onClick={()=> navigate('/')} className="text-white bg-[#222222] rounded-[10px] mt-10 px-5 py-3 flex items-center justify-center w-[80%]">
                 Log Out
               </button>
             </div>

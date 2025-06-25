@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import loginLogo from "../../../assets/construction/loginLogo.png";
 import CustomTextField from "../../../mui/CustomTextField";
@@ -6,9 +6,17 @@ import { CiGlobe } from "react-icons/ci";
 import { FaFacebookF } from "react-icons/fa";
 import { FaLinkedinIn } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
+import { MenuItem } from "@mui/material";
+import CustomSelect from "../../../mui/CustomSelect";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const [selectedOption, setSelectedOption] = useState("");
+
+  const handleDropdownChange = (event) => {
+    setSelectedOption(event.target.value);
+  };
   return (
     // main div
     <div className="h-screen w-full bg-white flex flex-col">
@@ -48,6 +56,16 @@ const Login = () => {
               name="Password"
               placeholder="Enter Your Password"
             />
+            <div className="">
+              <CustomSelect label="Role" fullWidth name="name" select>
+                <MenuItem value="1" onClick={()=> navigate('/admin-dashboard')}>Admin Dashboard</MenuItem>
+                <MenuItem value="2" onClick={()=> navigate('/siteincharge-dashboard')}>Site-Incharge Dashboard</MenuItem>
+                <MenuItem value="3" onClick={()=> navigate('/project-manager-dashboard')}>Project-Manager Dashboard</MenuItem>
+                <MenuItem value="4" onClick={()=> navigate('/construction-manager-dashboard')}>Construction-Manager Dashboard</MenuItem>
+                <MenuItem value="5" onClick={()=> navigate('/store-incharge-dashboard')}>Store-Incharge Dashboard</MenuItem>
+                <MenuItem value="6" onClick={()=> navigate('/accountant-dashboard')}>Accountant Dashboard</MenuItem>
+              </CustomSelect>
+            </div>
             {/* button */}
             <div className="bg-primary text-white flex justify-center items-center font-semibold text-[16px] rounded-xl">
               <button
