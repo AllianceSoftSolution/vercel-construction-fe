@@ -3,7 +3,7 @@ import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
 
-const Materials = () => {
+const SiMaterials = () => {
   const navigate = useNavigate();
   const data = [
     {
@@ -49,4 +49,4 @@ const Materials = () => {
   );
 };
 
-export default Materials;
+export default SiMaterials;

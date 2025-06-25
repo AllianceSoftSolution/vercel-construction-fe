@@ -9,7 +9,7 @@ import { FaBoxesStacked } from "react-icons/fa6";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import SimpleTable from "../../../../components/SimpleTable";
 
-const MemberDetailPage = () => {
+const SiMemberDetailPage = () => {
   const data = [
     {
       id: 1,
@@ -146,4 +146,4 @@ const MemberDetailPage = () => {
   );
 };
 
-export default MemberDetailPage;
+export default SiMemberDetailPage;

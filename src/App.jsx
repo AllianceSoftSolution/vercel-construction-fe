@@ -75,6 +75,19 @@ import CmDemands from "./layouts/cm-dashboard/components/CmDemands";
 import CmSectionTab from "./layouts/cm-dashboard/components/Projects/tabs/CmSectionTab";
 import CmDemandDetails from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
 import CmDemandDetailPage from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
+import SiUserManagement from "./layouts/storeIncharge-dashboard/components/SiUserManagement";
+import SiAddUser from "./layouts/storeIncharge-dashboard/components/Forms/SiAddUser";
+import SiMemberDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiMemberDetailPage";
+import SiProjectManagement from "./layouts/storeIncharge-dashboard/components/SiPos";
+import SiProjectDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiProjectDetailPage";
+import SiSectionTab from "./layouts/storeIncharge-dashboard/components/Projects/tabs/SiSectionTab";
+import SiSectionDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiSectionDetailPage";
+import SiDemands from "./layouts/storeIncharge-dashboard/components/SiDemands";
+import SiDemandDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiDemandDetailPage";
+import SiPurchaseOrderDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiPurchaseOrderDetailPage";
+import SiStore from "./layouts/storeIncharge-dashboard/components/SiStore";
+import SiAddStore from "./layouts/storeIncharge-dashboard/components/Forms/SiAddStore";
+import SiStoreDetail from "./layouts/storeIncharge-dashboard/components/Projects/SiStoreDetail";
 
 
 const theme = createTheme({
@@ -218,22 +231,22 @@ const storeInchargeRoutes = [
     element: <StoreInchargeDashboardLayout />,
     children: [
       { path: "", element: <StoreInchargeDashboard /> },
-      { path: "user-Management", element: <SInchargeUserManagement /> },
-      { path: "user-Management/addUser", element: <AddUser /> },
-      { path: "user-Management/:id", element: <MemberDetailPage /> },
-      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "user-Management", element: <SiUserManagement /> },
+      { path: "user-Management/addUser", element: <SiAddUser /> },
+      { path: "user-Management/:id", element: <SiMemberDetailPage /> },
+      { path: "project-Management", element: <SiProjectManagement /> },
       { path: "project-Management/addProject", element: <SiAddProject /> },
-      { path: "project-Management/:id", element: <ProjectDetailPage /> },
-      { path: "sections", element: <SectionTab /> },
-      { path: "sections/:id", element: <SectionDetailPage /> },
+      { path: "project-Management/:id", element: <SiProjectDetailPage /> },
+      { path: "sections", element: <SiSectionTab /> },
+      { path: "sections/:id", element: <SiSectionDetailPage /> },
 
-      { path: "demands", element: <Demands /> },
-      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "demands", element: <SiDemands /> },
+      { path: "demands/:id", element: <SiDemandDetailPage /> },
       { path: "pOS", element: <POs /> },
-      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
-      { path: "store", element: <Store /> },
-      { path: "store/addStore", element: <AddStore /> },
-      { path: "store/:id", element: <StoreDetail /> },
+      { path: "pOS/:id", element: <SiPurchaseOrderDetailPage /> },
+      { path: "store", element: <SiStore /> },
+      { path: "store/addStore", element: <SiAddStore /> },
+      { path: "store/:id", element: <SiStoreDetail /> },
     ],
   },
 ];

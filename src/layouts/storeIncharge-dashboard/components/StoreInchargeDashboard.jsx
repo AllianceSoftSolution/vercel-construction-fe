@@ -62,7 +62,7 @@ function StoreInchargeDashboard() {
     <div className="md:px-2 mx-2 h-full md:mx-0 ">
       {/* Header */}
       <TopBar
-        title="Site-Incharge Dashboard"
+        title="Store-Incharge Dashboard"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
       />

@@ -8,7 +8,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 
-const ProjectManagement = () => {
+const SiProjectManagement = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -102,7 +102,7 @@ const ProjectManagement = () => {
         }
         buttonText="Create Project"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-Management/addProject")
+          navigate("/store-incharge-dashboard/project-Management/addProject")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -150,4 +150,4 @@ const ProjectManagement = () => {
   );
 };
 
-export default ProjectManagement;
+export default SiProjectManagement;

@@ -6,7 +6,7 @@ import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import ReasonModal from "../Demands/ReasonModal";
-import PurchaseOrderForm from "../Forms/PurchaseOrderForm";
+import PurchaseOrderForm from "../Forms/SiPurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
 import Button from "../../../../components/Button";
 
@@ -19,7 +19,7 @@ const style = {
   boxShadow: 24,
 };
 
-const DemandDetails = () => {
+const SiDemandDetailPage = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
   const [status, setStatus] = useState("Pending");
@@ -212,4 +212,4 @@ const DemandDetails = () => {
   );
 };
 
-export default DemandDetails;
+export default SiDemandDetailPage;

@@ -1,18 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import DropdownButton from "@/comments/components/DropdownButton";
-import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
+import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { IoIosEye } from "react-icons/io";
+import { RiFileEditFill } from "react-icons/ri";
+import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate } from "react-router-dom";
 
-const Demands = () => {
+const SiPos = () => {
+  const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const navigate = useNavigate();
   const data = [
     {
       id: 1,
-      no: "REF001",
+      demandId: "001",
+      demandName: "Cement",
       project: "Bridge Construction",
       material: "Cement",
       section: "A1",
@@ -20,13 +24,12 @@ const Demands = () => {
       unit: "ton",
       poQty: 100,
       status: "Pending",
-      approvedBy: "Owner",
-      fulfilled: 12,
-      action: "id-here",
+      assingedVendors: "Owner",
     },
     {
       id: 2,
-      no: "REF002",
+      demandId: "002",
+      demandName: "Cement",
       project: "Highway Expansion",
       material: "Steel",
       section: "B2",
@@ -34,13 +37,11 @@ const Demands = () => {
       unit: "ton",
       poQty: 100,
       status: "Approved",
-      approvedBy: "Site Manager",
-      fulfilled: 13,
-      action: "id-here",
     },
     {
       id: 3,
-      no: "REF003",
+      demandId: "003",
+      demandName: "Cement",
       project: "Metro Rail",
       material: "Concrete",
       section: "C3",
@@ -48,46 +49,40 @@ const Demands = () => {
       unit: "ton",
       poQty: 100,
       status: "In Progress",
-      approvedBy: "Owner",
-      fulfilled: 12,
-      action: "id-here",
+      assingedVendors: "Owner",
     },
   ];
+
   const columns = [
-    { headerName: "No", field: "no" },
+    { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
+    { headerName: "Demand ", field: "demandName" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Status", field: "status" },
-    { headerName: "Approved By", field: "approvedBy" },
-    { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "action" },
   ];
+
   const CustomActionComponent = ({ data }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
-            label: "View Detail",
+            label: "View",
             onClick: () => navigate("123"),
-            icon: <FaEye />,
+            icon: <IoIosEye />,
           },
           {
-            label: "Edit",
-            onClick: () => alert("Edit"),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
+            label: "Change Vendor",
+            onClick: () => setVendorModalOpen(true),
+            icon: <RiFileEditFill />,
           },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -95,20 +90,19 @@ const Demands = () => {
       </DropdownButton>
     );
   };
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
-        title="Demands"
-        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
-        // showExport={true}
+        title="Purchase Orders"
+        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showFilter={true}
-        filterOptions={["Approved", "Rejected", "Pending"]}
+        filterOptions={["Completed", "Partial", "Pending"]}
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* table */}
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
@@ -116,8 +110,14 @@ const Demands = () => {
           cellComponents={{ action: CustomActionComponent }}
         />
       </div>
+
+      {/* Modal */}
+      <ChangeVendor
+        open={isVendorModalOpen}
+        onClose={() => setVendorModalOpen(false)}
+      />
     </div>
   );
 };
 
-export default Demands;
+export default SiPos;

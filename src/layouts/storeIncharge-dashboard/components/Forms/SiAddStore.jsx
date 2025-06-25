@@ -5,7 +5,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
 
-const AddUser = () => {
+const SiAddStore = () => {
   const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -13,8 +13,8 @@ const AddUser = () => {
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title="New User"
-        detail="Add New User Information in Epos Software"
+        title="New Store"
+        detail="Add New Store Information in Epos Software"
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
@@ -24,30 +24,33 @@ const AddUser = () => {
             Premium Content
           </h3>
           <CustomTextField
-            label={<span className="flex items-center gap-1">User Name</span>}
+            label={<span className="flex items-center gap-1">Store Name</span>}
             fullWidth
             name="name"
-            placeholder="Enter Your Name"
+            placeholder="Enter Store Name"
             type="text"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Enter Email</span>}
+            label={
+              <span className="flex items-center gap-1">
+                Construction Manager
+              </span>
+            }
             fullWidth
-            name="Email"
-            placeholder="Enter Your Work Email"
-            type="email"
+            name="constructionManager"
+            placeholder="Select Construction Manager"
           />{" "}
           <CustomTextField
             label={
-              <span className="flex items-center gap-1">Phone Number</span>
+              <span className="flex items-center gap-1">Store Incharge</span>
             }
             fullWidth
-            name="phoneNumber"
-            placeholder="Enter Your Phone Number"
+            name="storeIncharge"
+            placeholder="Store Incharge"
             type="number"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">User Role</span>}
+            label={<span className="flex items-center gap-1">Store Role</span>}
             fullWidth
             name="role"
             placeholder="Enter Role"
@@ -110,11 +113,11 @@ const AddUser = () => {
           className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
           onClick={() => navigate(-1)}
         >
-          Save User
+          Save Store
         </button>
       </div>
     </div>
   );
 };
 
-export default AddUser;
+export default SiAddStore;

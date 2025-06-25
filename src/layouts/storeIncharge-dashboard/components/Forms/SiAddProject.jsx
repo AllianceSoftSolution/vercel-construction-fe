@@ -5,7 +5,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
 
-const AddStore = () => {
+const SiAddProject = () => {
   const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -13,92 +13,94 @@ const AddStore = () => {
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title="New Store"
-        detail="Add New Store Information in Epos Software"
+        title="New Project"
+        detail="Add New Project Information in Epos Software"
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
       <div className="flex justify-center">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <h3 className="text-xl font-semibold text-[#12141D] ">
-            Premium Content
+            Project Information
           </h3>
           <CustomTextField
-            label={<span className="flex items-center gap-1">Store Name</span>}
+            label={
+              <span className="flex items-center gap-1">Project Name</span>
+            }
             fullWidth
             name="name"
-            placeholder="Enter Store Name"
+            placeholder="Enter Project Name"
+            type="text"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Sections</span>}
+            fullWidth
+            name="sections"
+            placeholder="Enter Your Work Email"
+            type="text"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Start Date</span>}
+            fullWidth
+            name="startDate"
+            placeholder="Enter Start Date"
+            type="date"
+          />{" "}
+          <CustomTextField
+            label={
+              <span className="flex items-center gap-1">Project Status</span>
+            }
+            fullWidth
+            name="status"
+            placeholder="Enter Project Status"
+          />{" "}
+          <h3 className="text-xl font-semibold text-[#12141D] ">
+            Project Site Address Detail
+          </h3>
+          <CustomTextField
+            label={
+              <span className="flex items-center gap-1">Country/Region</span>
+            }
+            fullWidth
+            name="country"
+            placeholder="Enter Your Country/Region"
+            type="text"
+          />{" "}
+          <CustomTextField
+            label={
+              <span className="flex items-center gap-1">Street Address</span>
+            }
+            fullWidth
+            name="address"
+            placeholder="Enter Street Address"
             type="text"
           />{" "}
           <CustomTextField
             label={
               <span className="flex items-center gap-1">
-                Construction Manager
+                Apt,Floor,bldg(if Applicable )
               </span>
             }
             fullWidth
-            name="constructionManager"
-            placeholder="Select Construction Manager"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Store Incharge</span>
-            }
-            fullWidth
-            name="storeIncharge"
-            placeholder="Store Incharge"
-            type="number"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Store Role</span>}
-            fullWidth
-            name="role"
-            placeholder="Enter Role"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Password</span>}
-            fullWidth
-            name="password"
-            placeholder="Enter Password"
-            type="password"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Date Of Joining</span>
-            }
-            fullWidth
-            name="dateOfJoining"
-            placeholder="Enter Your Date of Joining"
-            type="date"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Address</span>}
-            fullWidth
             name="address"
-            placeholder="Enter Your Address"
+            placeholder="Enter Apt,Floor,bldg"
             type="text"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Language</span>}
+            label={
+              <span className="flex items-center gap-1">City/Town/Village</span>
+            }
             fullWidth
-            name="language"
-            placeholder="Enter Your Language"
+            name="village"
+            placeholder="Enter Your City/Town/Village"
             type="text"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Country</span>}
+            label={<span className="flex items-center gap-1">Postal Code</span>}
             fullWidth
-            name="country"
-            placeholder="Enter Your Country"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Add Note</span>}
-            fullWidth
-            name="note"
-            placeholder="Enter Your Note"
-            type="text"
+            name="code"
+            placeholder="Enter Your Postal Code"
+            type="number"
           />{" "}
         </div>
       </div>{" "}
@@ -113,11 +115,11 @@ const AddStore = () => {
           className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
           onClick={() => navigate(-1)}
         >
-          Save Store
+          Save Project
         </button>
       </div>
     </div>
   );
 };
 
-export default AddStore;
+export default SiAddProject;

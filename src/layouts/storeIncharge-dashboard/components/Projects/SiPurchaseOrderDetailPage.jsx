@@ -8,7 +8,8 @@ import DropdownButton from "../../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 
-const PurchaseOrderDetail = () => {
+
+const SiPurchaseOrderDetailPage = () => {
   const data = [
     { id: 1, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
     { id: 2, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
@@ -139,4 +140,4 @@ const PurchaseOrderDetail = () => {
   );
 };
 
-export default PurchaseOrderDetail;
+export default SiPurchaseOrderDetailPage;
