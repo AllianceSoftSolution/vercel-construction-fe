@@ -47,21 +47,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
       icon: MdSpaceDashboard,
       path: "/store-incharge-dashboard",
     },
-    {
-      label: "User Management",
-      icon: FaUserTie,
-      path: "/store-incharge-dashboard/user-management",
-    },
-    {
-      label: "Project Management",
-      icon: FaBoxesStacked,
-      path: "/store-incharge-dashboard/project-management",
-    },
-    {
-      label: "Demands",
-      icon: FaHandHoldingHeart,
-      path: "/store-incharge-dashboard/demands",
-    },
+
     {
       label: "POs",
       icon: FaToolbox,
@@ -72,8 +58,6 @@ const StoreInchargeDashboardLayout = ({ role }) => {
       icon: IoStorefrontSharp,
       path: "/store-incharge-dashboard/store",
     },
-   
-   
   ];
   const [activePath, setActivePath] = useState("");
 
@@ -144,7 +128,10 @@ const StoreInchargeDashboardLayout = ({ role }) => {
             </ul>
             <div className="mt-6 border-t border-gray-300"></div>
             <div className="flex justify-center items-center">
-              <button onClick={()=> navigate('/')} className="text-white bg-[#222222] rounded-[10px] mt-10 px-5 py-3 flex items-center justify-center w-[80%]">
+              <button
+                onClick={() => navigate("/")}
+                className="text-white bg-[#222222] rounded-[10px] mt-10 px-5 py-3 flex items-center justify-center w-[80%]"
+              >
                 Log Out
               </button>
             </div>
@@ -194,7 +181,6 @@ const StoreInchargeDashboardLayout = ({ role }) => {
         <div className="flex-1 w-full overflow-y-auto p-8">
           <div className=" p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
             <Outlet />
-            
           </div>
         </div>
       </div>

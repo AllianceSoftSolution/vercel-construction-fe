@@ -78,7 +78,7 @@ import CmDemandDetailPage from "./layouts/cm-dashboard/components/Projects/CmDem
 import SiUserManagement from "./layouts/storeIncharge-dashboard/components/SiUserManagement";
 import SiAddUser from "./layouts/storeIncharge-dashboard/components/Forms/SiAddUser";
 import SiMemberDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiMemberDetailPage";
-import SiProjectManagement from "./layouts/storeIncharge-dashboard/components/SiPos";
+
 import SiProjectDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiProjectDetailPage";
 import SiSectionTab from "./layouts/storeIncharge-dashboard/components/Projects/tabs/SiSectionTab";
 import SiSectionDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiSectionDetailPage";
@@ -88,6 +88,9 @@ import SiPurchaseOrderDetailPage from "./layouts/storeIncharge-dashboard/compone
 import SiStore from "./layouts/storeIncharge-dashboard/components/SiStore";
 import SiAddStore from "./layouts/storeIncharge-dashboard/components/Forms/SiAddStore";
 import SiStoreDetail from "./layouts/storeIncharge-dashboard/components/Projects/SiStoreDetail";
+import SiProjectManagement from "./layouts/storeIncharge-dashboard/components/SiProjectManagement";
+import AcPayables from "./layouts/acountant/components/AcPayables";
+import AcPayableDetails from "./layouts/acountant/components/Projects/AcPayableDetail";
 
 
 const theme = createTheme({
@@ -272,6 +275,8 @@ const accountantRoutes = [
       { path: "store", element: <Store /> },
       { path: "store/addStore", element: <AddStore /> },
       { path: "store/:id", element: <StoreDetail /> },
+      { path: "payables", element: <AcPayables /> },
+      { path: "payables/details/:id", element: <AcPayableDetails /> },
     ],
   },
 ];

@@ -12,10 +12,11 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import { CloudDownload } from "@mui/icons-material";
+import { AccountBalance, AvTimerSharp, CloudDownload, Paid } from "@mui/icons-material";
 import SimpleTable from "../../../../components/SimpleTable";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { CiDollar } from "react-icons/ci";
 
 const data = [
   {
@@ -64,7 +65,7 @@ const columns = [
   { headerName: "Attachment", field: "fileUrl" },
 ];
 
-export default function PayableDetails() {
+export default function AcPayableDetails() {
   return (
     <Box >
       <TopBar
@@ -76,17 +77,17 @@ export default function PayableDetails() {
       <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
         <AnalyticsCard
           label="Total Payables"
-          icon={IoMdArrowDropdown}
+          icon={AvTimerSharp}
           count={120000}
         />
         <AnalyticsCard
           label="Total Paid"
-          icon={IoMdArrowDropdown}
+          icon={Paid}
           count={250000}
         />
         <AnalyticsCard
           label="Balance Remaining"
-          icon={IoMdArrowDropdown}
+          icon={AccountBalance}
           count={1900000}
         />
       </div>
