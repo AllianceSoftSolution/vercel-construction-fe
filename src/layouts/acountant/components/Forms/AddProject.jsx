@@ -15,6 +15,7 @@ const AddProject = () => {
         }
         title="New Project"
         detail="Add New Project Information in Epos Software"
+        showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}

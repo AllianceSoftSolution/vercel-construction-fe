@@ -5,9 +5,9 @@ import { Tabs, Tab, Box } from "@mui/material";
 
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
 import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
-import SectionTab from "./tabs/SectionTab";
+import SectionTab from "./tabs/SInchargeSectionTab";
 
-const ProjectDetailPage = () => {
+const SiteProjectDetailPage = () => {
   const navigate = useNavigate();
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -21,7 +21,6 @@ const ProjectDetailPage = () => {
         title="Project Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
-        
         
       />
 
@@ -71,4 +70,4 @@ const ProjectDetailPage = () => {
   );
 };
 
-export default ProjectDetailPage;
+export default SiteProjectDetailPage;

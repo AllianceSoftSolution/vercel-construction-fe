@@ -15,6 +15,7 @@ const AddProject = () => {
         }
         title="New Project"
         detail="Add New Project Information in Epos Software"
+        showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
@@ -54,53 +55,11 @@ const AddProject = () => {
             name="status"
             placeholder="Enter Project Status"
           />{" "}
-          <h3 className="text-xl font-semibold text-[#12141D] ">
-            Project Site Address Detail
-          </h3>
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Country/Region</span>
-            }
-            fullWidth
-            name="country"
-            placeholder="Enter Your Country/Region"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Street Address</span>
-            }
+            label={<span className="flex items-center gap-1">Address</span>}
             fullWidth
             name="address"
-            placeholder="Enter Street Address"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">
-                Apt,Floor,bldg(if Applicable )
-              </span>
-            }
-            fullWidth
-            name="address"
-            placeholder="Enter Apt,Floor,bldg"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">City/Town/Village</span>
-            }
-            fullWidth
-            name="village"
-            placeholder="Enter Your City/Town/Village"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Postal Code</span>}
-            fullWidth
-            name="code"
-            placeholder="Enter Your Postal Code"
-            type="number"
+            placeholder="Enter Address Details"
           />{" "}
         </div>
       </div>{" "}

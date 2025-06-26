@@ -16,15 +16,16 @@ const AddProduct = () => {
         }
         title="New Material"
         detail="Add New User Information in Epos Software"
+        showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* Upload Image Section */}
-      <div className="flex flex-col gap-y-2">
-        <h4 className="text-[#12141D] font-semibold">Upload Image</h4>
-      </div>
+        {/* <div className="flex flex-col gap-y-2">
+          <h4 className="text-[#12141D] font-semibold">Upload Image</h4>
+        </div> */}
       {/* form */}
       <div className="flex flex-col gap-4">
-        <div className="relative w-[100px] h-[100px]">
+        {/* <div className="relative w-[100px] h-[100px]">
           <div className="w-full h-full bg-white border-[0.5px] border-[#CDC9C9] rounded-full overflow-hidden"></div>
           <label
             htmlFor="upload"
@@ -40,7 +41,7 @@ const AddProduct = () => {
             className="hidden"
             onChange={(e) => console.log(e.target.files[0])}
           />
-        </div>
+        </div> */}
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <CustomTextField
             label={

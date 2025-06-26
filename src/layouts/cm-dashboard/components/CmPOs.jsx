@@ -8,13 +8,13 @@ import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
 import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate } from "react-router-dom";
-
+import { FaUserEdit } from "react-icons/fa";
 const CmPos = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const navigate = useNavigate();
   const data = [
     {
-      id: 1, 
+      id: 1,
       demandId: "001",
       demandName: "Cement",
       project: "Bridge Construction",
@@ -76,6 +76,10 @@ const CmPos = () => {
             label: "View",
             onClick: () => navigate("123"),
             icon: <IoIosEye />,
+          },
+          {
+            label: "Edit",
+            icon: <FaUserEdit />,
           },
           {
             label: "Change Vendor",

@@ -16,13 +16,12 @@ const CmAddProduct = () => {
         }
         title="New Material"
         detail="Add New User Information in Epos Software"
+        showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* Upload Image Section */}
-      
       {/* form */}
       <div className="flex flex-col gap-4">
-        
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <CustomTextField
             label={

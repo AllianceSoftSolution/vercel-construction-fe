@@ -41,6 +41,7 @@ const CmDemands = () => {
       status: "Pending",
       approvedBy: "Owner",
       fulfilled: 12,
+      date: "2023-01-01",
       action: "id-here",
     },
     {
@@ -55,6 +56,7 @@ const CmDemands = () => {
       status: "Approved",
       approvedBy: "Site Manager",
       fulfilled: 13,
+      date: "2023-01-01",
       action: "id-here",
     },
     {
@@ -69,6 +71,7 @@ const CmDemands = () => {
       status: "In Progress",
       approvedBy: "Owner",
       fulfilled: 12,
+      date: "2023-01-01",
       action: "id-here",
     },
   ];
@@ -83,6 +86,10 @@ const CmDemands = () => {
     { headerName: "Status", field: "status" },
     { headerName: "Approved By", field: "approvedBy" },
     { headerName: "Fulfilled", field: "fulfilled" },
+    {
+      headerName: "Date",
+      field: "date",
+    },
     { headerName: "Action", field: "action" },
   ];
   const CustomActionComponent = ({ data }) => {

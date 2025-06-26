@@ -30,8 +30,8 @@ const SectionDetailPage = () => {
         className="bg-[#FF0000] font-semibold"
         items={[
           {
-            label: "View Store",
-            onClick: () => navigate("123"),
+            label: "View Detail",
+            onClick: () => navigate("/admin-dashboard/user-Management/123"),
             icon: <FaUserEdit />,
           },
           {

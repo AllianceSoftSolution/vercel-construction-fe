@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { CiExport } from "react-icons/ci";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
+import { IoArrowBackCircleOutline } from "react-icons/io5";
 import Button from "../Button";
 
 const TopBar = ({
@@ -12,6 +13,7 @@ const TopBar = ({
   showExport = false,
   showFilter = false,
   filterOptions = [],
+  showIcon = false, // ✅ New prop
 }) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState("");
@@ -39,11 +41,13 @@ const TopBar = ({
     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 h-fit">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          {/* {icon && <span className="text-xl text-[#444444]">{icon}</span>} */}
+          {/* ✅ Conditionally render icon */}
+          {showIcon && (
+            <IoArrowBackCircleOutline className="text-2xl text-[#444444]" />
+          )}
           <span className="text-2xl font-bold text-[#444444]">{title}</span>
         </div>
         <div className="flex items-start">
-          {/* {icon && <span className="w-[1.25rem] mr-2" />} */}
           <p className="text-base  text-[#979797]">{detail}</p>
         </div>
       </div>
@@ -86,7 +90,7 @@ const TopBar = ({
                   <p className="text-sm text-gray-500">No filters available</p>
                 ) : (
                   filterOptions.map((option, index) => {
-                    const isChecked = selectedFilters === option; // now single value
+                    const isChecked = selectedFilters === option;
 
                     return (
                       <label
@@ -103,7 +107,7 @@ const TopBar = ({
                             name="filterOption"
                             checked={isChecked}
                             onChange={() => handleCheckboxChange(option)}
-                            className="opacity-0 w-0 h-0" // hide native input
+                            className="opacity-0 w-0 h-0"
                           />
                           {isChecked && (
                             <div className="w-2 h-2 bg-white rounded-sm" />
@@ -122,13 +126,7 @@ const TopBar = ({
         )}
 
         {buttonText && (
-          // <button
-          //   className="bg-primary text-white px-4 py-2 rounded-lg w-fit"
-          //   onClick={onButtonClick}
-          // >
-          //   {buttonText}
-          // </button>
-          <Button buttonText={buttonText} onClick={onButtonClick}/>
+          <Button buttonText={buttonText} onClick={onButtonClick} />
         )}
       </div>
     </div>

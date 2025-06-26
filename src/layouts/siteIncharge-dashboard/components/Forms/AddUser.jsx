@@ -13,12 +13,13 @@ const AddUser = () => {
         }
         title="New User"
         detail="Add New User Information in Epos Software"
+        showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
       <div className="flex justify-center">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
-          <h3 className="text-xl font-semibold text-[#12141D] ">  
+          <h3 className="text-xl font-semibold text-[#12141D] ">
             Premium Content
           </h3>
           <CustomTextField
@@ -57,36 +58,6 @@ const AddUser = () => {
             name="password"
             placeholder="Enter Password"
             type="password"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Date Of Joining</span>
-            }
-            fullWidth
-            name="dateOfJoining"
-            placeholder="Enter Your Date of Joining"
-            type="date"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Address</span>}
-            fullWidth
-            name="address"
-            placeholder="Enter Your Address"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Language</span>}
-            fullWidth
-            name="language"
-            placeholder="Enter Your Language"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Country</span>}
-            fullWidth
-            name="country"
-            placeholder="Enter Your Country"
-            type="text"
           />{" "}
           <CustomTextField
             label={<span className="flex items-center gap-1">Add Note</span>}

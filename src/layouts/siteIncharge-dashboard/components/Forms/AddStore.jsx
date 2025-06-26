@@ -13,6 +13,7 @@ const AddStore = () => {
         }
         title="New Store"
         detail="Add New Store Information in Epos Software"
+        showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
@@ -61,7 +62,6 @@ const AddStore = () => {
             placeholder="Enter Password"
             type="password"
           />{" "}
-         
           <CustomTextField
             label={<span className="flex items-center gap-1">Add Note</span>}
             fullWidth

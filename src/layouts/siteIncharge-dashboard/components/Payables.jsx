@@ -28,6 +28,7 @@ const AddPriceModal = ({ open, onClose }) => (
         <CustomTextField label="PO Quantity" placeholder="Enter PO Quantity" />
         <CustomTextField label="Material" placeholder="Enter Material" />
         <CustomTextField label="Price" placeholder="Enter Price" />
+        <CustomTextField label="Total Price" placeholder="Total Price" />
       </div>
       <div className="flex justify-end gap-3 mt-6">
         <Button buttonText="Cancel" onClick={onClose} />
