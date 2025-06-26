@@ -103,7 +103,6 @@ import AccountantDashboard from "./layouts/acountant/components/AccountantDashbo
 import AcProjectDetailPage from "./layouts/acountant/components/Projects/AcProjectDetailPage";
 import AcProjectManagement from "./layouts/acountant/components/AcProjectManagement";
 
-
 const theme = createTheme({
   typography: {
     fontFamily: "'DM Sans', sans-serif",
