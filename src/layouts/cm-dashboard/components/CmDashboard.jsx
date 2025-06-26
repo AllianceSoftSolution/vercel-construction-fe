@@ -11,7 +11,7 @@ import CustomTable from "../../../mui/CustomTable";
 import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
-function AdminDashboard() {
+function CmDashboard() {
   const data = [
     {
       id: 1,
@@ -62,7 +62,7 @@ function AdminDashboard() {
     <div className="md:px-2 mx-2 h-full md:mx-0 ">
       {/* Header */}
       <TopBar
-        title="Admin Dashboard"
+        title="Construction Manager"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
       />
@@ -112,4 +112,4 @@ function AdminDashboard() {
   );
 }
 
-export default AdminDashboard;
+export default CmDashboard;

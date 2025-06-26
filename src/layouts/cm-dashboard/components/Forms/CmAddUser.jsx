@@ -5,7 +5,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
 
-const AddStore = () => {
+const CmAddUser = () => {
   const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -13,8 +13,8 @@ const AddStore = () => {
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title="New Store"
-        detail="Add New Store Information in Epos Software"
+        title="New User"
+        detail="Add New User Information in Epos Software"
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
@@ -24,33 +24,30 @@ const AddStore = () => {
             Premium Content
           </h3>
           <CustomTextField
-            label={<span className="flex items-center gap-1">Store Name</span>}
+            label={<span className="flex items-center gap-1">User Name</span>}
             fullWidth
             name="name"
-            placeholder="Enter Store Name"
+            placeholder="Enter Your Name"
             type="text"
           />{" "}
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">
-                Construction Manager
-              </span>
-            }
+            label={<span className="flex items-center gap-1">Enter Email</span>}
             fullWidth
-            name="constructionManager"
-            placeholder="Select Construction Manager"
+            name="Email"
+            placeholder="Enter Your Work Email"
+            type="email"
           />{" "}
           <CustomTextField
             label={
-              <span className="flex items-center gap-1">Store Incharge</span>
+              <span className="flex items-center gap-1">Phone Number</span>
             }
             fullWidth
-            name="storeIncharge"
-            placeholder="Store Incharge"
+            name="phoneNumber"
+            placeholder="Enter Your Phone Number"
             type="number"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Store Role</span>}
+            label={<span className="flex items-center gap-1">User Role</span>}
             fullWidth
             name="role"
             placeholder="Enter Role"
@@ -63,7 +60,36 @@ const AddStore = () => {
             placeholder="Enter Password"
             type="password"
           />{" "}
-          
+          <CustomTextField
+            label={
+              <span className="flex items-center gap-1">Date Of Joining</span>
+            }
+            fullWidth
+            name="dateOfJoining"
+            placeholder="Enter Your Date of Joining"
+            type="date"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Address</span>}
+            fullWidth
+            name="address"
+            placeholder="Enter Your Address"
+            type="text"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Language</span>}
+            fullWidth
+            name="language"
+            placeholder="Enter Your Language"
+            type="text"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Country</span>}
+            fullWidth
+            name="country"
+            placeholder="Enter Your Country"
+            type="text"
+          />{" "}
           <CustomTextField
             label={<span className="flex items-center gap-1">Add Note</span>}
             fullWidth
@@ -84,11 +110,11 @@ const AddStore = () => {
           className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
           onClick={() => navigate(-1)}
         >
-          Save Store
+          Save User
         </button>
       </div>
     </div>
   );
 };
 
-export default AddStore;
+export default CmAddUser;
