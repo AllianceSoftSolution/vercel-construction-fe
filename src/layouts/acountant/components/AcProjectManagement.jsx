@@ -8,7 +8,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 
-const ProjectManagement = () => {
+const AcProjectManagement = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -100,10 +100,7 @@ const ProjectManagement = () => {
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
-        buttonText="Create Project"
-        onButtonClick={() =>
-          navigate("/admin-dashboard/project-Management/addProject")
-        }
+       
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
@@ -150,4 +147,4 @@ const ProjectManagement = () => {
   );
 };
 
-export default ProjectManagement;
+export default AcProjectManagement;

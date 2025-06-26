@@ -4,6 +4,9 @@ import { FaHandHoldingHeart } from "react-icons/fa";
 import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
+import PieGraph from "../../../components/ui/Graphs/PieGraph";
+import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
+import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
 function PmDashboard() {
   const data = [
     {
@@ -82,6 +85,16 @@ function PmDashboard() {
           count={10}
           percentage={10}
         />
+      </div>
+      <div className="w-full flex gap-5 ">
+        <div className="flex w-full gap-5 justify-between">
+          <PieGraph pieTitle={"Demand Status"}/>
+          <HorixontalBarchartGraph title={"PO Distribution by Vendor"}/>
+        </div>
+
+        <div className="w-full max-w-xl">
+          <BasicBarChart />
+        </div>
       </div>
 
       {/* table */}
