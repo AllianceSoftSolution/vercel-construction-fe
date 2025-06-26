@@ -14,6 +14,7 @@ import Signup from "./layouts/auth/screens/Signup";
 import ForgetPassword from "./layouts/auth/screens/ForgetPassword";
 import LandingPageLayout from "./layouts/landing-pages/LandingPageLayout";
 import PageNotFound from "@/components/NotFound";
+// admin dashboard
 import UserManagement from "./layouts/admin-dashboard/screens/UserManagement";
 import ProjectManagement from "./layouts/admin-dashboard/screens/ProjectManagement";
 import Demands from "./layouts/admin-dashboard/screens/Demands";
@@ -37,18 +38,16 @@ import SectionDetailPage from "./layouts/admin-dashboard/screens/Projects/Sectio
 import VendorDetailPage from "./layouts/admin-dashboard/screens/Projects/VendorDetailPage";
 import Payables from "./layouts/admin-dashboard/screens/Payables";
 import PayableDetails from "./layouts/admin-dashboard/screens/Projects/PayableDetail";
+// site incharge
 import SiteInchargeDashboardLayout from "./layouts/siteIncharge-dashboard/SiteInchargeDashboardLayout";
 import SiteInchargeDashbaord from "./layouts/siteIncharge-dashboard/components/SiteInchargeDashbaord";
 import SInchargeProjectManagement from "./layouts/siteIncharge-dashboard/components/SInchargeProjectManagement";
 import SInchargeUserManagement from "./layouts/siteIncharge-dashboard/components/SInchargeUserManagement";
 import SInchargeSectionTab from "./layouts/siteIncharge-dashboard/components/Projects/tabs/SInchargeSectionTab";
 import SiAddProject from "./layouts/siteIncharge-dashboard/components/Forms/SiAddProject";
-import PmDashboardLayout from "./layouts/pm-dashboard/PmDashboardLayout";
-import PmDashboard from "./layouts/pm-dashboard/component/PmDashboard";
-import StoreInchargeDashboardLayout from "./layouts/storeIncharge-dashboard/StoreInchargeDashboardLayout";
-import StoreInchargeDashboard from "./layouts/storeIncharge-dashboard/components/StoreInchargeDashboard";
-import AccountantDashboardLayout from "./layouts/acountant/AccountantDashbaordLayout";
-import AccountantDashboard from "./layouts/acountant/components/AccountantDashboard";
+import SinMemberDetailPage from "./layouts/siteIncharge-dashboard/components/Projects/SinMemberDetailPage";
+
+// pm dashboard
 import PmProjectDetailPage from "./layouts/pm-dashboard/component/Projects/PmProjectDetailPage";
 import PmDemandDetails from "./layouts/pm-dashboard/component/Projects/PmDemandDetailPage";
 import PmAddUser from "./layouts/pm-dashboard/component/Forms/PmAddUser";
@@ -60,6 +59,10 @@ import PmUserManagement from "./layouts/pm-dashboard/component/pmUserManagement"
 import PmProjectManagement from "./layouts/pm-dashboard/component/PmProjectManagement";
 import PmAddProject from "./layouts/pm-dashboard/component/Forms/PmAddProject";
 import PmStores from "./layouts/pm-dashboard/component/PmStore";
+import PmDashboardLayout from "./layouts/pm-dashboard/PmDashboardLayout";
+import PmDashboard from "./layouts/pm-dashboard/component/PmDashboard";
+import PmMemberDetailPage from "./layouts/pm-dashboard/component/Projects/PmMemberDetailPage";
+// cm dashboard
 import CmDashboardLayout from "./layouts/cm-dashboard/CmDashboardLayout";
 import CmDashboard from "./layouts/cm-dashboard/components/CmDashboard";
 import CmProjectManagement from "./layouts/cm-dashboard/components/CmProjectManagement";
@@ -75,10 +78,11 @@ import CmDemands from "./layouts/cm-dashboard/components/CmDemands";
 import CmSectionTab from "./layouts/cm-dashboard/components/Projects/tabs/CmSectionTab";
 import CmDemandDetails from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
 import CmDemandDetailPage from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
+import CmMemberDetailPage from "./layouts/cm-dashboard/components/Projects/CmMemberDetailPage";
+// store Incharge
 import SiUserManagement from "./layouts/storeIncharge-dashboard/components/SiUserManagement";
 import SiAddUser from "./layouts/storeIncharge-dashboard/components/Forms/SiAddUser";
 import SiMemberDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiMemberDetailPage";
-
 import SiProjectDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiProjectDetailPage";
 import SiSectionTab from "./layouts/storeIncharge-dashboard/components/Projects/tabs/SiSectionTab";
 import SiSectionDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiSectionDetailPage";
@@ -89,9 +93,13 @@ import SiStore from "./layouts/storeIncharge-dashboard/components/SiStore";
 import SiAddStore from "./layouts/storeIncharge-dashboard/components/Forms/SiAddStore";
 import SiStoreDetail from "./layouts/storeIncharge-dashboard/components/Projects/SiStoreDetail";
 import SiProjectManagement from "./layouts/storeIncharge-dashboard/components/SiProjectManagement";
+import StoreInchargeDashboardLayout from "./layouts/storeIncharge-dashboard/StoreInchargeDashboardLayout";
+import StoreInchargeDashboard from "./layouts/storeIncharge-dashboard/components/StoreInchargeDashboard";
+// accountant
 import AcPayables from "./layouts/acountant/components/AcPayables";
 import AcPayableDetails from "./layouts/acountant/components/Projects/AcPayableDetail";
-
+import AccountantDashboardLayout from "./layouts/acountant/AccountantDashbaordLayout";
+import AccountantDashboard from "./layouts/acountant/components/AccountantDashboard";
 
 const theme = createTheme({
   typography: {
@@ -156,7 +164,7 @@ const siteInchargeRoutes = [
       { path: "", element: <SiteInchargeDashbaord /> },
       { path: "user-Management", element: <SInchargeUserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
-      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "user-Management/:id", element: <SinMemberDetailPage /> },
       { path: "project-Management", element: <SInchargeProjectManagement /> },
       { path: "project-Management/addProject", element: <SiAddProject /> },
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
@@ -182,7 +190,7 @@ const projectManagerRoutes = [
       { path: "", element: <PmDashboard /> },
       { path: "user-Management", element: <PmUserManagement /> },
       { path: "user-Management/addUser", element: <PmAddUser /> },
-      { path: "user-Management/:id", element: <MemberDetailPage /> },
+      { path: "user-Management/:id", element: <PmMemberDetailPage /> },
       { path: "project-Management", element: <PmProjectManagement /> },
       { path: "project-Management/addProject", element: <PmAddProject /> },
       { path: "project-Management/:id", element: <PmProjectDetailPage /> },
@@ -209,9 +217,9 @@ const constructionManagerRoutes = [
       { path: "", element: <CmDashboard /> },
       { path: "user-Management", element: <CmUserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
-      { path: "user-Management/:id", element: <MemberDetailPage /> },
-      { path: "project-Management", element: <CmProjectManagement/> },
-      { path: "project-Management/addProject", element: <CmAddProject/> },
+      { path: "user-Management/:id", element: <CmMemberDetailPage /> },
+      { path: "project-Management", element: <CmProjectManagement /> },
+      { path: "project-Management/addProject", element: <CmAddProject /> },
       { path: "project-Management/:id", element: <CmProjectDetailPage /> },
       { path: "sections", element: <CmSectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
@@ -290,7 +298,7 @@ const getRoutesByRole = (role) => {
         ...projectManagerRoutes,
         ...constructionManagerRoutes,
         ...storeInchargeRoutes,
-        ...accountantRoutes
+        ...accountantRoutes,
       ];
     // case "USR":
     //   return [...commonRoutes, ...studentRoutes];
@@ -303,7 +311,7 @@ const getRoutesByRole = (role) => {
         ...projectManagerRoutes,
         ...constructionManagerRoutes,
         ...storeInchargeRoutes,
-        ...accountantRoutes
+        ...accountantRoutes,
       ];
   }
 };

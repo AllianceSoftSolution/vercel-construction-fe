@@ -5,7 +5,7 @@ import CustomTextField from "@/mui/CustomTextField";
 const AddVendor = () => {
   return (
     <div>
-      <TopBar title="Add Vendor" detail="Add New Vendor" />
+      <TopBar title="Add Vendor" detail="Add New Vendor" showIcon={true} />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="flex justify-center items-center gap-4">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">

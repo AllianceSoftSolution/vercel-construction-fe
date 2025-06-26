@@ -5,8 +5,10 @@ import { IconButton } from "@mui/material";
 import { FaUserEdit } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaEye, FaTrash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const AssociatedMembersTab = () => {
+  const navigate = useNavigate();
   const data = [
     {
       id: 1,

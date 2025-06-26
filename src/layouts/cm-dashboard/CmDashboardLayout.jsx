@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
-import { Menu, Close } from "@mui/icons-material"; // MUI icons
-import { useMediaQuery, useTheme, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Menu, Close } from "@mui/icons-material";
+import { useMediaQuery, useTheme } from "@mui/material";
 import SideBarItem from "@/components/ui/SideBarItem";
-import ArrowDropDownRoundedIcon from "@mui/icons-material/ArrowDropDownRounded";
-// import AdminDashboard from "../admin-dashboard/screens/AdminDashboard";
-import { useSelector } from "react-redux";
 import { MdSpaceDashboard } from "react-icons/md";
 import { FaUserTie } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
@@ -24,22 +20,13 @@ import { IoMdSettings } from "react-icons/io";
 const CmDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg"));
   const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
-
   const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
     setSidebarOpen(false);
   }, [isDesktop]);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  useEffect(() => {
-    // alert(sidebarOpen)
-  }, [sidebarOpen]);
 
   const sideBarItems = [
     {
@@ -78,7 +65,6 @@ const CmDashboardLayout = ({ role }) => {
       path: "/construction-manager-dashboard/materials",
     },
   ];
-  const [activePath, setActivePath] = useState("");
 
   return (
     <div className="flex h-screen bg-[#FFFFFF] overflow-hidden">
@@ -88,7 +74,6 @@ const CmDashboardLayout = ({ role }) => {
         } bg-[#F7F7F7] transition-all duration-300 ease-in-out fixed top-0 left-0 z-10`}
       >
         <div className="flex flex-col h-full md:items-center md:justify-between">
-          {/* Logo and toggle */}
           <div
             className={`flex $${
               sidebarOpen ? "justify-end" : "justify-center"
@@ -96,18 +81,14 @@ const CmDashboardLayout = ({ role }) => {
           >
             {sidebarOpen ? (
               <li
-                onClick={() => {
-                  setSidebarOpen(false);
-                }}
+                onClick={() => setSidebarOpen(false)}
                 className="text-black text-right py-3 flex items-center justify-center"
               >
                 <Close className="mr-2" />
               </li>
             ) : (
               <li
-                onClick={() => {
-                  setSidebarOpen(true);
-                }}
+                onClick={() => setSidebarOpen(true)}
                 className="text-white text-center py-4 flex items-center justify-center"
               ></li>
             )}
@@ -126,7 +107,6 @@ const CmDashboardLayout = ({ role }) => {
             </div>
           </div>
 
-          {/* Sidebar Menu */}
           <div className="flex-grow w-full mt-4 overflow-y-auto max-h-[calc(100vh-150px)]">
             <ul className="space-y-2 px-6">
               {sideBarItems.map((item, index) => (
@@ -135,11 +115,14 @@ const CmDashboardLayout = ({ role }) => {
                   onClick={() => {
                     navigate(item.path);
                     setSidebarOpen(false);
-                    setActivePath(item.path);
                   }}
                   iconSrc={<item.icon size={20} />}
                   text={item.label}
-                  isActive={activePath === item.path}
+                  isActive={
+                    item.path === "/construction-manager-dashboard"
+                      ? location.pathname === "/construction-manager-dashboard"
+                      : location.pathname === item.path
+                  }
                   bgColor="primary"
                   textColor="black"
                 />
@@ -158,18 +141,13 @@ const CmDashboardLayout = ({ role }) => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div
-        className={`flex-1 ml-0 lg:ml-[240px] flex flex-col overflow-y-auto h-screen`}
-      >
+      <div className="flex-1 ml-0 lg:ml-[240px] flex flex-col overflow-y-auto h-screen">
         <div className="w-full flex justify-between items-center border-b px-8 py-3 ">
-          {/* Logo */}
           <div className="flex items-center ">
             <img src={logo} alt="Logo" className="w-24 h-16" />
             <span className="text-[#444444] text-3xl font-semibold">RADC</span>
           </div>
-          {/* Search and Icons */}
-          <div className=" flex items-center gap-5">
+          <div className="flex items-center gap-5">
             <div className="relative w-full max-w-xl">
               <input
                 type="text"
@@ -196,9 +174,8 @@ const CmDashboardLayout = ({ role }) => {
           </div>
         </div>
 
-        {/* Scrollable Main Content */}
         <div className="flex-1 w-full overflow-y-auto p-8">
-          <div className=" p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
+          <div className="p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
             <Outlet />
           </div>
         </div>

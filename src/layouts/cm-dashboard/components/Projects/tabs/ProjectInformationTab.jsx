@@ -9,7 +9,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import Button from "../../../../../components/Button";
 import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -20,6 +20,7 @@ const style = {
   boxShadow: 24,
 };
 const ProjectInformationTab = () => {
+  const navigate = useNavigate();
   const data = [
     {
       id: 1,
@@ -78,7 +79,8 @@ const ProjectInformationTab = () => {
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate("123"),
+            onClick: () =>
+              navigate("/construction-manager-dashboard/user-Management/123"),
             icon: <FaEye />,
           },
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },

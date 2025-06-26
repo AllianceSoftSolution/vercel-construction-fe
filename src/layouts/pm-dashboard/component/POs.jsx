@@ -8,6 +8,7 @@ import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
 import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate } from "react-router-dom";
+import { FaUserEdit } from "react-icons/fa";
 
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
@@ -76,6 +77,10 @@ const PurchaseOrder = () => {
             label: "View",
             onClick: () => navigate("123"),
             icon: <IoIosEye />,
+          },
+          {
+            label: "Edit",
+            icon: <FaUserEdit />,
           },
           {
             label: "Change Vendor",

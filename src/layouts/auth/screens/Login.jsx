@@ -58,12 +58,42 @@ const Login = () => {
             />
             <div className="">
               <CustomSelect label="Role" fullWidth name="name" select>
-                <MenuItem value="1" onClick={()=> navigate('/admin-dashboard')}>Admin Dashboard</MenuItem>
-                <MenuItem value="2" onClick={()=> navigate('/siteincharge-dashboard')}>Site-Incharge Dashboard</MenuItem>
-                <MenuItem value="3" onClick={()=> navigate('/project-manager-dashboard')}>Project-Manager Dashboard</MenuItem>
-                <MenuItem value="4" onClick={()=> navigate('/construction-manager-dashboard')}>Construction-Manager Dashboard</MenuItem>
-                <MenuItem value="5" onClick={()=> navigate('/store-incharge-dashboard')}>Store-Incharge Dashboard</MenuItem>
-                <MenuItem value="6" onClick={()=> navigate('/accountant-dashboard')}>Accountant Dashboard</MenuItem>
+                <MenuItem
+                  value="1"
+                  onClick={() => navigate("/admin-dashboard")}
+                >
+                  Admin
+                </MenuItem>
+                <MenuItem
+                  value="2"
+                  onClick={() => navigate("/siteincharge-dashboard")}
+                >
+                  Site-Incharge
+                </MenuItem>
+                <MenuItem
+                  value="3"
+                  onClick={() => navigate("/project-manager-dashboard")}
+                >
+                  Project-Manager
+                </MenuItem>
+                <MenuItem
+                  value="4"
+                  onClick={() => navigate("/construction-manager-dashboard")}
+                >
+                  Construction-Manager
+                </MenuItem>
+                <MenuItem
+                  value="5"
+                  onClick={() => navigate("/store-incharge-dashboard")}
+                >
+                  Store-Incharge
+                </MenuItem>
+                <MenuItem
+                  value="6"
+                  onClick={() => navigate("/accountant-dashboard")}
+                >
+                  Accountant
+                </MenuItem>
               </CustomSelect>
             </div>
             {/* button */}
