@@ -91,6 +91,8 @@ import SiStoreDetail from "./layouts/storeIncharge-dashboard/components/Projects
 import SiProjectManagement from "./layouts/storeIncharge-dashboard/components/SiProjectManagement";
 import AcPayables from "./layouts/acountant/components/AcPayables";
 import AcPayableDetails from "./layouts/acountant/components/Projects/AcPayableDetail";
+import AcProjectDetailPage from "./layouts/acountant/components/Projects/AcProjectDetailPage";
+import AcProjectManagement from "./layouts/acountant/components/AcProjectManagement";
 
 
 const theme = createTheme({
@@ -262,9 +264,9 @@ const accountantRoutes = [
       { path: "user-Management", element: <SInchargeUserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "user-Management/:id", element: <MemberDetailPage /> },
-      { path: "project-Management", element: <SInchargeProjectManagement /> },
+      { path: "project-Management", element: <AcProjectManagement /> },
       { path: "project-Management/addProject", element: <SiAddProject /> },
-      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "project-Management/:id", element: <AcProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
 

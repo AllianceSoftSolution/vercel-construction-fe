@@ -11,6 +11,7 @@ import CustomTable from "../../../mui/CustomTable";
 import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
+import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 function StoreInchargeDashboard() {
   const data = [
     {
@@ -90,6 +91,7 @@ function StoreInchargeDashboard() {
           percentage={10}
         />
       </div>
+        <BasicBarChart/>
 
       {/* table */}
       <div className="overflow-x-auto">

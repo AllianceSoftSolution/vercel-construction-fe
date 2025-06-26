@@ -100,10 +100,7 @@ const CmProjectManagement = () => {
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
-        buttonText="Create Project"
-        onButtonClick={() =>
-          navigate("/construction-manager-dashboard/project-Management/addProject")
-        }
+       
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}

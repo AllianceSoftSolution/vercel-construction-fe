@@ -47,7 +47,11 @@ const AccountantDashboardLayout = ({ role }) => {
       icon: MdSpaceDashboard,
       path: "/accountant-dashboard",
     },
-
+    {
+      label: "Project Management",
+      icon: FaBoxesStacked,
+      path: "/accountant-dashboard/project-management",
+    },
     {
       label: "Payables",
       icon: IoStorefrontSharp,
