@@ -34,7 +34,7 @@ const style = {
   borderRadius: 20,
 };
 
-export default function PurchaseOrderForm({ isOpen, onClose }) {
+export default function SiPurchaseOrderForm({ isOpen, onClose }) {
   const [vendor, setVendor] = useState("");
   const [formSections, setFormSections] = useState([
     { id: "1", vendor: "", product: "Cement", quantity: "" },

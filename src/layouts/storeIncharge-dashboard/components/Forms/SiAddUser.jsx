@@ -5,7 +5,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
 
-const AddProject = () => {
+const SiAddUser = () => {
   const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -13,94 +13,89 @@ const AddProject = () => {
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title="New Project"
-        detail="Add New Project Information in Epos Software"
+        title="New User"
+        detail="Add New User Information in Epos Software"
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
       <div className="flex justify-center">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <h3 className="text-xl font-semibold text-[#12141D] ">
-            Project Information
+            Premium Content
           </h3>
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Project Name</span>
-            }
+            label={<span className="flex items-center gap-1">User Name</span>}
             fullWidth
             name="name"
-            placeholder="Enter Project Name"
+            placeholder="Enter Your Name"
             type="text"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Sections</span>}
+            label={<span className="flex items-center gap-1">Enter Email</span>}
             fullWidth
-            name="sections"
+            name="Email"
             placeholder="Enter Your Work Email"
+            type="email"
+          />{" "}
+          <CustomTextField
+            label={
+              <span className="flex items-center gap-1">Phone Number</span>
+            }
+            fullWidth
+            name="phoneNumber"
+            placeholder="Enter Your Phone Number"
+            type="number"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">User Role</span>}
+            fullWidth
+            name="role"
+            placeholder="Enter Role"
             type="text"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Start Date</span>}
+            label={<span className="flex items-center gap-1">Password</span>}
             fullWidth
-            name="startDate"
-            placeholder="Enter Start Date"
+            name="password"
+            placeholder="Enter Password"
+            type="password"
+          />{" "}
+          <CustomTextField
+            label={
+              <span className="flex items-center gap-1">Date Of Joining</span>
+            }
+            fullWidth
+            name="dateOfJoining"
+            placeholder="Enter Your Date of Joining"
             type="date"
           />{" "}
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Project Status</span>
-            }
+            label={<span className="flex items-center gap-1">Address</span>}
             fullWidth
-            name="status"
-            placeholder="Enter Project Status"
+            name="address"
+            placeholder="Enter Your Address"
+            type="text"
           />{" "}
-          <h3 className="text-xl font-semibold text-[#12141D] ">
-            Project Site Address Detail
-          </h3>
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Country/Region</span>
-            }
+            label={<span className="flex items-center gap-1">Language</span>}
+            fullWidth
+            name="language"
+            placeholder="Enter Your Language"
+            type="text"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Country</span>}
             fullWidth
             name="country"
-            placeholder="Enter Your Country/Region"
+            placeholder="Enter Your Country"
             type="text"
           />{" "}
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Street Address</span>
-            }
+            label={<span className="flex items-center gap-1">Add Note</span>}
             fullWidth
-            name="address"
-            placeholder="Enter Street Address"
+            name="note"
+            placeholder="Enter Your Note"
             type="text"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">
-                Apt,Floor,bldg(if Applicable )
-              </span>
-            }
-            fullWidth
-            name="address"
-            placeholder="Enter Apt,Floor,bldg"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">City/Town/Village</span>
-            }
-            fullWidth
-            name="village"
-            placeholder="Enter Your City/Town/Village"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Postal Code</span>}
-            fullWidth
-            name="code"
-            placeholder="Enter Your Postal Code"
-            type="number"
           />{" "}
         </div>
       </div>{" "}
@@ -115,11 +110,11 @@ const AddProject = () => {
           className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
           onClick={() => navigate(-1)}
         >
-          Save Project
+          Save User
         </button>
       </div>
     </div>
   );
 };
 
-export default AddProject;
+export default SiAddUser;

@@ -6,7 +6,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import uploadIcon from "../../../../assets/construction/upload 1.png";
 import { useNavigate } from "react-router-dom";
-const AddProduct = () => {
+const SiAddProduct = () => {
   const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -78,4 +78,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default SiAddProduct;

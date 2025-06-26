@@ -3,22 +3,11 @@ import TopBar from "../../../../../components/ui/TopBar";
 import SectionCard from "../../../../../components/ui/SectionCard";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-import SectionDetailPage from "../SectionDetailPage";
+
 import { useNavigate } from "react-router-dom";
-import MemebersOverviewCard from "../../../../../mui/MembersOverviewCard";
-import MemberInfoCard from "../../../../../mui/MemberInfoCard";
-import manager from "../../../../../assets/construction/manager.png";
-import Search from "../../../../../assets/construction/Search.png";
-import AddMemberModal from "../../users/modals/AddMemberModal";
-import DropdownButton from "../../../../../comments/components/DropdownButton";
-import CustomModal from "../../../../../comments/components/CustomModal";
-import { Box, Modal, Typography } from "@mui/material";
-import Button from "../../../../../components/Button";
-import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
-import { Height } from "@mui/icons-material";
 
 
-const SectionTab = () => {
+const SiSectionTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
  
 
@@ -32,7 +21,7 @@ const SectionTab = () => {
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/admin-dashboard/sections/:id"),
+      onClick: () => navigate("/store-incharge-dashboard/sections/:id"),
     },
     {
       label: "Edit Project Section",
@@ -53,7 +42,7 @@ const SectionTab = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         buttonText="Create Project Section"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
+          navigate("/store-incharge-dashboard/project-management/addProject")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -83,4 +72,4 @@ const SectionTab = () => {
   );
 };
 
-export default SectionTab;
+export default SiSectionTab;

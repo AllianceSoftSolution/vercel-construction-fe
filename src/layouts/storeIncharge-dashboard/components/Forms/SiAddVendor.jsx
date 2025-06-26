@@ -3,7 +3,7 @@ import TopBar from "@/components/ui/TopBar";
 import CustomTextField from "@/mui/CustomTextField";
 import { useNavigate } from "react-router-dom";
 
-const AddVendor = () => {
+const SiAddVendor = () => {
   const navigate = useNavigate();
   return (
     <div>
@@ -61,4 +61,4 @@ const AddVendor = () => {
   );
 };
 
-export default AddVendor;
+export default SiAddVendor;

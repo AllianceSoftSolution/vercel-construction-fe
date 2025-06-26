@@ -22,7 +22,7 @@ const style = {
   borderRadius: "50px",
 };
 
-const PurchaseOrderDetail = () => {
+const SiStoreDetail = () => {
   const data = [
     {
       id: 1,
@@ -300,4 +300,4 @@ const InfoRow = ({ label, value }) => (
   </div>
 );
 
-export default PurchaseOrderDetail;
+export default SiStoreDetail;

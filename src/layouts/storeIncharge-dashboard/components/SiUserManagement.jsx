@@ -22,7 +22,7 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IconButton } from "@mui/material";
 import DropdownButton from "../../../comments/components/DropdownButton";
 
-const UserManagement = () => {
+const SiUserManagement = () => {
   const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
@@ -139,7 +139,7 @@ const UserManagement = () => {
         }
         buttonText="Create New User"
         onButtonClick={() =>
-          navigate("/admin-dashboard/user-management/addUser")
+          navigate("/store-incharge-dashboard/user-management/addUser")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -226,4 +226,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default SiUserManagement;

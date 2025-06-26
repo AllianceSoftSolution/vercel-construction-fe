@@ -8,7 +8,7 @@ import { FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import AddMemberModal from "./users/modals/AddMemberModal";
 
-const Stores = () => {
+const SiStore = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -118,7 +118,7 @@ const Stores = () => {
           console.log("Selected Filters:", selected)
         }
         buttonText="Add New Store"
-        onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
+        onButtonClick={() => navigate("/store-incharge-dashboard/store/addStore")}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
@@ -134,4 +134,4 @@ const Stores = () => {
   );
 };
 
-export default Stores;
+export default SiStore;

@@ -5,9 +5,9 @@ import { Tabs, Tab, Box } from "@mui/material";
 
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
 import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
-import SectionTab from "./tabs/SectionTab";
+import SectionTab from "./tabs/SiSectionTab";
 
-const ProjectDetailPage = () => {
+const SiProjectDetailPage = () => {
   const navigate = useNavigate();
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -23,7 +23,7 @@ const ProjectDetailPage = () => {
         showExport={true}
         buttonText="Create Project"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
+          navigate("/store-incharge-dashboard/project-management/addProject")
         }
       />
 
@@ -73,4 +73,4 @@ const ProjectDetailPage = () => {
   );
 };
 
-export default ProjectDetailPage;
+export default SiProjectDetailPage;

@@ -9,7 +9,7 @@ import DropdownButton from "../../../../comments/components/DropdownButton";
 import { useNavigate } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
-import MemebersOverviewCard from "../../../../../src/mui/MembersOverviewCard";
+import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
@@ -22,7 +22,7 @@ const style = {
   width: "600px",
   boxShadow: 24,
 };
-const SectionDetailPage = () => {
+const SiSectionDetailPage = () => {
   const navigate = useNavigate();
   const CustomActionComponent = ({ data }) => {
     return (
@@ -248,4 +248,5 @@ const SectionDetailPage = () => {
   );
 };
 
-export default SectionDetailPage;
+export default SiSectionDetailPage;
+

@@ -8,7 +8,7 @@ import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import CustomTextField from "../../../mui/CustomTextField";
 import Button from "../../../components/Button";
-import PayableDetails from "./Projects/PayableDetail";
+import PayableDetails from "./Projects/AcPayableDetail";
 import { useNavigate } from "react-router-dom";
 
 const style = {
@@ -70,7 +70,7 @@ const CustomActionComponent = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const onNavigation = () => {
-    navigate("/admin-dashboard/payables/details/23232");
+    navigate("/accountant-dashboard/payables/details/23232");
   };
   return (
     <>
@@ -94,7 +94,7 @@ const ActionComforRegPOs = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const onNavigation = () => {
-    navigate("/admin-dashboard/payables/details/45435");
+    navigate("/accountant-dashboards/payables/details/45435");
   };
   return (
     <>
@@ -117,7 +117,7 @@ const ActionComForPayableDetails = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const onNavigation = () => {
-    navigate("/admin-dashboard/payables/details/:id");
+    navigate("/accountant-dashboard/payables/details/:id");
   };
   return (
     <>
@@ -134,7 +134,7 @@ const ActionComForPayableDetails = () => {
   );
 };
 
-const Payables = () => {
+const AcPayables = () => {
   const data = [
     {
       id: 1,
@@ -218,4 +218,4 @@ const Payables = () => {
   );
 };
 
-export default Payables;
+export default AcPayables;
