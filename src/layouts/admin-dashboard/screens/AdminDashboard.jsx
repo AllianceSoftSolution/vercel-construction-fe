@@ -11,6 +11,11 @@ import CustomTable from "../../../mui/CustomTable";
 import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
+
+import PieGraph from "../../../components/ui/Graphs/PieGraph";
+import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
+import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
+import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 function AdminDashboard() {
   const data = [
     {
@@ -57,6 +62,11 @@ function AdminDashboard() {
     { headerName: "CM Name", field: "cmName" },
     { headerName: "Date", field: "date" },
   ];
+  const pieData = [
+    { name: "Completed", value: 65 },
+    { name: "In Progress", value: 25 },
+    { name: "Pending", value: 10 },
+  ];
 
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0 ">
@@ -70,27 +80,53 @@ function AdminDashboard() {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <h2 className="text-2xl font-semibold text-primary ">Overview</h2>
 
-      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <AnalyticsCard
           label={"Total Projects"}
           icon={FaBoxesStacked}
-          count={10}
-          percentage={10}
+          count={2132}
+          percentage={10.25}
         />
+
         <AnalyticsCard
           label={"Approved Demands"}
           icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
+          count={2132}
+          percentage={10.25}
         />
         <AnalyticsCard
           label={"Rejected Demands"}
           icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
+          count={2132}
+          percentage={10.25}
+        />
+        <AnalyticsCard
+          label={"Total POs Created"}
+          icon={FaHandHoldingHeart}
+          count={2132}
+          percentage={10.25}
+        />
+        <AnalyticsCard
+          label={"Total Amount Paid"}
+          icon={FaHandHoldingHeart}
+          count={2132}
+          percentage={10.25}
+        />
+        <AnalyticsCard
+          label={"Balance Amount"}
+          icon={FaHandHoldingHeart}
+          count={2132}
+          percentage={10.25}
         />
       </div>
-
+      <div className=" flex gap-5 justify-between">
+        <PieGraph  pieTitle={"Demand Status"} />
+        <HorixontalBarchartGraph title={"PO Distribution by Vendor"}/>
+        <VertcleBarChart verTitle={"Top 5 Requested Material"}/>
+      </div>
+      <div>
+        <BasicBarChart/>
+      </div>
       {/* table */}
       <div className="overflow-x-auto">
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>

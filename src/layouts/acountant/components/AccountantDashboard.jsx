@@ -4,6 +4,8 @@ import { FaHandHoldingHeart } from "react-icons/fa";
 import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
+import PieGraph from "../../../components/ui/Graphs/PieGraph";
+import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
 function AccountantDashboard() {
   const data = [
     {
@@ -83,7 +85,12 @@ function AccountantDashboard() {
           percentage={10}
         />
       </div>
-
+      <div className="flex w-full gap-5 justify-between">
+        <PieGraph pieTitle={"Payable"} />
+        <div className="w-full">
+          <VertcleBarChart verTitle={'Fullfillment Progress'}  />
+        </div>
+      </div>
       {/* table */}
       <div className="overflow-x-auto">
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>

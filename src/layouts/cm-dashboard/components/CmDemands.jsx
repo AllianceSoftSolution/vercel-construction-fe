@@ -1,13 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
-import { IconButton } from "@mui/material";
+import { Box, IconButton, Modal } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import CustomTextField from "../../../mui/CustomTextField";
+import Button from "../../../components/Button";
 
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "600px",
+  boxShadow: 24,
+  borderRadius: "50px",
+};
 const CmDemands = () => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = (type) => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
   const navigate = useNavigate();
   const data = [
     {
@@ -113,7 +132,39 @@ const CmDemands = () => {
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
+        buttonText="Create Demand"
+        onButtonClick={handleOpen}
       />
+      <div>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <div className="bg-white p-5">
+              <>
+                <h1 className="text-3xl">Stock In</h1>
+                <Box>
+                  <CustomTextField
+                    fullWidth
+                    margin="normal"
+                    label="PO ( Purchase Order )"
+                  />
+                  <CustomTextField
+                    fullWidth
+                    margin="normal"
+                    label="QTY ( Quantity ) Units must"
+                  />
+               
+                  <Button buttonText={"Save"} onClick={handleClose} />
+                </Box>
+              </>
+            </div>
+          </Box>
+        </Modal>
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">

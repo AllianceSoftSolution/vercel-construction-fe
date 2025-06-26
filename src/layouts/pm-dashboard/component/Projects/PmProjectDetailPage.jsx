@@ -5,6 +5,8 @@ import { Tabs, Tab, Box } from "@mui/material";
 
 
 import SectionTab from "./tabs/SectionTab";
+import ProjectInformationTab from "./tabs/ProjectInformationTab";
+import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
 
 const PmProjectDetailPage = () => {
   const navigate = useNavigate();
@@ -54,16 +56,16 @@ const PmProjectDetailPage = () => {
             },
           }}
         >
-          {/* <Tab label="Project Information" />
-          <Tab label="Associated Members" /> */}
+          <Tab label="Project Information" />
+          <Tab label="Associated Members" />
           <Tab label="Sections" />
         </Tabs>
       </Box>
 
       <Box sx={{ mt: 3 }}>
-        {/* {tabIndex === 0 && <ProjectInformationTab />} */}
-        {/* {tabIndex === 1 && <AssociatedMembersTab />} */}
-        {tabIndex === 0 && <SectionTab />}
+        {tabIndex === 0 && <ProjectInformationTab />}
+        {tabIndex === 1 && <AssociatedMembersTab />}
+        {tabIndex === 2 && <SectionTab />}
       </Box>
     </div>
   );

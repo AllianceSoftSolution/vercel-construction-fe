@@ -6,7 +6,7 @@ import SideBarItem from "@/components/ui/SideBarItem";
 import { MdSpaceDashboard } from "react-icons/md";
 import { IoStorefrontSharp } from "react-icons/io5";
 import logo from "../../assets/construction/logo.png";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaBoxesStacked } from "react-icons/fa";
 import Profile from "../../assets/construction/profile.png";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 
@@ -26,6 +26,11 @@ const AccountantDashboardLayout = ({ role }) => {
       label: "Dashboard",
       icon: MdSpaceDashboard,
       path: "/accountant-dashboard",
+    },
+    {
+      label: "Project Management",
+      icon: FaBoxesStacked,
+      path: "/accountant-dashboard/project-management",
     },
     {
       label: "Payables",

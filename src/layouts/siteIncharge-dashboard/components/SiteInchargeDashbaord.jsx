@@ -11,6 +11,10 @@ import CustomTable from "../../../mui/CustomTable";
 import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
+import PieGraph from "../../../components/ui/Graphs/PieGraph";
+import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
+import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
+import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 function SiteInchargeDashbaord() {
   const data = [
     {
@@ -89,6 +93,14 @@ function SiteInchargeDashbaord() {
           count={10}
           percentage={10}
         />
+      </div>
+      <div className=" flex gap-5 justify-between">
+        <PieGraph pieTitle={"Demand Status"} />
+        <HorixontalBarchartGraph title={"PO Distibution by Vendor"}/>
+        <VertcleBarChart verTitle={"Top 5 Requested Materials"}/>
+      </div>
+      <div>
+        <BasicBarChart />
       </div>
 
       {/* table */}
