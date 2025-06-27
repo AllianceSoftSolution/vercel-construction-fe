@@ -81,8 +81,8 @@ const StoreInchargeDashboardLayout = ({ role }) => {
             </div>
           </div>
 
-          <div className="flex-grow w-full mt-4 overflow-y-auto max-h-[calc(100vh-150px)]">
-            <ul className="space-y-2 px-6">
+          <div className="flex flex-col h-full w-full mt-4">
+            <ul className="flex-1 overflow-y-auto space-y-2 px-6">
               {sideBarItems.map((item, index) => (
                 <SideBarItem
                   key={index}
@@ -102,11 +102,11 @@ const StoreInchargeDashboardLayout = ({ role }) => {
                 />
               ))}
             </ul>
-            <div className="mt-6 border-t border-gray-300"></div>
-            <div className="flex justify-center items-center">
+
+            <div className="border-t border-gray-300 px-6 py-6 flex justify-center">
               <button
                 onClick={() => navigate("/")}
-                className="text-white bg-[#222222] rounded-[10px] mt-10 px-5 py-3 flex items-center justify-center w-[80%]"
+                className="w-full bg-[#222222] text-white rounded-[10px] py-3"
               >
                 Log Out
               </button>

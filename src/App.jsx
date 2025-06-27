@@ -98,10 +98,12 @@ import StoreInchargeDashboard from "./layouts/storeIncharge-dashboard/components
 // accountant
 import AcPayables from "./layouts/acountant/components/AcPayables";
 import AcPayableDetails from "./layouts/acountant/components/Projects/AcPayableDetail";
-import AccountantDashboardLayout from "./layouts/acountant/AccountantDashbaordLayout";
-import AccountantDashboard from "./layouts/acountant/components/AccountantDashboard";
 import AcProjectDetailPage from "./layouts/acountant/components/Projects/AcProjectDetailPage";
 import AcProjectManagement from "./layouts/acountant/components/AcProjectManagement";
+
+import AccountantDashboardLayout from "./layouts/acountant/AccountantDashbaordLayout";
+import AccountantDashboard from "./layouts/acountant/components/AccountantDashboard";
+import SiteProjectDetailPage from "./layouts/siteIncharge-dashboard/components/Projects/SiteProjectDetailPage";
 
 const theme = createTheme({
   typography: {
@@ -169,7 +171,7 @@ const siteInchargeRoutes = [
       { path: "user-Management/:id", element: <SinMemberDetailPage /> },
       { path: "project-Management", element: <SInchargeProjectManagement /> },
       { path: "project-Management/addProject", element: <SiAddProject /> },
-      { path: "project-Management/:id", element: <ProjectDetailPage /> },
+      { path: "project-Management/:id", element: <SiteProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
 
@@ -206,8 +208,6 @@ const projectManagerRoutes = [
       { path: "store", element: <PmStores /> },
       { path: "store/addStore", element: <PmAddStore /> },
       { path: "store/:id", element: <PmStoreDetail /> },
-      { path: "materials", element: <PmMaterials /> },
-      { path: "materials/addProduct", element: <PmAddProduct /> },
     ],
   },
 ];
@@ -233,8 +233,6 @@ const constructionManagerRoutes = [
       { path: "store", element: <CmStores /> },
       { path: "store/addStore", element: <CmAddStore /> },
       { path: "store/:id", element: <CmStoreDetail /> },
-      { path: "materials", element: <CmMaterials /> },
-      { path: "materials/addProduct", element: <CmAddProduct /> },
     ],
   },
 ];
@@ -244,17 +242,6 @@ const storeInchargeRoutes = [
     element: <StoreInchargeDashboardLayout />,
     children: [
       { path: "", element: <StoreInchargeDashboard /> },
-      { path: "user-Management", element: <SiUserManagement /> },
-      { path: "user-Management/addUser", element: <SiAddUser /> },
-      { path: "user-Management/:id", element: <SiMemberDetailPage /> },
-      { path: "project-Management", element: <SiProjectManagement /> },
-      { path: "project-Management/addProject", element: <SiAddProject /> },
-      { path: "project-Management/:id", element: <SiProjectDetailPage /> },
-      { path: "sections", element: <SiSectionTab /> },
-      { path: "sections/:id", element: <SiSectionDetailPage /> },
-
-      { path: "demands", element: <SiDemands /> },
-      { path: "demands/:id", element: <SiDemandDetailPage /> },
       { path: "pOS", element: <POs /> },
       { path: "pOS/:id", element: <SiPurchaseOrderDetailPage /> },
       { path: "store", element: <SiStore /> },
@@ -269,22 +256,11 @@ const accountantRoutes = [
     element: <AccountantDashboardLayout />,
     children: [
       { path: "", element: <AccountantDashboard /> },
-      { path: "user-Management", element: <SInchargeUserManagement /> },
-      { path: "user-Management/addUser", element: <AddUser /> },
-      { path: "user-Management/:id", element: <MemberDetailPage /> },
       { path: "project-Management", element: <AcProjectManagement /> },
       { path: "project-Management/addProject", element: <SiAddProject /> },
       { path: "project-Management/:id", element: <AcProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
       { path: "sections/:id", element: <SectionDetailPage /> },
-
-      { path: "demands", element: <Demands /> },
-      { path: "demands/:id", element: <DemandDetailPage /> },
-      { path: "pOS", element: <POs /> },
-      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
-      { path: "store", element: <Store /> },
-      { path: "store/addStore", element: <AddStore /> },
-      { path: "store/:id", element: <StoreDetail /> },
       { path: "payables", element: <AcPayables /> },
       { path: "payables/details/:id", element: <AcPayableDetails /> },
     ],

@@ -9,6 +9,7 @@ import logo from "../../assets/construction/logo.png";
 import { FaSearch, FaBoxesStacked } from "react-icons/fa";
 import Profile from "../../assets/construction/profile.png";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
+import { FaBoxesStacked } from "react-icons/fa6";
 
 const AccountantDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -76,9 +77,10 @@ const AccountantDashboardLayout = ({ role }) => {
             </div>
           </div>
 
-          {/* Sidebar Menu */}
-          <div className="flex-grow w-full mt-4 overflow-y-auto max-h-[calc(100vh-150px)]">
-            <ul className="space-y-2 px-6">
+          
+          <div className="flex flex-col h-full w-full">
+            {/* Scrollable menu */}
+            <ul className="flex-1 overflow-y-auto space-y-2 px-6 mt-4">
               {sideBarItems.map((item, index) => (
                 <SideBarItem
                   key={index}
@@ -98,11 +100,12 @@ const AccountantDashboardLayout = ({ role }) => {
                 />
               ))}
             </ul>
-            <div className="mt-6 border-t border-gray-300"></div>
-            <div className="flex justify-center items-center">
+
+          
+            <div className="border-t border-gray-300 px-6 py-6">
               <button
                 onClick={() => navigate("/")}
-                className="text-white bg-[#222222] rounded-[10px] mt-10 px-5 py-3 flex items-center justify-center w-[80%]"
+                className="w-full bg-[#222222] text-white rounded-[10px] py-3"
               >
                 Log Out
               </button>
