@@ -9,7 +9,6 @@ import logo from "../../assets/construction/logo.png";
 import { FaSearch, FaBoxesStacked } from "react-icons/fa";
 import Profile from "../../assets/construction/profile.png";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
-import { FaBoxesStacked } from "react-icons/fa6";
 
 const AccountantDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
