@@ -80,14 +80,7 @@ import CmDemandDetails from "./layouts/cm-dashboard/components/Projects/CmDemand
 import CmDemandDetailPage from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
 import CmMemberDetailPage from "./layouts/cm-dashboard/components/Projects/CmMemberDetailPage";
 // store Incharge
-import SiUserManagement from "./layouts/storeIncharge-dashboard/components/SiUserManagement";
-import SiAddUser from "./layouts/storeIncharge-dashboard/components/Forms/SiAddUser";
-import SiMemberDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiMemberDetailPage";
-import SiProjectDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiProjectDetailPage";
-import SiSectionTab from "./layouts/storeIncharge-dashboard/components/Projects/tabs/SiSectionTab";
-import SiSectionDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiSectionDetailPage";
-import SiDemands from "./layouts/storeIncharge-dashboard/components/SiDemands";
-import SiDemandDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiDemandDetailPage";
+
 import SiPurchaseOrderDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiPurchaseOrderDetailPage";
 import SiStore from "./layouts/storeIncharge-dashboard/components/SiStore";
 import SiAddStore from "./layouts/storeIncharge-dashboard/components/Forms/SiAddStore";

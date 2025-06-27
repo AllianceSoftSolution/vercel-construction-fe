@@ -1,14 +1,13 @@
 import React, { useState } from "react";
-import ProjectInfoCard from "@/components/ui/ProjectInfoCard";
+
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import ReasonModal from "../Demands/ReasonModal";
+
 import PurchaseOrderForm from "../Forms/CmPurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
-import Button from "../../../../components/Button";
 
 const style = {
   position: "absolute",
@@ -22,7 +21,7 @@ const style = {
 const CmDemandDetailPage = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
-  const [status, setStatus] = useState("Pending");
+  // const [status, setStatus] = useState("Pending");
   const [pendingStatus, setPendingStatus] = useState(null);
 
   const handleActionClick = (newStatus) => {
