@@ -7,7 +7,7 @@ import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const SiDemands  = () => {
+const SiDemands = () => {
   const navigate = useNavigate();
   const data = [
     {
@@ -22,6 +22,7 @@ const SiDemands  = () => {
       status: "Pending",
       approvedBy: "Owner",
       fulfilled: 12,
+      date: "2023-01-01",
       action: "id-here",
     },
     {
@@ -36,6 +37,7 @@ const SiDemands  = () => {
       status: "Approved",
       approvedBy: "Site Manager",
       fulfilled: 13,
+      date: "2023-01-01",
       action: "id-here",
     },
     {
@@ -50,6 +52,7 @@ const SiDemands  = () => {
       status: "In Progress",
       approvedBy: "Owner",
       fulfilled: 12,
+      date: "2023-01-01",
       action: "id-here",
     },
   ];
@@ -64,6 +67,7 @@ const SiDemands  = () => {
     { headerName: "Status", field: "status" },
     { headerName: "Approved By", field: "approvedBy" },
     { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
   const CustomActionComponent = ({ data }) => {

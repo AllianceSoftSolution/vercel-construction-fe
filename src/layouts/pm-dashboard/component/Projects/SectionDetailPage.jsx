@@ -31,7 +31,8 @@ const SectionDetailPage = () => {
         items={[
           {
             label: "View Store",
-            onClick: () => navigate("123"),
+            onClick: () =>
+              navigate("/project-manager-dashboard/user-Management/123"),
             icon: <FaUserEdit />,
           },
           {

@@ -171,7 +171,7 @@ const CmStoreDetail = () => {
                   </>
                 ) : (
                   <>
-                  <h1 className="text-3xl">Stock Out</h1>
+                    <h1 className="text-3xl">Stock Out</h1>
                     <Box>
                       <CustomTextField
                         fullWidth
@@ -187,8 +187,9 @@ const CmStoreDetail = () => {
                         fullWidth
                         margin="normal"
                         label="CM ( Construction Manager )"
-                      />
-                      <Button buttonText={"Save"} onClick={handleClose}/>
+                      />{" "}
+                      <CustomTextField fullWidth margin="normal" label="Note" />
+                      <Button buttonText={"Save"} onClick={handleClose} />
                     </Box>
                   </>
                 )}
@@ -208,7 +209,7 @@ const CmStoreDetail = () => {
         title="Store Detail"
         detail="lorem ipsum dolor sit amet"
         showExport={true}
-        buttonText="Add Store"
+        // buttonText="Add Store"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
@@ -301,4 +302,3 @@ const InfoRow = ({ label, value }) => (
 );
 
 export default CmStoreDetail;
- 

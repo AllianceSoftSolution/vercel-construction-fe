@@ -10,6 +10,7 @@ import CustomTextField from "../../../mui/CustomTextField";
 import Button from "../../../components/Button";
 import PayableDetails from "./Projects/AcPayableDetail";
 import { useNavigate } from "react-router-dom";
+import { IoPeopleSharp } from "react-icons/io5";
 
 const style = {
   position: "absolute",
@@ -27,7 +28,8 @@ const AddPriceModal = ({ open, onClose }) => (
       <div className="flex flex-col gap-5">
         <CustomTextField label="PO Quantity" placeholder="Enter PO Quantity" />
         <CustomTextField label="Material" placeholder="Enter Material" />
-        <CustomTextField label="Price" placeholder="Enter Price" />
+        <CustomTextField label="Price" placeholder="Enter Price" />{" "}
+        <CustomTextField label="Total Price" placeholder="Total Price" />
       </div>
       <div className="flex justify-end gap-3 mt-6">
         <Button buttonText="Cancel" onClick={onClose} />
@@ -176,17 +178,13 @@ const AcPayables = () => {
       <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
         <AnalyticsCard
           label="Total Payables"
-          icon={IoMdArrowDropdown}
+          icon={IoPeopleSharp}
           count={120000}
         />
-        <AnalyticsCard
-          label="Total Paid"
-          icon={IoMdArrowDropdown}
-          count={250000}
-        />
+        <AnalyticsCard label="Total Paid" icon={IoPeopleSharp} count={250000} />
         <AnalyticsCard
           label="Balance Remaining"
-          icon={IoMdArrowDropdown}
+          icon={IoPeopleSharp}
           count={1900000}
         />
       </div>

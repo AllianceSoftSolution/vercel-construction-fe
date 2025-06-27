@@ -174,7 +174,7 @@ const PurchaseOrderDetail = () => {
         title="Store Detail"
         detail="lorem ipsum dolor sit amet"
         showExport={true}
-        buttonText="Add Store"
+        // buttonText="Add Store"
       />
 
    

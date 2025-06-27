@@ -9,7 +9,7 @@ import { FaBoxesStacked } from "react-icons/fa6";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import SimpleTable from "../../../../components/SimpleTable";
 
-const MemberDetailPage = () => {
+const SinMemberDetailPage = () => {
   const data = [
     {
       id: 1,
@@ -65,7 +65,7 @@ const MemberDetailPage = () => {
         title="Site Manager"
         detail="lorem ipsum"
         showExport={true}
-        buttonText="Assign New Project"
+        // buttonText="Assign New Project"
       />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
       <div className="flex  ">
@@ -146,4 +146,4 @@ const MemberDetailPage = () => {
   );
 };
 
-export default MemberDetailPage;
+export default SinMemberDetailPage;

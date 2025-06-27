@@ -189,7 +189,8 @@ const PmStoreDetail = () => {
                         fullWidth
                         margin="normal"
                         label="CM ( Construction Manager )"
-                      />
+                      />{" "}
+                      <CustomTextField fullWidth margin="normal" label="Note" />
                       <Button buttonText={"Save"} onClick={handleClose} />
                     </Box>
                   </>
@@ -210,7 +211,7 @@ const PmStoreDetail = () => {
         title="Store Detail"
         detail="lorem ipsum dolor sit amet"
         showExport={true}
-        buttonText="Add Store"
+        // buttonText="Add Store"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">

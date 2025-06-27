@@ -65,7 +65,7 @@ const CmMemberDetailPage = () => {
         title="Site Manager"
         detail="lorem ipsum"
         showExport={true}
-        buttonText="Assign New Project"
+        // buttonText="Assign New Project"
       />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
       <div className="flex  ">
@@ -147,4 +147,3 @@ const CmMemberDetailPage = () => {
 };
 
 export default CmMemberDetailPage;
- 

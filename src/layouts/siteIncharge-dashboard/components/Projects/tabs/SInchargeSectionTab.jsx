@@ -3,19 +3,9 @@ import TopBar from "../../../../../components/ui/TopBar";
 import SectionCard from "../../../../../components/ui/SectionCard";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-import SectionDetailPage from "../SectionDetailPage";
+
 import { useNavigate } from "react-router-dom";
-import MemebersOverviewCard from "../../../../../mui/MembersOverviewCard";
-import MemberInfoCard from "../../../../../mui/MemberInfoCard";
-import manager from "../../../../../assets/construction/manager.png";
-import Search from "../../../../../assets/construction/Search.png";
-import AddMemberModal from "../../users/modals/AddMemberModal";
-import DropdownButton from "../../../../../comments/components/DropdownButton";
-import CustomModal from "../../../../../comments/components/CustomModal";
-import { Box, Modal, Typography } from "@mui/material";
-import Button from "../../../../../components/Button";
-import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
-import { Height } from "@mui/icons-material";
+
 
 
 const SInchargeSectionTab = () => {

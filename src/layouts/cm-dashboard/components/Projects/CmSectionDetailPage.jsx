@@ -31,7 +31,8 @@ const CmSectionDetailPage = () => {
         items={[
           {
             label: "View Store",
-            onClick: () => navigate("123"),
+            onClick: () =>
+              navigate("/construction-manager-dashboard/user-Management/123"),
             icon: <FaUserEdit />,
           },
           {
@@ -249,4 +250,3 @@ const CmSectionDetailPage = () => {
 };
 
 export default CmSectionDetailPage;
- 

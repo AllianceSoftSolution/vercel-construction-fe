@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const CmAddStore = () => {
   const navigate = useNavigate();
-  return ( 
+  return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         icon={
@@ -15,6 +15,7 @@ const CmAddStore = () => {
         }
         title="New Store"
         detail="Add New Store Information in Epos Software"
+        showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* form */}
@@ -63,7 +64,6 @@ const CmAddStore = () => {
             placeholder="Enter Password"
             type="password"
           />{" "}
-          
           <CustomTextField
             label={<span className="flex items-center gap-1">Add Note</span>}
             fullWidth

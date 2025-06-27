@@ -17,10 +17,8 @@ import Button from "../../../../../components/Button";
 import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
 import { Height } from "@mui/icons-material";
 
-
 const SectionTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
- 
 
   // const [showModal, setShowModal] = useState(false);
 
@@ -47,7 +45,6 @@ const SectionTab = () => {
   ];
   return (
     <div>
-     
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
@@ -75,7 +72,6 @@ const SectionTab = () => {
           dropdownActions={actions}
         />
       </div>{" "}
-      
       {/* Modal */}
       {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
       {/* <SectionDetailPage /> */}
