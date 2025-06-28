@@ -16,10 +16,10 @@ const CmProjectDetailPage = () => {
   };
 
   return (
-    <div>
+    <div className="w-full px-4 sm:px-6 md:px-8 py-6">
       <TopBar
         title="Project Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
         buttonText="Create Project"
         onButtonClick={() =>
@@ -29,15 +29,19 @@ const CmProjectDetailPage = () => {
 
       <Box
         sx={{
-          mt: 2,
+          mt: 3,
           backgroundColor: "#f7f7f7",
           borderRadius: "12px",
-          px: 2,
+          px: { xs: 1, sm: 2, md: 4 },
+          py: { xs: 1, sm: 2 },
+          overflowX: "auto",
         }}
       >
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
           textColor="inherit"
           TabIndicatorProps={{
             style: {
@@ -48,10 +52,14 @@ const CmProjectDetailPage = () => {
           }}
           aria-label="project detail tabs"
           sx={{
+            minHeight: 48,
             "& .MuiTab-root": {
               textTransform: "none",
               fontWeight: 500,
-              color: "#6B7280",
+              fontSize: { xs: "0.85rem", sm: "1rem" },
+              px: { xs: 1, sm: 2, md: 3 },
+              minWidth: "max-content",
+              whiteSpace: "nowrap",
             },
             "& .Mui-selected": {
               color: "#FC8908 !important",
@@ -64,14 +72,13 @@ const CmProjectDetailPage = () => {
         </Tabs>
       </Box>
 
-      <Box sx={{ mt: 3 }}>
+      <div className="mt-6">
         {tabIndex === 0 && <ProjectInformationTab />}
         {tabIndex === 1 && <AssociatedMembersTab />}
         {tabIndex === 2 && <SectionTab />}
-      </Box>
+      </div>
     </div>
   );
 };
 
 export default CmProjectDetailPage;
- 

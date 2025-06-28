@@ -24,7 +24,7 @@ const style = {
   boxShadow: 24,
 };
 
-const SectionDetailPage = () => {
+const PmSectionDetailPage = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
@@ -219,4 +219,4 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-export default SectionDetailPage;
+export default PmSectionDetailPage;

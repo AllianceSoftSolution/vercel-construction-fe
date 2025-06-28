@@ -40,7 +40,7 @@ import Payables from "./layouts/admin-dashboard/screens/Payables";
 import PayableDetails from "./layouts/admin-dashboard/screens/Projects/PayableDetail";
 // site incharge
 import SiteInchargeDashboardLayout from "./layouts/siteIncharge-dashboard/SiteInchargeDashboardLayout";
-import SiteInchargeDashbaord from "./layouts/siteIncharge-dashboard/components/SiteInchargeDashbaord";
+import SiteInchargeDashbaord from "./layouts/siteIncharge-dashboard/components/SinteInchargeDashbaord";
 import SInchargeProjectManagement from "./layouts/siteIncharge-dashboard/components/SInchargeProjectManagement";
 import SInchargeUserManagement from "./layouts/siteIncharge-dashboard/components/SInchargeUserManagement";
 import SInchargeSectionTab from "./layouts/siteIncharge-dashboard/components/Projects/tabs/SInchargeSectionTab";
@@ -80,14 +80,7 @@ import CmDemandDetails from "./layouts/cm-dashboard/components/Projects/CmDemand
 import CmDemandDetailPage from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
 import CmMemberDetailPage from "./layouts/cm-dashboard/components/Projects/CmMemberDetailPage";
 // store Incharge
-import SiUserManagement from "./layouts/storeIncharge-dashboard/components/SiUserManagement";
-import SiAddUser from "./layouts/storeIncharge-dashboard/components/Forms/SiAddUser";
-import SiMemberDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiMemberDetailPage";
-import SiProjectDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiProjectDetailPage";
-import SiSectionTab from "./layouts/storeIncharge-dashboard/components/Projects/tabs/SiSectionTab";
-import SiSectionDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiSectionDetailPage";
-import SiDemands from "./layouts/storeIncharge-dashboard/components/SiDemands";
-import SiDemandDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiDemandDetailPage";
+
 import SiPurchaseOrderDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiPurchaseOrderDetailPage";
 import SiStore from "./layouts/storeIncharge-dashboard/components/SiStore";
 import SiAddStore from "./layouts/storeIncharge-dashboard/components/Forms/SiAddStore";
@@ -104,6 +97,18 @@ import AcProjectManagement from "./layouts/acountant/components/AcProjectManagem
 import AccountantDashboardLayout from "./layouts/acountant/AccountantDashbaordLayout";
 import AccountantDashboard from "./layouts/acountant/components/AccountantDashboard";
 import SiteProjectDetailPage from "./layouts/siteIncharge-dashboard/components/Projects/SiteProjectDetailPage";
+import CmSectionDetailPage from "./layouts/cm-dashboard/components/Projects/CmSectionDetailPage";
+import CmPurchaseOrderDetail from "./layouts/cm-dashboard/components/Projects/CmPurchaseOrderDetailPage";
+import PmSectionDetailPage from "./layouts/admin-dashboard/screens/Projects/SectionDetailPage";
+import PmPOs from "./layouts/pm-dashboard/component/PmPOs";
+import PmPurchaseOrderDetailPage from "./layouts/pm-dashboard/component/Projects/PmPurchaseOrderDetailPage";
+import SiSectionDetailPage from "./layouts/siteIncharge-dashboard/components/Projects/SiSectionDetailPage";
+import SiDemandDetails from "./layouts/siteIncharge-dashboard/components/Projects/SiDemandDetailPage";
+import SiPOs from "./layouts/siteIncharge-dashboard/components/SiPOs";
+import SinPurchaseOrderDetailPage from "./layouts/siteIncharge-dashboard/components/Projects/SinPurchaseOrderDetailPage";
+import SinStores from "./layouts/siteIncharge-dashboard/components/SinStore";
+import SinStoreDetail from "./layouts/siteIncharge-dashboard/components/Projects/SinStoreDetail";
+import SinAddStore from "./layouts/siteIncharge-dashboard/components/Forms/SinAddStore";
 
 const theme = createTheme({
   typography: {
@@ -172,16 +177,16 @@ const siteInchargeRoutes = [
       { path: "project-Management", element: <SInchargeProjectManagement /> },
       { path: "project-Management/addProject", element: <SiAddProject /> },
       { path: "project-Management/:id", element: <SiteProjectDetailPage /> },
-      { path: "sections", element: <SectionTab /> },
-      { path: "sections/:id", element: <SectionDetailPage /> },
+      { path: "sections", element: <SInchargeSectionTab /> },
+      { path: "sections/:id", element: <SiSectionDetailPage /> },
 
       { path: "demands", element: <Demands /> },
-      { path: "demands/:id", element: <DemandDetailPage /> },
-      { path: "pOS", element: <POs /> },
-      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
-      { path: "store", element: <Store /> },
-      { path: "store/addStore", element: <AddStore /> },
-      { path: "store/:id", element: <StoreDetail /> },
+      { path: "demands/:id", element: <SiDemandDetails /> },
+      { path: "pOS", element: <SiPOs /> },
+      { path: "pOS/:id", element: <SinPurchaseOrderDetailPage /> },
+      { path: "store", element: <SinStores /> },
+      { path: "store/addStore", element: <SinAddStore /> },
+      { path: "store/:id", element: <SinStoreDetail /> },
     ],
   },
 ];
@@ -199,12 +204,12 @@ const projectManagerRoutes = [
       { path: "project-Management/addProject", element: <PmAddProject /> },
       { path: "project-Management/:id", element: <PmProjectDetailPage /> },
       { path: "sections", element: <SectionTab /> },
-      { path: "sections/:id", element: <SectionDetailPage /> },
+      { path: "sections/:id", element: <PmSectionDetailPage /> },
 
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <PmDemandDetails /> },
-      { path: "pOS", element: <POs /> },
-      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "pOS", element: <PmPOs /> },
+      { path: "pOS/:id", element: <PmPurchaseOrderDetailPage /> },
       { path: "store", element: <PmStores /> },
       { path: "store/addStore", element: <PmAddStore /> },
       { path: "store/:id", element: <PmStoreDetail /> },
@@ -224,12 +229,12 @@ const constructionManagerRoutes = [
       { path: "project-Management/addProject", element: <CmAddProject /> },
       { path: "project-Management/:id", element: <CmProjectDetailPage /> },
       { path: "sections", element: <CmSectionTab /> },
-      { path: "sections/:id", element: <SectionDetailPage /> },
+      { path: "sections/:id", element: <CmSectionDetailPage /> },
 
       { path: "demands", element: <CmDemands /> },
       { path: "demands/:id", element: <CmDemandDetailPage /> },
       { path: "pOS", element: <POs /> },
-      { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
+      { path: "pOS/:id", element: <CmPurchaseOrderDetail /> },
       { path: "store", element: <CmStores /> },
       { path: "store/addStore", element: <CmAddStore /> },
       { path: "store/:id", element: <CmStoreDetail /> },

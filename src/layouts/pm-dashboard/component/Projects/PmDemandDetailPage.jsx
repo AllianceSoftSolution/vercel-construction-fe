@@ -15,7 +15,8 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "600px",
+  width: "90%",
+  maxWidth: "600px",
   boxShadow: 24,
 };
 
@@ -78,12 +79,8 @@ const PmDemandDetails = () => {
 
   return (
     <>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
+  
+      <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <ReasonModal
             textAreaPlaceholder="Enter your reason"
@@ -93,21 +90,16 @@ const PmDemandDetails = () => {
         </Box>
       </Modal>
 
-      {/* PurchaseOrderForm */}
-
-      {/* <PurchaseOrderForm
-        isOpen={openPurchaseModal}
-        onClose={() => setOpenPurchaseModal(false)}
-      /> */}
-
       <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
 
-      <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex justify-between">
+   
+      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-4">
+
+        <div className="flex flex-wrap justify-between items-center gap-y-2">
           <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
-          <div className="flex gap-x-2 items-center">
+          <div className="flex items-center gap-2">
             <div
-              className={`text-white px-8 py-2 rounded-lg  ${
+              className={`text-white px-6 py-2 rounded-lg text-sm ${
                 status === "Approved"
                   ? "bg-green-600"
                   : status === "Rejected"
@@ -117,75 +109,43 @@ const PmDemandDetails = () => {
             >
               {status}
             </div>
-
             <CustomActionComponent />
           </div>
         </div>
 
-        <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
+        <div className="h-[1px] bg-[#CDCDCD] w-full" />
 
-        <div className="flex justify-between gap-x-4 flex-wrap">
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">
-              Project Name:
-            </p>
-            <p className="text-[#979797]">project name</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">
-              Section Name:
-            </p>
-            <p className="text-[#979797]">section name</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Material</p>
-            <p className="text-[#979797]">material</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Quantity</p>
-            <p className="text-[#979797]">quantity</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Unit</p>
-            <p className="text-[#979797]">unit</p>
-          </div>
+      
+        <div className="flex flex-wrap gap-4">
+          <InfoItem label="Project Name" value="project name" />
+          <InfoItem label="Section Name" value="section name" />
+          <InfoItem label="Material" value="material" />
+          <InfoItem label="Quantity" value="quantity" />
+          <InfoItem label="Unit" value="unit" />
         </div>
 
-        <div className="flex justify-start gap-x-14 flex-wrap">
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">PO Quantity:</p>
-            <p className="text-[#979797]">po quantity</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">Approved By</p>
-            <p className="text-[#979797]">approved by</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">Fulfilled</p>
-            <p className="text-[#979797]">fulfilled</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">
-              Activity Description
-            </p>
-            <p className="text-[#979797]">activity description</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-6">
-            <p className="text-[#444444] font-semibold text-xl">Notes by CM</p>
-            <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
-          </div>
+        {/* Additional Info */}
+        <div className="flex flex-wrap gap-4 mt-2">
+          <InfoItem label="PO Quantity" value="po quantity" />
+          <InfoItem label="Approved By" value="approved by" />
+          <InfoItem label="Fulfilled" value="fulfilled" />
+          <InfoItem label="Activity Description" value="activity description" />
+          <InfoItem label="Notes by CM" value="lorem ipsum dolor sit amet" />
         </div>
 
-        <div className="flex gap-x-8 items-center mt-2">
+      
+        <div className="flex flex-col gap-1 mt-4">
           <p className="text-[#444444] font-semibold text-xl">Remarks</p>
-          <ul>
-            <li className="text-[#979797]">lorem ipsum dolor sit amet</li>
-            <li className="text-[#979797]">lorem ipsum dolor sit amet</li>
-            <li className="text-[#979797]">lorem ipsum dolor sit amet</li>
+          <ul className="list-disc list-inside text-[#979797]">
+            <li>lorem ipsum dolor sit amet</li>
+            <li>lorem ipsum dolor sit amet</li>
+            <li>lorem ipsum dolor sit amet</li>
           </ul>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <DemandQuantityCard
           storeName="Head Store"
           totalQty={80}
@@ -198,10 +158,23 @@ const PmDemandDetails = () => {
           material="Cement"
         />
       </div>
+
+ 
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
-      <SimpleTable data={data} columns={columns} cellComponents={{}} />
+      <div className="overflow-x-auto mt-2">
+        <SimpleTable data={data} columns={columns} cellComponents={{}} />
+      </div>
     </>
   );
 };
+
+const InfoItem = ({ label, value }) => (
+  <div className="flex items-center gap-2 min-w-[160px]">
+    <p className="text-[#444444] font-semibold text-base whitespace-nowrap">
+      {label}:
+    </p>
+    <p className="text-[#979797] text-sm">{value}</p>
+  </div>
+);
 
 export default PmDemandDetails;

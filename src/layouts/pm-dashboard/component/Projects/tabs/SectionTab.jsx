@@ -1,31 +1,14 @@
 import React, { useState } from "react";
 import TopBar from "../../../../../components/ui/TopBar";
 import SectionCard from "../../../../../components/ui/SectionCard";
-import { FaTrash, FaUserEdit } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
-import SectionDetailPage from "../SectionDetailPage";
+import { FaTrash, FaUserEdit, FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import MemebersOverviewCard from "../../../../../mui/MembersOverviewCard";
-import MemberInfoCard from "../../../../../mui/MemberInfoCard";
-import manager from "../../../../../assets/construction/manager.png";
-import Search from "../../../../../assets/construction/Search.png";
-import AddMemberModal from "../../users/modals/AddMemberModal";
-import DropdownButton from "../../../../../comments/components/DropdownButton";
-import CustomModal from "../../../../../comments/components/CustomModal";
-import { Box, Modal, Typography } from "@mui/material";
-import Button from "../../../../../components/Button";
-import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
-import { Height } from "@mui/icons-material";
+// import SectionDetailPage from "../SectionDetailPage";
 
 const SectionTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
-
-  // const [showModal, setShowModal] = useState(false);
-
-  // const handleLinkClick = () => {
-  //   setShowModal(true);
-  // };
   const navigate = useNavigate();
+
   const actions = [
     {
       label: "View Section Detail",
@@ -43,8 +26,9 @@ const SectionTab = () => {
       onClick: () => console.log("Delete clicked"),
     },
   ];
+
   return (
-    <div>
+    <div className="p-2 sm:p-4">
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
@@ -53,8 +37,10 @@ const SectionTab = () => {
           navigate("/project-manager-dashboard/project-management/addProject")
         }
       />
+
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      <div className="flex justify-between gap-x-2">
+
+      <div className="flex gap-5 lg:flex-row flex-col ">
         <SectionCard
           sectionNo="01"
           sectionName="Piles"
@@ -64,17 +50,15 @@ const SectionTab = () => {
           dropdownActions={actions}
         />
         <SectionCard
-          sectionNo="01"
-          sectionName="Piles"
-          totalDemands="14"
-          manager="Imran"
-          linkedStores="01"
+          sectionNo="02"
+          sectionName="Beams"
+          totalDemands="20"
+          manager="Ali"
+          linkedStores="02"
           dropdownActions={actions}
         />
-      </div>{" "}
-      {/* Modal */}
-      {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
-      {/* <SectionDetailPage /> */}
+       
+      </div>
     </div>
   );
 };

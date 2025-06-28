@@ -8,7 +8,6 @@ import Search from "../../../../../src/assets/construction/Search.png";
 import manager from "../../../../../src/assets/construction/manager.png";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
-import { Check } from "@mui/icons-material";
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
 
@@ -17,9 +16,10 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "600px",
+  width: "90%",
+  maxWidth: "600px",
   boxShadow: 24,
-  borderRadius: "50px",
+  borderRadius: "30px",
 };
 
 const CmStoreDetail = () => {
@@ -95,19 +95,6 @@ const CmStoreDetail = () => {
     { headerName: "Remarks", field: "remarks" },
   ];
 
-  const stockIn = [
-    { id: "1", label: "PO ( Purchase Order )" },
-    { id: "2", label: "QTY ( Quantity )" },
-    { id: "3", label: "Note" },
-    { id: "4", label: "Product" },
-  ];
-
-  const stockOut = [
-    { id: "1", label: "Material" },
-    { id: "2", label: "QTY ( Quantity )" },
-    { id: "3", label: "CM ( Construction Manager )" },
-  ];
-
   const CustomActionComponent = () => {
     const [open, setOpen] = useState(false);
     const [modalType, setModalType] = useState("");
@@ -120,8 +107,6 @@ const CmStoreDetail = () => {
       setOpen(false);
       setModalType("");
     };
-
-    const currentOptions = modalType === "stock-in" ? stockIn : stockOut;
 
     return (
       <>
@@ -137,64 +122,39 @@ const CmStoreDetail = () => {
           </IconButton>
         </DropdownButton>
 
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <div className="bg-white p-5">
-              <h1 className="text-2xl font-medium text-[#222222] mb-8">
-                {modalType === "stock-in" ? (
-                  <>
-                    <h1 className="text-3xl">Stock In</h1>
-                    <Box>
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="PO ( Purchase Order )"
-                      />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="QTY ( Quantity )"
-                      />
-                      <CustomTextField fullWidth margin="normal" label="Note" />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="Product"
-                      />
-                      <Button buttonText={"Save"} onClick={handleClose} />
-                    </Box>
-                  </>
-                ) : (
-                  <>
-                    <h1 className="text-3xl">Stock Out</h1>
-                    <Box>
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="Material"
-                      />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="QTY ( Quantity )"
-                      />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="CM ( Construction Manager )"
-                      />{" "}
-                      <CustomTextField fullWidth margin="normal" label="Note" />
-                      <Button buttonText={"Save"} onClick={handleClose} />
-                    </Box>
-                  </>
-                )}
-              </h1>
-            </div>
+        <Modal open={open} onClose={handleClose}>
+          <Box sx={style} className="bg-white p-5">
+            <h1 className="text-3xl mb-4">
+              {modalType === "stock-in" ? "Stock In" : "Stock Out"}
+            </h1>
+            <Box>
+              <CustomTextField
+                fullWidth
+                margin="normal"
+                label={
+                  modalType === "stock-in"
+                    ? "PO ( Purchase Order )"
+                    : "Material"
+                }
+              />
+              <CustomTextField
+                fullWidth
+                margin="normal"
+                label="QTY ( Quantity )"
+              />
+              {modalType === "stock-out" && (
+                <CustomTextField
+                  fullWidth
+                  margin="normal"
+                  label="CM ( Construction Manager )"
+                />
+              )}
+              <CustomTextField fullWidth margin="normal" label="Note" />
+              {modalType === "stock-in" && (
+                <CustomTextField fullWidth margin="normal" label="Product" />
+              )}
+              <Button buttonText="Save" onClick={handleClose} />
+            </Box>
           </Box>
         </Modal>
       </>
@@ -204,30 +164,29 @@ const CmStoreDetail = () => {
   const [hasMemberInfo, setHasMemberInfo] = useState(false);
 
   return (
-    <>
+    <div className="px-4 py-6">
       <TopBar
         title="Store Detail"
         detail="lorem ipsum dolor sit amet"
         showExport={true}
-        // buttonText="Add Store"
       />
 
-      <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex justify-between">
-          <p className="text-[#444444] font-semibold text-xl">
+      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col gap-4 p-4">
+      <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
+          <p className="text-[#444444] font-semibold text-lg md:text-xl">
             Order Name Here
           </p>
-          <div className="flex gap-x-2">
-            <div className="text-white bg-[#BF1017] px-12 py-2 rounded-full">
+          <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
+            <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
               IN-STORE
             </div>
             <CustomActionComponent />
           </div>
         </div>
 
-        <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
+        <div className="h-[1px] bg-[#CDCDCD] w-full"></div>
 
-        <div className="flex justify-between gap-x-4 flex-wrap">
+        <div className="flex flex-wrap gap-4">
           <InfoRow label="Store ID:" value="store id" />
           <InfoRow label="Store Name:" value="store name" />
           <InfoRow label="Project:" value="project" />
@@ -235,7 +194,7 @@ const CmStoreDetail = () => {
           <InfoRow label="Material:" value="material" />
         </div>
 
-        <div className="flex justify-start gap-x-14 flex-wrap">
+        <div className="flex flex-wrap gap-4">
           <InfoRow label="Store Incharge:" value="store incharge" />
           <InfoRow label="Received:" value="received" />
           <InfoRow label="PO Quantity:" value="po quantity" />
@@ -246,7 +205,6 @@ const CmStoreDetail = () => {
         </div>
       </div>
 
-      {/* Member Info */}
       <div>
         <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
           Members Overview
@@ -277,27 +235,25 @@ const CmStoreDetail = () => {
         )}
       </div>
 
-      {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable data={data} columns={columns} cellComponents={{}} />
 
-      {/* Stock Movement Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
       </h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable data={data1} columns={columns1} cellComponents={{}} />
-    </>
+    </div>
   );
 };
 
 const InfoRow = ({ label, value }) => (
-  <div className="flex gap-x-4 items-center mt-2">
-    <p className="text-[#444444] font-semibold text-xl">{label}</p>
-    <p className="text-[#979797]">{value}</p>
+  <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-start sm:items-center">
+    <p className="text-[#444444] font-semibold text-sm sm:text-base">{label}</p>
+    <p className="text-[#979797] text-sm sm:text-base">{value}</p>
   </div>
 );
 
