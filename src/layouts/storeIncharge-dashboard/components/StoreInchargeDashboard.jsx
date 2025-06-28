@@ -59,6 +59,27 @@ function StoreInchargeDashboard() {
     { headerName: "Date", field: "date" },
   ];
 
+  const projectStats = [
+    {
+      label: "Total Projects",
+      icon: FaBoxesStacked,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Approved Demands",
+      icon: FaHandHoldingHeart,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Rejected Demands",
+      icon: FaHandHoldingHeart,
+      count: 10,
+      percentage: 10,
+    },
+  ];
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0 ">
       {/* Header */}
@@ -71,27 +92,24 @@ function StoreInchargeDashboard() {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <h2 className="text-2xl font-semibold text-primary ">Overview</h2>
 
-      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <AnalyticsCard
-          label={"Total Projects"}
-          icon={FaBoxesStacked}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Approved Demands"}
-          icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Rejected Demands"}
-          icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
-        />
+      <div className="mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {projectStats.map((item, index) => {
+          return (
+            <div
+              key={index}
+              className={`relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] `}
+            >
+              <AnalyticsCard
+                label={item.label}
+                icon={item.icon}
+                count={item.count}
+                percentage={item.percentage}
+              />
+            </div>
+          );
+        })}
       </div>
-        <BasicBarChart/>
+      <BasicBarChart />
 
       {/* table */}
       <div className="overflow-x-auto">

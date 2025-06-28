@@ -80,6 +80,27 @@ const PmUserManagement = () => {
       field: "action",
     },
   ];
+  const managerStats = [
+    {
+      label: "Site Manager",
+      icon: FaPeopleLine,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Project Manager",
+      icon: FaPeopleLine,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Construction Manager",
+      icon: FaPeopleLine,
+      count: 10,
+      percentage: 10,
+    },
+  ];
+
   const CustomActionComponent = ({ data }) => {
     return (
       <DropdownButton
@@ -146,25 +167,24 @@ const PmUserManagement = () => {
       <h2 className="text-2xl font-semibold text-primary">
         Total Users Overview
       </h2>
-      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <AnalyticsCard
-          label={"Site Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />{" "}
-        <AnalyticsCard
-          label={"Project Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Construction Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />
+      <div className="mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {managerStats.map((item, index) => {
+         
+
+          return (
+            <div
+              key={index}
+              className={`relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0]`}
+            >
+              <AnalyticsCard
+                label={item.label}
+                icon={item.icon}
+                count={item.count}
+                percentage={item.percentage}
+              />
+            </div>
+          );
+        })}
       </div>
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>

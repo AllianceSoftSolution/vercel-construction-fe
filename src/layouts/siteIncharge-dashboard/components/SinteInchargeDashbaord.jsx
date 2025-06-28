@@ -57,6 +57,32 @@ function SinteInchargeDashbaord() {
     { headerName: "CM Name", field: "cmName" },
     { headerName: "Date", field: "date" },
   ];
+  const dashboardStats = [
+    {
+      label: "Total Projects",
+      icon: FaBoxesStacked,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Approved Demands",
+      icon: FaHandHoldingHeart,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Rejected Demands",
+      icon: FaHandHoldingHeart,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Store Synced",
+      icon: IoStorefrontSharp,
+      count: 5,
+      percentage: 8,
+    },
+  ];
 
   return (
     <div className="px-4 md:px-6 lg:px-8 py-4 w-full">
@@ -70,30 +96,19 @@ function SinteInchargeDashbaord() {
 
       <h2 className="text-2xl font-semibold text-primary">Overview</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-        <AnalyticsCard
-          label={"Total Projects"}
-          icon={FaBoxesStacked}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Approved Demands"}
-          icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Rejected Demands"}
-          icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Store Synced"}
-          icon={IoStorefrontSharp}
-          count={5}
-          percentage={8}
-        />
+        {dashboardStats.map((item, index) => (
+          <div
+            key={index}
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 lg:last:after:hidden"
+          >
+            <AnalyticsCard
+              label={item.label}
+              icon={item.icon}
+              count={item.count}
+              percentage={item.percentage}
+            />
+          </div>
+        ))}
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -1,10 +1,7 @@
 import React from "react";
 import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { FaToolbox } from "react-icons/fa";
-import { IoStorefrontSharp } from "react-icons/io5";
-import { CiExport } from "react-icons/ci";
-import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
+
+import { IoTabletLandscape } from "react-icons/io5";
 
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
@@ -13,8 +10,109 @@ import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBar
 import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 import SimpleTable from "../../../components/SimpleTable";
+import {
+  Balance,
+  CachedSharp,
+  DoNotDisturbOnTotalSilenceSharp,
+  NewReleasesOutlined,
+  NewspaperOutlined,
+  NewspaperSharp,
+} from "@mui/icons-material";
+import Divider from "../../../components/Divider";
 
 function AdminDashboard() {
+  const data1 = [
+    {
+      id: 1,
+      demandId: "001",
+      demandName: "Cement",
+      project: "Bridge Construction",
+      material: "Cement",
+      section: "A1",
+      qty: 120,
+      unit: "ton",
+      poQty: 100,
+      status: "Pending",
+      assingedVendors: "Owner",
+    },
+    {
+      id: 2,
+      demandId: "002",
+      demandName: "Cement",
+      project: "Highway Expansion",
+      material: "Steel",
+      section: "B2",
+      qty: 250,
+      unit: "ton",
+      poQty: 100,
+      status: "Approved",
+    },
+    {
+      id: 3,
+      demandId: "003",
+      demandName: "Cement",
+      project: "Metro Rail",
+      material: "Concrete",
+      section: "C3",
+      qty: 300,
+      unit: "ton",
+      poQty: 100,
+      status: "In Progress",
+      assingedVendors: "Owner",
+    },
+  ];
+
+  const analyticsData = [
+    {
+      label: "Total Projects",
+      icon: FaBoxesStacked,
+      count: 2132,
+      percentage: 10.25,
+    },
+    {
+      label: "Approved Demands",
+      icon: FaHandHoldingHeart,
+      count: 2132,
+      percentage: 10.25,
+    },
+    {
+      label: "Rejected Demands",
+      icon: IoTabletLandscape,
+      count: 2132,
+      percentage: 10.25,
+    },
+    {
+      label: "Total POs Created",
+      icon: NewReleasesOutlined,
+      count: 2132,
+      percentage: 10.25,
+    },
+    {
+      label: "Total Amount Paid",
+      icon: NewspaperOutlined,
+      count: 2132,
+      percentage: 10.25,
+    },
+    {
+      label: "Balance Amount",
+      icon: CachedSharp,
+      count: 2132,
+      percentage: 10.25,
+    },
+  ];
+  const columns1 = [
+    { headerName: "Demand ID", field: "demandId" },
+    { headerName: "Project Name", field: "project" },
+    { headerName: "Demand ", field: "demandName" },
+    { headerName: "Materials", field: "material" },
+    { headerName: "Sections", field: "section" },
+    { headerName: "Qty", field: "qty" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "PO Qty", field: "poQty" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Assigned Vendors", field: "assingedVendors" },
+    { headerName: "Action", field: "action" },
+  ];
   const data = [
     {
       id: 1,
@@ -77,43 +175,22 @@ function AdminDashboard() {
       </h2>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        <AnalyticsCard
-          label="Total Projects"
-          icon={FaBoxesStacked}
-          count={2132}
-          percentage={10.25}
-        />
-        <AnalyticsCard
-          label="Approved Demands"
-          icon={FaHandHoldingHeart}
-          count={2132}
-          percentage={10.25}
-        />
-        <AnalyticsCard
-          label="Rejected Demands"
-          icon={FaHandHoldingHeart}
-          count={2132}
-          percentage={10.25}
-        />
-        <AnalyticsCard
-          label="Total POs Created"
-          icon={FaHandHoldingHeart}
-          count={2132}
-          percentage={10.25}
-        />
-        <AnalyticsCard
-          label="Total Amount Paid"
-          icon={FaHandHoldingHeart}
-          count={2132}
-          percentage={10.25}
-        />
-        <AnalyticsCard
-          label="Balance Amount"
-          icon={FaHandHoldingHeart}
-          count={2132}
-          percentage={10.25}
-        />
+        {analyticsData.map((item, index) => (
+          <div
+            key={index}
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300
+                     xl:last:after:hidden"
+          >
+            <AnalyticsCard
+              label={item.label}
+              icon={item.icon}
+              count={item.count}
+              percentage={item.percentage}
+            />
+          </div>
+        ))}
       </div>
+      
 
       <div className="mt-6 flex flex-col lg:flex-row gap-6">
         <div className="flex-1 min-w-[280px]">
@@ -132,8 +209,12 @@ function AdminDashboard() {
       </div>
 
       <div className="overflow-x-auto mt-8">
-        <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
+        <TopBar title="Recent Demands" />
         <SimpleTable columns={columns} data={data} cellComponents={{}} />
+      </div>
+      <div className="overflow-x-auto mt-8">
+        <TopBar title="Recent POs" />
+        <SimpleTable columns={columns1} data={data1} cellComponents={{}} />
       </div>
     </div>
   );

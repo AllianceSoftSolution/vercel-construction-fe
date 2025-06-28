@@ -14,6 +14,9 @@ const ProjectInfoCard = ({
   section,
   amount,
   date,
+  totalAmount,
+  paidAmount,
+  remainingAmount,
   projectLocation,
   projectStatus,
   showIcons = true,
@@ -70,6 +73,9 @@ const ProjectInfoCard = ({
         <Info label="Section" value={section} />
         <Info label="Amount" value={amount} />
         <Info label="Date" value={date} />
+        <Info label="Total Amount" value={totalAmount} />
+        <Info label="Paid Amount" value={paidAmount} />
+        <Info label="Remaining Amount" value={remainingAmount} />
       </div>
 
       

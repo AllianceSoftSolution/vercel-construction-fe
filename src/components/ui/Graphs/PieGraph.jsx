@@ -21,12 +21,14 @@ export default function PieGraph({pieTitle}) {
               paddingAngle: 5,
               innerRadius: 60,
               outerRadius: 80,
+              cornerRadius: 12,
               data,
             },
           ]}
           width={200}
           height={200}
           hideLegend
+           
         />
       </Stack>
       <div className="flex justify-between">

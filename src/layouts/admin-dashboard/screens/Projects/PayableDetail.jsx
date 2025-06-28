@@ -1,57 +1,48 @@
 import React from "react";
 import TopBar from "@/components/ui/TopBar";
-import {
-  Box,
-  IconButton,
-} from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import SimpleTable from "../../../../components/SimpleTable";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { AccountBalance, AccountTree, Paid } from "@mui/icons-material";
+import { RiRecordMailLine } from "react-icons/ri";
 
-const data = [
+const paymentData = [
   {
     id: 1,
-    poRef: "PO-1001",
-    material: "Cement",
-    qty: "100 Bags",
-    type: "Stock In",
-    handledBy: "John Doe",
-    remarks: "Received at site",
-    date: "2025-06-21",
-    fileUrl: "/docs/invoice-po1001.pdf",
+    vendorName: "ABC Supplies Ltd.",
+    amountPaid: 1200,
+    remainingBalance: 300,
+    date: "2025-06-25",
+    paidBy: "John Doe",
+    fileUrl: "/docs/payment-receipt-abc.pdf",
   },
   {
     id: 2,
-    poRef: "PO-1002",
-    material: "Steel",
-    qty: "50 Tons",
-    type: "Stock Out",
-    handledBy: "Ahmed Khan",
-    remarks: "Issued for Block A",
-    date: "2025-06-19",
-    fileUrl: "/docs/dispatch-note-po1002.pdf",
+    vendorName: "Tech Solutions Inc.",
+    amountPaid: 800,
+    remainingBalance: 0,
+    date: "2025-06-26",
+    paidBy: "Sarah Khan",
+    fileUrl: "/docs/payment-receipt-tech.pdf",
   },
   {
     id: 3,
-    poRef: "PO-1002",
-    material: "Steel",
-    qty: "50 Tons",
-    type: "Stock Out",
-    handledBy: "Ahmed Khan",
-    remarks: "Issued for Block A",
-    date: "2025-06-19",
-    fileUrl: "/docs/dispatch-note-po1002.pdf",
+    vendorName: "Global Office Equipment",
+    amountPaid: 1500,
+    remainingBalance: 500,
+    date: "2025-06-27",
+    paidBy: "Ahmed Raza",
+    fileUrl: "/docs/payment-receipt-global.pdf",
   },
 ];
 
-const columns = [
-  { headerName: "PO Ref", field: "poRef" },
-  { headerName: "Material", field: "material" },
-  { headerName: "Qty", field: "qty" },
-  { headerName: "Type", field: "type" },
-  { headerName: "Handled By", field: "handledBy" },
-  { headerName: "Remarks", field: "remarks" },
+const paymentColumns = [
+  { headerName: "Vendor Name", field: "vendorName" },
+  { headerName: "Amount Paid", field: "amountPaid" },
+  { headerName: "Remaining Balance", field: "remainingBalance" },
   { headerName: "Date", field: "date" },
+  { headerName: "Paid By", field: "paidBy" },
   { headerName: "Attachment", field: "fileUrl" },
 ];
 
@@ -67,17 +58,13 @@ export default function PayableDetails() {
       <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
         <AnalyticsCard
           label="Total Payables"
-          icon={IoMdArrowDropdown}
+          icon={AccountTree}
           count={120000}
         />
-        <AnalyticsCard
-          label="Total Paid"
-          icon={IoMdArrowDropdown}
-          count={250000}
-        />
+        <AnalyticsCard label="Total Paid" icon={Paid} count={250000} />
         <AnalyticsCard
           label="Balance Remaining"
-          icon={IoMdArrowDropdown}
+          icon={RiRecordMailLine}
           count={1900000}
         />
       </div>
@@ -87,7 +74,7 @@ export default function PayableDetails() {
           detail="Detailed view of material stock movement transactions for selected Purchase Order."
         />
         <div className="mt-4 overflow-x-auto">
-          <SimpleTable data={data} columns={columns} cellComponents={{}} />
+          <SimpleTable data={paymentData} columns={paymentColumns} cellComponents={{}} />
         </div>
       </div>
     </Box>

@@ -10,6 +10,7 @@ import Button from "../../../../../components/Button";
 import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
 
 const style = {
   position: "absolute",
@@ -123,6 +124,7 @@ const ProjectInformationTab = () => {
       isLinkOpen: "false",
     });
   };
+
   return (
     <>
       <ProjectInfoCard
@@ -133,7 +135,9 @@ const ProjectInformationTab = () => {
         projectName="Project Name Here"
         projectCode="123"
         section="4"
-        amount="$12333"
+        totalAmount="$12333"
+        remainingAmount="232$"
+        paidAmount= "5000"
         date="12/04/2025"
         projectLocation="United Kingdom 11 street Real Estate London"
         projectStatus="IN-PROGRESS"
