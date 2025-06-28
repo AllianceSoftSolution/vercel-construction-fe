@@ -8,7 +8,7 @@ import { FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import AddMemberModal from "./users/modals/AddMemberModal";
 
-const Stores = () => {
+const SinStores = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -134,4 +134,4 @@ const Stores = () => {
   );
 };
 
-export default Stores;
+export default SinStores;

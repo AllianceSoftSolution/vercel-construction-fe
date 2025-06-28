@@ -16,12 +16,11 @@ const SiteProjectDetailPage = () => {
   };
 
   return (
-    <div>
+    <div className="px-4 md:px-6 py-4 w-full">
       <TopBar
         title="Project Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
-        
       />
 
       <Box
@@ -29,13 +28,16 @@ const SiteProjectDetailPage = () => {
           mt: 2,
           backgroundColor: "#f7f7f7",
           borderRadius: "12px",
-          px: 2,
+          px: { xs: 1, sm: 2 },
+          overflowX: "auto", // For mobile tab scrolling
         }}
       >
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
           textColor="inherit"
+          variant="scrollable"
+          scrollButtons="auto"
           TabIndicatorProps={{
             style: {
               backgroundColor: "#FC8908",
@@ -49,6 +51,7 @@ const SiteProjectDetailPage = () => {
               textTransform: "none",
               fontWeight: 500,
               color: "#6B7280",
+              minWidth: 120,
             },
             "& .Mui-selected": {
               color: "#FC8908 !important",

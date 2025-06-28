@@ -10,7 +10,7 @@ import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate } from "react-router-dom";
 import { FaUserEdit } from "react-icons/fa";
 
-const PurchaseOrder = () => {
+const PmPOs = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const navigate = useNavigate();
   const data = [
@@ -125,4 +125,4 @@ const PurchaseOrder = () => {
   );
 };
 
-export default PurchaseOrder;
+export default PmPOs;

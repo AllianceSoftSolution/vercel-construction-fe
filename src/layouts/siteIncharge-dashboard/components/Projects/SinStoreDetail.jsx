@@ -9,6 +9,8 @@ import manager from "../../../../../src/assets/construction/manager.png";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import { Check } from "@mui/icons-material";
+import CustomTextField from "../../../../mui/CustomTextField";
+import Button from "../../../../components/Button";
 
 const style = {
   position: "absolute",
@@ -19,7 +21,7 @@ const style = {
   boxShadow: 24,
 };
 
-const PurchaseOrderDetail = () => {
+const SinStoreDetail = () => {
   const data = [
     {
       id: 1,
@@ -140,24 +142,60 @@ const PurchaseOrderDetail = () => {
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
-          <Box sx={style}>
-            <div className="bg-white p-5">
-              <h1 className="text-2xl font-medium text-[#222222] mb-8">
-                {modalType === "stock-in" ? "Stock In Options" : "Stock Out Options"}
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "90%", // Responsive width
+              maxWidth: 500, // Limit max width
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              borderRadius: "12px",
+              p: { xs: 2, sm: 4 }, // Padding varies by screen size
+            }}
+          >
+            <div className="flex flex-col gap-4">
+              <h1 className="text-xl sm:text-2xl font-semibold text-[#222222] mb-2">
+                {modalType === "stock-in" ? "Stock In" : "Stock Out"}
               </h1>
-              <div className="space-y-4">
-                {currentOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => console.log(option.label)}
-                    className="w-full bg-white border border-[#ebebeb] rounded-2xl p-6 flex items-center gap-4 hover:bg-[#ebebeb] transition-colors"
-                  >
-                    {/* <div className="w-6 h-6 border-2 border-[#cdcdcd] rounded bg-white" /> */}
-                    <span className="text-xl font-medium text-[#222222]">
-                      {option.label}
-                    </span>
-                  </button>
-                ))}
+
+              {modalType === "stock-in" ? (
+                <>
+                  <CustomTextField
+                    fullWidth
+                    margin="normal"
+                    label="PO ( Purchase Order )"
+                  />
+                  <CustomTextField
+                    fullWidth
+                    margin="normal"
+                    label="QTY ( Quantity )"
+                  />
+                  <CustomTextField fullWidth margin="normal" label="Note" />
+                  <CustomTextField fullWidth margin="normal" label="Product" />
+                </>
+              ) : (
+                <>
+                  <CustomTextField fullWidth margin="normal" label="Material" />
+                  <CustomTextField
+                    fullWidth
+                    margin="normal"
+                    label="QTY ( Quantity )"
+                  />
+                  <CustomTextField fullWidth margin="normal" label="Note" />
+                  <CustomTextField
+                    fullWidth
+                    margin="normal"
+                    label="CM ( Construction Manager )"
+                  />
+                  <CustomTextField fullWidth margin="normal" label="Note" />
+                </>
+              )}
+
+              <div className="mt-4 flex justify-end">
+                <Button buttonText={"Save"} onClick={handleClose} />
               </div>
             </div>
           </Box>
@@ -177,12 +215,13 @@ const PurchaseOrderDetail = () => {
         // buttonText="Add Store"
       />
 
-   
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex justify-between">
-          <p className="text-[#444444] font-semibold text-xl">Order Name Here</p>
-          <div className="flex gap-x-2">
-            <div className="text-white bg-[#BF1017] px-12 py-2 rounded-full">
+        <div className="flex flex-col md:flex-row justify-between gap-y-4 md:gap-y-0">
+          <p className="text-[#444444] font-semibold text-xl">
+            Order Name Here
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-sm md:text-base">
               IN-STORE
             </div>
             <CustomActionComponent />
@@ -212,7 +251,9 @@ const PurchaseOrderDetail = () => {
 
       {/* Member Info */}
       <div>
-        <h4 className="mt-8 text-[#12141D] font-semibold text-xl">Members Overview</h4>
+        <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
+          Members Overview
+        </h4>
         {hasMemberInfo ? (
           <MemberInfoCard
             title="General information - Store Incharge"
@@ -246,14 +287,15 @@ const PurchaseOrderDetail = () => {
       <SimpleTable data={data} columns={columns} cellComponents={{}} />
 
       {/* Stock Movement Table */}
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Stock Movement History</h4>
+      <h4 className="mt-8 text-[#444444] font-semibold text-xl">
+        Stock Movement History
+      </h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable data={data1} columns={columns1} cellComponents={{}} />
     </>
   );
 };
-
 
 const InfoRow = ({ label, value }) => (
   <div className="flex gap-x-4 items-center mt-2">
@@ -262,4 +304,4 @@ const InfoRow = ({ label, value }) => (
   </div>
 );
 
-export default PurchaseOrderDetail;
+export default SinStoreDetail;

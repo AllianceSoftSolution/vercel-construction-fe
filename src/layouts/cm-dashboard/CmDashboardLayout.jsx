@@ -34,16 +34,7 @@ const CmDashboardLayout = ({ role }) => {
       icon: MdSpaceDashboard,
       path: "/construction-manager-dashboard",
     },
-    {
-      label: "User Management",
-      icon: FaUserTie,
-      path: "/construction-manager-dashboard/user-management",
-    },
-    {
-      label: "Project Management",
-      icon: FaBoxesStacked,
-      path: "/construction-manager-dashboard/project-management",
-    },
+
     {
       label: "Demands",
       icon: FaHandHoldingHeart,
@@ -59,11 +50,7 @@ const CmDashboardLayout = ({ role }) => {
       icon: IoStorefrontSharp,
       path: "/construction-manager-dashboard/store",
     },
-    {
-      label: "Materials",
-      icon: FaDiceD6,
-      path: "/construction-manager-dashboard/materials",
-    },
+  
   ];
 
   return (

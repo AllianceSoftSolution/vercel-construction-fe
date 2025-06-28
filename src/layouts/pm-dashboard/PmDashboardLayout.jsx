@@ -5,7 +5,14 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
-import { FaBars, FaDiceD6, FaHandHoldingHeart, FaSearch, FaToolbox, FaUserTie } from "react-icons/fa";
+import {
+  FaBars,
+  FaDiceD6,
+  FaHandHoldingHeart,
+  FaSearch,
+  FaToolbox,
+  FaUserTie,
+} from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
@@ -28,7 +35,7 @@ const PmDashboardLayout = ({ role }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-   const sideBarItems = [
+  const sideBarItems = [
     {
       label: "Dashboard",
       icon: MdSpaceDashboard,
@@ -58,11 +65,6 @@ const PmDashboardLayout = ({ role }) => {
       label: "Store",
       icon: IoStorefrontSharp,
       path: "/project-manager-dashboard/store",
-    },
-    {
-      label: "Materials",
-      icon: FaDiceD6,
-      path: "/project-manager-dashboard/materials",
     },
   ];
 

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
-import ProjectInfoCard from "../../../../components/ui/ProjectInfoCard";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -19,11 +18,20 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "600px",
+  width: "90%",
+  maxWidth: "600px",
   boxShadow: 24,
 };
+
 const CmSectionDetailPage = () => {
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+  const [hasMemberInfo, sethasMemberInfo] = useState(false);
+  const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   const CustomActionComponent = ({ data }) => {
     return (
       <DropdownButton
@@ -46,7 +54,6 @@ const CmSectionDetailPage = () => {
             icon: <FaTrash />,
           },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -54,6 +61,7 @@ const CmSectionDetailPage = () => {
       </DropdownButton>
     );
   };
+
   const data = [
     {
       id: 1,
@@ -66,29 +74,9 @@ const CmSectionDetailPage = () => {
       date: "2025-06-15",
       action: "id-here",
     },
-    {
-      id: 2,
-      cmId: "1",
-      constructionManager: "Hassan",
-      email: "h@gmail.com",
-      phone: +123455666,
-      address: "A1",
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      cmId: "1",
-      constructionManager: "Hassan",
-      email: "h@gmail.com",
-      phone: +123455666,
-      address: "A1",
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
+    // ... more rows
   ];
+
   const columns = [
     { headerName: "CM ID", field: "cmId" },
     { headerName: "Construction Manager", field: "constructionManager" },
@@ -99,69 +87,55 @@ const CmSectionDetailPage = () => {
     { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
-  const [showModal, setShowModal] = useState(false);
-  const [hasMemberInfo, sethasMemberInfo] = useState(false);
-  const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleLinkClick = () => {
-    setShowModal(true);
-  };
+
   return (
-    <div className="mt-4">
+    <div className="mt-4 px-4 w-full">
       <TopBar
         title="Section Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
-      <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex justify-between gap-x-4 flex-wrap">
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">
-              Project Name:
-            </p>
-            <p className="text-[#979797]">project name</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">
-              Project Code:
-            </p>
-            <p className="text-[#979797]">project Code</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Section:</p>
-            <p className="text-[#979797]">section</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Amount:</p>
-            <p className="text-[#979797]">amount</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Date:</p>
-            <p className="text-[#979797]">date</p>
-          </div>
+
+      {/* Project Info */}
+      <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 flex flex-col gap-4">
+        <div className="flex flex-wrap justify-between gap-4">
+          {[
+            ["Project Name", "project name"],
+            ["Project Code", "project Code"],
+            ["Section", "section"],
+            ["Amount", "amount"],
+            ["Date", "date"],
+          ].map(([label, value], index) => (
+            <div key={index} className="flex items-center gap-2 w-full sm:w-[45%]">
+              <p className="text-[#444444] font-semibold text-sm sm:text-base">
+                {label}:
+              </p>
+              <p className="text-[#979797] text-sm sm:text-base">{value}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="flex justify-start gap-x-14 flex-wrap">
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex gap-2 items-center w-full sm:w-[45%]">
+            <p className="text-[#444444] font-semibold text-sm sm:text-base">
               Project Location:
             </p>
-            <p className="text-[#979797]">project Location</p>
+            <p className="text-[#979797] text-sm sm:text-base">project Location</p>
           </div>
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">
+          <div className="flex gap-2 items-center w-full sm:w-[45%]">
+            <p className="text-[#444444] font-semibold text-sm sm:text-base">
               Project Status:
             </p>
-            <p className="text-[#979797]">project Status</p>
+            <p className="text-[#979797] text-sm sm:text-base">project Status</p>
           </div>
         </div>
       </div>
-      <div>
-        <h4 className="mt-10 text-[#12141D] font-semibold text-xl">
+
+      {/* Members Overview */}
+      <div className="mt-10">
+        <h4 className="text-[#12141D] font-semibold text-lg sm:text-xl mb-4">
           Members Overview
         </h4>
-        <div className="flex gap-5">
+        <div className="flex flex-wrap gap-4">
           {hasMemberInfo ? (
             <MemberInfoCard
               title="General information - Store Head"
@@ -181,7 +155,6 @@ const CmSectionDetailPage = () => {
               title="General Information"
               subTitle="Project Manager"
               linkText="Assign Project Manager"
-              // onLinkClick={handleLinkClick}
               imageSrc={Search}
               imageAlt="Search Illustration"
               onManagerClick={(id) => sethasMemberInfo(id)}
@@ -206,7 +179,6 @@ const CmSectionDetailPage = () => {
               title="General Information"
               subTitle="Store Head"
               linkText="Assign Store Head"
-              // onLinkClick={handleLinkClick}
               imageSrc={Search}
               imageAlt="Search Illustration"
               onManagerClick={(id) => setHasStoreHeadInfo(id)}
@@ -214,36 +186,40 @@ const CmSectionDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Table */}
       <div className="mt-10">
         <TopBar
-          title="Construction Managers "
+          title="Construction Managers"
           detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
           buttonText="Add CM"
           onButtonClick={handleOpen}
         />
         {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-        <div>
-          <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={style}>
-              <AssignProjectManagerModal
-                onCreateClick={(bool) => {
-                  setShowModal(bool);
-                  setOpen(false);
-                }}
-              />
-            </Box>
-          </Modal>
+
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <AssignProjectManagerModal
+              onCreateClick={(bool) => {
+                setShowModal(bool);
+                setOpen(false);
+              }}
+            />
+          </Box>
+        </Modal>
+
+        <div className="overflow-x-auto mt-4">
+          <SimpleTable
+            data={data}
+            columns={columns}
+            cellComponents={{ action: CustomActionComponent }}
+          />
         </div>
-        <SimpleTable
-          data={data}
-          columns={columns}
-          cellComponents={{ action: CustomActionComponent }}
-        />
       </div>
     </div>
   );

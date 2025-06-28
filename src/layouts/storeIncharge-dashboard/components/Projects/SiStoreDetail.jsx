@@ -17,9 +17,12 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "600px",
+  width: "90%",
+  maxWidth: "600px",
+  bgcolor: "background.paper",
   boxShadow: 24,
-  borderRadius: "50px",
+  borderRadius: "20px",
+  p: 3,
 };
 
 const SiStoreDetail = () => {
@@ -144,56 +147,52 @@ const SiStoreDetail = () => {
           aria-describedby="modal-modal-description"
         >
           <Box sx={style}>
-            <div className="bg-white p-5">
-              <h1 className="text-2xl font-medium text-[#222222] mb-8">
+            <div className="space-y-6">
+              <h1 className="text-xl sm:text-2xl font-semibold text-[#222222]">
+                {modalType === "stock-in" ? "Stock In" : "Stock Out"}
+              </h1>
+              <div className="space-y-4">
                 {modalType === "stock-in" ? (
                   <>
-                    <h1 className="text-3xl">Stock In</h1>
-                    <Box>
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="PO ( Purchase Order )"
-                      />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="QTY ( Quantity )"
-                      />
-                      <CustomTextField fullWidth margin="normal" label="Note" />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="Product"
-                      />
-                      <Button buttonText={"Save"} onClick={handleClose} />
-                    </Box>
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="PO ( Purchase Order )"
+                    />
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="QTY ( Quantity )"
+                    />
+                    <CustomTextField fullWidth margin="normal" label="Note" />
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="Product"
+                    />
                   </>
                 ) : (
                   <>
-                    <h1 className="text-3xl">Stock Out</h1>
-                    <Box>
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="Material"
-                      />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="QTY ( Quantity )"
-                      />
-                      <CustomTextField
-                        fullWidth
-                        margin="normal"
-                        label="CM ( Construction Manager )"
-                      />{" "}
-                      <CustomTextField fullWidth margin="normal" label="Note" />
-                      <Button buttonText={"Save"} onClick={handleClose} />
-                    </Box>
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="Material"
+                    />
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="QTY ( Quantity )"
+                    />
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="CM ( Construction Manager )"
+                    />
+                    <CustomTextField fullWidth margin="normal" label="Note" />
                   </>
                 )}
-              </h1>
+                <Button buttonText={"Save"} onClick={handleClose} />
+              </div>
             </div>
           </Box>
         </Modal>
@@ -212,22 +211,22 @@ const SiStoreDetail = () => {
         // buttonText="Add Store"
       />
 
-      <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex justify-between">
-          <p className="text-[#444444] font-semibold text-xl">
+      <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 space-y-4">
+        <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
+          <p className="text-[#444444] font-semibold text-lg md:text-xl">
             Order Name Here
           </p>
-          <div className="flex gap-x-2">
-            <div className="text-white bg-[#BF1017] px-12 py-2 rounded-full">
+          <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
+            <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
               IN-STORE
             </div>
             <CustomActionComponent />
           </div>
         </div>
 
-        <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
+        <div className="h-px bg-[#CDCDCD] w-full"></div>
 
-        <div className="flex justify-between gap-x-4 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
           <InfoRow label="Store ID:" value="store id" />
           <InfoRow label="Store Name:" value="store name" />
           <InfoRow label="Project:" value="project" />
@@ -235,7 +234,7 @@ const SiStoreDetail = () => {
           <InfoRow label="Material:" value="material" />
         </div>
 
-        <div className="flex justify-start gap-x-14 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
           <InfoRow label="Store Incharge:" value="store incharge" />
           <InfoRow label="Received:" value="received" />
           <InfoRow label="PO Quantity:" value="po quantity" />

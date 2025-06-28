@@ -3,8 +3,7 @@ import TopBar from "../../../../components/ui/TopBar";
 import manager from "../../../../assets/construction/manager.png";
 import { FaWhatsapp } from "react-icons/fa";
 import flag from "../../../../assets/construction/flag.jpg";
-import { MdDelete } from "react-icons/md";
-import { MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit } from "react-icons/md";
 import { FaBoxesStacked } from "react-icons/fa6";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -48,6 +47,7 @@ const SinMemberDetailPage = () => {
       action: "id-here",
     },
   ];
+
   const columns = [
     { headerName: "No", field: "no" },
     { headerName: "Project Name", field: "projectName" },
@@ -59,91 +59,74 @@ const SinMemberDetailPage = () => {
     { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
+
   return (
-    <div>
-      <TopBar
-        title="Site Manager"
-        detail="lorem ipsum"
-        showExport={true}
-        // buttonText="Assign New Project"
-      />
+    <div className="px-4 md:px-6 py-4">
+      <TopBar title="Site Manager" detail="lorem ipsum" showExport={true} />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
-      <div className="flex  ">
-        <div className="h-fit w-[30%] border-[0.5px] border-[#CDCDCD] rounded-xl p-2 mt-4 ">
-          <div className="flex flex-col items-center mt-6 gap-y-2">
+
+      <div className="flex flex-col lg:flex-row gap-4 mt-4">
+        {/* Left Sidebar */}
+        <div className="w-full lg:w-1/3 border-[0.5px] border-[#CDCDCD] rounded-xl p-4">
+          <div className="flex flex-col items-center gap-y-2">
             <img src={manager} className="w-[100px] h-[100px]" />
-            <h3>Manager Name Here</h3>
-            <div className="flex items-start mt-1">
-              <FaWhatsapp className="w-5 h-5 mr-1 mt-[2px]" />
-              <span className="text-sm items-center text-[#979797]">
-                1234567890
-              </span>
+            <h3 className="text-lg font-semibold">Manager Name Here</h3>
+            <div className="flex items-center gap-1 text-[#979797] text-sm">
+              <FaWhatsapp className="w-5 h-5" />
+              <span>1234567890</span>
             </div>
-            <div className="h-[1px] w-full bg-[#CDCDCD]"></div>
-          </div>{" "}
-          <div className="mt-2 flex flex-col p-2">
-            <div>
-              <h3 className="text-[#BF1017] font-semibold">
-                General Information
-              </h3>
-            </div>
-            <div className="flex justify-between">
-              <p className="font-semibold">Email</p>
-              <p>example@gmail.com</p>
-            </div>
-            <div className="flex justify-between">
-              <p className="font-semibold">Joining Date</p>
-              <p>12/04/2025</p>
-            </div>
-            <div className="flex justify-between">
-              <p className="font-semibold">Manager ID</p>
-              <p>9090</p>
-            </div>{" "}
-            <div className="flex justify-between">
-              <p className="font-semibold">Language</p>
-              <p>English</p>
-            </div>
-            <div className="flex justify-between">
+            <div className="h-[1px] w-full bg-[#CDCDCD] my-2"></div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <h3 className="text-[#BF1017] font-semibold">General Information</h3>
+            <InfoRow label="Email" value="example@gmail.com" />
+            <InfoRow label="Joining Date" value="12/04/2025" />
+            <InfoRow label="Manager ID" value="9090" />
+            <InfoRow label="Language" value="English" />
+            <div className="flex justify-between items-center">
               <p className="font-semibold">Country</p>
-              <div className="flex">
+              <div className="flex items-center gap-1">
                 <p>Pakistan</p>
                 <img src={flag} className="w-6 h-6" />
               </div>
             </div>
           </div>
         </div>
-        <div className="flex flex-col w-[70%] mt-2 p-4">
-          <div className="flex justify-between">
-            <h3 className="text-xl font-semibold text-[#BF1017]">OverView</h3>
+
+        {/* Right Content */}
+        <div className="w-full lg:w-2/3 flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold text-[#BF1017]">Overview</h3>
             <div className="flex gap-x-2">
-              <MdDelete
-                // onClick={onDelete}
-                className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
-              />
-              <MdEdit
-                // onClick={onEdit}
-                className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
-              />
+              <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+              <MdEdit className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
             </div>
           </div>
-          <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            <AnalyticsCard
-              label={"Total Projects "}
-              icon={FaBoxesStacked}
-              count={10}
-              // percentage={10}
-            />
+
+          <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+            <AnalyticsCard label={"Total Projects"} icon={FaBoxesStacked} count={10} />
           </div>
+
           <div>
             <h3 className="text-xl font-semibold text-[#BF1017] mt-4">
-              Projects Histroy{" "}
+              Project History
             </h3>
-            <SimpleTable data={data} columns={columns} cellComponents={{}} />
+            <div className="overflow-x-auto mt-2">
+              <SimpleTable data={data} columns={columns} cellComponents={{}} />
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+const InfoRow = ({ label, value }) => (
+  <div className="flex justify-between text-sm">
+    <p className="font-semibold">{label}</p>
+    <p>{value}</p>
+  </div>
+);
 
 export default SinMemberDetailPage;

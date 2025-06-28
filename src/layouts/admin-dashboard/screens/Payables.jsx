@@ -8,7 +8,6 @@ import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import CustomTextField from "../../../mui/CustomTextField";
 import Button from "../../../components/Button";
-import PayableDetails from "./Projects/PayableDetail";
 import { useNavigate } from "react-router-dom";
 import { IoPeopleSharp } from "react-icons/io5";
 
@@ -17,13 +16,15 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "600px",
+  width: "90%",
+  maxWidth: "600px",
   boxShadow: 24,
+  borderRadius: "16px",
 };
 
 const AddPriceModal = ({ open, onClose }) => (
   <Modal open={open} onClose={onClose}>
-    <Box sx={style} className="bg-white p-5 rounded-xl">
+    <Box sx={style} className="bg-white p-5">
       <h1 className="text-3xl font-semibold mb-4">Add Price Details</h1>
       <div className="flex flex-col gap-5">
         <CustomTextField label="PO Quantity" placeholder="Enter PO Quantity" />
@@ -41,17 +42,11 @@ const AddPriceModal = ({ open, onClose }) => (
 
 const TransactionModal = ({ open, onClose }) => (
   <Modal open={open} onClose={onClose}>
-    <Box sx={style} className="bg-white p-5 rounded-xl">
+    <Box sx={style} className="bg-white p-5">
       <h1 className="text-3xl font-semibold mb-4">Transaction Details</h1>
       <div className="flex flex-col gap-5">
-        <CustomTextField
-          label="Total Balance"
-          placeholder="Enter Total Balance"
-        />
-        <CustomTextField
-          label="Received Balance"
-          placeholder="Enter Received Balance"
-        />
+        <CustomTextField label="Total Balance" placeholder="Enter Total Balance" />
+        <CustomTextField label="Received Balance" placeholder="Enter Received Balance" />
         <label className="text-sm font-medium text-gray-700">Upload File</label>
         <input type="file" className="border border-gray-300 rounded p-2" />
       </div>
@@ -115,6 +110,7 @@ const ActionComforRegPOs = () => {
     </>
   );
 };
+
 const ActionComForPayableDetails = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -164,53 +160,43 @@ const Payables = () => {
   ];
 
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0">
+    <div className="px-2 sm:px-4 md:px-6 lg:px-10 py-4">
       <TopBar
         title="Payables"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showFilter={true}
         filterOptions={["Assigned", "Not-Assigned"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
+        onFilterChange={(selected) => console.log("Selected Filters:", selected)}
       />
 
-      <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
-        <AnalyticsCard
-          label="Total Payables"
-          icon={IoPeopleSharp}
-          count={120000}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+        <AnalyticsCard label="Total Payables" icon={IoPeopleSharp} count={120000} />
         <AnalyticsCard label="Total Paid" icon={IoPeopleSharp} count={250000} />
-        <AnalyticsCard
-          label="Balance Remaining"
-          icon={IoPeopleSharp}
-          count={1900000}
-        />
+        <AnalyticsCard label="Balance Remaining" icon={IoPeopleSharp} count={1900000} />
       </div>
 
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
 
-      {/* <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{action: ActionComForPayableDetails}} />
-      </div> */}
-
-      <div className="mt-16">
-        <h1 className="text-2xl mb-5 font-bold">New Purchase Orders</h1>
-        <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{ action: CustomActionComponent }}
-        />
+      <div className="mt-10">
+        <h1 className="text-xl md:text-2xl font-bold mb-5">New Purchase Orders</h1>
+        <div className="overflow-x-auto">
+          <SimpleTable
+            columns={columns}
+            data={data}
+            cellComponents={{ action: CustomActionComponent }}
+          />
+        </div>
       </div>
 
-      <div className="mt-16">
-        <h1 className="text-2xl mb-5 font-bold">Regular POs</h1>
-        <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{ action: ActionComforRegPOs }}
-        />
+      <div className="mt-10">
+        <h1 className="text-xl md:text-2xl font-bold mb-5">Regular POs</h1>
+        <div className="overflow-x-auto">
+          <SimpleTable
+            columns={columns}
+            data={data}
+            cellComponents={{ action: ActionComforRegPOs }}
+          />
+        </div>
       </div>
     </div>
   );

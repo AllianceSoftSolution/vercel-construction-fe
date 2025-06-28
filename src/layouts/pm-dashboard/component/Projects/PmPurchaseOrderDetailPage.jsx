@@ -8,7 +8,7 @@ import DropdownButton from "../../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 
-const PurchaseOrderDetail = () => {
+const PmPurchaseOrderDetailPage = () => {
   const data = [
     { id: 1, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
     { id: 2, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
@@ -52,20 +52,19 @@ const PurchaseOrderDetail = () => {
         // showExport={true}
       />
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex justify-between">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-y-4 w-full">
           <p className="text-[#444444] font-semibold text-xl">
             Order Name Here
           </p>
-          <div className="flex gap-x-2">
-            <div className="text-white bg-[#BF1017] px-12 py-2 rounded-full">
+
+          <div className="flex items-center gap-2">
+            <div className="text-white bg-[#BF1017] px-6 sm:px-8 py-1.5 sm:py-2 rounded-full text-sm sm:text-base">
               Partial
             </div>
-            <MdDelete
-              // onClick={onDelete}
-              className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
-            />{" "}
+            <MdDelete className="text-white bg-[#EF0404] w-9 h-9 sm:w-10 sm:h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
           </div>
         </div>
+
         <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
 
         <div className="flex justify-between gap-x-4 flex-wrap">
@@ -139,4 +138,4 @@ const PurchaseOrderDetail = () => {
   );
 };
 
-export default PurchaseOrderDetail;
+export default PmPurchaseOrderDetailPage;

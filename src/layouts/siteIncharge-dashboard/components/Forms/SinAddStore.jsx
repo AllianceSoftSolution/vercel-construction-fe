@@ -4,7 +4,7 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 
-const AddStore = () => {
+const SinAddStore = () => {
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -83,4 +83,4 @@ const AddStore = () => {
   );
 };
 
-export default AddStore;
+export default SinAddStore;
