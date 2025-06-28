@@ -132,7 +132,9 @@ const ProjectInformationTab = () => {
         projectName="Project Name Here"
         projectCode="123"
         section="4"
-        amount="$12333"
+        totalAmount="123"
+        paidAmount="123"
+        remainingAmount="123"
         date="12/04/2025"
         projectLocation="United Kingdom 11 street Real Estate London"
         projectStatus="IN-PROGRESS"
@@ -142,7 +144,6 @@ const ProjectInformationTab = () => {
         description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
         onEdit={() => console.log("edit description")}
       />
-      
     </>
   );
 };

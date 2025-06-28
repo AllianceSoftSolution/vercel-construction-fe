@@ -6,11 +6,8 @@ import { FaEye } from "react-icons/fa";
 
 import { useNavigate } from "react-router-dom";
 
-
-
 const SectionTab = () => {
-  const [hasMemberInfo, sethasMemberInfo] = useState(false);
- 
+  // const [hasMemberInfo, sethasMemberInfo] = useState(false);
 
   // const [showModal, setShowModal] = useState(false);
 
@@ -18,11 +15,12 @@ const SectionTab = () => {
   //   setShowModal(true);
   // };
   const navigate = useNavigate();
+
   const actions = [
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/accountant-dashboard/sections/:id"),
+      // onClick: () => navigate("/accountant-dashboard/sections/:id"),
     },
     {
       label: "Edit Project Section",
@@ -37,11 +35,9 @@ const SectionTab = () => {
   ];
   return (
     <div>
-     
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-       
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="flex justify-between gap-x-2">
@@ -49,6 +45,9 @@ const SectionTab = () => {
           sectionNo="01"
           sectionName="Piles"
           totalDemands="14"
+          totalAmount="123"
+          paidAmount="123"
+          remainingAmount="123"
           manager="Imran"
           linkedStores="01"
           dropdownActions={actions}
@@ -57,15 +56,16 @@ const SectionTab = () => {
           sectionNo="01"
           sectionName="Piles"
           totalDemands="14"
+          totalAmount="123"
+          paidAmount="123"
+          remainingAmount="123"
           manager="Imran"
           linkedStores="01"
           dropdownActions={actions}
         />
       </div>{" "}
-      
       {/* Modal */}
       {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
-      {/* <SectionDetailPage /> */}
     </div>
   );
 };

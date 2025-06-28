@@ -44,6 +44,9 @@ const SInchargeSectionTab = () => {
           sectionNo="01"
           sectionName="Piles"
           totalDemands="14"
+          totalAmount="1000"
+          paidAmount="500"
+          balanceAmount="500"
           manager="Imran"
           linkedStores="01"
           dropdownActions={actions}
@@ -52,6 +55,9 @@ const SInchargeSectionTab = () => {
           sectionNo="02"
           sectionName="Beams"
           totalDemands="10"
+          totalAmount="1000"
+          paidAmount="500"
+          balanceAmount="500"
           manager="Ali"
           linkedStores="02"
           dropdownActions={actions}
