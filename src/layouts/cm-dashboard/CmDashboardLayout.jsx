@@ -5,7 +5,14 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
-import { FaBars, FaDiceD6, FaHandHoldingHeart, FaSearch, FaToolbox, FaUserTie } from "react-icons/fa";
+import {
+  FaBars,
+  FaDiceD6,
+  FaHandHoldingHeart,
+  FaSearch,
+  FaToolbox,
+  FaUserTie,
+} from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
@@ -28,7 +35,7 @@ const CmDashboardLayout = ({ role }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
- const sideBarItems = [
+  const sideBarItems = [
     {
       label: "Dashboard",
       icon: MdSpaceDashboard,
@@ -50,7 +57,6 @@ const CmDashboardLayout = ({ role }) => {
       icon: IoStorefrontSharp,
       path: "/construction-manager-dashboard/store",
     },
-  
   ];
 
   return (
@@ -97,10 +103,16 @@ const CmDashboardLayout = ({ role }) => {
                     }}
                     iconSrc={<item.icon size={20} />}
                     text={item.label}
+                    // isActive={
+                    //   item.path === "/accountant-dashboard"
+                    //     ? location.pathname === "/accountant-dashboard"
+                    //     : location.pathname === item.path
+                    // }
                     isActive={
-                      item.path === "/accountant-dashboard"
-                        ? location.pathname === "/accountant-dashboard"
-                        : location.pathname === item.path
+                      item.path === "/construction-manager-dashboard"
+                        ? location.pathname ===
+                          "/construction-manager-dashboard"
+                        : location.pathname.startsWith(item.path)
                     }
                     bgColor="primary"
                     textColor="black"

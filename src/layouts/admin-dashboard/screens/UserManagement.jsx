@@ -12,7 +12,7 @@ import {
 import { IoPersonCircle, IoStorefrontSharp } from "react-icons/io5";
 import CustomTable from "../../../mui/CustomTable";
 import { useNavigate } from "react-router-dom";
-import { BsThreeDotsVertical } from "react-icons/bs";
+import { BsProjector, BsThreeDotsVertical } from "react-icons/bs";
 import ActionModal from "../../admin-dashboard/screens/users/modals/ActionModal";
 import SimpleTable from "../../../components/SimpleTable";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
@@ -21,6 +21,13 @@ import { FaUserEdit } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IconButton } from "@mui/material";
 import DropdownButton from "../../../comments/components/DropdownButton";
+import {
+  ManageSearchRounded,
+  Person,
+  Person2,
+  Person2Outlined,
+  Person3,
+} from "@mui/icons-material";
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -80,6 +87,28 @@ const UserManagement = () => {
       field: "action",
     },
   ];
+
+  const managerAnalytics = [
+    {
+      label: "Site Manager",
+      icon: FaPeopleLine,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Project Manager",
+      icon: Person,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Construction Manager",
+      icon: Person3,
+      count: 10,
+      percentage: 10,
+    },
+  ];
+
   const CustomActionComponent = ({ data }) => {
     return (
       <DropdownButton
@@ -146,25 +175,20 @@ const UserManagement = () => {
       <h2 className="text-2xl font-semibold text-primary">
         Total Users Overview
       </h2>
-      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <AnalyticsCard
-          label={"Site Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />{" "}
-        <AnalyticsCard
-          label={"Project Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Construction Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />
+      <div className="border border-[#CDC9C9] mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {managerAnalytics.map((item, index) => (
+          <div
+            key={index}
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] lg:last:after:hidden"
+          >
+            <AnalyticsCard
+              label={item.label}
+              icon={item.icon}
+              count={item.count}
+              percentage={item.percentage}
+            />
+          </div>
+        ))}
       </div>
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>

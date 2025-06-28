@@ -29,7 +29,7 @@ const SectionCard = ({
   };
 
   return (
-    <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-4 w-full sm:w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] ">
+    <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-4 w-full   ">
       <div className="flex justify-between items-start flex-wrap gap-y-2">
         <h3 className="text-lg sm:text-xl font-semibold text-[#444444]">
           {title}

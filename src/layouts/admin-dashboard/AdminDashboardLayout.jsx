@@ -127,10 +127,16 @@ const AdminDashboardLayout = ({ role }) => {
                     }}
                     iconSrc={<item.icon size={20} />}
                     text={item.label}
+                    // isActive={
+                    //   item.path === "/accountant-dashboard"
+                    //     ? location.pathname === "/accountant-dashboard"
+                    //     : location.pathname === item.path
+                    // }
+
                     isActive={
-                      item.path === "/accountant-dashboard"
-                        ? location.pathname === "/accountant-dashboard"
-                        : location.pathname === item.path
+                      item.path === "/admin-dashboard"
+                        ? location.pathname === "/admin-dashboard"
+                        : location.pathname.startsWith(item.path)
                     }
                     bgColor="primary"
                     textColor="black"

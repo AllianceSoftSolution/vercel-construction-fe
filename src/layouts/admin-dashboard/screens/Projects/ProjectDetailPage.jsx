@@ -20,10 +20,7 @@ const ProjectDetailPage = () => {
         title="Project Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
-        buttonText="Create Project"
-        onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
-        }
+
       />
 
       <Box
