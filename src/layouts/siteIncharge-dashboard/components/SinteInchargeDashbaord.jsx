@@ -1,21 +1,16 @@
 import React from "react";
-import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { CiExport } from "react-icons/ci";
-import { FaBoxesStacked } from "react-icons/fa6";
-import { FaHandHoldingHeart } from "react-icons/fa";
-import { FaToolbox } from "react-icons/fa";
+// import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa";
 import { IoStorefrontSharp } from "react-icons/io5";
-import CustomCardComponent from "../../../mui/CustomCardComponent";
-import CustomTable from "../../../mui/CustomTable";
-import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import PieGraph from "../../../components/ui/Graphs/PieGraph";
 import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
 import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
-function SiteInchargeDashbaord() {
+import SimpleTable from "../../../components/SimpleTable";
+import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
+
+function SinteInchargeDashbaord() {
   const data = [
     {
       id: 1,
@@ -51,6 +46,7 @@ function SiteInchargeDashbaord() {
       date: "2025-06-13",
     },
   ];
+
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -63,8 +59,7 @@ function SiteInchargeDashbaord() {
   ];
 
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0 ">
-      {/* Header */}
+    <div className="px-4 md:px-6 lg:px-8 py-4 w-full">
       <TopBar
         title="Site-Incharge Dashboard"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
@@ -72,9 +67,9 @@ function SiteInchargeDashbaord() {
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      <h2 className="text-2xl font-semibold text-primary ">Overview</h2>
 
-      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <h2 className="text-2xl font-semibold text-primary">Overview</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
         <AnalyticsCard
           label={"Total Projects"}
           icon={FaBoxesStacked}
@@ -93,35 +88,30 @@ function SiteInchargeDashbaord() {
           count={10}
           percentage={10}
         />
+        <AnalyticsCard
+          label={"Store Synced"}
+          icon={IoStorefrontSharp}
+          count={5}
+          percentage={8}
+        />
       </div>
-      <div className=" flex gap-5 justify-between">
+
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <PieGraph pieTitle={"Demand Status"} />
-        <HorixontalBarchartGraph title={"PO Distibution by Vendor"}/>
-        <VertcleBarChart verTitle={"Top 5 Requested Materials"}/>
+        <HorixontalBarchartGraph title={"PO Distribution by Vendor"} />
+        <VertcleBarChart verTitle={"Top 5 Requested Materials"} />
       </div>
-      <div>
+
+      <div className="mt-8">
         <BasicBarChart />
       </div>
 
-      {/* table */}
-      <div className="overflow-x-auto">
-        <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
+      <div className="overflow-x-auto mt-8">
+        <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
         <SimpleTable columns={columns} data={data} cellComponents={{}} />
       </div>
-      {/* <div>
-        <h2 className="text-xl font-bold mb-4">Recent POs</h2>
-        <CustomTable columns={columns} data={data} />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Invoices Awaiting Payment</h2>
-        <CustomTable columns={columns} data={data} />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Store Updates</h2>
-        <CustomTable columns={columns} data={data} />
-      </div> */}
     </div>
   );
 }
 
-export default SiteInchargeDashbaord;
+export default SinteInchargeDashbaord;

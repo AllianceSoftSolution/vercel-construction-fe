@@ -2,17 +2,8 @@ import React from "react";
 import TopBar from "@/components/ui/TopBar";
 import {
   Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   IconButton,
-  Typography,
 } from "@mui/material";
-import { CloudDownload } from "@mui/icons-material";
 import SimpleTable from "../../../../components/SimpleTable";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
@@ -66,14 +57,14 @@ const columns = [
 
 export default function PayableDetails() {
   return (
-    <Box >
+    <Box className="p-4">
       <TopBar
         title="Payables Detail"
         detail="Detailed view of material stock movement transactions for selected Purchase Order."
         showFilter={true}
         filterOptions={["Assigned", "Not-Assigned"]}
       />
-      <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
+      <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
         <AnalyticsCard
           label="Total Payables"
           icon={IoMdArrowDropdown}
@@ -95,8 +86,8 @@ export default function PayableDetails() {
           title="Transaction Details"
           detail="Detailed view of material stock movement transactions for selected Purchase Order."
         />
-        <div className="mt-3">
-          <SimpleTable data={data} columns={columns} cellComponents={{}}/>
+        <div className="mt-4 overflow-x-auto">
+          <SimpleTable data={data} columns={columns} cellComponents={{}} />
         </div>
       </div>
     </Box>
