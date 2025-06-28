@@ -7,7 +7,13 @@ const chartSetting = {
   height: 250,
 };
 
-export default function VertcleBarChart({verTitle}) {
+
+
+
+
+
+
+export default function VertcleBarChart({ verTitle }) {
   return (
     <div className=" w-full border-2 mt-5  rounded-lg p-5">
       <TopBar title={verTitle} />

@@ -76,9 +76,8 @@ const AccountantDashboardLayout = ({ role }) => {
             <div className="mb-4">
               <img src={logo} alt="Logo" className="w-28 lg:w-32 mx-auto" />
             </div>
-          </div>
+          )}
 
-          
           <div className="flex flex-col h-full w-full">
             {/* Scrollable menu */}
             <ul className="flex-1 overflow-y-auto space-y-2 px-6 mt-4">
@@ -102,7 +101,6 @@ const AccountantDashboardLayout = ({ role }) => {
               ))}
             </ul>
 
-          
             <div className="border-t border-gray-300 px-6 py-6">
               <button
                 onClick={() => navigate("/")}

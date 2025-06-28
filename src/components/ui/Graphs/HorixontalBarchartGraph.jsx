@@ -22,3 +22,4 @@ export default function VertcleBarChart({title}) {
     </div>
   );
 }
+zzz
