@@ -4,6 +4,7 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import Button from "../Button";
+import { useNavigate } from "react-router-dom"; // ✅ Import navigate
 
 const TopBar = ({
   title = "",
@@ -13,8 +14,9 @@ const TopBar = ({
   showExport = false,
   showFilter = false,
   filterOptions = [],
-  showIcon = false, // ✅ New prop
+  showIcon = false, // ✅ Back Icon toggle
 }) => {
+  const navigate = useNavigate(); // ✅ Create navigate instance
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState("");
   const filterRef = useRef(null);
@@ -41,9 +43,12 @@ const TopBar = ({
     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 h-fit">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          {/* ✅ Conditionally render icon */}
+          {/* ✅ Back icon with click handler */}
           {showIcon && (
-            <IoArrowBackCircleOutline className="text-2xl text-[#444444]" />
+            <IoArrowBackCircleOutline
+              className="text-2xl text-[#444444] cursor-pointer"
+              onClick={() => navigate(-1)} // ✅ Go back
+            />
           )}
           <span className="text-2xl font-bold text-[#444444]">{title}</span>
         </div>

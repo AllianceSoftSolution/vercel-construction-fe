@@ -125,23 +125,14 @@ const CmDemands = () => {
         detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
         showFilter={true}
         filterOptions={["Approved", "Rejected", "Pending"]}
-        onFilterChange={(selected) => console.log("Selected Filters:", selected)}
+        onFilterChange={(selected) =>
+          console.log("Selected Filters:", selected)
+        }
         buttonText="Create Demand"
-        onButtonClick={handleOpen}
+        onButtonClick={() =>
+          navigate("/construction-manager-dashboard/demands/addDemand")
+        }
       />
-
-      <Modal open={open} onClose={handleClose}>
-        <Box sx={style}>
-          <div className="bg-white p-5 rounded-lg">
-            <h1 className="text-xl font-semibold mb-4">Stock In</h1>
-            <div className="space-y-4">
-              <CustomTextField fullWidth margin="normal" label="PO ( Purchase Order )" />
-              <CustomTextField fullWidth margin="normal" label="QTY ( Quantity ) Units must" />
-              <Button buttonText={"Save"} onClick={handleClose} />
-            </div>
-          </div>
-        </Box>
-      </Modal>
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 

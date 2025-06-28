@@ -8,6 +8,9 @@ const SectionCard = ({
   sectionNo,
   sectionName,
   totalDemands,
+  totalAmount,
+  paidAmount,
+  remainingAmount,
   manager,
   linkedStores,
   dropdownActions = [],
@@ -28,12 +31,12 @@ const SectionCard = ({
   return (
     <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-4 w-full sm:w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] ">
       <div className="flex justify-between items-start flex-wrap gap-y-2">
-        <h3 className="text-lg sm:text-xl font-semibold text-[#444444]">{title}</h3>
+        <h3 className="text-lg sm:text-xl font-semibold text-[#444444]">
+          {title}
+        </h3>
         <CustomActionComponent />
       </div>
-
       <div className="h-[1px] bg-[#CDCDCD] w-full"></div>
-
       <div className="flex justify-between flex-wrap text-sm sm:text-base">
         <h3 className="text-[#444444] font-semibold">Section No:</h3>
         <p className="text-[#444444]">{sectionNo}</p>
@@ -42,6 +45,18 @@ const SectionCard = ({
         <h3 className="text-[#444444] font-semibold">Section Name:</h3>
         <p className="text-[#444444]">{sectionName}</p>
       </div>
+      <div className="flex justify-between flex-wrap text-sm sm:text-base">
+        <h3 className="text-[#444444] font-semibold">Total Amount:</h3>
+        <p className="text-[#444444]">{totalAmount}</p>
+      </div>{" "}
+      <div className="flex justify-between flex-wrap text-sm sm:text-base">
+        <h3 className="text-[#444444] font-semibold">Paid Amount:</h3>
+        <p className="text-[#444444]">{paidAmount}</p>
+      </div>{" "}
+      <div className="flex justify-between flex-wrap text-sm sm:text-base">
+        <h3 className="text-[#444444] font-semibold">Remaining Amount:</h3>
+        <p className="text-[#444444]">{remainingAmount}</p>
+      </div>{" "}
       <div className="flex justify-between flex-wrap text-sm sm:text-base">
         <h3 className="text-[#444444] font-semibold">Total Demands:</h3>
         <p className="text-[#444444]">{totalDemands}</p>

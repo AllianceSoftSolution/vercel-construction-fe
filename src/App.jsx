@@ -79,6 +79,7 @@ import CmSectionTab from "./layouts/cm-dashboard/components/Projects/tabs/CmSect
 import CmDemandDetails from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
 import CmDemandDetailPage from "./layouts/cm-dashboard/components/Projects/CmDemandDetailPage";
 import CmMemberDetailPage from "./layouts/cm-dashboard/components/Projects/CmMemberDetailPage";
+import CmAddDemand from "./layouts/cm-dashboard/components/Forms/CmAddDemand";
 // store Incharge
 
 import SiPurchaseOrderDetailPage from "./layouts/storeIncharge-dashboard/components/Projects/SiPurchaseOrderDetailPage";
@@ -232,6 +233,7 @@ const constructionManagerRoutes = [
       { path: "sections/:id", element: <CmSectionDetailPage /> },
 
       { path: "demands", element: <CmDemands /> },
+      { path: "demands/addDemand", element: <CmAddDemand /> },
       { path: "demands/:id", element: <CmDemandDetailPage /> },
       { path: "pOS", element: <POs /> },
       { path: "pOS/:id", element: <CmPurchaseOrderDetail /> },

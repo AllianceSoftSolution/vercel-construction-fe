@@ -62,14 +62,14 @@ const AcProjectDetailPage = () => {
           }}
         >
           <Tab label="Project Information" />
-          <Tab label="Associated Members" />
+          {/* <Tab label="Associated Members" /> */}
           <Tab label="Sections" />
         </Tabs>
       </Box>
 
       <Box sx={{ mt: { xs: 2, md: 3 } }}>
         {tabIndex === 0 && <ProjectInformationTab />}
-        {tabIndex === 1 && <AssociatedMembersTab />}
+        {/* {tabIndex === 1 && <AssociatedMembersTab />} */}
         {tabIndex === 2 && <SectionTab />}
       </Box>
     </div>

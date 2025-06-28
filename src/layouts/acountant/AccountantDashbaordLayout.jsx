@@ -78,38 +78,38 @@ const AccountantDashboardLayout = ({ role }) => {
             </div>
           )}
 
-          {sidebarOpen && (
-            <div className="flex flex-col h-full w-full">
-              <ul className="flex-1 overflow-y-auto space-y-2 px-6 mt-4">
-                {sideBarItems.map((item, index) => (
-                  <SideBarItem
-                    key={index}
-                    onClick={() => {
-                      navigate(item.path);
-                      if (!isDesktop) setSidebarOpen(false);
-                    }}
-                    iconSrc={<item.icon size={20} />}
-                    text={item.label}
-                    isActive={
-                      item.path === "/accountant-dashboard"
-                        ? location.pathname === "/accountant-dashboard"
-                        : location.pathname === item.path
-                    }
-                    bgColor="primary"
-                    textColor="black"
-                  />
-                ))}
-              </ul>
-              <div className="border-t border-gray-300 px-6 py-6">
-                <button
-                  onClick={() => navigate("/")}
-                  className="w-full bg-[#222222] text-white rounded-[10px] py-3"
-                >
-                  Log Out
-                </button>
-              </div>
+          <div className="flex flex-col h-full w-full">
+            {/* Scrollable menu */}
+            <ul className="flex-1 overflow-y-auto space-y-2 px-6 mt-4">
+              {sideBarItems.map((item, index) => (
+                <SideBarItem
+                  key={index}
+                  onClick={() => {
+                    navigate(item.path);
+                    setSidebarOpen(false);
+                  }}
+                  iconSrc={<item.icon size={20} />}
+                  text={item.label}
+                  isActive={
+                    item.path === "/accountant-dashboard"
+                      ? location.pathname === "/accountant-dashboard"
+                      : location.pathname === item.path
+                  }
+                  bgColor="primary"
+                  textColor="black"
+                />
+              ))}
+            </ul>
+
+            <div className="border-t border-gray-300 px-6 py-6">
+              <button
+                onClick={() => navigate("/")}
+                className="w-full bg-[#222222] text-white rounded-[10px] py-3"
+              >
+                Log Out
+              </button>
             </div>
-          )}
+          </div>
         </div>
       </div>
 

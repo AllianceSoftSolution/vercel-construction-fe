@@ -4,9 +4,11 @@ import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaUserEdit } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import AddMemberModal from "./users/modals/AddMemberModal";
+import { RiAccountBoxFill } from "react-icons/ri";
+import { IoPersonCircle } from "react-icons/io5";
 
 const PmStores = () => {
   const navigate = useNavigate();
@@ -23,22 +25,22 @@ const PmStores = () => {
           {
             label: "View",
             onClick: () => navigate("123"),
-            icon: <FaUserEdit />,
+            icon: <FaEye />,
           },
           {
             label: "Delete ",
             onClick: () => alert("Delete"),
-            icon: <FaUserEdit />,
+            icon: <FaTrash />,
           },
           {
             label: "Assign Store Incharge",
             onClick: () => handleLinkClick(),
-            icon: <FaUserEdit />,
+            icon: <IoPersonCircle />,
           },
           {
             label: "Assign Accountant",
             onClick: () => navigate("123"),
-            icon: <FaUserEdit />,
+            icon: <RiAccountBoxFill />,
           },
         ]}
         // onClick={handleActionClick}
@@ -118,7 +120,9 @@ const PmStores = () => {
           console.log("Selected Filters:", selected)
         }
         buttonText="Add New Store"
-        onButtonClick={() => navigate("/project-manager-dashboard/store/addStores")}
+        onButtonClick={() =>
+          navigate("/project-manager-dashboard/store/addStores")
+        }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}

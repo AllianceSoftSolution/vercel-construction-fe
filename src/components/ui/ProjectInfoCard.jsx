@@ -12,7 +12,9 @@ const ProjectInfoCard = ({
   projectName,
   projectCode,
   section,
-  amount,
+  totalAmount,
+  paidAmount,
+  remainingAmount,
   date,
   projectLocation,
   projectStatus,
@@ -36,7 +38,6 @@ const ProjectInfoCard = ({
 
   return (
     <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 space-y-6">
-
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <h3 className="text-xl font-semibold text-[#444444]">{title}</h3>
         <div className="flex flex-wrap gap-2 items-center">
@@ -63,16 +64,16 @@ const ProjectInfoCard = ({
 
       <div className="h-[1px] bg-[#CDCDCD] w-full" />
 
-    
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
         <Info label="Project Name" value={projectName} />
         <Info label="Project Code" value={projectCode} />
         <Info label="Section" value={section} />
-        <Info label="Amount" value={amount} />
+        <Info label="Total Amount" value={totalAmount} />
+        <Info label="Paid Amount" value={paidAmount} />
+        <Info label="Remaining Amount" value={remainingAmount} />
         <Info label="Date" value={date} />
       </div>
 
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
         <Info label="Project Location" value={projectLocation} />
         <Info label="Project Status" value={projectStatus} />
@@ -80,7 +81,6 @@ const ProjectInfoCard = ({
     </div>
   );
 };
-
 
 const Info = ({ label, value }) => (
   <div className="flex flex-col sm:flex-row gap-2">
