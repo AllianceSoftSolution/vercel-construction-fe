@@ -5,7 +5,7 @@ import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-
+import ReasonModalCm from "../Demands/ReasonModalCm";
 import PurchaseOrderForm from "../Forms/CmPurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
 
@@ -82,7 +82,7 @@ const CmDemandDetailPage = () => {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <ReasonModal
+          <ReasonModalCm
             textAreaPlaceholder="Enter your reason"
             onBackClick={handleClose}
             onSaveClick={handleReasonSubmit}
