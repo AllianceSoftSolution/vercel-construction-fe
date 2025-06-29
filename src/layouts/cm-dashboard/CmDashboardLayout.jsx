@@ -1,32 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Menu, Close } from "@mui/icons-material";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Close } from "@mui/icons-material";
 import { useMediaQuery, useTheme } from "@mui/material";
-import SideBarItem from "@/components/ui/SideBarItem";
-import { MdSpaceDashboard } from "react-icons/md";
-import { FaUserTie } from "react-icons/fa";
-import { FaBoxesStacked } from "react-icons/fa6";
-import { FaHandHoldingHeart } from "react-icons/fa";
-import { FaToolbox } from "react-icons/fa";
+import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
+import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
-import { IoPeopleSharp } from "react-icons/io5";
-import { FaDiceD6 } from "react-icons/fa";
+import {
+  FaBars,
+  FaDiceD6,
+  FaHandHoldingHeart,
+  FaSearch,
+  FaToolbox,
+  FaUserTie,
+} from "react-icons/fa";
+import { FaBoxesStacked } from "react-icons/fa6";
+import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
-import { FaSearch } from "react-icons/fa";
 import Profile from "../../assets/construction/profile.png";
-import { IoMdNotifications } from "react-icons/io";
-import { IoMdSettings } from "react-icons/io";
 
 const CmDashboardLayout = ({ role }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
 
   useEffect(() => {
-    setSidebarOpen(false);
-  }, [isDesktop]);
+    const handleResize = () => {
+      setSidebarOpen(window.innerWidth >= 1080);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const sideBarItems = [
     {
@@ -34,16 +41,7 @@ const CmDashboardLayout = ({ role }) => {
       icon: MdSpaceDashboard,
       path: "/construction-manager-dashboard",
     },
-    {
-      label: "User Management",
-      icon: FaUserTie,
-      path: "/construction-manager-dashboard/user-management",
-    },
-    {
-      label: "Project Management",
-      icon: FaBoxesStacked,
-      path: "/construction-manager-dashboard/project-management",
-    },
+
     {
       label: "Demands",
       icon: FaHandHoldingHeart,
@@ -59,122 +57,178 @@ const CmDashboardLayout = ({ role }) => {
       icon: IoStorefrontSharp,
       path: "/construction-manager-dashboard/store",
     },
-    {
-      label: "Materials",
-      icon: FaDiceD6,
-      path: "/construction-manager-dashboard/materials",
-    },
   ];
 
   return (
-    <div className="flex h-screen bg-[#FFFFFF] overflow-hidden">
+    <div className="flex h-screen bg-[#FFFFFF] overflow-hidden relative">
+      {!sidebarOpen && isDesktop && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-30 bg-white shadow p-2 rounded-full lg:block hidden"
+        >
+          <FaBars className="text-gray-700" />
+        </button>
+      )}
+
       <div
         className={`${
-          sidebarOpen || isDesktop ? "w-[200px] lg:w-[240px] h-screen" : "w-0"
-        } bg-[#F7F7F7] transition-all duration-300 ease-in-out fixed top-0 left-0 z-10`}
+          sidebarOpen ? "w-[250px] lg:w-[250px]" : "w-0"
+        } bg-[#F7F7F7] transition-all duration-300 ease-in-out fixed top-0 left-0 z-20 h-screen overflow-hidden`}
       >
-        <div className="flex flex-col h-full md:items-center md:justify-between">
-          <div
-            className={`flex $${
-              sidebarOpen ? "justify-end" : "justify-center"
-            } justify-end items-end`}
-          >
-            {sidebarOpen ? (
-              <li
+        <div className="flex flex-col h-full items-center justify-between">
+          <div className="w-full flex justify-end p-3">
+            {sidebarOpen && !isDesktop && (
+              <Close
                 onClick={() => setSidebarOpen(false)}
-                className="text-black text-right py-3 flex items-center justify-center"
-              >
-                <Close className="mr-2" />
-              </li>
-            ) : (
-              <li
-                onClick={() => setSidebarOpen(true)}
-                className="text-white text-center py-4 flex items-center justify-center"
-              ></li>
+                className="cursor-pointer text-gray-700"
+              />
             )}
           </div>
 
-          <div className="w-[50%]">
-            <div className="flex-col items-center justify-center">
-              <div className="w-full flex items-center justify-center gap-x-4">
-                <img src={logo} alt="Logo" className="w-32 lg:w-40" />
+          {sidebarOpen && (
+            <div className="mb-4">
+              <img src={logo} alt="Logo" className="w-28 lg:w-32 mx-auto" />
+            </div>
+          )}
+
+          {sidebarOpen && (
+            <div className="flex flex-col h-full w-full">
+              <ul className="flex-1 overflow-y-auto space-y-2 px-6 mt-4">
+                {sideBarItems.map((item, index) => (
+                  <SideBarItem
+                    key={index}
+                    onClick={() => {
+                      navigate(item.path);
+                      if (!isDesktop) setSidebarOpen(false);
+                    }}
+                    iconSrc={<item.icon size={20} />}
+                    text={item.label}
+                    // isActive={
+                    //   item.path === "/accountant-dashboard"
+                    //     ? location.pathname === "/accountant-dashboard"
+                    //     : location.pathname === item.path
+                    // }
+                    isActive={
+                      item.path === "/construction-manager-dashboard"
+                        ? location.pathname ===
+                          "/construction-manager-dashboard"
+                        : location.pathname.startsWith(item.path)
+                    }
+                    bgColor="primary"
+                    textColor="black"
+                  />
+                ))}
+              </ul>
+              <div className="border-t border-gray-300 px-6 py-6">
+                <button
+                  onClick={() => navigate("/")}
+                  className="w-full bg-[#222222] text-white rounded-[10px] py-3"
+                >
+                  Log Out
+                </button>
               </div>
-              <div
-                className={`${
-                  !sidebarOpen ? "hidden" : ""
-                } flex flex-col items-center`}
-              ></div>
             </div>
-          </div>
-
-          <div className="flex flex-col h-full w-full mt-4">
-            <ul className="flex-1 overflow-y-auto max-h-[calc(100vh-150px)] space-y-2 px-6">
-              {sideBarItems.map((item, index) => (
-                <SideBarItem
-                  key={index}
-                  onClick={() => {
-                    navigate(item.path);
-                    setSidebarOpen(false);
-                  }}
-                  iconSrc={<item.icon size={20} />}
-                  text={item.label}
-                  isActive={
-                    item.path === "/construction-manager-dashboard"
-                      ? location.pathname === "/construction-manager-dashboard"
-                      : location.pathname === item.path
-                  }
-                  bgColor="primary"
-                  textColor="black"
-                />
-              ))}
-            </ul>
-
-            <div className="border-t border-gray-300 px-6 py-6 flex justify-center">
-              <button
-                onClick={() => navigate("/")}
-                className="w-full bg-[#222222] text-white rounded-[10px] py-3"
-              >
-                Log Out
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      <div className="flex-1 ml-0 lg:ml-[240px] flex flex-col overflow-y-auto h-screen">
-        <div className="w-full flex justify-between items-center border-b px-8 py-3 ">
-          <div className="flex items-center ">
-            <img src={logo} alt="Logo" className="w-24 h-16" />
-            <span className="text-[#444444] text-3xl font-semibold">RADC</span>
+      <div
+        className={`flex-1 transition-all duration-300 ease-in-out ${
+          sidebarOpen && isDesktop ? "ml-[240px]" : "ml-0"
+        } flex flex-col overflow-y-auto h-screen`}
+      >
+        <div className="w-full flex justify-between items-center border-b px-4 md:px-8 py-3 bg-white sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            {!sidebarOpen && !isDesktop && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="text-gray-700"
+              >
+                <FaBars className="w-5 h-5" />
+              </button>
+            )}
+            <img src={logo} alt="Logo" className="w-20 h-14 object-contain" />
+            <span className="text-[#444444] text-2xl md:text-3xl font-semibold">
+              RADC
+            </span>
           </div>
-          <div className="flex items-center gap-5">
-            <div className="relative w-full max-w-xl">
+
+          <div className="hidden lg:flex items-center gap-5">
+            <div className="relative w-full max-w-sm">
               <input
                 type="text"
                 placeholder="Search..."
-                className="w-full py-3 pl-6 pr-12 rounded-full bg-gray-200 text-gray-700 placeholder-gray-400 outline-none"
+                className="w-full py-2.5 pl-5 pr-12 rounded-full bg-gray-200 text-gray-700 placeholder-gray-400 outline-none"
               />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white p-3 rounded-full cursor-pointer">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white p-2.5 rounded-full cursor-pointer">
                 <FaSearch className="text-sm" />
               </div>
             </div>
-            <div className="flex gap-x-3">
-              <IoMdNotifications className="w-10 h-10 rounded-full border-[0.5px] border-gray-300 text-gray-300 p-1" />
-              <IoMdSettings className="w-10 h-10 rounded-full border-[0.5px] border-gray-300 text-gray-300 p-1" />
+
+            <div className="flex gap-3">
+              <IoMdNotifications className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
             </div>
-            <div className="flex flex-col">
+
+            <div className="flex flex-col items-end">
               <p className="font-semibold text-black whitespace-nowrap">
                 John Doe
               </p>
-              <p className="text-[#7A7A7A] text-sm text-right">SITEINCHARGE</p>
+              <p className="text-[#7A7A7A] text-sm">SITEINCHARGE</p>
             </div>
+
             <div className="flex items-center">
-              <img src={Profile} alt="Profile Icon" className="w-28" />
+              <img
+                src={Profile}
+                alt="Profile Icon"
+                className="w-12 h-12 rounded-full object-cover"
+              />
             </div>
+          </div>
+
+          <div className="lg:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-xl text-gray-700"
+            >
+              <FaBars />
+            </button>
           </div>
         </div>
 
-        <div className="flex-1 w-full overflow-y-auto p-8">
+        {isMenuOpen && (
+          <div className="lg:hidden flex flex-col gap-3 px-4 pb-4 border-b bg-white">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="w-full py-2.5 pl-5 pr-12 rounded-full bg-gray-200 text-gray-700 placeholder-gray-400 outline-none"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white p-2 rounded-full cursor-pointer">
+                <FaSearch className="text-sm" />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <IoMdNotifications className="w-8 h-8 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              <IoMdSettings className="w-8 h-8 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <p className="font-semibold text-black">John Doe</p>
+                <p className="text-[#7A7A7A] text-sm">SITEINCHARGE</p>
+              </div>
+              <img
+                src={Profile}
+                alt="Profile Icon"
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 w-full overflow-y-auto p-4 md:p-8">
           <div className="p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
             <Outlet />
           </div>

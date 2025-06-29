@@ -85,11 +85,7 @@ const CmUserManagement = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          {
-            label: "Add Note",
-            // onClick: () => alert(""),
-            // icon: <FaUserEdit />,
-          },
+          
           {
             label: "View Detail",
             onClick: () => navigate("123"),

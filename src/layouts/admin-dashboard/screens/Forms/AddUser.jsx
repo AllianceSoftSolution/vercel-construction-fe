@@ -1,12 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
+import CustomSelect from "../../../../mui/CustomSelect";
+import { MenuItem } from "@mui/material";
 
 const AddUser = () => {
   const navigate = useNavigate();
+  const [selectedOption, setSelectedOption] = useState("");
+
+  const handleDropdownChange = (event) => {
+    setSelectedOption(event.target.value);
+  };
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -54,13 +61,19 @@ const AddUser = () => {
             placeholder="Enter Your Phone Number"
             type="number"
           />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">User Role</span>}
-            fullWidth
-            name="role"
-            placeholder="Enter Role"
-            type="text"
-          />{" "}
+          <div className="w-full">
+            <CustomSelect label="Select Role" name="role" select>
+              <MenuItem value="1" onClick={""}>
+                Hassan
+              </MenuItem>
+              <MenuItem value="2" onClick={""}>
+                Ahmad
+              </MenuItem>
+              <MenuItem value="3" onClick={""}>
+                Ahad
+              </MenuItem>
+            </CustomSelect>
+          </div>
           <CustomTextField
             label={<span className="flex items-center gap-1">Add Note</span>}
             fullWidth

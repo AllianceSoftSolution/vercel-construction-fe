@@ -12,7 +12,9 @@ const ProjectInfoCard = ({
   projectName,
   projectCode,
   section,
-  amount,
+  totalAmount,
+  paidAmount,
+  remainingAmount,
   date,
   projectLocation,
   projectStatus,
@@ -23,15 +25,9 @@ const ProjectInfoCard = ({
     <DropdownButton
       className="bg-white border border-gray-300"
       items={[
-        {
-          label: "Pending",
-        },
-        {
-          label: "Approved",
-        },
-        {
-          label: "Rejected",
-        },
+        { label: "Pending" },
+        { label: "Approved" },
+        { label: "Rejected" },
       ]}
     >
       <IconButton size="small">
@@ -41,12 +37,12 @@ const ProjectInfoCard = ({
   );
 
   return (
-    <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-      <div className="flex justify-between">
+    <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between gap-4">
         <h3 className="text-xl font-semibold text-[#444444]">{title}</h3>
-        <div className="flex gap-x-4 items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           {status && (
-            <div className="bg-[#0252AD] text-white px-6 py-2 rounded-full flex items-center gap-2">
+            <div className="bg-[#0252AD] text-white px-6 py-3 rounded-full flex items-center gap-2 text-sm">
               {status}
               {showStatusDropdown && <StatusDropdown />}
             </div>
@@ -55,58 +51,42 @@ const ProjectInfoCard = ({
             <>
               <MdDelete
                 onClick={onDelete}
-                className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
+                className="text-white bg-[#EF0404] w-9 h-9 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
               />
               <MdEdit
                 onClick={onEdit}
-                className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
+                className="text-white bg-primary w-9 h-9 p-2 rounded-tl-xl rounded-br-xl cursor-pointer"
               />
             </>
           )}
         </div>
       </div>
 
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      <div className="h-[1px] bg-[#CDCDCD] w-full" />
 
-      <div className="flex justify-between gap-x-4 flex-wrap">
-        <div className="flex gap-x-4 items-center">
-          <p className="text-[#444444] font-semibold text-xl">Project Name:</p>
-          <p className="text-[#979797]">{projectName}</p>
-        </div>
-        <div className="flex gap-x-4 items-center">
-          <p className="text-[#444444] font-semibold text-xl">Project Code:</p>
-          <p className="text-[#979797]">{projectCode}</p>
-        </div>
-        <div className="flex gap-x-4 items-center">
-          <p className="text-[#444444] font-semibold text-xl">Section:</p>
-          <p className="text-[#979797]">{section}</p>
-        </div>
-        <div className="flex gap-x-4 items-center">
-          <p className="text-[#444444] font-semibold text-xl">Amount:</p>
-          <p className="text-[#979797]">{amount}</p>
-        </div>
-        <div className="flex gap-x-4 items-center">
-          <p className="text-[#444444] font-semibold text-xl">Date:</p>
-          <p className="text-[#979797]">{date}</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
+        <Info label="Project Name" value={projectName} />
+        <Info label="Project Code" value={projectCode} />
+        <Info label="Section" value={section} />
+        <Info label="Total Amount" value={totalAmount} />
+        <Info label="Paid Amount" value={paidAmount} />
+        <Info label="Remaining Amount" value={remainingAmount} />
+        <Info label="Date" value={date} />
       </div>
 
-      <div className="flex justify-start gap-x-14 flex-wrap">
-        <div className="flex gap-x-4 items-center mt-2">
-          <p className="text-[#444444] font-semibold text-xl">
-            Project Location:
-          </p>
-          <p className="text-[#979797]">{projectLocation}</p>
-        </div>
-        <div className="flex gap-x-4 items-center mt-2">
-          <p className="text-[#444444] font-semibold text-xl">
-            Project Status:
-          </p>
-          <p className="text-[#979797]">{projectStatus}</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
+        <Info label="Project Location" value={projectLocation} />
+        <Info label="Project Status" value={projectStatus} />
       </div>
     </div>
   );
 };
+
+const Info = ({ label, value }) => (
+  <div className="flex flex-col sm:flex-row gap-2">
+    <p className="text-[#444444] font-semibold">{label}:</p>
+    <p className="text-[#979797] break-words">{value}</p>
+  </div>
+);
 
 export default ProjectInfoCard;

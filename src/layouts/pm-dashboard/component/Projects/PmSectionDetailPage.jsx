@@ -24,7 +24,7 @@ const style = {
   boxShadow: 24,
 };
 
-const SectionDetailPage = () => {
+const PmSectionDetailPage = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
@@ -103,23 +103,22 @@ const SectionDetailPage = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
+      {/* Project Info Box */}
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-4">
         <div className="flex flex-wrap justify-between gap-4">
           <InfoItem label="Project Name" value="project name" />
           <InfoItem label="Project Code" value="project code" />
           <InfoItem label="Section" value="section" />
-
+          <InfoItem label="Amount" value="amount" />
           <InfoItem label="Date" value="date" />
         </div>
         <div className="flex flex-wrap gap-10 mt-2">
           <InfoItem label="Project Location" value="project location" />
           <InfoItem label="Project Status" value="project status" />
-          <InfoItem label="Total Amount" value="1200$" />
-          <InfoItem label="Paid Amount" value="1500$" />
-          <InfoItem label="Remaining Amount" value="1600$" />
         </div>
       </div>
 
+      {/* Member Overview */}
       <div className="mt-10">
         <h4 className="text-[#12141D] font-semibold text-xl mb-4">
           Members Overview
@@ -176,6 +175,7 @@ const SectionDetailPage = () => {
         </div>
       </div>
 
+      {/* Construction Manager Table */}
       <div className="mt-10">
         <TopBar
           title="Construction Managers"
@@ -186,6 +186,7 @@ const SectionDetailPage = () => {
 
         {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
 
+        {/* Modal */}
         <Modal open={open} onClose={handleClose}>
           <Box sx={style}>
             <AssignProjectManagerModal
@@ -218,4 +219,4 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-export default SectionDetailPage;
+export default PmSectionDetailPage;

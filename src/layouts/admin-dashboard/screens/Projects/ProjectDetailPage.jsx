@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { useNavigate } from "react-router-dom";
 import { Tabs, Tab, Box } from "@mui/material";
-
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
 import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
 import SectionTab from "./tabs/SectionTab";
@@ -16,15 +15,12 @@ const ProjectDetailPage = () => {
   };
 
   return (
-    <div>
+    <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-4 w-full">
       <TopBar
         title="Project Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
-        buttonText="Create Project"
-        onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
-        }
+
       />
 
       <Box
@@ -33,12 +29,16 @@ const ProjectDetailPage = () => {
           backgroundColor: "#f7f7f7",
           borderRadius: "12px",
           px: 2,
+          width: "100%",
+          overflowX: "auto",
         }}
       >
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
           textColor="inherit"
+          variant="scrollable"
+          scrollButtons="auto"
           TabIndicatorProps={{
             style: {
               backgroundColor: "#FC8908",
@@ -52,6 +52,7 @@ const ProjectDetailPage = () => {
               textTransform: "none",
               fontWeight: 500,
               color: "#6B7280",
+              minWidth: "fit-content",
             },
             "& .Mui-selected": {
               color: "#FC8908 !important",

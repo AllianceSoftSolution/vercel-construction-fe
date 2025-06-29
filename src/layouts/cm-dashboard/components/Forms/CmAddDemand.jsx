@@ -1,12 +1,13 @@
 import React from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { FaCamera } from "react-icons/fa";
 import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
-import uploadIcon from "../../../../assets/construction/upload 1.png";
 import { useNavigate } from "react-router-dom";
-const AddProduct = () => {
+import CustomSelect from "../../../../mui/CustomSelect";
+import MenuItem from "@mui/material/MenuItem";
+
+const CmAddUser = () => {
   const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -14,49 +15,49 @@ const AddProduct = () => {
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title="New Material"
-        detail="Add New User Information in Epos Software"
+        title="Create Demand"
+        detail="Add New Demand Information in Epos Software"
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* Upload Image Section */}
-      <div className="flex flex-col gap-y-2">
-        <h4 className="text-[#12141D] font-semibold">Upload Image</h4>
-      </div>
       {/* form */}
-      <div className="flex flex-col gap-4">
-        <div className="relative w-[100px] h-[100px]">
-          <div className="w-full h-full bg-white border-[0.5px] border-[#CDC9C9] rounded-full overflow-hidden"></div>
-          <label
-            htmlFor="upload"
-            className="absolute -bottom-2 right-1 cursor-pointer"
-          >
-            <div className="w-10 h-10 bg-white  rounded-2xl flex items-center justify-center">
-              <img src={uploadIcon} size={25} />
-            </div>
-          </label>
-          <input
-            id="upload"
-            type="file"
-            className="hidden"
-            onChange={(e) => console.log(e.target.files[0])}
-          />
-        </div>
+      <div className="flex justify-center">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
+          <h3 className="text-xl font-semibold text-[#12141D] ">
+            Premium Content
+          </h3>
           <CustomTextField
             label={
-              <span className="flex items-center gap-1">Product Name</span>
+              <span className="flex items-center gap-1">Project Name</span>
             }
             fullWidth
-            name="productName"
-            placeholder="Enter Product Name"
+            name="name"
+            placeholder="Enter Project Name"
             type="text"
           />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Section</span>}
+            fullWidth
+            name="section"
+            placeholder="Enter Your Section"
+            type="text"
+          />{" "}
+          {/* <CustomSelect label="Vendor Name" fullWidth name="name" select>
+            <MenuItem value="1">Option 1</MenuItem>
+            <MenuItem value="2">Option 2</MenuItem>
+          </CustomSelect> */}
           <CustomTextField
             label={<span className="flex items-center gap-1">Unit</span>}
             fullWidth
             name="unit"
-            placeholder="Enter Unit "
+            placeholder="Enter Unit"
+            type="text"
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Quantity</span>}
+            fullWidth
+            name="quantity"
+            placeholder="Enter Quantity"
             type="text"
           />{" "}
         </div>
@@ -79,4 +80,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default CmAddUser;

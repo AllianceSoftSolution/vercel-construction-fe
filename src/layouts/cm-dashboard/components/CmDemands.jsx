@@ -14,20 +14,18 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "600px",
+  width: "90%",
+  maxWidth: "600px",
   boxShadow: 24,
   borderRadius: "50px",
 };
+
 const CmDemands = () => {
   const [open, setOpen] = useState(false);
-
-  const handleOpen = (type) => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const navigate = useNavigate();
+
   const data = [
     {
       id: 1,
@@ -75,6 +73,7 @@ const CmDemands = () => {
       action: "id-here",
     },
   ];
+
   const columns = [
     { headerName: "No", field: "no" },
     { headerName: "Project Name", field: "project" },
@@ -86,13 +85,11 @@ const CmDemands = () => {
     { headerName: "Status", field: "status" },
     { headerName: "Approved By", field: "approvedBy" },
     { headerName: "Fulfilled", field: "fulfilled" },
-    {
-      headerName: "Date",
-      field: "date",
-    },
+    { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
-  const CustomActionComponent = ({ data }) => {
+
+  const CustomActionComponent = () => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
@@ -113,7 +110,6 @@ const CmDemands = () => {
             icon: <FaTrash />,
           },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -121,52 +117,25 @@ const CmDemands = () => {
       </DropdownButton>
     );
   };
+
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0">
+    <div className="p-4 md:px-6 w-full">
       <TopBar
         title="Demands"
         detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
-        // showExport={true}
         showFilter={true}
         filterOptions={["Approved", "Rejected", "Pending"]}
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
         buttonText="Create Demand"
-        onButtonClick={handleOpen}
+        onButtonClick={() =>
+          navigate("/construction-manager-dashboard/demands/addDemand")
+        }
       />
-      <div>
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <div className="bg-white p-5">
-              <>
-                <h1 className="text-3xl">Stock In</h1>
-                <Box>
-                  <CustomTextField
-                    fullWidth
-                    margin="normal"
-                    label="PO ( Purchase Order )"
-                  />
-                  <CustomTextField
-                    fullWidth
-                    margin="normal"
-                    label="QTY ( Quantity ) Units must"
-                  />
-               
-                  <Button buttonText={"Save"} onClick={handleClose} />
-                </Box>
-              </>
-            </div>
-          </Box>
-        </Modal>
-      </div>
+
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* table */}
+
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}

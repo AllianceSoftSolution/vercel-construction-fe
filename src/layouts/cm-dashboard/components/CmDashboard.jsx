@@ -1,18 +1,22 @@
 import React from "react";
-import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
+import {
+  FaBoxesStacked,
+  FaEye,
+  FaHandHoldingHeart,
+  FaTrash,
+} from "react-icons/fa6";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { CiExport } from "react-icons/ci";
-import { FaBoxesStacked } from "react-icons/fa6";
-import { FaHandHoldingHeart } from "react-icons/fa";
-import { FaToolbox } from "react-icons/fa";
+import { FaToolbox, FaUserEdit } from "react-icons/fa";
 import { IoStorefrontSharp } from "react-icons/io5";
-import CustomCardComponent from "../../../mui/CustomCardComponent";
-import CustomTable from "../../../mui/CustomTable";
-import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import PieGraph from "../../../components/ui/Graphs/PieGraph";
 import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
+import SimpleTable from "../../../components/SimpleTable";
+import SectionCard from "../../../components/ui/SectionCard";
+import { useNavigate } from "react-router-dom";
+
 function CmDashboard() {
   const data = [
     {
@@ -49,6 +53,25 @@ function CmDashboard() {
       date: "2025-06-13",
     },
   ];
+
+  const navigate = useNavigate();
+  const actions = [
+    {
+      label: "View Section Detail",
+      icon: <FaEye />,
+      onClick: () => navigate("/construction-manager-dashboard/sections/23232"),
+    },
+    {
+      label: "Edit Project Section",
+      icon: <FaUserEdit />,
+      onClick: () => console.log("Edit clicked"),
+    },
+    {
+      label: "Delete Project Section",
+      icon: <FaTrash />,
+      onClick: () => console.log("Delete clicked"),
+    },
+  ];
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -60,63 +83,78 @@ function CmDashboard() {
     { headerName: "Date", field: "date" },
   ];
 
+  const projectStats = [
+    {
+      label: "Total Projects",
+      icon: FaBoxesStacked,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Approved Demands",
+      icon: FaHandHoldingHeart,
+      count: 10,
+      percentage: 10,
+    },
+    {
+      label: "Rejected Demands",
+      icon: FaHandHoldingHeart,
+      count: 10,
+      percentage: 10,
+    },
+  ];
+
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0 ">
-      {/* Header */}
+    <div className="px-4 md:px-6 lg:px-8 py-4 w-full">
       <TopBar
         title="Construction Manager"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
       />
 
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      <h2 className="text-2xl font-semibold text-primary ">Overview</h2>
+      <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
 
-      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <AnalyticsCard
-          label={"Total Projects"}
-          icon={FaBoxesStacked}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Approved Demands"}
-          icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Rejected Demands"}
-          icon={FaHandHoldingHeart}
-          count={10}
-          percentage={10}
-        />
+      <h2 className="text-2xl font-semibold text-primary mb-4">Overview</h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {projectStats.map((item, index) => {
+          return (
+            <div
+              key={index}
+              className={`relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] `}
+            >
+              <AnalyticsCard
+                label={item.label}
+                icon={item.icon}
+                count={item.count}
+                percentage={item.percentage}
+              />
+            </div>
+          );
+        })}
       </div>
 
-      <div className="flex w-full gap-5 justify-between">
-        <PieGraph />
+      <div className="mt-6 flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-[40%]">
+          <PieGraph />
+        </div>
         <div className="w-full">
-          <HorixontalBarchartGraph title={"Fullfillment Progress"} />
+          <HorixontalBarchartGraph title={"Fulfillment Progress"} />
         </div>
       </div>
+      <SectionCard
+        sectionNo="01"
+        sectionName="Piles"
+        totalDemands="14"
+        manager="Imran"
+        linkedStores="01"
+        dropdownActions={actions}
+      />
 
-      {/* table */}
-      <div className="overflow-x-auto">
-        <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
+      <div className="overflow-x-auto mt-8">
+        <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
         <SimpleTable columns={columns} data={data} cellComponents={{}} />
       </div>
-      {/* <div>
-        <h2 className="text-xl font-bold mb-4">Recent POs</h2>
-        <CustomTable columns={columns} data={data} />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Invoices Awaiting Payment</h2>
-        <CustomTable columns={columns} data={data} />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Store Updates</h2>
-        <CustomTable columns={columns} data={data} />
-      </div> */}
     </div>
   );
 }

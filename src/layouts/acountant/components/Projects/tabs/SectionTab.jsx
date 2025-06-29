@@ -3,24 +3,11 @@ import TopBar from "../../../../../components/ui/TopBar";
 import SectionCard from "../../../../../components/ui/SectionCard";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-import SectionDetailPage from "../SectionDetailPage";
-import { useNavigate } from "react-router-dom";
-import MemebersOverviewCard from "../../../../../mui/MembersOverviewCard";
-import MemberInfoCard from "../../../../../mui/MemberInfoCard";
-import manager from "../../../../../assets/construction/manager.png";
-import Search from "../../../../../assets/construction/Search.png";
-import AddMemberModal from "../../users/modals/AddMemberModal";
-import DropdownButton from "../../../../../comments/components/DropdownButton";
-import CustomModal from "../../../../../comments/components/CustomModal";
-import { Box, Modal, Typography } from "@mui/material";
-import Button from "../../../../../components/Button";
-import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
-import { Height } from "@mui/icons-material";
 
+import { useNavigate } from "react-router-dom";
 
 const SectionTab = () => {
-  const [hasMemberInfo, sethasMemberInfo] = useState(false);
- 
+  // const [hasMemberInfo, sethasMemberInfo] = useState(false);
 
   // const [showModal, setShowModal] = useState(false);
 
@@ -28,11 +15,12 @@ const SectionTab = () => {
   //   setShowModal(true);
   // };
   const navigate = useNavigate();
+
   const actions = [
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/admin-dashboard/sections/:id"),
+      // onClick: () => navigate("/accountant-dashboard/sections/:id"),
     },
     {
       label: "Edit Project Section",
@@ -47,14 +35,9 @@ const SectionTab = () => {
   ];
   return (
     <div>
-     
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Create Project Section"
-        onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
-        }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="flex justify-between gap-x-2">
@@ -62,6 +45,9 @@ const SectionTab = () => {
           sectionNo="01"
           sectionName="Piles"
           totalDemands="14"
+          totalAmount="123"
+          paidAmount="123"
+          remainingAmount="123"
           manager="Imran"
           linkedStores="01"
           dropdownActions={actions}
@@ -70,15 +56,16 @@ const SectionTab = () => {
           sectionNo="01"
           sectionName="Piles"
           totalDemands="14"
+          totalAmount="123"
+          paidAmount="123"
+          remainingAmount="123"
           manager="Imran"
           linkedStores="01"
           dropdownActions={actions}
         />
       </div>{" "}
-      
       {/* Modal */}
       {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
-      {/* <SectionDetailPage /> */}
     </div>
   );
 };

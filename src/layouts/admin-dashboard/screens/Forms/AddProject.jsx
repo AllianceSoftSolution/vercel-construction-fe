@@ -18,42 +18,20 @@ const AddProject = () => {
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* form */}
+      
       <div className="flex justify-center">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <h3 className="text-xl font-semibold text-[#12141D] ">
             Project Information
           </h3>
+          
           <CustomTextField
             label={
-              <span className="flex items-center gap-1">Project Name</span>
-            }
-            fullWidth
-            name="name"
-            placeholder="Enter Project Name"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Sections</span>}
-            fullWidth
-            name="sections"
-            placeholder="Enter Your Work Email"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Start Date</span>}
-            fullWidth
-            name="startDate"
-            placeholder="Enter Start Date"
-            type="date"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Project Status</span>
+              <span className="flex items-center gap-1">Name</span>
             }
             fullWidth
             name="status"
-            placeholder="Enter Project Status"
+            placeholder="Enter Project Section name"
           />{" "}
           <CustomTextField
             label={<span className="flex items-center gap-1">Address</span>}

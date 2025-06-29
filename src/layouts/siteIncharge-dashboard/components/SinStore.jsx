@@ -4,11 +4,13 @@ import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaUserEdit } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import AddMemberModal from "./users/modals/AddMemberModal";
+import { IoPersonCircle } from "react-icons/io5";
+import { RiAccountBox2Fill } from "react-icons/ri";
 
-const Stores = () => {
+const SinStores = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -23,22 +25,22 @@ const Stores = () => {
           {
             label: "View",
             onClick: () => navigate("123"),
-            icon: <FaUserEdit />,
+            icon: <FaEye />,
           },
           {
             label: "Delete ",
             onClick: () => alert("Delete"),
-            icon: <FaUserEdit />,
+            icon: <FaTrash />,
           },
           {
             label: "Assign Store Incharge",
             onClick: () => handleLinkClick(),
-            icon: <FaUserEdit />,
+            icon: <IoPersonCircle />,
           },
           {
             label: "Assign Accountant",
             onClick: () => navigate("123"),
-            icon: <FaUserEdit />,
+            icon: <RiAccountBox2Fill />,
           },
         ]}
         // onClick={handleActionClick}
@@ -134,4 +136,4 @@ const Stores = () => {
   );
 };
 
-export default Stores;
+export default SinStores;
