@@ -78,10 +78,7 @@ const CustomActionComponent = () => {
     <>
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
-        items={[
-          { label: "Add Price", onClick: () => setOpen(true) },
-          { label: "Details", onClick: onNavigation },
-        ]}
+        items={[{ label: "Add Price", onClick: () => setOpen(true) }]}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -96,7 +93,7 @@ const ActionComforRegPOs = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const onNavigation = () => {
-    navigate("/accountant-dashboards/payables/details/45435");
+    navigate("/accountant-dashboard/payables/details/45435");
   };
   return (
     <>

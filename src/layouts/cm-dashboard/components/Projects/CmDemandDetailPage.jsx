@@ -103,7 +103,7 @@ const CmDemandDetailPage = () => {
         <div className="flex justify-between">
           <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
           <div className="flex gap-x-2 items-center">
-            <div
+            {/* <div
               className={`text-white px-8 py-2 rounded-lg  ${
                 status === "Approved"
                   ? "bg-green-600"
@@ -113,7 +113,7 @@ const CmDemandDetailPage = () => {
               }`}
             >
               {status}
-            </div>
+            </div> */}
 
             {/* {status === "Approved" && (
               <Button
