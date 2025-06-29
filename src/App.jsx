@@ -55,7 +55,7 @@ import PmAddStore from "./layouts/pm-dashboard/component/Forms/PmAddStore";
 import PmStoreDetail from "./layouts/pm-dashboard/component/Projects/PmStoreDetail";
 import PmMaterials from "./layouts/pm-dashboard/component/PmMaterials";
 import PmAddProduct from "./layouts/pm-dashboard/component/Forms/PmAddProduct";
-import PmUserManagement from "./layouts/pm-dashboard/component/pmUserManagement";
+import PmUserManagement from "./layouts/pm-dashboard/component/PmUserManagement";
 import PmProjectManagement from "./layouts/pm-dashboard/component/PmProjectManagement";
 import PmAddProject from "./layouts/pm-dashboard/component/Forms/PmAddProject";
 import PmStores from "./layouts/pm-dashboard/component/PmStore";
