@@ -9,9 +9,7 @@ import { FaBars, FaSearch } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
-import { FaSearch } from "react-icons/fa";
 import Profile from "../../assets/construction/profile.png";
-import { FaBoxesStacked } from "react-icons/fa6";
 
 const AccountantDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
