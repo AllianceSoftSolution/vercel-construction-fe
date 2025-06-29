@@ -70,7 +70,7 @@ const AcProjectDetailPage = () => {
       <Box sx={{ mt: { xs: 2, md: 3 } }}>
         {tabIndex === 0 && <ProjectInformationTab />}
         {/* {tabIndex === 1 && <AssociatedMembersTab />} */}
-        {tabIndex === 2 && <SectionTab />}
+        {tabIndex === 1 && <SectionTab />}
       </Box>
     </div>
   );
