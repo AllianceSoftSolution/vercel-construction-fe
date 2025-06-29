@@ -13,7 +13,7 @@ const SectionTab = () => {
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/project-manager-dashboard/sections/:id"),
+      onClick: () => navigate("/project-manager-dashboard/project-management/sections/:id"),
     },
     {
       label: "Edit Project Section",

@@ -161,7 +161,7 @@ const PmDemandDetails = () => {
 
  
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
-      <div className="overflow-x-auto mt-2">
+      <div className=" mt-2">
         <SimpleTable data={data} columns={columns} cellComponents={{}} />
       </div>
     </>

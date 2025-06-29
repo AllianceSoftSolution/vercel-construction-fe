@@ -146,7 +146,10 @@ const adminRoutes = [
       { path: "project-Management/addProject", element: <AddProject /> },
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "project-Management/sections", element: <SectionTab /> },
-      { path: "project-Management/sections/:id", element: <SectionDetailPage /> },
+      {
+        path: "project-Management/sections/:id",
+        element: <SectionDetailPage />,
+      },
 
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <DemandDetailPage /> },
@@ -179,7 +182,10 @@ const siteInchargeRoutes = [
       { path: "project-Management/addProject", element: <SiAddProject /> },
       { path: "project-Management/:id", element: <SiteProjectDetailPage /> },
       { path: "project-management/sections", element: <SInchargeSectionTab /> },
-      { path: "project-management/sections/:id", element: <SiSectionDetailPage /> },
+      {
+        path: "project-management/sections/:id",
+        element: <SiSectionDetailPage />,
+      },
 
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <SiDemandDetails /> },
@@ -204,8 +210,11 @@ const projectManagerRoutes = [
       { path: "project-Management", element: <PmProjectManagement /> },
       { path: "project-Management/addProject", element: <PmAddProject /> },
       { path: "project-Management/:id", element: <PmProjectDetailPage /> },
-      { path: "sections", element: <SectionTab /> },
-      { path: "sections/:id", element: <PmSectionDetailPage /> },
+      { path: "project-management/sections", element: <SectionTab /> },
+      {
+        path: "project-management/sections/:id",
+        element: <PmSectionDetailPage />,
+      },
 
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <PmDemandDetails /> },

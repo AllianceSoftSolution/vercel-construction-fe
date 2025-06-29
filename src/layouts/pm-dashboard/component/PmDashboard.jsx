@@ -7,6 +7,7 @@ import AnalyticsCard from "../../../mui/AnalyticsCard";
 import PieGraph from "../../../components/ui/Graphs/PieGraph";
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
+
 function PmDashboard() {
   const data = [
     {
@@ -43,6 +44,7 @@ function PmDashboard() {
       date: "2025-06-13",
     },
   ];
+
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -53,7 +55,8 @@ function PmDashboard() {
     { headerName: "CM Name", field: "cmName" },
     { headerName: "Date", field: "date" },
   ];
-  const projectAnalytics = [
+
+  const analyticsData = [
     {
       label: "Total Projects",
       icon: FaBoxesStacked,
@@ -75,61 +78,50 @@ function PmDashboard() {
   ];
 
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0 ">
-      {/* Header */}
+    <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Project-Manager Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      <h2 className="text-2xl font-semibold text-primary ">Overview</h2>
 
-      <div className="border rounded-xl p-4 mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {projectAnalytics.map((item, index) => {
-          return (
-            <div
-              key={index}
-              className={`relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] `}
-            >
-              <AnalyticsCard
-                label={item.label}
-                icon={item.icon}
-                count={item.count}
-                percentage={item.percentage}
-              />
-            </div>
-          );
-        })}
+      <h2 className="text-2xl font-semibold text-primary">Overview</h2>
+
+      <div className="border rounded-xl p-4 mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {analyticsData.map((item, index) => (
+          <div
+            key={index}
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300
+                     xl:last:after:hidden"
+          >
+            <AnalyticsCard
+              label={item.label}
+              icon={item.icon}
+              count={item.count}
+              percentage={item.percentage}
+            />
+          </div>
+        ))}
       </div>
-      <div className="w-full flex gap-5 ">
-        <div className="flex w-full gap-5 justify-between">
+
+      <div className="flex flex-col xl:flex-row gap-6 mt-6 flex-wrap">
+        <div className="flex  flex-col lg:flex-row gap-6 flex-1 w-full xl:w-2/3">
           <PieGraph pieTitle={"Demand Status"} />
+
           <HorixontalBarchartGraph title={"PO Distribution by Vendor"} />
         </div>
 
-        <div className="w-full max-w-xl">
+        <div className="flex-1 w-full xl:w-1/3 min-w-[300px]">
           <BasicBarChart />
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
+      <div className="overflow-x-auto mt-10">
+        <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
         <SimpleTable columns={columns} data={data} cellComponents={{}} />
       </div>
-      {/* <div>
-        <h2 className="text-xl font-bold mb-4">Recent POs</h2>
-        <CustomTable columns={columns} data={data} />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Invoices Awaiting Payment</h2>
-        <CustomTable columns={columns} data={data} />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Store Updates</h2>
-        <CustomTable columns={columns} data={data} />
-      </div> */}
     </div>
   );
 }

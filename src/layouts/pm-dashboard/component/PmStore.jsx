@@ -113,7 +113,6 @@ const PmStores = () => {
       <TopBar
         title="Stores"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        // showExport={true}
         showFilter={true}
         filterOptions={["ON-GOING", "Pending", "Not Started"]}
         onFilterChange={(selected) =>
@@ -121,11 +120,11 @@ const PmStores = () => {
         }
         buttonText="Add New Store"
         onButtonClick={() =>
-          navigate("/project-manager-dashboard/store/addStores")
+          navigate("/project-manager-dashboard/store/addStore")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* table */}
+
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
