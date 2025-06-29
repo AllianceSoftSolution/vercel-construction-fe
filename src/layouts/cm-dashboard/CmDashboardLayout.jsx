@@ -28,7 +28,7 @@ const CmDashboardLayout = ({ role }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setSidebarOpen(window.innerWidth >= 1080);
+      setSidebarOpen(window.innerWidth >= 1200);
     };
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -57,6 +57,7 @@ const CmDashboardLayout = ({ role }) => {
       icon: IoStorefrontSharp,
       path: "/construction-manager-dashboard/store",
     },
+    
   ];
 
   return (
@@ -109,7 +110,7 @@ const CmDashboardLayout = ({ role }) => {
                     //     : location.pathname === item.path
                     // }
                     isActive={
-                      item.path === "/construction-manager-dashboard"
+                      item.path === "/construction-manager-dashboard" 
                         ? location.pathname ===
                           "/construction-manager-dashboard"
                         : location.pathname.startsWith(item.path)

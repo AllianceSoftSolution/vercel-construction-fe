@@ -40,7 +40,7 @@ const CmSectionDetailPage = () => {
           {
             label: "View Store",
             onClick: () =>
-              navigate("/construction-manager-dashboard/user-Management/123"),
+              navigate("/construction-manager-dashboard/user-management/123"),
             icon: <FaUserEdit />,
           },
           {
@@ -135,7 +135,7 @@ const CmSectionDetailPage = () => {
         <h4 className="text-[#12141D] font-semibold text-lg sm:text-xl mb-4">
           Members Overview
         </h4>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex lg:flex-row flex-col gap-4">
           {hasMemberInfo ? (
             <MemberInfoCard
               title="General information - Store Head"
