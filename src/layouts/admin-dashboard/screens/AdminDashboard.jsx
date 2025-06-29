@@ -21,47 +21,6 @@ import {
 import Divider from "../../../components/Divider";
 
 function AdminDashboard() {
-  const data1 = [
-    {
-      id: 1,
-      demandId: "001",
-      demandName: "Cement",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      unit: "ton",
-      poQty: 100,
-      status: "Pending",
-      assingedVendors: "Owner",
-    },
-    {
-      id: 2,
-      demandId: "002",
-      demandName: "Cement",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      unit: "ton",
-      poQty: 100,
-      status: "Approved",
-    },
-    {
-      id: 3,
-      demandId: "003",
-      demandName: "Cement",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      unit: "ton",
-      poQty: 100,
-      status: "In Progress",
-      assingedVendors: "Owner",
-    },
-  ];
-
   const analyticsData = [
     {
       label: "Total Projects",
@@ -100,19 +59,7 @@ function AdminDashboard() {
       percentage: 10.25,
     },
   ];
-  const columns1 = [
-    { headerName: "Demand ID", field: "demandId" },
-    { headerName: "Project Name", field: "project" },
-    { headerName: "Demand ", field: "demandName" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
-    { headerName: "Unit", field: "unit" },
-    { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Assigned Vendors", field: "assingedVendors" },
-    { headerName: "Action", field: "action" },
-  ];
+
   const data = [
     {
       id: 1,
@@ -190,7 +137,6 @@ function AdminDashboard() {
           </div>
         ))}
       </div>
-      
 
       <div className="mt-6 flex flex-col lg:flex-row gap-6">
         <div className="flex-1 min-w-[280px]">
@@ -214,7 +160,7 @@ function AdminDashboard() {
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />
-        <SimpleTable columns={columns1} data={data1} cellComponents={{}} />
+        <SimpleTable columns={columns} data={data} cellComponents={{}} />
       </div>
     </div>
   );

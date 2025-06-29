@@ -20,6 +20,7 @@ import { FaPeopleLine } from "react-icons/fa6";
 import { FaUserEdit } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IconButton } from "@mui/material";
+import { MdOutlineNoAccounts } from "react-icons/md";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import {
   ManageSearchRounded,
@@ -115,11 +116,6 @@ const UserManagement = () => {
         className="bg-[#FF0000] font-semibold"
         items={[
           {
-            label: "Add Note",
-            // onClick: () => alert(""),
-            // icon: <FaUserEdit />,
-          },
-          {
             label: "View Detail",
             onClick: () => navigate("123"),
             icon: <FaEye />,
@@ -133,7 +129,7 @@ const UserManagement = () => {
           {
             label: "Ban",
             // onClick: () => alert("Delete"),
-            icon: <IoPersonCircle />,
+            icon: <MdOutlineNoAccounts className="w-5 h-5" />,
           },
           {
             label: "Suspend Account",
