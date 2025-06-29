@@ -12,7 +12,12 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import { AccountBalance, AvTimerSharp, CloudDownload, Paid } from "@mui/icons-material";
+import {
+  AccountBalance,
+  AvTimerSharp,
+  CloudDownload,
+  Paid,
+} from "@mui/icons-material";
 import SimpleTable from "../../../../components/SimpleTable";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
@@ -64,32 +69,37 @@ const columns = [
   { headerName: "Date", field: "date" },
   { headerName: "Attachment", field: "fileUrl" },
 ];
+const analyticsData = [
+  { label: "Total Payables", icon: AvTimerSharp, count: 120000 },
+  { label: "Total Paid", icon: Paid, count: 250000 },
+  { label: "Balance Remaining", icon: AccountBalance, count: 1900000 },
+];
 
 export default function AcPayableDetails() {
   return (
-    <Box >
+    <Box>
       <TopBar
         title="Payables Detail"
         detail="Detailed view of material stock movement transactions for selected Purchase Order."
         showFilter={true}
         filterOptions={["Assigned", "Not-Assigned"]}
       />
-      <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
-        <AnalyticsCard
-          label="Total Payables"
-          icon={AvTimerSharp}
-          count={120000}
-        />
-        <AnalyticsCard
-          label="Total Paid"
-          icon={Paid}
-          count={250000}
-        />
-        <AnalyticsCard
-          label="Balance Remaining"
-          icon={AccountBalance}
-          count={1900000}
-        />
+
+      <div className="border rounded-xl p-4 mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {analyticsData.map((item, index) => (
+          <div
+            key={index}
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300
+                     xl:last:after:hidden"
+          >
+            <AnalyticsCard
+              label={item.label}
+              icon={item.icon}
+              count={item.count}
+              percentage={item.percentage}
+            />
+          </div>
+        ))}
       </div>
       <div className="mt-10">
         <TopBar
@@ -97,7 +107,7 @@ export default function AcPayableDetails() {
           detail="Detailed view of material stock movement transactions for selected Purchase Order."
         />
         <div className="mt-3">
-          <SimpleTable data={data} columns={columns} cellComponents={{}}/>
+          <SimpleTable data={data} columns={columns} cellComponents={{}} />
         </div>
       </div>
     </Box>
