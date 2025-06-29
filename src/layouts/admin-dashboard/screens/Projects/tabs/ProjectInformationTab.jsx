@@ -80,7 +80,7 @@ const ProjectInformationTab = () => {
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate("/admin-dashboard/user-Management/123"),
+            onClick: () => navigate("/admin-dashboard/user-management/123"),
             icon: <FaEye />,
           },
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },

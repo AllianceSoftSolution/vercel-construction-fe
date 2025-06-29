@@ -68,7 +68,7 @@ const AssociatedMembersTab = () => {
         items={[
           {
             label: "View Member Detail",
-            onClick: () => navigate("/admin-dashboard/user-Management/123"),
+            onClick: () => navigate("/admin-dashboard/user-management/123"),
             icon: <FaEye />,
           },
           {

@@ -6,24 +6,13 @@ import {
   DialogActions,
   IconButton,
   MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  TextField,
   Typography,
   Box,
 } from "@mui/material";
-import {
-  ArrowBack,
-  ExpandMore,
-  Add,
-  Delete,
-  Height,
-} from "@mui/icons-material";
-import CustomTextField from "../../../../mui/CustomTextField";
-import Button from "../../../../components/Button";
 import { MdAdd, MdDelete } from "react-icons/md";
+import CustomTextField from "../../../../mui/CustomTextField";
 import CustomSelect from "../../../../mui/CustomSelect";
+import Button from "../../../../components/Button";
 
 const style = {
   position: "absolute",
@@ -35,21 +24,17 @@ const style = {
 };
 
 export default function PurchaseOrderForm({ isOpen, onClose }) {
-  const [vendor, setVendor] = useState("");
   const [formSections, setFormSections] = useState([
-    { id: "1", vendor: "", product: "Cement", quantity: "" },
+    { id: "1", vendor: "", product: "Cement", quantity: "", total: "50" },
   ]);
 
-  const handleVendorChange = (e) => {
-    setVendor(e.target.value);
-  };
   const addFormSection = () => {
     const newSection = {
       id: Date.now().toString(),
       vendor: "",
       product: "",
       quantity: "",
-      total:"50"
+      total: "",
     };
     setFormSections([...formSections, newSection]);
   };
@@ -61,19 +46,27 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
   };
 
   const updateFormSection = (id, field, value) => {
-    setFormSections(
-      formSections.map((section) =>
+    setFormSections((prev) =>
+      prev.map((section) =>
         section.id === id ? { ...section, [field]: value } : section
       )
     );
   };
 
   const renderFormSection = (section, index) => (
-    <Box key={section.id} mb={4} borderRadius={20}>
-      <CustomSelect label="Select you vendor"   fullWidth name="name" select>
+    <Box key={section.id} mb={4} borderRadius={2}>
+      <CustomSelect
+        label="Select your vendor"
+        fullWidth
+        name="vendor"
+        value={section.vendor}
+        onChange={(e) =>
+          updateFormSection(section.id, "vendor", e.target.value)
+        }
+      >
         <MenuItem value="1">Hassan</MenuItem>
         <MenuItem value="2">Ahmad</MenuItem>
-        <MenuItem value="2">Ahad</MenuItem>
+        <MenuItem value="3">Ahad</MenuItem>
       </CustomSelect>
 
       <CustomTextField
@@ -95,13 +88,14 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
           updateFormSection(section.id, "quantity", e.target.value)
         }
       />
+
       <CustomTextField
         fullWidth
         margin="normal"
         label="Total"
         value={section.total}
         onChange={(e) =>
-          updateFormSection(section.id, "quantity", e.target.value)
+          updateFormSection(section.id, "total", e.target.value)
         }
       />
 
@@ -128,9 +122,6 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
       <Dialog open={isOpen} onClose={onClose} fullWidth>
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={2}>
-            {/* <IconButton onClick={() => setIsOpen(false)} size="small">
-              <ArrowBack />
-            </IconButton> */}
             <Box>
               <Typography variant="h6">Create Purchase Order</Typography>
               <Typography variant="body2" color="text.secondary">
@@ -148,9 +139,9 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
 
         <DialogActions>
           <button
-            variant="outlined"
-            className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000]"
-            onClick={() => onClose}
+            type="button"
+            className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
+            onClick={onClose}
           >
             Back
           </button>

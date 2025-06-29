@@ -11,7 +11,7 @@ const data = [
 
 export default function PieGraph({pieTitle}) {
   return (
-    <div className="max-w-lg w-full border-2 mt-5  rounded-lg p-5">
+    <div className="max-w-lg w-full border-2 mt-5 rounded-lg p-5">
       <TopBar title={pieTitle} />
       <Stack direction="row" flexWrap="wrap">
         <PieChart

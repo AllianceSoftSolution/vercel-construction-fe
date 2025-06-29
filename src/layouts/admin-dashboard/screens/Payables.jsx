@@ -34,7 +34,12 @@ const AddPriceModal = ({ open, onClose }) => (
         <CustomTextField label="Total Price" placeholder="Total Price" />
       </div>
       <div className="flex justify-end gap-3 mt-6">
-        <Button buttonText="Cancel" onClick={onClose} />
+        <button
+          onClick={onClose}
+          className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
+        >
+          Cancel
+        </button>
         <Button buttonText="Add Price" />
       </div>
     </Box>
@@ -254,8 +259,6 @@ const Payables = () => {
           </div>
         ))}
       </div>
-
-
 
       <div className="mt-10">
         <h1 className="text-xl md:text-2xl font-bold mb-5">

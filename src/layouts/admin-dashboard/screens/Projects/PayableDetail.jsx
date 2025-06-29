@@ -45,6 +45,26 @@ const paymentColumns = [
   { headerName: "Paid By", field: "paidBy" },
   { headerName: "Attachment", field: "fileUrl" },
 ];
+const analyticsData = [
+  {
+    id: 1,
+    label: "Total Payables",
+    icon: AccountTree, // Assume this is imported already
+    count: 120000,
+  },
+  {
+    id: 2,
+    label: "Total Paid",
+    icon: Paid, // Assume this is imported already
+    count: 250000,
+  },
+  {
+    id: 3,
+    label: "Balance Remaining",
+    icon: RiRecordMailLine, // Assume this is imported already
+    count: 1900000,
+  },
+];
 
 export default function PayableDetails() {
   return (
@@ -55,18 +75,21 @@ export default function PayableDetails() {
         showFilter={true}
         filterOptions={["Assigned", "Not-Assigned"]}
       />
-      <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-        <AnalyticsCard
-          label="Total Payables"
-          icon={AccountTree}
-          count={120000}
-        />
-        <AnalyticsCard label="Total Paid" icon={Paid} count={250000} />
-        <AnalyticsCard
-          label="Balance Remaining"
-          icon={RiRecordMailLine}
-          count={1900000}
-        />
+      <div className="border rounded-xl p-4 mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {analyticsData.map((item, index) => (
+          <div
+            key={index}
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300
+                     xl:last:after:hidden"
+          >
+            <AnalyticsCard
+              label={item.label}
+              icon={item.icon}
+              count={item.count}
+              percentage={item.percentage}
+            />
+          </div>
+        ))}
       </div>
       <div className="mt-10">
         <TopBar
@@ -74,7 +97,11 @@ export default function PayableDetails() {
           detail="Detailed view of material stock movement transactions for selected Purchase Order."
         />
         <div className="mt-4 overflow-x-auto">
-          <SimpleTable data={paymentData} columns={paymentColumns} cellComponents={{}} />
+          <SimpleTable
+            data={paymentData}
+            columns={paymentColumns}
+            cellComponents={{}}
+          />
         </div>
       </div>
     </Box>

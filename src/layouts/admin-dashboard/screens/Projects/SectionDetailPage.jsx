@@ -39,7 +39,7 @@ const SectionDetailPage = () => {
       items={[
         {
           label: "View Detail",
-          onClick: () => navigate("/admin-dashboard/user-Management/123"),
+          onClick: () => navigate("/admin-dashboard/user-management/123"),
           icon: <FaUserEdit />,
         },
         {
@@ -97,21 +97,22 @@ const SectionDetailPage = () => {
   ];
 
   return (
-    <div className="p-2 sm:p-4">
+    <div className="p-4 sm:p-6 lg:p-8 w-full">
       <TopBar
         title="Section Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
-      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-4">
-        <div className="flex flex-wrap justify-between gap-4">
+      {/* Project Info Section */}
+      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <InfoItem label="Project Name" value="project name" />
           <InfoItem label="Project Code" value="project code" />
           <InfoItem label="Section" value="section" />
-
           <InfoItem label="Date" value="date" />
         </div>
-        <div className="flex flex-wrap gap-10 mt-2">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
           <InfoItem label="Project Location" value="project location" />
           <InfoItem label="Project Status" value="project status" />
           <InfoItem label="Total Amount" value="1200$" />
@@ -120,10 +121,12 @@ const SectionDetailPage = () => {
         </div>
       </div>
 
+      {/* Members Overview Section */}
       <div className="mt-10">
         <h4 className="text-[#12141D] font-semibold text-xl mb-4">
           Members Overview
         </h4>
+
         <div className="flex flex-col lg:flex-row gap-6">
           {hasMemberInfo ? (
             <MemberInfoCard
@@ -149,6 +152,7 @@ const SectionDetailPage = () => {
               onManagerClick={() => sethasMemberInfo(true)}
             />
           )}
+
           {hasStoreHeadInfo ? (
             <MemberInfoCard
               title="General information - Store Head"
@@ -176,6 +180,7 @@ const SectionDetailPage = () => {
         </div>
       </div>
 
+      {/* Construction Managers Table */}
       <div className="mt-10">
         <TopBar
           title="Construction Managers"
@@ -210,11 +215,11 @@ const SectionDetailPage = () => {
 };
 
 const InfoItem = ({ label, value }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex items-start flex-col sm:flex-row gap-1 sm:gap-2">
     <p className="text-[#444444] font-semibold text-base whitespace-nowrap">
       {label}:
     </p>
-    <p className="text-[#979797] text-sm">{value}</p>
+    <p className="text-[#979797] text-sm break-words">{value}</p>
   </div>
 );
 

@@ -139,9 +139,7 @@ function AdminDashboard() {
       </div>
 
       <div className="mt-6 flex flex-col lg:flex-row gap-6">
-        <div className="flex-1 min-w-[280px]">
-          <PieGraph pieTitle="Demand Status" />
-        </div>
+        <PieGraph pieTitle="Demand Status" />
         <div className="flex-1 min-w-[280px]">
           <HorixontalBarchartGraph title="PO Distribution by Vendor" />
         </div>

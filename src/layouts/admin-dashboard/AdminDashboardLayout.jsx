@@ -28,7 +28,7 @@ const AdminDashboardLayout = ({ role }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setSidebarOpen(window.innerWidth >= 1080);
+      setSidebarOpen(window.innerWidth >= 1200);
     };
     window.addEventListener("resize", handleResize);
     handleResize();

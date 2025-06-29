@@ -189,9 +189,7 @@ const DemandDetails = () => {
         />
       </div>
 
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">
-        Status Logs
-      </h4>
+      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
       <SimpleTable data={data} columns={columns} cellComponents={{}} />
     </>
   );
