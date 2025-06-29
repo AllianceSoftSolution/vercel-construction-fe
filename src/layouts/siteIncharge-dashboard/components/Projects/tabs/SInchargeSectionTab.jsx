@@ -12,7 +12,7 @@ const SInchargeSectionTab = () => {
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/siteincharge-dashboard/sections/23232"),
+      onClick: () => navigate("/siteincharge-dashboard/project-management/sections/23232"),
     },
     {
       label: "Edit Project Section",
@@ -39,7 +39,7 @@ const SInchargeSectionTab = () => {
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4">
         <SectionCard
           sectionNo="01"
           sectionName="Piles"

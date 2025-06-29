@@ -79,7 +79,7 @@ const ProjectInformationTab = () => {
           {
             label: "View Detail",
             onClick: () =>
-              navigate("/siteincharge-dashboard/user-Management/123"),
+              navigate("/siteincharge-dashboard/user-management/123"),
             icon: <FaEye />,
           },
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },

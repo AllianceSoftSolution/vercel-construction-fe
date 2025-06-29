@@ -178,8 +178,8 @@ const siteInchargeRoutes = [
       { path: "project-Management", element: <SInchargeProjectManagement /> },
       { path: "project-Management/addProject", element: <SiAddProject /> },
       { path: "project-Management/:id", element: <SiteProjectDetailPage /> },
-      { path: "sections", element: <SInchargeSectionTab /> },
-      { path: "sections/:id", element: <SiSectionDetailPage /> },
+      { path: "project-management/sections", element: <SInchargeSectionTab /> },
+      { path: "project-management/sections/:id", element: <SiSectionDetailPage /> },
 
       { path: "demands", element: <Demands /> },
       { path: "demands/:id", element: <SiDemandDetails /> },

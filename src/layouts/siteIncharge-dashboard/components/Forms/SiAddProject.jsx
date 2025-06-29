@@ -62,7 +62,7 @@ const SiAddProject = () => {
           />{" "}
         </div>
       </div>{" "}
-      <div className="flex gap-4 w-full mt-8">
+      <div className="flex gap-4 justify-center w-full mt-8">
         <button className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] ">
           Back
         </button>

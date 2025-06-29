@@ -86,22 +86,23 @@ const SiDemandDetails = () => {
       />
 
       <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
-
-      <div className="flex flex-wrap justify-between items-center gap-y-2">
-        <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
-        <div className="flex items-center gap-2">
-          <div
-            className={`text-white px-6 py-2 rounded-lg text-sm ${
-              status === "Approved"
-                ? "bg-green-600"
-                : status === "Rejected"
-                ? "bg-red-600"
-                : "bg-[#0252AD]"
-            }`}
-          >
-            {status}
+      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
+        <div className="flex flex-wrap justify-between items-center gap-y-2">
+          <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
+          <div className="flex items-center gap-2">
+            <div
+              className={`text-white px-6 py-2 rounded-lg text-sm ${
+                status === "Approved"
+                  ? "bg-green-600"
+                  : status === "Rejected"
+                  ? "bg-red-600"
+                  : "bg-[#0252AD]"
+              }`}
+            >
+              {status}
+            </div>
+            <CustomActionComponent />
           </div>
-          <CustomActionComponent />
         </div>
       </div>
 
