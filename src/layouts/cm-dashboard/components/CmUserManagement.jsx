@@ -80,12 +80,28 @@ const CmUserManagement = () => {
       field: "action",
     },
   ];
+  const analyticsData = [
+    {
+      label: "Total Payables",
+      icon: IoPeopleSharp,
+      count: 120000,
+    },
+    {
+      label: "Total Paid",
+      icon: IoPeopleSharp,
+      count: 250000,
+    },
+    {
+      label: "Balance Remaining",
+      icon: IoPeopleSharp,
+      count: 1900000,
+    },
+  ];
   const CustomActionComponent = ({ data }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          
           {
             label: "View Detail",
             onClick: () => navigate("123"),
@@ -142,25 +158,16 @@ const CmUserManagement = () => {
       <h2 className="text-2xl font-semibold text-primary">
         Total Users Overview
       </h2>
-      <div className="border-[0.5px] mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <AnalyticsCard
-          label={"Site Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />{" "}
-        <AnalyticsCard
-          label={"Project Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />
-        <AnalyticsCard
-          label={"Construction Manager"}
-          icon={FaPeopleLine}
-          count={10}
-          percentage={10}
-        />
+      <div className="border rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
+        {analyticsData.map((item, index) => (
+          <AnalyticsCard
+            key={index}
+            label={item.label}
+            icon={item.icon}
+            count={item.count}
+            percentage={item.percentage} 
+          />
+        ))}
       </div>
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
@@ -223,4 +230,3 @@ const CmUserManagement = () => {
 };
 
 export default CmUserManagement;
- 

@@ -116,7 +116,7 @@ function CmDashboard() {
 
       <h2 className="text-2xl font-semibold text-primary mb-4">Overview</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {projectStats.map((item, index) => {
           return (
             <div
@@ -134,13 +134,10 @@ function CmDashboard() {
         })}
       </div>
 
-      <div className="mt-6 flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-[40%]">
-          <PieGraph />
-        </div>
-        <div className="w-full">
-          <HorixontalBarchartGraph title={"Fulfillment Progress"} />
-        </div>
+      <div className="mt-6 flex flex-col  lg:flex-row gap-6">
+        <PieGraph />
+
+        <HorixontalBarchartGraph title={"Fulfillment Progress"} />
       </div>
       <SectionCard
         sectionNo="01"

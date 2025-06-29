@@ -86,7 +86,7 @@ function PmDashboard() {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <h2 className="text-2xl font-semibold text-primary ">Overview</h2>
 
-      <div className="mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="border rounded-xl p-4 mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {projectAnalytics.map((item, index) => {
           return (
             <div

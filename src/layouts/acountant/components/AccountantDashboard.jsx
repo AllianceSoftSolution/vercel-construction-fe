@@ -87,7 +87,7 @@ function AccountantDashboard() {
 
       <h2 className="text-2xl font-semibold text-primary mb-4">Overview</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className=" border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
         {analyticsData.map((item, index) => {
           return (
             <div
@@ -106,12 +106,9 @@ function AccountantDashboard() {
       </div>
 
       <div className="mt-8 flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-1/3">
-          <PieGraph pieTitle="Payable" />
-        </div>
-        <div className="w-full lg:w-2/3">
-          <VertcleBarChart verTitle="Fulfillment Progress" />
-        </div>
+        <PieGraph pieTitle="Payable" />
+
+        <VertcleBarChart verTitle="Fulfillment Progress" />
       </div>
 
       <div className="overflow-x-auto mt-10">

@@ -162,6 +162,23 @@ const AcPayables = () => {
     { headerName: "Vendors", field: "vendors" },
     { headerName: "Action", field: "action" },
   ];
+  const analyticsData = [
+    {
+      label: "Total Payables",
+      icon: IoPeopleSharp,
+      count: 120000,
+    },
+    {
+      label: "Balance Remaining",
+      icon: IoPeopleSharp,
+      count: 1900000,
+    },
+    {
+      label: "Total Paid",
+      icon: IoPeopleSharp,
+      count: 250000,
+    },
+  ];
 
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -175,7 +192,7 @@ const AcPayables = () => {
         }
       />
 
-      <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
+      {/* <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
         <AnalyticsCard
           label="Total Payables"
           icon={IoPeopleSharp}
@@ -187,8 +204,25 @@ const AcPayables = () => {
           icon={IoPeopleSharp}
           count={1900000}
         />
-      </div>
+      </div> */}
 
+      <div className=" border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        {analyticsData.map((item, index) => {
+          return (
+            <div
+              key={index}
+              className={`relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 `}
+            >
+              <AnalyticsCard
+                label={item.label}
+                icon={item.icon}
+                count={item.count}
+                percentage={item.percentage}
+              />
+            </div>
+          );
+        })}
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 
       {/* <div className="overflow-x-auto">
