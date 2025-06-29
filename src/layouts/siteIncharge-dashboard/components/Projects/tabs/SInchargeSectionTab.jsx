@@ -44,22 +44,22 @@ const SInchargeSectionTab = () => {
           sectionNo="01"
           sectionName="Piles"
           totalDemands="14"
-          totalAmount="1000"
-          paidAmount="500"
-          balanceAmount="500"
+          totalAmount="340$"
+          paidAmount="567$"
+          remainingAmount="9384$"
           manager="Imran"
           linkedStores="01"
           dropdownActions={actions}
         />
         <SectionCard
-          sectionNo="02"
-          sectionName="Beams"
-          totalDemands="10"
-          totalAmount="1000"
-          paidAmount="500"
-          balanceAmount="500"
-          manager="Ali"
-          linkedStores="02"
+          sectionNo="01"
+          sectionName="Piles"
+          totalDemands="14"
+          totalAmount="340$"
+          paidAmount="567$"
+          remainingAmount="9384$"
+          manager="Imran"
+          linkedStores="01"
           dropdownActions={actions}
         />
       </div>

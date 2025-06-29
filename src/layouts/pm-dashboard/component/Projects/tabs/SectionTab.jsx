@@ -45,16 +45,22 @@ const SectionTab = () => {
           sectionNo="01"
           sectionName="Piles"
           totalDemands="14"
+          totalAmount="340$"
+          paidAmount="567$"
+          remainingAmount="9384$"
           manager="Imran"
           linkedStores="01"
           dropdownActions={actions}
         />
         <SectionCard
-          sectionNo="02"
-          sectionName="Beams"
-          totalDemands="20"
-          manager="Ali"
-          linkedStores="02"
+          sectionNo="01"
+          sectionName="Piles"
+          totalDemands="14"
+          totalAmount="340$"
+          paidAmount="567$"
+          remainingAmount="9384$"
+          manager="Imran"
+          linkedStores="01"
           dropdownActions={actions}
         />
        
