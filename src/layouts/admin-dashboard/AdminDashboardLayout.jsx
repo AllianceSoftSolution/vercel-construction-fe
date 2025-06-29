@@ -252,8 +252,8 @@ const AdminDashboardLayout = ({ role }) => {
           </div>
         )}
 
-        <div className="flex-1 w-full overflow-y-auto p-4 md:p-8">
-          <div className="p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
+        <div className="flex-1 w-full overflow-y-auto p-4 md:p-8 min-h-0">
+          <div className="p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full min-h-0">
             <Outlet />
           </div>
         </div>
