@@ -115,7 +115,7 @@
 /* Scrollbar for both horizontal and vertical scrolling */
 *::-webkit-scrollbar {
   width: 7px;
-  /* height: 2px; */
+  height: 5px;
 }
 
 *::-webkit-scrollbar-track {
