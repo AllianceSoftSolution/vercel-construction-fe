@@ -47,6 +47,41 @@ function SinteInchargeDashbaord() {
     },
   ];
 
+  const data2 = [
+    {
+      id: 1,
+      refNo: "REF-001",
+      project: "Bridge Construction",
+      material: "Cement",
+      section: "A1",
+      qty: 120,
+      status: "Pending",
+      cmName: "Ahmed Raza",
+      date: "2025-06-15",
+    },
+    {
+      id: 2,
+      refNo: "REF-002",
+      project: "Highway Expansion",
+      material: "Steel",
+      section: "B2",
+      qty: 250,
+      status: "Approved",
+      cmName: "Fatima Khan",
+      date: "2025-06-14",
+    },
+    {
+      id: 3,
+      refNo: "REF-003",
+      project: "Metro Rail",
+      material: "Concrete",
+      section: "C3",
+      qty: 300,
+      status: "In Progress",
+      cmName: "Hassan Ali",
+      date: "2025-06-13",
+    },
+  ];
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -82,6 +117,17 @@ function SinteInchargeDashbaord() {
       count: 5,
       percentage: 8,
     },
+  ];
+
+  const columns2 = [
+    { headerName: "Ref No", field: "refNo" },
+    { headerName: "Projects", field: "project" },
+    { headerName: "Materials", field: "material" },
+    { headerName: "Sections", field: "section" },
+    { headerName: "Qty", field: "qty" },
+    { headerName: "Status", field: "status" },
+    { headerName: "CM Name", field: "cmName" },
+    { headerName: "Date", field: "date" },
   ];
 
   return (
@@ -124,6 +170,10 @@ function SinteInchargeDashbaord() {
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
         <SimpleTable columns={columns} data={data} cellComponents={{}} />
+      </div>
+      <div className="overflow-x-auto mt-8">
+        <h2 className="text-xl font-bold mb-4">Recent POs</h2>
+        <SimpleTable columns={columns2} data={data2} cellComponents={{}} />
       </div>
     </div>
   );

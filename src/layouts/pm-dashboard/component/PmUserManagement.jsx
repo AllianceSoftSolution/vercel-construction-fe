@@ -21,6 +21,7 @@ import { FaUserEdit } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IconButton } from "@mui/material";
 import DropdownButton from "../../../comments/components/DropdownButton";
+import { MdNoAccounts } from "react-icons/md";
 
 const PmUserManagement = () => {
   const navigate = useNavigate();
@@ -107,11 +108,6 @@ const PmUserManagement = () => {
         className="bg-[#FF0000] font-semibold"
         items={[
           {
-            label: "Add Note",
-            // onClick: () => alert(""),
-            // icon: <FaUserEdit />,
-          },
-          {
             label: "View Detail",
             onClick: () => navigate("123"),
             icon: <FaEye />,
@@ -125,7 +121,7 @@ const PmUserManagement = () => {
           {
             label: "Ban",
             // onClick: () => alert("Delete"),
-            icon: <IoPersonCircle />,
+            icon: <MdNoAccounts />,
           },
           {
             label: "Suspend Account",

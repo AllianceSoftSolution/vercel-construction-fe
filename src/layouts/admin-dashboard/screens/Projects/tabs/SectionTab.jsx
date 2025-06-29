@@ -12,7 +12,8 @@ const SectionTab = () => {
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/admin-dashboard/project-management/sections/:id"),
+      onClick: () =>
+        navigate("/admin-dashboard/project-management/sections/123"),
     },
     {
       label: "Edit Project Section",
@@ -37,7 +38,7 @@ const SectionTab = () => {
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
         <SectionCard
           sectionNo="01"
           sectionName="Piles"
@@ -52,14 +53,6 @@ const SectionTab = () => {
           totalDemands="10"
           manager="Ali"
           linkedStores="02"
-          dropdownActions={actions}
-        />
-        <SectionCard
-          sectionNo="03"
-          sectionName="Columns"
-          totalDemands="9"
-          manager="Sara"
-          linkedStores="03"
           dropdownActions={actions}
         />
       </div>

@@ -79,6 +79,7 @@ const SiPOs = () => {
           },
           {
             label: "Edit",
+            onClick: () => setVendorModalOpen(true),
             icon: <FaUserEdit />,
           },
           {
