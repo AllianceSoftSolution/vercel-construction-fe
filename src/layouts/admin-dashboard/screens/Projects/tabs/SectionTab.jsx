@@ -28,7 +28,7 @@ const SectionTab = () => {
   ];
 
   return (
-    <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-4 w-full">
+    <div className=" w-full">
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

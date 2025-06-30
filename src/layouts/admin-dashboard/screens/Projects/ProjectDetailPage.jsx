@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import TopBar from "../../../../components/ui/TopBar";
+import TopBar from "@/components/ui/TopBar";
 import { useNavigate } from "react-router-dom";
 import { Tabs, Tab, Box } from "@mui/material";
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
@@ -15,7 +15,7 @@ const ProjectDetailPage = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-4 w-full">
+    <div className="px-4 py-4 w-full h-full">
       <TopBar
         title="Project Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
