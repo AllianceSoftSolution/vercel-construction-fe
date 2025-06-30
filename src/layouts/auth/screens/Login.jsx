@@ -18,43 +18,96 @@ const Login = () => {
 
   return (
     <div className="h-screen w-full bg-white flex flex-col">
-      <div className="flex-1 flex flex-col lg:flex-row justify-center items-center overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row justify-center items-center overflow-hidden max-h-full">
+        {/* Left Section - Logo */}
         <div className="w-full lg:w-1/2 h-[300px] lg:h-full flex bg-primary justify-center items-center rounded-tr-[100px] lg:rounded-tr-[200px]">
-          <img src={loginLogo} alt="loginLogo" className="w-40 h-40 lg:w-80 lg:h-80" />
+          <img
+            src={loginLogo}
+            alt="loginLogo"
+            className="w-40 h-40 lg:w-80 lg:h-80"
+          />
         </div>
 
-        <div className="text-black w-full lg:w-1/2 h-full flex flex-col gap-y-4 justify-center items-center px-4 py-6 overflow-y-auto">
+        {/* Right Section - Form */}
+        <div className="text-black w-full lg:w-1/2 h-full flex flex-col gap-y-4 justify-center items-center px-4 py-6">
           <div className="flex flex-col gap-y-1 justify-center items-center">
-            <h2 className="text-[30px] lg:text-[40px] mt-12 font-semibold">Welcome Back</h2>
+            <h2 className="text-[30px] lg:text-[40px] mt-12 font-semibold">
+              Welcome Back
+            </h2>
             <p className="text-[14px] lg:text-[15px] text-center max-w-[500px]">
-              Construction Management System The system will automate the process of managing all Businesses, bookings, and check-ins/check-outs across multiple booking channels such as businesses needs.
+              Construction Management System The system will automate the
+              process of managing all Businesses, bookings, and
+              check-ins/check-outs across multiple booking channels such as
+              businesses needs.
             </p>
           </div>
 
           <div className="rounded-xl w-full max-w-[500px] flex flex-col gap-y-4 p-4">
             <CustomTextField
-              label={<span className="flex items-center gap-1">Enter Email</span>}
+              label={
+                <span className="flex items-center gap-1">Enter Email</span>
+              }
               fullWidth
               name="Email"
               placeholder="Enter Your Work Email"
             />
             <CustomTextField
-              label={<span className="flex items-center gap-1">Enter Password</span>}
+              label={
+                <span className="flex items-center gap-1">Enter Password</span>
+              }
               fullWidth
               name="Password"
               placeholder="Enter Your Password"
             />
-            <CustomSelect label="Role" fullWidth name="role" value={selectedOption} onChange={handleDropdownChange} select>
-              <MenuItem value="1" onClick={() => navigate("/admin-dashboard")}>Admin</MenuItem>
-              <MenuItem value="2" onClick={() => navigate("/siteincharge-dashboard")}>Site-Incharge</MenuItem>
-              <MenuItem value="3" onClick={() => navigate("/project-manager-dashboard")}>Project-Manager</MenuItem>
-              <MenuItem value="4" onClick={() => navigate("/construction-manager-dashboard")}>Construction-Manager</MenuItem>
-              <MenuItem value="5" onClick={() => navigate("/store-incharge-dashboard")}>Store-Incharge</MenuItem>
-              <MenuItem value="6" onClick={() => navigate("/accountant-dashboard")}>Accountant</MenuItem>
+
+            <CustomSelect
+              label="Role"
+              fullWidth
+              name="role"
+              value={selectedOption}
+              onChange={handleDropdownChange}
+              select
+            >
+              <MenuItem value="1" onClick={() => navigate("/admin-dashboard")}>
+                Admin
+              </MenuItem>
+              <MenuItem
+                value="2"
+                onClick={() => navigate("/siteincharge-dashboard")}
+              >
+                Site-Incharge
+              </MenuItem>
+              <MenuItem
+                value="3"
+                onClick={() => navigate("/project-manager-dashboard")}
+              >
+                Project-Manager
+              </MenuItem>
+              <MenuItem
+                value="4"
+                onClick={() => navigate("/construction-manager-dashboard")}
+              >
+                Construction-Manager
+              </MenuItem>
+              <MenuItem
+                value="5"
+                onClick={() => navigate("/store-incharge-dashboard")}
+              >
+                Store-Incharge
+              </MenuItem>
+              <MenuItem
+                value="6"
+                onClick={() => navigate("/accountant-dashboard")}
+              >
+                Accountant
+              </MenuItem>
             </CustomSelect>
 
             <div className="bg-primary text-white flex justify-center items-center font-semibold text-[16px] rounded-xl">
-              <button className="py-2 px-4" onClick={() => navigate("/admin-dashboard")}>
+              <button
+                className="py-2 px-4"
+                onClick={() => navigate("/admin-dashboard")}
+              >
                 Login
               </button>
             </div>
@@ -62,16 +115,21 @@ const Login = () => {
             <div className="flex justify-between flex-wrap gap-y-2">
               <div className="flex items-center gap-x-2">
                 <input type="checkbox" />
-                <span className="text-[14px] font-medium">Log in automatically</span>
+                <span className="text-[14px] font-medium">
+                  Log in automatically
+                </span>
               </div>
               <div>
-                <span className="text-[14px] font-medium text-[#BF1017]">Forgot Password?</span>
+                <span className="text-[14px] font-medium text-[#BF1017]">
+                  Forgot Password?
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Footer */}
       <footer className="w-full bg-primary p-4 flex flex-col lg:flex-row justify-center items-center gap-y-4">
         <div className="flex flex-col lg:flex-row justify-between items-center w-full max-w-[1100px] px-4">
           <div className="flex text-black font-light gap-x-4 text-[13px] text-center flex-wrap justify-center lg:justify-start">
