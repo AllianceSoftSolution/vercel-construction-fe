@@ -125,7 +125,7 @@ const SectionDetailPage = () => {
           Members Overview
         </h4>
 
-        <div className="flex flex-col lg:flex-row  gap-6 w-full">
+        <div className="flex flex-col lg:flex-row h-full gap-6 w-full">
           {hasMemberInfo ? (
             <MemberInfoCard
               title="General information - Project Manager"
