@@ -5,8 +5,8 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
 
-const SiAddProject = () => {
-  const navigate = useNavigate()
+const CreateSection = () => {
+  const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -34,28 +34,6 @@ const SiAddProject = () => {
             type="text"
           />{" "}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Sections</span>}
-            fullWidth
-            name="sections"
-            placeholder="Enter Your Work Email"
-            type="text"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Start Date</span>}
-            fullWidth
-            name="startDate"
-            placeholder="Enter Start Date"
-            type="date"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Project Status</span>
-            }
-            fullWidth
-            name="status"
-            placeholder="Enter Project Status"
-          />{" "}
-          <CustomTextField
             label={<span className="flex items-center gap-1">Address</span>}
             fullWidth
             name="address"
@@ -65,7 +43,10 @@ const SiAddProject = () => {
         </div>
       </div>{" "}
       <div className="flex gap-4 justify-center w-full mt-8">
-        <button onClick={()=>navigate('/admin-dashboard/project-management')} className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] ">
+        <button
+          onClick={() => navigate("/admin-dashboard/project-management")}
+          className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] "
+        >
           Back
         </button>
         <button className="bg-primary  px-10 py-2 rounded-lg font-medium text-white ">
@@ -76,4 +57,4 @@ const SiAddProject = () => {
   );
 };
 
-export default SiAddProject;
+export default CreateSection;
