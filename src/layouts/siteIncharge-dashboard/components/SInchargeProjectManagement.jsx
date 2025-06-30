@@ -94,6 +94,10 @@ const SInchargeProjectManagement = () => {
       <TopBar
         title="Project Management"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        buttonText="Create Project"
+        onButtonClick={() =>
+          navigate("/siteincharge-dashboard/project-management/addProject")
+        }
         // showExport={true}
         showFilter={true}
         filterOptions={["Completed", "In-Progress", "Cancelled"]}

@@ -21,9 +21,9 @@ const PmAddUser = () => {
       {/* form */}
       <div className="flex justify-center">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
-          <h3 className="text-xl font-semibold text-[#12141D] ">
+          {/* <h3 className="text-xl font-semibold text-[#12141D] ">
             Premium Content
-          </h3>
+          </h3> */}
           <CustomTextField
             label={<span className="flex items-center gap-1">User Name</span>}
             fullWidth

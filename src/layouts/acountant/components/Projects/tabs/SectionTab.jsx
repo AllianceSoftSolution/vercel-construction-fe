@@ -17,11 +17,11 @@ const SectionTab = () => {
   const navigate = useNavigate();
 
   const actions = [
-    {
-      label: "View Section Detail",
-      icon: <FaEye />,
-      // onClick: () => navigate("/accountant-dashboard/sections/:id"),
-    },
+    // {
+    //   label: "View Section Detail",
+    //   icon: <FaEye />,
+    //   // onClick: () => navigate("/accountant-dashboard/sections/:id"),
+    // },
     {
       label: "Edit Project Section",
       icon: <FaUserEdit />,

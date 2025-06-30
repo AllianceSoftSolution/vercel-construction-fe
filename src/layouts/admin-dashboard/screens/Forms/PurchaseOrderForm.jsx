@@ -89,16 +89,6 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
         }
       />
 
-      <CustomTextField
-        fullWidth
-        margin="normal"
-        label="Total"
-        value={section.total}
-        onChange={(e) =>
-          updateFormSection(section.id, "total", e.target.value)
-        }
-      />
-
       <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
         {formSections.length > 1 && (
           <IconButton

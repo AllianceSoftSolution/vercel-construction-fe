@@ -62,11 +62,7 @@ const PmMemberDetailPage = () => {
 
   return (
     <div className="p-2">
-      <TopBar
-        title="Site Manager"
-        detail="lorem ipsum"
-        showExport={true}
-      />
+      <TopBar title="Member" detail="lorem ipsum" showExport={true} />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
       <div className="flex flex-col md:flex-row gap-4">
         {/* Left Section */}
@@ -82,7 +78,9 @@ const PmMemberDetailPage = () => {
           </div>
 
           <div className="mt-2 flex flex-col gap-2">
-            <h3 className="text-[#BF1017] font-semibold">General Information</h3>
+            <h3 className="text-[#BF1017] font-semibold">
+              General Information
+            </h3>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Email</p>
               <p>example@gmail.com</p>
@@ -120,11 +118,17 @@ const PmMemberDetailPage = () => {
           </div>
 
           <div className="border mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            <AnalyticsCard label={"Total Projects "} icon={FaBoxesStacked} count={10} />
+            <AnalyticsCard
+              label={"Total Projects "}
+              icon={FaBoxesStacked}
+              count={10}
+            />
           </div>
 
           <div className="mt-4">
-            <h3 className="text-xl font-semibold text-[#BF1017]">Projects History</h3>
+            <h3 className="text-xl font-semibold text-[#BF1017]">
+              Projects History
+            </h3>
             <div className="overflow-x-auto mt-2">
               <SimpleTable data={data} columns={columns} cellComponents={{}} />
             </div>

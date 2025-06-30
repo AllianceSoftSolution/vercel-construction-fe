@@ -20,11 +20,11 @@ const AddProduct = () => {
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* Upload Image Section */}
-        {/* <div className="flex flex-col gap-y-2">
+      {/* <div className="flex flex-col gap-y-2">
           <h4 className="text-[#12141D] font-semibold">Upload Image</h4>
         </div> */}
       {/* form */}
-      <div className="flex flex-col gap-4">
+      <div className="flex justify-center items-center  gap-4">
         {/* <div className="relative w-[100px] h-[100px]">
           <div className="w-full h-full bg-white border-[0.5px] border-[#CDC9C9] rounded-full overflow-hidden"></div>
           <label
@@ -42,7 +42,7 @@ const AddProduct = () => {
             onChange={(e) => console.log(e.target.files[0])}
           />
         </div> */}
-        <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
+        <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center ">
           <CustomTextField
             label={
               <span className="flex items-center gap-1">Product Name</span>
@@ -61,7 +61,7 @@ const AddProduct = () => {
           />{" "}
         </div>
       </div>{" "}
-      <div className="flex gap-4 w-full mt-8">
+      <div className="flex gap-4 w-full mt-8 justify-center">
         <button
           className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] "
           onClick={() => navigate(-1)}

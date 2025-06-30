@@ -56,11 +56,11 @@ function CmDashboard() {
 
   const navigate = useNavigate();
   const actions = [
-    {
-      label: "View Section Detail",
-      icon: <FaEye />,
-      onClick: () => navigate("/construction-manager-dashboard/sections/23232"),
-    },
+    // {
+    //   label: "View Section Detail",
+    //   icon: <FaEye />,
+    //   onClick: () => navigate("/construction-manager-dashboard/sections/23232"),
+    // },
     {
       label: "Edit Project Section",
       icon: <FaUserEdit />,

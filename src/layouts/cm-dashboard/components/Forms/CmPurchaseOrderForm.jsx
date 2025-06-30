@@ -49,7 +49,7 @@ export default function CmPurchaseOrderForm({ isOpen, onClose }) {
       vendor: "",
       product: "",
       quantity: "",
-      total:"50"
+      total: "50",
     };
     setFormSections([...formSections, newSection]);
   };
@@ -70,7 +70,7 @@ export default function CmPurchaseOrderForm({ isOpen, onClose }) {
 
   const renderFormSection = (section, index) => (
     <Box key={section.id} mb={4} borderRadius={20}>
-      <CustomSelect label="Select you vendor"   fullWidth name="name" select>
+      <CustomSelect label="Select you vendor" fullWidth name="name" select>
         <MenuItem value="1">Hassan</MenuItem>
         <MenuItem value="2">Ahmad</MenuItem>
         <MenuItem value="2">Ahad</MenuItem>
