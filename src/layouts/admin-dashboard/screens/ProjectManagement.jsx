@@ -3,7 +3,7 @@ import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
 import ActionModal from "./users/modals/ActionModal";
-import { FaUserEdit } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
@@ -72,13 +72,13 @@ const ProjectManagement = () => {
           {
             label: "View Detail Page",
             onClick: () => navigate("123"),
-            icon: <FaUserEdit />,
+            icon: <FaEye />,
           },
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
           {
             label: "Delete ",
             onClick: () => alert("Delete"),
-            icon: <FaUserEdit />,
+            icon: <FaTrash />,
           },
         ]}
         // onClick={handleActionClick}

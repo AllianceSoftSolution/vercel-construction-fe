@@ -39,7 +39,7 @@ const SinStores = () => {
           },
           {
             label: "Assign Accountant",
-            onClick: () => navigate("123"),
+            onClick: () => handleLinkClick(),
             icon: <RiAccountBox2Fill />,
           },
         ]}

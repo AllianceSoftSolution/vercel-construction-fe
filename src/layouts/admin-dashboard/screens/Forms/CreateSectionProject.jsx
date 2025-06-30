@@ -13,8 +13,8 @@ const CreateSectionProject = () => {
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title="New Project"
-        detail="Add New Project Information in Epos Software"
+        title="New Section"
+        detail="Add New Section Information in Epos Software"
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -22,15 +22,15 @@ const CreateSectionProject = () => {
       <div className="flex justify-center">
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <h3 className="text-xl font-semibold text-[#12141D] ">
-            Project Information
+            Create Section
           </h3>
           <CustomTextField
             label={
-              <span className="flex items-center gap-1">Project Name</span>
+              <span className="flex items-center gap-1">Section Name</span>
             }
             fullWidth
             name="name"
-            placeholder="Enter Project Name"
+            placeholder="Enter Section Name"
             type="text"
           />{" "}
           <CustomTextField
