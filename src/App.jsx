@@ -144,7 +144,8 @@ const adminRoutes = [
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "user-Management/:id", element: <MemberDetailPage /> },
       { path: "project-Management", element: <ProjectManagement /> },
-      { path: "project-Management/addProject", element: <CreateSectionProject /> },
+      { path: "project-Management/addProject", element: <AddProject/> },
+      { path: "project-Management/createProject", element: <CreateSectionProject /> },
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "project-Management/sections", element: <SectionTab /> },
       {
