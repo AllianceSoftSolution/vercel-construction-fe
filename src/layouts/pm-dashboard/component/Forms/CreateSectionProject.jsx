@@ -5,7 +5,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
 
-const PmAddProject = () => {
+const CreateSectionProject = () => {
   const navigate = useNavigate();
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
@@ -57,4 +57,4 @@ const PmAddProject = () => {
   );
 };
 
-export default PmAddProject;
+export default CreateSectionProject;
