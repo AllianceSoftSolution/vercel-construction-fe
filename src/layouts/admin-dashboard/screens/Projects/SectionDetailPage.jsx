@@ -97,21 +97,21 @@ const SectionDetailPage = () => {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 w-full">
+    <div className=" sm:p-6 w-full">
       <TopBar
         title="Section Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
-      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
           <InfoItem label="Project Name" value="project name" />
           <InfoItem label="Project Code" value="project code" />
           <InfoItem label="Section" value="section" />
           <InfoItem label="Date" value="date" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
           <InfoItem label="Project Location" value="project location" />
           <InfoItem label="Project Status" value="project status" />
           <InfoItem label="Total Amount" value="1200$" />
@@ -212,11 +212,13 @@ const SectionDetailPage = () => {
 };
 
 const InfoItem = ({ label, value }) => (
-  <div className="flex items-start flex-col sm:flex-row gap-1 sm:gap-2">
+  <div className="flex items-start sm:flex-row gap-1 sm:gap-2">
     <p className="text-[#444444] font-semibold text-base whitespace-nowrap">
       {label}:
     </p>
-    <p className="text-[#979797] text-sm break-words">{value}</p>
+    <p className="text-[#979797] text-sm break-words flex justify-center items-center">
+      {value}
+    </p>
   </div>
 );
 
