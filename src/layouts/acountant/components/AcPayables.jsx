@@ -159,6 +159,45 @@ const AcPayables = () => {
     { headerName: "Vendors", field: "vendors" },
     { headerName: "Action", field: "action" },
   ];
+  const data1 = [
+    {
+      id: 1,
+      vendorName: "ABC Supplies Ltd.",
+      amountPaid: 1200,
+      remainingBalance: 300,
+      date: "2025-06-25",
+      paidBy: "John Doe",
+      fileUrl: "/docs/payment-receipt-abc.pdf",
+    },
+    {
+      id: 2,
+      vendorName: "Tech Solutions Inc.",
+      amountPaid: 800,
+      remainingBalance: 0,
+      date: "2025-06-26",
+      paidBy: "Sarah Khan",
+      fileUrl: "/docs/payment-receipt-tech.pdf",
+    },
+    {
+      id: 3,
+      vendorName: "Global Office Equipment",
+      amountPaid: 1500,
+      remainingBalance: 500,
+      date: "2025-06-27",
+      paidBy: "Ahmed Raza",
+      fileUrl: "/docs/payment-receipt-global.pdf",
+    },
+  ];
+
+  const columns1 = [
+    { headerName: "Vendor Name", field: "vendorName" },
+    { headerName: "Amount Paid", field: "amountPaid" },
+    { headerName: "Remaining Balance", field: "remainingBalance" },
+    { headerName: "Date", field: "date" },
+    { headerName: "Paid By", field: "paidBy" },
+    { headerName: "Attachment", field: "fileUrl" },
+    { headerName: "Action", field: "action" },
+  ];
   const analyticsData = [
     {
       label: "Total Payables",
@@ -236,10 +275,10 @@ const AcPayables = () => {
       </div>
 
       <div className="mt-16">
-        <h1 className="text-2xl mb-5 font-bold">Regular POs</h1>
+        <h1 className="text-2xl mb-5 font-bold">Vendors List</h1>
         <SimpleTable
-          columns={columns}
-          data={data}
+          columns={columns1}
+          data={data1}
           cellComponents={{ action: ActionComforRegPOs }}
         />
       </div>
