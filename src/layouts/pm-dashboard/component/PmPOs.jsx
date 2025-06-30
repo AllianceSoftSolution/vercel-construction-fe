@@ -78,15 +78,15 @@ const PmPOs = () => {
             onClick: () => navigate("123"),
             icon: <IoIosEye />,
           },
-          {
-            label: "Edit",
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Change Vendor",
-            onClick: () => setVendorModalOpen(true),
-            icon: <RiFileEditFill />,
-          },
+          // {
+          //   label: "Edit",
+          //   icon: <FaUserEdit />,
+          // },
+          // {
+          //   label: "Change Vendor",
+          //   onClick: () => setVendorModalOpen(true),
+          //   icon: <RiFileEditFill />,
+          // },
         ]}
       >
         <IconButton>

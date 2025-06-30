@@ -74,12 +74,6 @@ const CmProjectManagement = () => {
             onClick: () => navigate("123"),
             icon: <FaUserEdit />,
           },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaUserEdit />,
-          },
         ]}
         // onClick={handleActionClick}
       >
@@ -100,7 +94,6 @@ const CmProjectManagement = () => {
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
-       
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
@@ -111,7 +104,7 @@ const CmProjectManagement = () => {
           cellComponents={{ action: CustomActionComponent }}
           // showCheckbox={true}
         />
-      </div> 
+      </div>
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl relative">

@@ -5,22 +5,9 @@ import { FaTrash, FaUserEdit } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import SectionDetailPage from "../CmSectionDetailPage";
 import { useNavigate } from "react-router-dom";
-import MemebersOverviewCard from "../../../../../mui/MembersOverviewCard";
-import MemberInfoCard from "../../../../../mui/MemberInfoCard";
-import manager from "../../../../../assets/construction/manager.png";
-import Search from "../../../../../assets/construction/Search.png";
-import AddMemberModal from "../../users/modals/AddMemberModal";
-import DropdownButton from "../../../../../comments/components/DropdownButton";
-import CustomModal from "../../../../../comments/components/CustomModal";
-import { Box, Modal, Typography } from "@mui/material";
-import Button from "../../../../../components/Button";
-import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
-import { Height } from "@mui/icons-material";
-
 
 const CmSectionTab = () => {
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
- 
 
   // const [showModal, setShowModal] = useState(false);
 
@@ -34,27 +21,12 @@ const CmSectionTab = () => {
       icon: <FaEye />,
       onClick: () => navigate("/construction-manager-dashboard/sections/23232"),
     },
-    {
-      label: "Edit Project Section",
-      icon: <FaUserEdit />,
-      onClick: () => console.log("Edit clicked"),
-    },
-    {
-      label: "Delete Project Section",
-      icon: <FaTrash />,
-      onClick: () => console.log("Delete clicked"),
-    },
   ];
   return (
     <div>
-     
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Create Project Section"
-        onButtonClick={() =>
-          navigate("/construction-manager-dashboard/project-management/addProject")
-        }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="flex justify-between gap-x-2">
@@ -75,7 +47,6 @@ const CmSectionTab = () => {
           dropdownActions={actions}
         />
       </div>{" "}
-      
       {/* Modal */}
       {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
       {/* <SectionDetailPage /> */}

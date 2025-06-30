@@ -26,7 +26,7 @@ const CmAddUser = () => {
           {/* <h3 className="text-xl font-semibold text-[#12141D] ">
             Premium Content
           </h3> */}
-          <CustomTextField
+          {/* <CustomTextField
             label={
               <span className="flex items-center gap-1">Project Name</span>
             }
@@ -34,12 +34,12 @@ const CmAddUser = () => {
             name="name"
             placeholder="Enter Project Name"
             type="text"
-          />{" "}
+          />{" "} */}
           <CustomTextField
-            label={<span className="flex items-center gap-1">Section</span>}
+            label={<span className="flex items-center gap-1">Material</span>}
             fullWidth
-            name="section"
-            placeholder="Enter Your Section"
+            name="material"
+            placeholder="Enter Material"
             type="text"
           />{" "}
           {/* <CustomSelect label="Vendor Name" fullWidth name="name" select>

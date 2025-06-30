@@ -27,21 +27,21 @@ const PmStores = () => {
             onClick: () => navigate("123"),
             icon: <FaEye />,
           },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
-          {
-            label: "Assign Store Incharge",
-            onClick: () => handleLinkClick(),
-            icon: <IoPersonCircle />,
-          },
-          {
-            label: "Assign Accountant",
-            onClick: () => handleLinkClick(),
-            icon: <RiAccountBoxFill />,
-          },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaTrash />,
+          // },
+          // {
+          //   label: "Assign Store Incharge",
+          //   onClick: () => handleLinkClick(),
+          //   icon: <IoPersonCircle />,
+          // },
+          // {
+          //   label: "Assign Accountant",
+          //   onClick: () => handleLinkClick(),
+          //   icon: <RiAccountBoxFill />,
+          // },
         ]}
         // onClick={handleActionClick}
       >
@@ -118,10 +118,10 @@ const PmStores = () => {
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
-        buttonText="Add New Store"
-        onButtonClick={() =>
-          navigate("/project-manager-dashboard/store/addStore")
-        }
+        // buttonText="Add New Store"
+        // onButtonClick={() =>
+        //   navigate("/project-manager-dashboard/store/addStore")
+        // }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 

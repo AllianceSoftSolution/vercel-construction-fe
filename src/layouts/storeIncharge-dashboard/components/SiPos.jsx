@@ -77,11 +77,11 @@ const SiPos = () => {
             onClick: () => navigate("123"),
             icon: <IoIosEye />,
           },
-          {
-            label: "Change Vendor",
-            onClick: () => setVendorModalOpen(true),
-            icon: <RiFileEditFill />,
-          },
+          // {
+          //   label: "Change Vendor",
+          //   onClick: () => setVendorModalOpen(true),
+          //   icon: <RiFileEditFill />,
+          // },
         ]}
       >
         <IconButton>

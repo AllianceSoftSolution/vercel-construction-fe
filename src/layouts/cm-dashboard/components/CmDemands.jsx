@@ -99,16 +99,16 @@ const CmDemands = () => {
             onClick: () => navigate("123"),
             icon: <FaEye />,
           },
-          {
-            label: "Edit",
-            onClick: () => alert("Edit"),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
+          // {
+          //   label: "Edit",
+          //   onClick: () => alert("Edit"),
+          //   icon: <FaUserEdit />,
+          // },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaTrash />,
+          // },
         ]}
       >
         <IconButton>

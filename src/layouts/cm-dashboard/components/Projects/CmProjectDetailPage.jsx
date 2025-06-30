@@ -21,10 +21,6 @@ const CmProjectDetailPage = () => {
         title="Project Details"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
-        buttonText="Create Project"
-        onButtonClick={() =>
-          navigate("/construction-manager-dashboard/project-management/addProject")
-        }
       />
 
       <Box

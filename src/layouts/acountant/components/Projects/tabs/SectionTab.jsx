@@ -16,23 +16,23 @@ const SectionTab = () => {
   // };
   const navigate = useNavigate();
 
-  const actions = [
-    // {
-    //   label: "View Section Detail",
-    //   icon: <FaEye />,
-    //   // onClick: () => navigate("/accountant-dashboard/sections/:id"),
-    // },
-    {
-      label: "Edit Project Section",
-      icon: <FaUserEdit />,
-      onClick: () => console.log("Edit clicked"),
-    },
-    {
-      label: "Delete Project Section",
-      icon: <FaTrash />,
-      onClick: () => console.log("Delete clicked"),
-    },
-  ];
+  // const actions = [
+  //   // {
+  //   //   label: "View Section Detail",
+  //   //   icon: <FaEye />,
+  //   //   // onClick: () => navigate("/accountant-dashboard/sections/:id"),
+  //   // },
+  //   {
+  //     label: "Edit Project Section",
+  //     icon: <FaUserEdit />,
+  //     onClick: () => console.log("Edit clicked"),
+  //   },
+  //   {
+  //     label: "Delete Project Section",
+  //     icon: <FaTrash />,
+  //     onClick: () => console.log("Delete clicked"),
+  //   },
+  // ];
   return (
     <div>
       <TopBar
@@ -50,7 +50,7 @@ const SectionTab = () => {
           remainingAmount="123"
           manager="Imran"
           linkedStores="01"
-          dropdownActions={actions}
+          // dropdownActions={actions}
         />
         <SectionCard
           sectionNo="01"
@@ -61,7 +61,7 @@ const SectionTab = () => {
           remainingAmount="123"
           manager="Imran"
           linkedStores="01"
-          dropdownActions={actions}
+          // dropdownActions={actions}
         />
       </div>{" "}
       {/* Modal */}

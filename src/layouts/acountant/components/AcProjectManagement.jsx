@@ -74,12 +74,6 @@ const AcProjectManagement = () => {
             onClick: () => navigate("123"),
             icon: <FaEye />,
           },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
         ]}
         // onClick={handleActionClick}
       >
@@ -100,7 +94,6 @@ const AcProjectManagement = () => {
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
-       
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}

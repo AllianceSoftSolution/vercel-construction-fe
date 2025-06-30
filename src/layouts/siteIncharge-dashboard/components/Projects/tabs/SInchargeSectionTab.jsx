@@ -14,16 +14,7 @@ const SInchargeSectionTab = () => {
       icon: <FaEye />,
       onClick: () => navigate("/siteincharge-dashboard/project-management/sections/23232"),
     },
-    {
-      label: "Edit Project Section",
-      icon: <FaUserEdit />,
-      onClick: () => console.log("Edit clicked"),
-    },
-    {
-      label: "Delete Project Section",
-      icon: <FaTrash />,
-      onClick: () => console.log("Delete clicked"),
-    },
+    
   ];
 
   return (
@@ -31,10 +22,7 @@ const SInchargeSectionTab = () => {
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Create Project Section"
-        onButtonClick={() =>
-          navigate("/siteincharge-dashboard/project-management/createSection")
-        }
+       
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />

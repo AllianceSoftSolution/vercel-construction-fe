@@ -74,12 +74,12 @@ const SInchargeProjectManagement = () => {
             onClick: () => navigate("123"),
             icon: <FaEye />,
           },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
+          // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaTrash />,
+          // },
         ]}
         // onClick={handleActionClick}
       >
@@ -94,10 +94,6 @@ const SInchargeProjectManagement = () => {
       <TopBar
         title="Project Management"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Create Project"
-        onButtonClick={() =>
-          navigate("/siteincharge-dashboard/project-management/addProject")
-        }
         // showExport={true}
         showFilter={true}
         filterOptions={["Completed", "In-Progress", "Cancelled"]}
@@ -128,20 +124,20 @@ const SInchargeProjectManagement = () => {
               showProfile={false}
               buttonText="View Project Details"
               onButtonClick={() => navigate("123")}
-              actions={[
-                {
-                  type: "edit",
-                  icon: <FaUserEdit />,
-                  label: "Edit",
-                  onClick: () => console.log("Edit clicked"),
-                },
-                {
-                  type: "delete",
-                  icon: <RiDeleteBin5Fill />,
-                  label: "Delete",
-                  onClick: () => console.log("Delete clicked"),
-                },
-              ]}
+              // actions={[
+              //   {
+              //     type: "edit",
+              //     icon: <FaUserEdit />,
+              //     label: "Edit",
+              //     onClick: () => console.log("Edit clicked"),
+              //   },
+              //   {
+              //     type: "delete",
+              //     icon: <RiDeleteBin5Fill />,
+              //     label: "Delete",
+              //     onClick: () => console.log("Delete clicked"),
+              //   },
+              // ]}
             />
           </div>
         </div>

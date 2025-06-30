@@ -13,17 +13,8 @@ const SectionTab = () => {
     {
       label: "View Section Detail",
       icon: <FaEye />,
-      onClick: () => navigate("/project-manager-dashboard/project-management/sections/:id"),
-    },
-    {
-      label: "Edit Project Section",
-      icon: <FaUserEdit />,
-      onClick: () => console.log("Edit clicked"),
-    },
-    {
-      label: "Delete Project Section",
-      icon: <FaTrash />,
-      onClick: () => console.log("Delete clicked"),
+      onClick: () =>
+        navigate("/project-manager-dashboard/project-management/sections/:id"),
     },
   ];
 
@@ -32,10 +23,6 @@ const SectionTab = () => {
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Create Project Section"
-        onButtonClick={() =>
-          navigate("/project-manager-dashboard/project-management/addProject")
-        }
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -63,7 +50,6 @@ const SectionTab = () => {
           linkedStores="01"
           dropdownActions={actions}
         />
-       
       </div>
     </div>
   );

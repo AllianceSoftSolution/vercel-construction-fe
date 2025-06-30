@@ -15,12 +15,12 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "95%",
-  maxWidth: 600,
+  width: "90%",
+  maxWidth: "600px",
   boxShadow: 24,
 };
 
-const SiDemandDetails = () => {
+const DemandDetails = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
   const [status, setStatus] = useState("Pending");
@@ -54,22 +54,24 @@ const SiDemandDetails = () => {
     { headerName: "Date", field: "date" },
   ];
 
-  const CustomActionComponent = () => (
-    <DropdownButton
-      className="bg-[#FF0000] font-semibold"
-      items={[
-        { label: "Rejected", onClick: () => handleActionClick("Rejected") },
-        { label: "Approved", onClick: () => handleActionClick("Approved") },
-      ]}
-    >
-      <IconButton>
-        <BsThreeDotsVertical />
-      </IconButton>
-    </DropdownButton>
-  );
+  const CustomActionComponent = () => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          { label: "Rejected", onClick: () => handleActionClick("Rejected") },
+          { label: "Approved", onClick: () => handleActionClick("Approved") },
+        ]}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
 
   return (
-    <div className="p-4 md:px-6 w-full">
+    <>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <ReasonModal
@@ -86,12 +88,13 @@ const SiDemandDetails = () => {
       />
 
       <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
+
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
-        <div className="flex flex-wrap justify-between items-center gap-y-2">
+        <div className="flex flex-wrap justify-between items-center gap-y-4">
           <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             <div
-              className={`text-white px-6 py-2 rounded-lg text-sm ${
+              className={`text-white px-6 py-1.5 rounded-lg text-sm ${
                 status === "Approved"
                   ? "bg-green-600"
                   : status === "Rejected"
@@ -101,10 +104,19 @@ const SiDemandDetails = () => {
             >
               {status}
             </div>
-
+            {status === "Approved" && (
+              <Button
+                onClick={() => setOpenPurchaseModal(true)}
+                className="bg-primary text-white px-4 py-2 text-sm"
+                buttonText={"Create Purchase Order"}
+              />
+            )}
             <CustomActionComponent />
           </div>
         </div>
+
+        <div className="h-[1px] bg-[#CDCDCD] w-full" />
+
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Project Name:</p>
@@ -152,6 +164,15 @@ const SiDemandDetails = () => {
             <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
           </div>
         </div>
+
+        <div className="flex flex-col gap-y-2">
+          <p className="text-[#444444] font-semibold text-xl">Remarks</p>
+          <ul className="list-disc list-inside text-[#979797] space-y-1">
+            <li>lorem ipsum dolor sit amet</li>
+            <li>lorem ipsum dolor sit amet</li>
+            <li>lorem ipsum dolor sit amet</li>
+          </ul>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -170,15 +191,8 @@ const SiDemandDetails = () => {
 
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
       <SimpleTable data={data} columns={columns} cellComponents={{}} />
-    </div>
+    </>
   );
 };
 
-const DetailItem = ({ label, value }) => (
-  <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-    <p className="text-[#444444] font-semibold text-sm">{label}:</p>
-    <p className="text-[#979797] text-sm">{value}</p>
-  </div>
-);
-
-export default SiDemandDetails;
+export default DemandDetails;

@@ -37,16 +37,16 @@ const SiSectionDetailPage = () => {
             navigate("/siteincharge-dashboard/user-management/123"),
           icon: <FaUserEdit />,
         },
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
-        {
-          label: "Delete",
-          onClick: () => alert("Delete"),
-          icon: <FaTrash />,
-        },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
+        // {
+        //   label: "Delete",
+        //   onClick: () => alert("Delete"),
+        //   icon: <FaTrash />,
+        // },
       ]}
     >
       <IconButton>

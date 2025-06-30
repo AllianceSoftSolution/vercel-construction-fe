@@ -112,22 +112,22 @@ const PmUserManagement = () => {
             onClick: () => navigate("123"),
             icon: <FaEye />,
           },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
-          {
-            label: "Ban",
-            // onClick: () => alert("Delete"),
-            icon: <MdNoAccounts />,
-          },
-          {
-            label: "Suspend Account",
-            // onClick: () => alert("Delete"),
-            icon: <FaBan />,
-          },
+          // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaTrash />,
+          // },
+          // {
+          //   label: "Ban",
+          //   onClick: () => alert("Delete"),
+          //   icon: <MdNoAccounts />,
+          // },
+          // {
+          //   label: "Suspend Account",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaBan />,
+          // },
         ]}
         // onClick={handleActionClick}
       >

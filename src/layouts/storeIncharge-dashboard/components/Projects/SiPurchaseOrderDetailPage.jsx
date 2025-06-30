@@ -28,7 +28,11 @@ const SiPurchaseOrderDetailPage = () => {
         className="bg-[#FF0000] font-semibold"
         items={[
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          { label: "Delete", onClick: () => alert("Delete"), icon: <FaTrash /> },
+          {
+            label: "Delete",
+            onClick: () => alert("Delete"),
+            icon: <FaTrash />,
+          },
         ]}
       >
         <IconButton>
@@ -39,7 +43,7 @@ const SiPurchaseOrderDetailPage = () => {
   };
 
   return (
-    <div className="px-4 md:px-6 lg:px-10 py-4">
+    <div className="">
       <TopBar
         title="Purchase Order Detail Page"
         detail="lorem ipsum dolor sit amet"
@@ -54,7 +58,7 @@ const SiPurchaseOrderDetailPage = () => {
             <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-center text-sm">
               Partial
             </div>
-            <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+            {/* <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" /> */}
           </div>
         </div>
 
@@ -107,11 +111,7 @@ const SectionTable = ({ title, description, columns, data, action }) => (
   <div className="mt-8 w-full overflow-x-auto">
     <h4 className="text-[#444444] font-semibold text-xl">{title}</h4>
     <p className="text-[#979797] mb-2">{description}</p>
-    <SimpleTable
-      data={data}
-      columns={columns}
-      cellComponents={{ action }}
-    />
+    <SimpleTable data={data} columns={columns} cellComponents={{ action }} />
   </div>
 );
 
