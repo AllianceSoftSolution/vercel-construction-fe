@@ -62,7 +62,7 @@ const SinMemberDetailPage = () => {
 
   return (
     <div className="px-4 md:px-6 py-4">
-      <TopBar title="Site Manager" detail="lorem ipsum" showExport={true} />
+      <TopBar title="Memeber" detail="lorem ipsum" showExport={true} />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
 
       <div className="flex flex-col lg:flex-row gap-4 mt-4">

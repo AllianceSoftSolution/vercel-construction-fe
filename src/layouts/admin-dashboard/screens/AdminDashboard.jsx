@@ -108,7 +108,7 @@ function AdminDashboard() {
   ];
 
   return (
-    <div className="p-4 md:px-6 w-full">
+    <div className=" md:px- w-full">
       <TopBar
         title="Admin Dashboard"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

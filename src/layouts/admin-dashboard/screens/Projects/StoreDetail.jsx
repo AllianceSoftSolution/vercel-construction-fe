@@ -192,7 +192,7 @@ const PurchaseOrderDetail = () => {
                     margin="normal"
                     label="CM ( Construction Manager )"
                   />
-                  <CustomTextField fullWidth margin="normal" label="Note" />
+                 
                 </>
               )}
 

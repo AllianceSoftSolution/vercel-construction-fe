@@ -37,7 +37,7 @@ export default function AssignProjectManagerModal({
 
         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
           {members.map((member, index) => (
-            <div
+            <div 
               onClick={() => onManagerClick(member.id)}
               className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm transition-all border-2 border-transparent cursor-pointer hover:border-2 hover:border-[#fc8908]"
             >

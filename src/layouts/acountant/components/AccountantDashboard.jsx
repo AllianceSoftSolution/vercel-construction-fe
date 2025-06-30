@@ -76,7 +76,7 @@ function AccountantDashboard() {
   ];
 
   return (
-    <div className="px-1 md:px-5 lg:px-6 py-4 w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-y-auto">
       <TopBar
         title="Accountant Dashboard"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

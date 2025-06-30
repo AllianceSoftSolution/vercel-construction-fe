@@ -110,6 +110,7 @@ import SinPurchaseOrderDetailPage from "./layouts/siteIncharge-dashboard/compone
 import SinStores from "./layouts/siteIncharge-dashboard/components/SinStore";
 import SinStoreDetail from "./layouts/siteIncharge-dashboard/components/Projects/SinStoreDetail";
 import SinAddStore from "./layouts/siteIncharge-dashboard/components/Forms/SinAddStore";
+import CreateSectionProject from "./layouts/admin-dashboard/screens/Forms/CreateSectionProject";
 
 const theme = createTheme({
   typography: {
@@ -143,7 +144,7 @@ const adminRoutes = [
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "user-Management/:id", element: <MemberDetailPage /> },
       { path: "project-Management", element: <ProjectManagement /> },
-      { path: "project-Management/addProject", element: <AddProject /> },
+      { path: "project-Management/addProject", element: <CreateSectionProject /> },
       { path: "project-Management/:id", element: <ProjectDetailPage /> },
       { path: "project-Management/sections", element: <SectionTab /> },
       {

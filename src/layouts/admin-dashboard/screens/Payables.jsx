@@ -234,7 +234,7 @@ const Payables = () => {
     { headerName: "Action", field: "action" },
   ];
   return (
-    <div className="px-2 sm:px-4 md:px-6 lg:px-10 py-4">
+    <div className=" ">
       <TopBar
         title="Payables"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

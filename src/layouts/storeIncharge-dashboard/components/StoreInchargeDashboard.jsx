@@ -81,7 +81,7 @@ function StoreInchargeDashboard() {
   ];
 
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0 ">
+    <div className="h-full">
       {/* Header */}
       <TopBar
         title="Store-Incharge Dashboard"

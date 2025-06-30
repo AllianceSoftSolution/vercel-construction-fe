@@ -20,6 +20,18 @@ const style = {
   width: "600px",
   boxShadow: 24,
 };
+const stylee = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "90%",
+  maxWidth: "600px",
+  maxHeight: "90vh",
+  overflowY: "auto",
+  boxShadow: 24,
+  borderRadius: "1.5rem",
+};
 const ProjectInformationTab = () => {
   const navigate = useNavigate();
   const data = [
@@ -137,7 +149,7 @@ const ProjectInformationTab = () => {
         section="4"
         totalAmount="$12333"
         remainingAmount="232$"
-        paidAmount= "5000"
+        paidAmount="5000"
         date="12/04/2025"
         projectLocation="United Kingdom 11 street Real Estate London"
         projectStatus="IN-PROGRESS"
@@ -147,6 +159,7 @@ const ProjectInformationTab = () => {
         description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
         onEdit={() => console.log("edit description")}
       />
+    
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
         <Button buttonText={"Create Site Incharge"} onClick={handleLinkClick} />

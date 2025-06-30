@@ -145,49 +145,7 @@ const ProjectInformationTab = () => {
         description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
         onEdit={() => console.log("edit description")}
       />
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
-        <Button buttonText={"Create Site Incharge"} onClick={handleLinkClick} />
-        {showModal && (
-          <AddMemberModal
-            onAddUserClick={setOpen}
-            onClose={closeAddUserFormModal}
-          />
-        )}
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <AssignSectionModal
-              handleSubmit={() => {
-                handleSubmit();
-                closeAddUserFormModal();
-              }}
-              handleCancel={() => {
-                handleClose();
-                closeAddUserFormModal();
-              }}
-            />
-          </Box>
-        </Modal>
-      </div>
-      <SimpleTable
-        columns={columns}
-        data={data}
-        cellComponents={{ action: CustomActionComponent }}
-      />{" "}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
-        <Button buttonText={"Create An Accountant"} onClick={handleLinkClick} />
-      </div>
-      <SimpleTable
-        columns={columns}
-        data={data}
-        cellComponents={{ action: CustomActionComponent }}
-      />
+    
     </>
   );
 };

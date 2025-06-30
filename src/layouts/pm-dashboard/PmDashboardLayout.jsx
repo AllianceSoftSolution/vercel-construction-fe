@@ -182,7 +182,7 @@ const PmDashboardLayout = ({ role }) => {
               <p className="font-semibold text-black whitespace-nowrap">
                 John Doe
               </p>
-              <p className="text-[#7A7A7A] text-sm">SITEINCHARGE</p>
+              <p className="text-[#7A7A7A] text-sm">PM</p>
             </div>
 
             <div className="flex items-center">

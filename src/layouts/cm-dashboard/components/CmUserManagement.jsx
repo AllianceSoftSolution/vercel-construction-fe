@@ -133,7 +133,7 @@ const CmUserManagement = () => {
     );
   };
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0">
+    <div className="h-full">
       <TopBar
         title="User Management"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

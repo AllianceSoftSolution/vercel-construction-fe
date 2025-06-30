@@ -78,7 +78,7 @@ function PmDashboard() {
   ];
 
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0">
+    <div className="h-full">
       <TopBar
         title="Project-Manager Dashboard"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

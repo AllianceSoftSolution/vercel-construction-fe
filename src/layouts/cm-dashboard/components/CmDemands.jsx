@@ -119,7 +119,7 @@ const CmDemands = () => {
   };
 
   return (
-    <div className="p-4 md:px-6 w-full">
+    <div className="w-full">
       <TopBar
         title="Demands"
         detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
