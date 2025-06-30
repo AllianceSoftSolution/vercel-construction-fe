@@ -111,63 +111,55 @@ const SiSectionDetailPage = () => {
         Members Overview
       </h4>
       <div className="flex flex-col lg:flex-row gap-5 mt-4">
-        <div className="w-full lg:w-1/2 flex">
-          <div className="w-full h-full flex flex-col">
-            {hasMemberInfo ? (
-              <MemberInfoCard
-                title="General information - Project Manager"
-                image={manager}
-                name="Manager name here"
-                phone="+92 300 000 090"
-                role="Project Manager"
-                email="example@gmail.com"
-                joiningDate="January 8, 2001"
-                id="9090"
-                address="address here"
-                country="United States"
-                linkedStores={["Store A", "Store B", "Store C"]}
-              />
-            ) : (
-              <MemebersOverviewCard
-                title="General Information"
-                subTitle="Project Manager"
-                linkText="Assign Project Manager"
-                imageSrc={Search}
-                imageAlt="Search Illustration"
-                onManagerClick={() => setHasMemberInfo(true)}
-              />
-            )}
-          </div>
-        </div>
+        {hasMemberInfo ? (
+          <MemberInfoCard
+            title="General information - Project Manager"
+            image={manager}
+            name="Manager name here"
+            phone="+92 300 000 090"
+            role="Project Manager"
+            email="example@gmail.com"
+            joiningDate="January 8, 2001"
+            id="9090"
+            address="address here"
+            country="United States"
+            linkedStores={["Store A", "Store B", "Store C"]}
+          />
+        ) : (
+          <MemebersOverviewCard
+            title="General Information"
+            subTitle="Project Manager"
+            linkText="Assign Project Manager"
+            imageSrc={Search}
+            imageAlt="Search Illustration"
+            onManagerClick={() => setHasMemberInfo(true)}
+          />
+        )}
 
-        <div className="w-full lg:w-1/2 flex">
-          <div className="w-full h-full flex flex-col">
-            {hasStoreHeadInfo ? (
-              <MemberInfoCard
-                title="General information - Store Head"
-                image={manager}
-                name="Manager name here"
-                phone="+92 300 000 090"
-                role="Store Head"
-                email="example@gmail.com"
-                joiningDate="January 8, 2001"
-                id="9090"
-                address="address here"
-                country="United States"
-                linkedStores={["Store A", "Store B", "Store C"]}
-              />
-            ) : (
-              <MemebersOverviewCard
-                title="General Information"
-                subTitle="Store Head"
-                linkText="Assign Store Head"
-                imageSrc={Search}
-                imageAlt="Search Illustration"
-                onManagerClick={() => setHasStoreHeadInfo(true)}
-              />
-            )}
-          </div>
-        </div>
+        {hasStoreHeadInfo ? (
+          <MemberInfoCard
+            title="General information - Store Head"
+            image={manager}
+            name="Manager name here"
+            phone="+92 300 000 090"
+            role="Store Head"
+            email="example@gmail.com"
+            joiningDate="January 8, 2001"
+            id="9090"
+            address="address here"
+            country="United States"
+            linkedStores={["Store A", "Store B", "Store C"]}
+          />
+        ) : (
+          <MemebersOverviewCard
+            title="General Information"
+            subTitle="Store Head"
+            linkText="Assign Store Head"
+            imageSrc={Search}
+            imageAlt="Search Illustration"
+            onManagerClick={() => setHasStoreHeadInfo(true)}
+          />
+        )}
       </div>
 
       {/* CM Table */}

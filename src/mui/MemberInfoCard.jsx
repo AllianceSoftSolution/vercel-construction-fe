@@ -15,7 +15,7 @@ const MemberInfoCard = ({
   country,
   linkedStores = [],
 }) => (
-  <div className="border border-[#CDC9C9] rounded-2xl p-4 w-full sm:w-[90%] md:w-[80%] lg:w-[60%] h-fit mt-6 mx-auto bg-white">
+  <div className="border border-[#CDC9C9] rounded-2xl p-4 w-full sm:w-[90%] md:w-[80%] lg:w-[60%] h-fit mt-6 mx-auto bg-white ">
     <div className="flex justify-between items-start flex-wrap">
       <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold">{title}</h3>
       <MoreVertIcon className="w-6 h-6 bg-[#F7F7F7] rounded-md cursor-pointer mt-2 sm:mt-0" />
