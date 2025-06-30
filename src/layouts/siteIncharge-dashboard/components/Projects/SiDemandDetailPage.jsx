@@ -101,7 +101,55 @@ const SiDemandDetails = () => {
             >
               {status}
             </div>
+
             <CustomActionComponent />
+          </div>
+        </div>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Project Name:</p>
+            <p className="text-[#979797]">project name</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Section Name:</p>
+            <p className="text-[#979797]">section name</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Material:</p>
+            <p className="text-[#979797]">material</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Quantity:</p>
+            <p className="text-[#979797]">quantity</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Unit:</p>
+            <p className="text-[#979797]">unit</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">PO Quantity:</p>
+            <p className="text-[#979797]">po quantity</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Approved By:</p>
+            <p className="text-[#979797]">approved by</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Fulfilled:</p>
+            <p className="text-[#979797]">fulfilled</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">
+              Activity Description:
+            </p>
+            <p className="text-[#979797]">activity description</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Notes by CM:</p>
+            <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
           </div>
         </div>
       </div>
