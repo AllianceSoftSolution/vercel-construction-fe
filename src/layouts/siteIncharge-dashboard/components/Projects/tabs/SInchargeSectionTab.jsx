@@ -33,7 +33,7 @@ const SInchargeSectionTab = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         buttonText="Create Project Section"
         onButtonClick={() =>
-          navigate("/siteincharge-dashboard/project-management/addProject")
+          navigate("/siteincharge-dashboard/project-management/createSection")
         }
       />
 

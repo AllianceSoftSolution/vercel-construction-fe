@@ -34,7 +34,7 @@ const SectionTab = () => {
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         buttonText="Create Project Section"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
+          navigate("/admin-dashboard/project-management/createProject")
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
