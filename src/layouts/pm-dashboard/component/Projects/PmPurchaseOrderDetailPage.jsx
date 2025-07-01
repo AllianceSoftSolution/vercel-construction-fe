@@ -61,7 +61,7 @@ const PmPurchaseOrderDetailPage = () => {
             <div className="text-white bg-[#BF1017] px-6 sm:px-8 py-1.5 sm:py-2 rounded-full text-sm sm:text-base">
               Partial
             </div>
-            <MdDelete className="text-white bg-[#EF0404] w-9 h-9 sm:w-10 sm:h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+            {/* <MdDelete className="text-white bg-[#EF0404] w-9 h-9 sm:w-10 sm:h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" /> */}
           </div>
         </div>
 

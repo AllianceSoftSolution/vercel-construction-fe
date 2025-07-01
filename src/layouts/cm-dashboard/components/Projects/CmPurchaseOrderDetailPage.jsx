@@ -55,7 +55,7 @@ const CmPurchaseOrderDetail = () => {
           <p className="text-[#444444] font-semibold text-xl">Order Name Here</p>
           <div className="flex flex-wrap gap-2">
             <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-center">Partial</div>
-            <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+            {/* <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" /> */}
           </div>
         </div>
 
