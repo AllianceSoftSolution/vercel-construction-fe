@@ -116,7 +116,7 @@ const AdminDashboardLayout = ({ role }) => {
           )}
 
           {sidebarOpen && (
-            <div className="flex flex-col h-full w-full">
+            <div className="flex flex-col h-full w-full overflow-y-auto">
               <ul className="flex-1 overflow-y-auto space-y-2 px-6 mt-4">
                 {sideBarItems.map((item, index) => (
                   <SideBarItem
