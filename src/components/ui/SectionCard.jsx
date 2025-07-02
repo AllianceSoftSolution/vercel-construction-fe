@@ -15,18 +15,18 @@ const SectionCard = ({
   linkedStores,
   dropdownActions = [],
 }) => {
-  // const CustomActionComponent = () => {
-  //   return (
-  //     <DropdownButton
-  //       className="bg-[#FF0000] font-semibold"
-  //       items={dropdownActions}
-  //     >
-  //       <IconButton>
-  //         <BsThreeDotsVertical />
-  //       </IconButton>
-  //     </DropdownButton>
-  //   );
-  // };
+  const CustomActionComponent = () => {
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={dropdownActions}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
 
   return (
     <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-4 w-full">
@@ -34,7 +34,7 @@ const SectionCard = ({
         <h3 className="text-lg sm:text-xl font-semibold text-[#444444]">
           {title}
         </h3>
-        {/* <CustomActionComponent /> */}
+        <CustomActionComponent />
       </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full"></div>
       <div className="flex justify-between flex-wrap text-sm sm:text-base">
