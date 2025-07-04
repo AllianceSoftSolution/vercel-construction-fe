@@ -5,15 +5,70 @@ import CustomTextField from "../../../mui/CustomTextField";
 import { CiGlobe } from "react-icons/ci";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
-import { MenuItem } from "@mui/material";
-import CustomSelect from "../../../mui/CustomSelect";
+// import { MenuItem } from "@mui/material";  // Not used now
+// import CustomSelect from "../../../mui/CustomSelect"; // Not used now
+import { useDispatch } from "react-redux";
+import { login } from "../../../redux/authSlice";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [selectedOption, setSelectedOption] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
 
-  const handleDropdownChange = (event) => {
-    setSelectedOption(event.target.value);
+  const handleLogin = async () => {
+    const loadingToast = toast.loading("Logging in...");
+
+    try {
+      const result = await apiClient.post(`/auth/login`, { email, password });
+
+      if (!result.ok) {
+        throw new Error("Invalid credentials or server error");
+      }
+
+      const { token, user } = result.data;
+
+      dispatch(
+        login({
+          token,
+          isLoggedIn: true,
+          user,
+        })
+      );
+
+      toast.success("Logged In Successfully", { id: loadingToast });
+
+      const role = user?.role?.toUpperCase();
+
+      switch (role) {
+        case "ADMIN":
+          navigate("/admin-dashboard");
+          break;
+        case "PM":
+          navigate("/project-manager-dashboard/user-Management");
+          break;
+        case "SI":
+          navigate("/siteincharge-dashboard/user-Management");
+          break;
+        case "CM":
+          navigate("/construction-manager-dashboard/user-Management");
+          break;
+        case "ST":
+          navigate("/store-incharge-dashboard/store");
+          break;
+        case "AC":
+          navigate("/accountant-dashboard/payables");
+          break;
+        default:
+          navigate("/default-path");
+      }
+    } catch (error) {
+      toast.error(error.message || "Something went wrong", {
+        id: loadingToast,
+      });
+    }
   };
 
   return (
@@ -48,66 +103,27 @@ const Login = () => {
                 <span className="flex items-center gap-1">Enter Email</span>
               }
               fullWidth
-              name="Email"
+              name="email"
               placeholder="Enter Your Work Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <CustomTextField
               label={
                 <span className="flex items-center gap-1">Enter Password</span>
               }
               fullWidth
-              name="Password"
+              name="password"
+              type="password"
               placeholder="Enter Your Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
-            <CustomSelect
-              label="Role"
-              fullWidth
-              name="role"
-              value={selectedOption}
-              onChange={handleDropdownChange}
-              select
-            >
-              <MenuItem value="1" onClick={() => navigate("/admin-dashboard")}>
-                Admin
-              </MenuItem>
-              <MenuItem
-                value="2"
-                onClick={() => navigate("/siteincharge-dashboard")}
-              >
-                Site-Incharge
-              </MenuItem>
-              <MenuItem
-                value="3"
-                onClick={() => navigate("/project-manager-dashboard")}
-              >
-                Project-Manager
-              </MenuItem>
-              <MenuItem
-                value="4"
-                onClick={() => navigate("/construction-manager-dashboard")}
-              >
-                Construction-Manager
-              </MenuItem>
-              <MenuItem
-                value="5"
-                onClick={() => navigate("/store-incharge-dashboard")}
-              >
-                Store-Incharge
-              </MenuItem>
-              <MenuItem
-                value="6"
-                onClick={() => navigate("/accountant-dashboard")}
-              >
-                Accountant
-              </MenuItem>
-            </CustomSelect>
+            {/* DROPDOWN REMOVED AS PER YOUR INSTRUCTIONS */}
 
             <div className="bg-primary text-white flex justify-center items-center font-semibold text-[16px] rounded-xl">
-              <button
-                className="py-2 px-4"
-                onClick={() => navigate("/admin-dashboard")}
-              >
+              <button className="py-2 px-4" onClick={handleLogin}>
                 Login
               </button>
             </div>

@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-// import apiClient from "../api/apiClient"
 
 const initialState = {
   token: null,
@@ -18,20 +17,21 @@ export const authSlice = createSlice({
       state.token = payload.token;
       state.user = payload.user;
       state.isLoggedIn = true;
-      // console.log(payload.token);
-      // state.userType = payload.userType;
-      // state.rvnLvnValue = payload.rvnLvnValue
-      // state.isLoggedIn = true;
-      // state.username = payload.username;
+
+      // Optional: Extract role or userType if needed in future
+      state.userType = payload.user?.role || null;
+      state.username = payload.user?.name || null;
     },
     logout: (state) => {
       state.token = null;
       state.isLoggedIn = false;
       state.user = null;
+      state.userType = null;
+      state.username = null;
+      state.businessName = null;
     },
-
     setUser: (state, { payload }) => {
-      state.user = payload; // Set the user data from the action payload
+      state.user = payload;
     },
     setBusinessName: (state, { payload }) => {
       console.log(payload, "qwertyu111");
@@ -40,11 +40,8 @@ export const authSlice = createSlice({
   },
 });
 
-export const selectUserFromLocalStorage = (state) => {
-  return state.auth.user;
-};
+export const selectUserFromLocalStorage = (state) => state.auth.user;
 
-// Action creators are generated for each case reducer function
 export const { login, setUser, logout, setBusinessName } = authSlice.actions;
 
 export default authSlice.reducer;

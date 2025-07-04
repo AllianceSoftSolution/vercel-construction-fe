@@ -1,5 +1,5 @@
 import React from "react";
-import { TextField, InputAdornment, MenuItem } from "@mui/material";
+import { TextField, InputAdornment } from "@mui/material";
 import clsx from "clsx";
 
 const CustomTextField = React.forwardRef(
@@ -22,63 +22,45 @@ const CustomTextField = React.forwardRef(
       subLabel,
       error,
       helperText,
-      select = false,
-      required,
       ...props
     },
     ref
   ) => {
-    const showCustomInput = !select && !rows;
-
     return (
       <div className={clsx("flex flex-col gap-y-1 w-full", className)}>
+        {label && (
+          <p className={`text-sm font-medium ${labelColor}`}>
+            {label}
+            {subLabel && (
+              <span className="block text-sm text-[#130901]/50">
+                {subLabel}
+              </span>
+            )}
+          </p>
+        )}
+
         <TextField
           inputRef={ref}
-          select={select}
-          type={showCustomInput ? type : undefined}
+          type={rows === "" ? type : undefined}
           variant="outlined"
-          multiline={!select && rows !== ""}
-          rows={showCustomInput ? undefined : rows}
+          multiline={rows !== ""}
+          rows={rows === "" ? undefined : rows}
           size="small"
           name={name}
-          label={
-            !showCustomInput ? (
-              <>
-                {label} {required && <span className="text-red-500">*</span>}
-              </>
-            ) : undefined
-          }
-          className={clsx("rounded-lg", classInput)}
-          placeholder={showCustomInput ? "" : undefined}
+          className={clsx(" rounded-lg", classInput)}
+          placeholder={placeholder}
           error={!!error}
-          helperText={error ? helperText : subLabel || ""}
+          helperText={error ? helperText : ""}
+          InputLabelProps={{
+            shrink: true,
+          }}
           InputProps={{
-            startAdornment:
-              startAdornment && !select ? (
-                <InputAdornment position="start">
-                  {startAdornment}
-                </InputAdornment>
-              ) : null,
-            endAdornment:
-              endAdornment && !select ? (
-                <InputAdornment position="end">{endAdornment}</InputAdornment>
-              ) : null,
-            inputComponent: showCustomInput
-              ? ({ inputRef, ...inputProps }) => (
-                  <div className="w-full h-full px-3 pt-3 pb-2 flex flex-col justify-start">
-                    <label className="text-sm text-gray-500 font-medium">
-                      {label}{" "}
-                      {required && <span className="text-red-500">*</span>}
-                    </label>
-                    <input
-                      ref={inputRef}
-                      {...inputProps}
-                      className="outline-none border-none text-gray-800 placeholder-gray-400 text-base bg-transparent mt-1"
-                      placeholder={placeholder}
-                    />
-                  </div>
-                )
-              : undefined,
+            startAdornment: startAdornment ? (
+              <InputAdornment position="start">{startAdornment}</InputAdornment>
+            ) : null,
+            endAdornment: endAdornment ? (
+              <InputAdornment position="end">{endAdornment}</InputAdornment>
+            ) : null,
           }}
           {...(field || {})}
           onChange={(e) => {
@@ -87,8 +69,10 @@ const CustomTextField = React.forwardRef(
           }}
           sx={{
             "& .MuiOutlinedInput-root": {
-              padding: 0,
-              alignItems: select ? "center" : "flex-start",
+              padding: "0",
+              "& input, & textarea": {
+                padding: "12px", // Ensures both input and textarea get padding
+              },
               "& fieldset": {
                 borderColor: error ? "#f87171" : "#d1d5db",
               },
@@ -117,7 +101,7 @@ const CustomTextField = React.forwardRef(
           }}
           {...props}
         >
-          {select ? children : null}
+          {children}
         </TextField>
       </div>
     );

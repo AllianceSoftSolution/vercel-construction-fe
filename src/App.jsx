@@ -294,29 +294,21 @@ const accountantRoutes = [
 ];
 const getRoutesByRole = (role) => {
   switch (role) {
-    case "ADM":
-      return [
-        ...commonRoutes,
-        ...adminRoutes,
-        ...siteInchargeRoutes,
-        ...projectManagerRoutes,
-        ...constructionManagerRoutes,
-        ...storeInchargeRoutes,
-        ...accountantRoutes,
-      ];
-    // case "USR":
-    //   return [...commonRoutes, ...studentRoutes];
+    case "ADMIN":
+      return [...commonRoutes, ...adminRoutes];
+    case "PM":
+      return [...commonRoutes, ...projectManagerRoutes];
+    case "SI":
+      return [...commonRoutes, ...siteInchargeRoutes];
+    case "CM":
+      return [...commonRoutes, ...constructionManagerRoutes];
+    case "AC":
+      return [...commonRoutes, ...accountantRoutes];
+    case "ST":
+      return [...commonRoutes, ...storeInchargeRoutes];
     default:
       // return commonRoutes;
-      return [
-        ...commonRoutes,
-        ...adminRoutes,
-        ...siteInchargeRoutes,
-        ...projectManagerRoutes,
-        ...constructionManagerRoutes,
-        ...storeInchargeRoutes,
-        ...accountantRoutes,
-      ];
+      return [...commonRoutes];
   }
 };
 
