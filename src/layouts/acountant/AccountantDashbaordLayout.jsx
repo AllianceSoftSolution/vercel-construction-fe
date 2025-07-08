@@ -2,18 +2,20 @@ import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Close } from "@mui/icons-material";
 import { useMediaQuery, useTheme } from "@mui/material";
-import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
+import { MdSpaceDashboard } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
 import { FaBars, FaSearch } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
+import LogOutModal from "../../mui/LogOutModal";
 import logo from "../../assets/construction/logo.png";
 import Profile from "../../assets/construction/profile.png";
 
 const AccountantDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -90,11 +92,6 @@ const AccountantDashboardLayout = ({ role }) => {
                     }}
                     iconSrc={<item.icon size={20} />}
                     text={item.label}
-                    // isActive={
-                    //   item.path === "/accountant-dashboard"
-                    //     ? location.pathname === "/accountant-dashboard"
-                    //     : location.pathname === item.path
-                    // }
                     isActive={
                       item.path === "/accountant-dashboard"
                         ? location.pathname === "/accountant-dashboard"
@@ -107,7 +104,7 @@ const AccountantDashboardLayout = ({ role }) => {
               </ul>
               <div className="border-t border-gray-300 px-6 py-6">
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={() => setIsLogoutModalOpen(true)} // ✅ Trigger modal
                   className="w-full bg-[#222222] text-white rounded-[10px] py-3"
                 >
                   Log Out
@@ -220,6 +217,17 @@ const AccountantDashboardLayout = ({ role }) => {
           </div>
         </div>
       </div>
+
+      {/* ✅ Log Out Modal */}
+      {isLogoutModalOpen && (
+        <LogOutModal
+          onConfirm={() => {
+            setIsLogoutModalOpen(false);
+            navigate("/");
+          }}
+          onCancel={() => setIsLogoutModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

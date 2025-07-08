@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
 
 import { IoTabletLandscape } from "react-icons/io5";
@@ -19,8 +19,12 @@ import {
   NewspaperSharp,
 } from "@mui/icons-material";
 import Divider from "../../../components/Divider";
+import toast from "react-hot-toast";
+import apiClient from "../../../api/apiClient";
 
 function AdminDashboard() {
+  const [loading, setLoading] = useState(false);
+  const [demands, setDemands] = useState([]);
   const analyticsData = [
     {
       label: "Total Projects",
@@ -95,18 +99,35 @@ function AdminDashboard() {
       date: "2025-06-13",
     },
   ];
-
   const columns = [
-    { headerName: "Ref No", field: "refNo" },
-    { headerName: "Projects", field: "project" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
-    { headerName: "Status", field: "status" },
-    { headerName: "CM Name", field: "cmName" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Id", field: "id" },
+    { headerName: "Material Id", field: "materialId" },
+    { headerName: "Qty", field: "quantity" },
+    { headerName: "Unit", field: "unit" },
   ];
+  const fetchDemands = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          ...demand,
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch Demands");
+      }
+    } catch (error) {
+      console.error("Error fetching demands:", error);
+      toast.error("Error fetching demands");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchDemands();
+  }, []);
   return (
     <div className=" md:px- w-full">
       <TopBar
@@ -154,7 +175,7 @@ function AdminDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />

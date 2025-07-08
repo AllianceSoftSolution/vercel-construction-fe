@@ -9,6 +9,9 @@ const SectionCard = ({
   sectionName,
   totalDemands,
   totalAmount,
+  code,
+  description,
+  // projectId,
   paidAmount,
   remainingAmount,
   manager,
@@ -46,6 +49,18 @@ const SectionCard = ({
         <p className="text-[#444444]">{sectionName}</p>
       </div>
       <div className="flex justify-between flex-wrap text-sm sm:text-base">
+        <h3 className="text-[#444444] font-semibold">Code:</h3>
+        <p className="text-[#444444]">{code}</p>
+      </div>
+      <div className="flex justify-between flex-wrap text-sm sm:text-base">
+        <h3 className="text-[#444444] font-semibold">Description:</h3>
+        <p className="text-[#444444]">{description}</p>
+      </div>
+      {/* <div className="flex justify-between flex-wrap text-sm sm:text-base">
+        <h3 className="text-[#444444] font-semibold">ProjectId:</h3>
+        <p className="text-[#444444]">{projectId}</p>
+      </div> */}
+      {/* <div className="flex justify-between flex-wrap text-sm sm:text-base">
         <h3 className="text-[#444444] font-semibold">Total Amount:</h3>
         <p className="text-[#444444]">{totalAmount}</p>
       </div>{" "}
@@ -70,7 +85,7 @@ const SectionCard = ({
       <div className="flex justify-between flex-wrap text-sm sm:text-base">
         <h3 className="text-[#444444] font-semibold">Linked Stores:</h3>
         <p className="text-[#444444]">{linkedStores}</p>
-      </div>
+      </div> */}
     </div>
   );
 };

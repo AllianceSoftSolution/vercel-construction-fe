@@ -1,57 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
 import { IconButton } from "@mui/material";
 import DropdownButton from "@/comments/components/DropdownButton";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const Vendors = () => {
   const navigate = useNavigate();
-  const data = [
-    {
-      id: 1,
-      vendorId: "001",
-      vendorName: "Fatima Khan",
-      companyName: "Bridge Construction",
-      phone: +911234567890,
-      email: "A@gmail.com",
-      address: "address here",
-      status: "Pending",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      vendorId: "002",
-      vendorName: "Fatima Khan",
-      companyName: "Highway Expansion",
-      phone: +911234567890,
-      email: "A@gmail.com",
-      address: "address here",
-      status: "Approved",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      vendorId: "003",
-      vendorName: "Fatima Khan",
-      companyName: "Metro Rail",
-      phone: +911234567890,
-      email: "A@gmail.com",
-      address: "address here",
-      status: "In Progress",
-      date: "2025-06-13",
-    },
-  ];
+  const [vendors, setvendors] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchVendor = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/vendors");
+      if (response.ok) {
+        const data = response.data.vendors.map((vendor, index) => ({
+          vendorId: index + 1,
+          action: vendor.id,
+          ...vendor,
+        }));
+        setvendors(data);
+      } else {
+        toast.error("Failed to fetch vendors");
+      }
+    } catch (error) {
+      console.error("Error fetching vendors:", error);
+      toast.error("Error fetching vendors");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVendor();
+  }, []);
+
   const columns = [
     { headerName: "Vendor Id", field: "vendorId" },
-    { headerName: "Vendor Name", field: "vendorName" },
-    { headerName: "Company Name", field: "companyName" },
+    { headerName: "Vendor Name", field: "name" },
+    { headerName: "Contact Person", field: "contactPerson" },
     { headerName: "Phone", field: "phone" },
     { headerName: "Email", field: "email" },
     { headerName: "Address", field: "address" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
   const CustomActionComponent = ({ data }) => {
@@ -97,7 +91,7 @@ const Vendors = () => {
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
-          data={data}
+          data={vendors}
           cellComponents={{ action: CustomActionComponent }}
         />
       </div>

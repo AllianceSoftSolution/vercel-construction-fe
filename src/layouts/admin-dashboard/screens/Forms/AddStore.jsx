@@ -1,12 +1,54 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import CustomTextField from "../../../../mui/CustomTextField";
-import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import toast from "react-hot-toast";
+import apiClient from "../../../../api/apiClient";
 
 const AddStore = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Store name is required"),
+    type: Yup.string().required("Type is required"),
+    sectionId: Yup.string().required("Section Id is required"),
+    // cmUserId: Yup.string().required("CM User Id is required"),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      type: "",
+      sectionId: "",
+      // cmUserId: "",
+    },
+    validationSchema,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        setLoading(true);
+        const response = await apiClient.post("/stores", values);
+        if (response.ok) {
+          resetForm();
+          navigate(-1);
+        } else {
+          toast.error("Store creation failed!");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Operation failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
@@ -30,47 +72,44 @@ const AddStore = () => {
             name="name"
             placeholder="Enter Store Name"
             type="text"
-          />{" "}
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.name && formik.errors.name}
+          />
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">
-                Construction Manager
-              </span>
-            }
+            label={<span className="flex items-center gap-1">Type</span>}
             fullWidth
-            name="constructionManager"
-            placeholder="Select Construction Manager"
-          />{" "}
-          <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Store Incharge</span>
-            }
-            fullWidth
-            name="storeIncharge"
-            placeholder="Store Incharge"
-            type="number"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Store Role</span>}
-            fullWidth
-            name="role"
-            placeholder="Enter Role"
+            name="type"
             type="text"
-          />{" "}
+            placeholder="Select Type"
+            value={formik.values.type}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.type && formik.errors.type}
+          />
           <CustomTextField
-            label={<span className="flex items-center gap-1">Password</span>}
+            label={<span className="flex items-center gap-1">Section Id</span>}
             fullWidth
-            name="password"
-            placeholder="Enter Password"
-            type="password"
-          />{" "}
-          <CustomTextField
-            label={<span className="flex items-center gap-1">Add Note</span>}
-            fullWidth
-            name="note"
-            placeholder="Enter Your Note"
+            name="sectionId"
+            placeholder="Enter Section Id"
             type="text"
-          />{" "}
+            value={formik.values.sectionId}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.sectionId && formik.errors.sectionId}
+          />
+          {/* <CustomTextField
+            label={<span className="flex items-center gap-1">CM User Id</span>}
+            fullWidth
+            name="cmUserId"
+            placeholder="Enter CM User Id"
+            type="text"
+            value={formik.values.cmUserId}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.cmUserId && formik.errors.cmUserId}
+          /> */}
         </div>
       </div>{" "}
       <div className="flex gap-4 w-full justify-center mt-8">
@@ -82,9 +121,10 @@ const AddStore = () => {
         </button>
         <button
           className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
-          onClick={() => navigate(-1)}
+          onClick={formik.handleSubmit}
+          disabled={loading}
         >
-          Save Store
+          {loading ? "Saving..." : "Save Store"}
         </button>
       </div>
     </div>

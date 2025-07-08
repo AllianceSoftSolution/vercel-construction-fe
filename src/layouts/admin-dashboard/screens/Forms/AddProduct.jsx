@@ -1,78 +1,133 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { FaCamera } from "react-icons/fa";
 import CustomTextField from "../../../../mui/CustomTextField";
-import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
-import uploadIcon from "../../../../assets/construction/upload 1.png";
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import toast from "react-hot-toast";
+import apiClient from "../../../../api/apiClient";
+
 const AddProduct = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Product name is required"),
+    description: Yup.string().required("Description is required"),
+    unit: Yup.string().required("Unit is required"),
+    category: Yup.string().required("Category is required"),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      description: "",
+      unit: "",
+      category: "",
+    },
+    validationSchema,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        setLoading(true);
+        const response = await apiClient.post("/materials", values);
+        if (response.status === 200 || response.status === 201) {
+          resetForm();
+          navigate(-1);
+        } else {
+          toast.error("Product creation failed!");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Operation failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         icon={
-          <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
+          <FaArrowLeftLong
+            className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full cursor-pointer"
+            onClick={() => navigate(-1)}
+          />
         }
         title="New Material"
-        detail="Add New User Information in Epos Software"
+        detail="Add New Product Information"
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* Upload Image Section */}
-      {/* <div className="flex flex-col gap-y-2">
-          <h4 className="text-[#12141D] font-semibold">Upload Image</h4>
-        </div> */}
+
       {/* form */}
-      <div className="flex justify-center items-center  gap-4">
-        {/* <div className="relative w-[100px] h-[100px]">
-          <div className="w-full h-full bg-white border-[0.5px] border-[#CDC9C9] rounded-full overflow-hidden"></div>
-          <label
-            htmlFor="upload"
-            className="absolute -bottom-2 right-1 cursor-pointer"
-          >
-            <div className="w-10 h-10 bg-white  rounded-2xl flex items-center justify-center">
-              <img src={uploadIcon} size={25} />
-            </div>
-          </label>
-          <input
-            id="upload"
-            type="file"
-            className="hidden"
-            onChange={(e) => console.log(e.target.files[0])}
-          />
-        </div> */}
-        <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center ">
+      <div className="flex justify-center items-center gap-4">
+        <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <CustomTextField
-            label={
-              <span className="flex items-center gap-1">Product Name</span>
-            }
+            label="Product Name"
             fullWidth
-            name="productName"
+            name="name"
             placeholder="Enter Product Name"
             type="text"
-          />{" "}
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.name && formik.errors.name}
+          />
           <CustomTextField
-            label={<span className="flex items-center gap-1">Unit</span>}
+            label="Description"
+            fullWidth
+            name="description"
+            placeholder="Enter Product Description"
+            type="text"
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.description && formik.errors.description}
+          />
+          <CustomTextField
+            label="Unit"
             fullWidth
             name="unit"
-            placeholder="Enter Unit "
+            placeholder="Enter Unit"
             type="text"
-          />{" "}
+            value={formik.values.unit}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.unit && formik.errors.unit}
+          />
+          <CustomTextField
+            label="Category"
+            fullWidth
+            name="category"
+            placeholder="Enter Product Category"
+            type="text"
+            value={formik.values.category}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.category && formik.errors.category}
+          />
         </div>
-      </div>{" "}
+      </div>
+
+      {/* buttons */}
       <div className="flex gap-4 w-full mt-8 justify-center">
         <button
-          className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] "
+          className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
           onClick={() => navigate(-1)}
         >
           Back
         </button>
         <button
-          className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
-          onClick={() => navigate(-1)}
+          className="bg-primary px-10 py-2 rounded-lg font-medium text-white"
+          onClick={formik.handleSubmit}
+          disabled={loading}
         >
-          Save
+          {loading ? "Saving..." : "Save"}
         </button>
       </div>
     </div>

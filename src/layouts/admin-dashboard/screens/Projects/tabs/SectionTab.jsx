@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../../../components/ui/TopBar";
 import SectionCard from "../../../../../components/ui/SectionCard";
 import { FaTrash, FaUserEdit, FaEye } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import apiClient from "../../../../../api/apiClient";
+import toast from "react-hot-toast";
 
-const SectionTab = () => {
+const SectionTab = ({ data }) => {
+  const { id } = useParams();
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
   const navigate = useNavigate();
+  const [section, setSection] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const actions = [
     {
@@ -28,39 +33,27 @@ const SectionTab = () => {
   ];
 
   return (
-    <div className=" w-full">
+    <div className="w-full">
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         buttonText="Create Project Section"
         onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/createProject")
+          navigate(`/admin-dashboard/project-management/createProject?id=${id}`)
         }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
       <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
-        <SectionCard
-          sectionNo="01"
-          sectionName="Piles"
-          totalDemands="14"
-          totalAmount="340$"
-          paidAmount="567$"
-          remainingAmount="9384$"
-          manager="Imran"
-          linkedStores="01"
-          dropdownActions={actions}
-        />
-        <SectionCard
-          sectionNo="01"
-          sectionName="Piles"
-          totalDemands="14"
-          totalAmount="340$"
-          paidAmount="567$"
-          remainingAmount="9384$"
-          manager="Imran"
-          linkedStores="01"
-          dropdownActions={actions}
-        />
+        {data?.map((sec, index) => (
+          <SectionCard
+            key={sec?.id}
+            sectionNo={index + 1}
+            sectionName={sec?.name}
+            code={sec?.code}
+            description={sec.description}
+            dropdownActions={actions}
+          />
+        ))}
       </div>
     </div>
   );

@@ -46,20 +46,20 @@ const Login = () => {
         case "ADMIN":
           navigate("/admin-dashboard");
           break;
-        case "PM":
-          navigate("/project-manager-dashboard/user-Management");
+        case "PROJECT_MANAGER":
+          navigate("/project-manager-dashboard");
           break;
-        case "SI":
-          navigate("/siteincharge-dashboard/user-Management");
+        case "SITE_INCHARGE":
+          navigate("/siteincharge-dashboard");
           break;
-        case "CM":
-          navigate("/construction-manager-dashboard/user-Management");
+        case "CONSTRUCTION_MANAGER":
+          navigate("/construction-manager-dashboard");
           break;
-        case "ST":
-          navigate("/store-incharge-dashboard/store");
+        case "STORE_INCHARGE":
+          navigate("/store-incharge-dashboard");
           break;
-        case "AC":
-          navigate("/accountant-dashboard/payables");
+        case "ACCOUNTANT":
+          navigate("/accountant-dashboard");
           break;
         default:
           navigate("/default-path");

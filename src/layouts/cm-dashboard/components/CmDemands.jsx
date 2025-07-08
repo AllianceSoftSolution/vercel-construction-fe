@@ -1,128 +1,120 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "@/comments/components/DropdownButton";
-import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
-import { Box, IconButton, Modal } from "@mui/material";
+import { FaEye } from "react-icons/fa";
+import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import CustomTextField from "../../../mui/CustomTextField";
-import Button from "../../../components/Button";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: "90%",
-  maxWidth: "600px",
-  boxShadow: 24,
-  borderRadius: "50px",
-};
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const CmDemands = () => {
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [loading, setLoading] = useState(false);
+  const [demands, setDemands] = useState([]);
+  const [materialsMap, setMaterialsMap] = useState({});
+  const [sectionsMap, setSectionsMap] = useState({});
   const navigate = useNavigate();
 
-  const data = [
-    {
-      id: 1,
-      no: "REF001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      unit: "ton",
-      poQty: 100,
-      status: "Pending",
-      approvedBy: "Owner",
-      fulfilled: 12,
-      date: "2023-01-01",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      no: "REF002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      unit: "ton",
-      poQty: 100,
-      status: "Approved",
-      approvedBy: "Site Manager",
-      fulfilled: 13,
-      date: "2023-01-01",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      no: "REF003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      unit: "ton",
-      poQty: 100,
-      status: "In Progress",
-      approvedBy: "Owner",
-      fulfilled: 12,
-      date: "2023-01-01",
-      action: "id-here",
-    },
-  ];
+  const fetchMaterialAndSections = async () => {
+    try {
+      const [materialsRes, sectionsRes] = await Promise.all([
+        apiClient.get("/materials"),
+        apiClient.get("/sections"),
+      ]);
+
+      const materialMap = {};
+      if (materialsRes.ok) {
+        materialsRes.data.materials.forEach((m) => {
+          materialMap[m._id] = m.name;
+        });
+      }
+
+      const sectionMap = {};
+      if (sectionsRes.ok) {
+        sectionsRes.data.sections.forEach((s) => {
+          sectionMap[s._id] = s.name;
+        });
+      }
+
+      setMaterialsMap(materialMap);
+      setSectionsMap(sectionMap);
+    } catch (error) {
+      toast.error("Failed to fetch materials or sections");
+      console.error(error);
+    }
+  };
+
+  const fetchDemand = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          no: `REF-${index + 1}`,
+          materialId: materialsMap[demand.materialId] || "N/A",
+          sectionId: sectionsMap[demand.sectionId] || "N/A",
+          action: demand._id,
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch demands");
+      }
+    } catch (error) {
+      toast.error("Error fetching demands");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      await fetchMaterialAndSections();
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(materialsMap).length && Object.keys(sectionsMap).length) {
+      fetchDemand();
+    }
+  }, [materialsMap, sectionsMap]);
 
   const columns = [
     { headerName: "No", field: "no" },
-    { headerName: "Project Name", field: "project" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
+    { headerName: "Activity", field: "activity" },
+    { headerName: "Material", field: "materialId" },
+    { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Approved By", field: "approvedBy" },
-    { headerName: "Fulfilled", field: "fulfilled" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Section", field: "sectionId" },
+    { headerName: "Notes", field: "notes" },
     { headerName: "Action", field: "action" },
   ];
 
-  const CustomActionComponent = () => {
-    return (
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          {
-            label: "View Detail",
-            onClick: () => navigate("123"),
-            icon: <FaEye />,
-          },
-          // {
-          //   label: "Edit",
-          //   onClick: () => alert("Edit"),
-          //   icon: <FaUserEdit />,
-          // },
-          // {
-          //   label: "Delete ",
-          //   onClick: () => alert("Delete"),
-          //   icon: <FaTrash />,
-          // },
-        ]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
+  const CustomActionComponent = ({ value }) => (
+    <DropdownButton
+      className="bg-[#FF0000] font-semibold"
+      items={[
+        {
+          label: "View Detail",
+          onClick: () =>
+            navigate(`/construction-manager-dashboard/demands/${value}`),
+          icon: <FaEye />,
+        },
+      ]}
+    >
+      <IconButton>
+        <BsThreeDotsVertical />
+      </IconButton>
+    </DropdownButton>
+  );
 
   return (
     <div className="w-full">
       <TopBar
         title="Demands"
-        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
+        detail="View and manage construction material demands."
         showFilter={true}
         filterOptions={["Approved", "Rejected", "Pending"]}
         onFilterChange={(selected) =>
@@ -134,12 +126,13 @@ const CmDemands = () => {
         }
       />
 
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
 
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
-          data={data}
+          data={demands}
+          loading={loading}
           cellComponents={{ action: CustomActionComponent }}
         />
       </div>

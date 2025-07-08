@@ -6,7 +6,7 @@ const CustomTextField = React.forwardRef(
   (
     {
       label,
-      labelColor = "text-gray-700",
+      labelColor = "text-gray-500",
       classInput,
       placeholder,
       handleChange,

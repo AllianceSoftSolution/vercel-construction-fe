@@ -17,10 +17,12 @@ import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
 import Profile from "../../assets/construction/profile.png";
+import LogOutModal from "../../mui/LogOutModal";
 
 const AdminDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -127,12 +129,6 @@ const AdminDashboardLayout = ({ role }) => {
                     }}
                     iconSrc={<item.icon size={20} />}
                     text={item.label}
-                    // isActive={
-                    //   item.path === "/accountant-dashboard"
-                    //     ? location.pathname === "/accountant-dashboard"
-                    //     : location.pathname === item.path
-                    // }
-
                     isActive={
                       item.path === "/admin-dashboard"
                         ? location.pathname === "/admin-dashboard"
@@ -145,7 +141,7 @@ const AdminDashboardLayout = ({ role }) => {
               </ul>
               <div className="border-t border-gray-300 px-6 py-6">
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={() => setShowLogoutModal(true)} // ✅ Open logout modal
                   className="w-full bg-[#222222] text-white rounded-[10px] py-3"
                 >
                   Log Out
@@ -258,6 +254,16 @@ const AdminDashboardLayout = ({ role }) => {
           </div>
         </div>
       </div>
+
+      {showLogoutModal && (
+        <LogOutModal
+          onClose={() => setShowLogoutModal(false)}
+          onConfirm={() => {
+            localStorage.clear();
+            navigate("/login");
+          }}
+        />
+      )}
     </div>
   );
 };

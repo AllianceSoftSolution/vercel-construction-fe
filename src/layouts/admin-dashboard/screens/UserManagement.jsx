@@ -187,7 +187,7 @@ const UserManagement = () => {
         ))}
       </div>
       <div>
-        <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
+        <h2 className="text-xl font-bold mb-4 mt-4">Users</h2>
         <SimpleTable
           columns={columns}
           data={data}

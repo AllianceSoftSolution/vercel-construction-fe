@@ -147,16 +147,16 @@ const adminRoutes = [
       { path: "user-Management", element: <UserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "user-Management/:id", element: <MemberDetailPage /> },
-      { path: "project-Management", element: <ProjectManagement /> },
-      { path: "project-Management/addProject", element: <AddProject /> },
+      { path: "project-management", element: <ProjectManagement /> },
+      { path: "project-management/addProject", element: <AddProject /> },
       {
-        path: "project-Management/createProject",
+        path: "project-management/createProject",
         element: <CreateSectionProject />,
       },
-      { path: "project-Management/:id", element: <ProjectDetailPage /> },
-      { path: "project-Management/sections", element: <SectionTab /> },
+      { path: "project-management/:id", element: <ProjectDetailPage /> },
+      { path: "project-management/sections", element: <SectionTab /> },
       {
-        path: "project-Management/sections/:id",
+        path: "project-management/sections/:id",
         element: <SectionDetailPage />,
       },
 
@@ -296,15 +296,15 @@ const getRoutesByRole = (role) => {
   switch (role) {
     case "ADMIN":
       return [...commonRoutes, ...adminRoutes];
-    case "PM":
+    case "PROJECT_MANAGER":
       return [...commonRoutes, ...projectManagerRoutes];
-    case "SI":
+    case "SITE_INCHARGE":
       return [...commonRoutes, ...siteInchargeRoutes];
-    case "CM":
+    case "CONSTRUCTION_MANAGER":
       return [...commonRoutes, ...constructionManagerRoutes];
-    case "AC":
+    case "ACCOUNTANT":
       return [...commonRoutes, ...accountantRoutes];
-    case "ST":
+    case "STORE_INCHARGE":
       return [...commonRoutes, ...storeInchargeRoutes];
     default:
       // return commonRoutes;

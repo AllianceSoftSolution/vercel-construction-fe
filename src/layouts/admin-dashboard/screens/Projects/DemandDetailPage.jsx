@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import ProjectInfoCard from "@/components/ui/ProjectInfoCard";
+import React, { useEffect, useState } from "react";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal } from "@mui/material";
@@ -9,6 +8,8 @@ import ReasonModal from "../Demands/ReasonModal";
 import PurchaseOrderForm from "../Forms/PurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
 import Button from "../../../../components/Button";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
 
 const style = {
   position: "absolute",
@@ -25,6 +26,10 @@ const DemandDetails = () => {
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
   const [status, setStatus] = useState("Pending");
   const [pendingStatus, setPendingStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [demandData, setDemandData] = useState({});
+  const [statusLogs, setStatusLogs] = useState([]);
+  const { id } = useParams();
 
   const handleActionClick = (newStatus) => {
     setPendingStatus(newStatus);
@@ -42,11 +47,27 @@ const DemandDetails = () => {
     setPendingStatus(null);
   };
 
-  const data = [
-    { id: 1, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-    { id: 2, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-    { id: 3, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-  ];
+  const fetchDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/demands/${id}`);
+      if (response?.data?.data) {
+        setDemandData(response.data.data);
+        setStatus(response.data.data.status || "Pending");
+        setStatusLogs(response.data.data.statusLogs || []);
+      } else {
+        console.error("Failed to fetch details", response?.data?.message);
+      }
+    } catch (error) {
+      console.error("API error:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDetails();
+  }, [id]);
 
   const columns = [
     { headerName: "Name", field: "name" },
@@ -91,7 +112,9 @@ const DemandDetails = () => {
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
         <div className="flex flex-wrap justify-between items-center gap-y-4">
-          <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
+          <p className="text-[#444444] font-semibold text-xl">
+            {demandData.projectCode || "Project-A001"}
+          </p>
           <div className="flex flex-wrap gap-2 items-center">
             <div
               className={`text-white px-6 py-1.5 rounded-lg text-sm ${
@@ -114,63 +137,65 @@ const DemandDetails = () => {
             <CustomActionComponent />
           </div>
         </div>
- 
+
         <div className="h-[1px] bg-[#CDCDCD] w-full" />
 
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Project Name:</p>
-            <p className="text-[#979797]">project name</p>
+            <p className="text-[#979797]">{demandData.projectName || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Section Name:</p>
-            <p className="text-[#979797]">section name</p>
+            <p className="text-[#979797]">{demandData.sectionName || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Material:</p>
-            <p className="text-[#979797]">material</p>
+            <p className="text-[#979797]">{demandData.material || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Quantity:</p>
-            <p className="text-[#979797]">quantity</p>
+            <p className="text-[#979797]">{demandData.quantity || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Unit:</p>
-            <p className="text-[#979797]">unit</p>
+            <p className="text-[#979797]">{demandData.unit || "-"}</p>
           </div>
         </div>
 
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">PO Quantity:</p>
-            <p className="text-[#979797]">po quantity</p>
+            <p className="text-[#979797]">{demandData.poQuantity || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Approved By:</p>
-            <p className="text-[#979797]">approved by</p>
+            <p className="text-[#979797]">{demandData.approvedBy || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Fulfilled:</p>
-            <p className="text-[#979797]">fulfilled</p>
+            <p className="text-[#979797]">{demandData.fulfilled || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">
               Activity Description:
             </p>
-            <p className="text-[#979797]">activity description</p>
+            <p className="text-[#979797]">
+              {demandData.activityDescription || "-"}
+            </p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Notes by CM:</p>
-            <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+            <p className="text-[#979797]">{demandData.notes || "-"}</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-y-2">
           <p className="text-[#444444] font-semibold text-xl">Remarks</p>
           <ul className="list-disc list-inside text-[#979797] space-y-1">
-            <li>lorem ipsum dolor sit amet</li>
-            <li>lorem ipsum dolor sit amet</li>
-            <li>lorem ipsum dolor sit amet</li>
+            {(demandData.remarks || []).map((remark, index) => (
+              <li key={index}>{remark}</li>
+            ))}
           </ul>
         </div>
       </div>
@@ -178,19 +203,19 @@ const DemandDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <DemandQuantityCard
           storeName="Head Store"
-          totalQty={80}
-          material="Cement"
+          totalQty={demandData.headStoreQty || 80}
+          material={demandData.material || "Cement"}
           showButton
         />
         <DemandQuantityCard
           storeName="CM Store"
-          totalQty={50}
-          material="Cement"
+          totalQty={demandData.cmStoreQty || 50}
+          material={demandData.material || "Cement"}
         />
       </div>
 
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
-      <SimpleTable data={data} columns={columns} cellComponents={{}} />
+      <SimpleTable data={statusLogs} columns={columns} cellComponents={{}} />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -11,6 +11,7 @@ import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import { Check } from "@mui/icons-material";
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
+import { useParams } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -23,6 +24,31 @@ const style = {
 };
 
 const PmStoreDetail = () => {
+  const { id } = useParams();
+
+  const [loading, setLoading] = useState(false);
+  const [storeData, setStoreData] = useState({});
+
+  const fetchStoreDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/stores/${id}`);
+      if (response?.data?.data) {
+        setStoreData(response.data.data);
+      } else {
+        console.error("Failed to fetch details", response?.data?.message);
+      }
+    } catch (error) {
+      console.error("API error:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchStoreDetails();
+  }, [id]);
+
   const data = [
     {
       id: 1,
@@ -213,7 +239,6 @@ const PmStoreDetail = () => {
         title="Store Detail"
         detail="lorem ipsum dolor sit amet"
         showExport={true}
-        // buttonText="Add Store"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">

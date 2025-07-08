@@ -25,7 +25,6 @@ const AddProject = () => {
   const formik = useFormik({
     initialValues: {
       name: "",
-      code: "",
       description: "",
       startDate: "",
       endDate: "",
@@ -38,7 +37,6 @@ const AddProject = () => {
         const response = await apiClient.post("/projects", values); // Send as JSON
 
         if (response.ok) {
-          toast.success("Project created successfully!");
           resetForm();
           navigate(-1);
         } else {

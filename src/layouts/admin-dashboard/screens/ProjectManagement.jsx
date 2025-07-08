@@ -10,12 +10,23 @@ import { IconButton } from "@mui/material";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import { RiDeleteBin5Fill } from "react-icons/ri";
+import DeleteModal from "../../../mui/DeleteModal";
 
 const ProjectManagement = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  function formatDateToDDMMYYYY(dateInput) {
+    const date = new Date(dateInput);
+    if (isNaN(date)) return "";
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
 
   const fetchProjects = async () => {
     try {
@@ -23,14 +34,12 @@ const ProjectManagement = () => {
       const response = await apiClient.get("/projects");
       if (response.ok) {
         const data = response.data.projects.map((project, index) => ({
-          no: index + 1,
-          startDate: new Date(project.startDate).toLocaleDateString(),
-          endDate: new Date(project.endDate).toLocaleDateString(),
-          action: project.id,
           ...project,
+          no: index + 1,
+          startDate: formatDateToDDMMYYYY(project.startDate),
+          endDate: formatDateToDDMMYYYY(project.endDate),
         }));
         setProjects(data);
-        toast.success("Projects fetched successfully!");
       } else {
         toast.error("Failed to fetch projects");
       }
@@ -46,19 +55,14 @@ const ProjectManagement = () => {
     fetchProjects();
   }, []);
 
-  const handleDelete = async (id) => {
-    const confirm = window.confirm(
-      "Are you sure you want to delete this project?"
-    );
-    if (!confirm) return;
-
+  const deleteProject = async () => {
     try {
-      const response = await apiClient.delete(`/projects/${id}`);
+      const response = await apiClient.delete(`/projects/${selectedProjectId}`);
       if (response.ok) {
-        toast.success("Project deleted");
-        fetchProjects(); // Refresh data
+        fetchProjects();
+        setShowDeleteModal(false);
       } else {
-        toast.error("Failed to delete project");
+        toast.error(response.data?.message || "Failed to delete project");
       }
     } catch (error) {
       toast.error("Something went wrong");
@@ -72,29 +76,32 @@ const ProjectManagement = () => {
     { headerName: "Description", field: "description" },
     { headerName: "Start Date", field: "startDate" },
     { headerName: "End Date", field: "endDate" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" }, // ✅ Pass id for action column
   ];
 
-  const CustomActionComponent = ({ data }) => (
+  const CustomActionComponent = ({ value: projectId }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
         {
           label: "View Detail Page",
-          onClick: () =>
-            navigate(`/admin-dashboard/project-management/${data}`),
           icon: <FaEye />,
+          onClick: () =>
+            navigate(`/admin-dashboard/project-management/${projectId}`),
         },
         {
           label: "Edit",
-          onClick: () =>
-            navigate(`/admin-dashboard/project-management/edit/${data}`),
           icon: <FaUserEdit />,
+          onClick: () =>
+            navigate(`/admin-dashboard/project-management/edit/${projectId}`),
         },
         {
           label: "Delete",
-          onClick: () => handleDelete(data),
           icon: <FaTrash />,
+          onClick: () => {
+            setSelectedProjectId(projectId);
+            setShowDeleteModal(true);
+          },
         },
       ]}
     >
@@ -125,11 +132,11 @@ const ProjectManagement = () => {
         <SimpleTable
           columns={columns}
           data={projects}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent }}
+          loading={loading}
         />
       </div>
 
-      {/* Optional Modal if needed */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl relative">
@@ -162,6 +169,13 @@ const ProjectManagement = () => {
             />
           </div>
         </div>
+      )}
+
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={deleteProject}
+        />
       )}
     </div>
   );

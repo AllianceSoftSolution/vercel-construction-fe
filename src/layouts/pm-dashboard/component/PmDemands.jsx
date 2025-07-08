@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -8,6 +8,8 @@ import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const Demands = () => {
+  const [demands, setDemands] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const data = [
     {
@@ -56,18 +58,42 @@ const Demands = () => {
       action: "id-here",
     },
   ];
+
+  const fetchDemand = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          no: `REF-${index + 1}`,
+          materialId: materialsMap[demand.materialId] || "N/A",
+          sectionId: sectionsMap[demand.sectionId] || "N/A",
+          action: demand._id,
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch demands");
+      }
+    } catch (error) {
+      toast.error("Error fetching demands");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDemand();
+  }, []);
+
   const columns = [
     { headerName: "No", field: "no" },
-    { headerName: "Project Name", field: "project" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
+    { headerName: "Activity", field: "activity" },
+    { headerName: "Material", field: "materialId" },
+    { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Approved By", field: "approvedBy" },
-    { headerName: "Fulfilled", field: "fulfilled" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Section", field: "sectionId" },
+    { headerName: "Notes", field: "notes" },
     { headerName: "Action", field: "action" },
   ];
   const CustomActionComponent = ({ data }) => {
@@ -80,16 +106,16 @@ const Demands = () => {
             onClick: () => navigate("123"),
             icon: <FaEye />,
           },
-            // {
-            //   label: "Edit",
-            //   onClick: () => alert("Edit"),
-            //   icon: <FaUserEdit />,
-            // },
-            // {
-            //   label: "Delete ",
-            //   onClick: () => alert("Delete"),
-            //   icon: <FaTrash />,
-            // },
+          // {
+          //   label: "Edit",
+          //   onClick: () => alert("Edit"),
+          //   icon: <FaUserEdit />,
+          // },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaTrash />,
+          // },
         ]}
         // onClick={handleActionClick}
       >

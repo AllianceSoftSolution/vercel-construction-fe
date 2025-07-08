@@ -21,23 +21,25 @@ const style = {
   boxShadow: 24,
 };
 
-const stylee = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: "90%",
-  maxWidth: "600px",
-  maxHeight: "90vh",
-  overflowY: "auto",
-  boxShadow: 24,
-  borderRadius: "1.5rem",
-};
-
-const ProjectInformationTab = () => {
+const ProjectInformationTab = ({ data }) => {
   const navigate = useNavigate();
 
-  const data = [
+  const [openPM, setOpenPM] = useState(false);
+  const [openAddUser, setOpenAddUser] = useState(false);
+  const [openSection, setOpenSection] = useState(false);
+
+  const handleOpenPM = () => setOpenPM(true);
+  const handlePMCreate = () => {
+    setOpenPM(false);
+    setOpenAddUser(true);
+  };
+  const handleAddUserDone = () => {
+    setOpenAddUser(false);
+    setOpenSection(true);
+  };
+  const handleSectionDone = () => setOpenSection(false);
+
+  const membersData = [
     {
       id: 1,
       iD: "01",
@@ -60,29 +62,18 @@ const ProjectInformationTab = () => {
       note: "Fatima Khan",
       date: "2025-06-14",
     },
-    {
-      id: 3,
-      iD: "03",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Site Manager",
-      status: "In Progress",
-      note: "Hassan Ali",
-      date: "2025-06-13",
-    },
   ];
 
   const columns = [
-    { headerName: "ID", field: "iD" },
+    { headerName: "ID", field: "id" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
-    { headerName: "Role", field: "role" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Note", field: "note" },
-    { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Sections", field: "noOfSection" },
+    // { headerName: "Role", field: "role" },
+    // { headerName: "Status", field: "status" },
+    // { headerName: "Note", field: "note" },
+    // { headerName: "Date", field: "date" },
+    // { headerName: "Action", field: "action" },
   ];
 
   const CustomActionComponent = () => (
@@ -104,52 +95,49 @@ const ProjectInformationTab = () => {
     </DropdownButton>
   );
 
-  const [openPM, setOpenPM] = useState(false);
-  const [openAddUser, setOpenAddUser] = useState(false);
-  const [openSection, setOpenSection] = useState(false);
-
-  const handleOpenPM = () => setOpenPM(true);
-  const handlePMCreate = () => {
-    setOpenPM(false);
-    setOpenAddUser(true);
-  };
-  const handleAddUserDone = () => {
-    setOpenAddUser(false);
-    setOpenSection(true);
-  };
-  const handleSectionDone = () => setOpenSection(false);
-
   return (
     <>
       <ProjectInfoCard
         title="Project Information"
-        status="IN-PROGRESS"
+        status={data?.status || "IN-PROGRESS"}
         onDelete={() => console.log("delete")}
         onEdit={() => console.log("edit")}
-        projectName="Project Name Here"
-        projectCode="123"
-        section="4"
-        totalAmount="$12333"
-        remainingAmount="232$"
-        paidAmount="5000"
-        date="12/04/2025"
-        projectLocation="United Kingdom 11 street Real Estate London"
-        projectStatus="IN-PROGRESS"
+        projectName={data?.name || "N/A"}
+        projectCode={data?.code || "N/A"}
+        section={data?.sectionCount || "0"}
+        totalAmount={data?.totalAmount ? `$${data.totalAmount}` : "$0"}
+        remainingAmount={
+          data?.remainingAmount ? `$${data.remainingAmount}` : "$0"
+        }
+        paidAmount={data?.paidAmount ? `$${data.paidAmount}` : "$0"}
+        date={
+          data?.startDate
+            ? new Date(data.startDate).toLocaleDateString()
+            : "N/A"
+        }
+        projectLocation={data?.location || "Not specified"}
+        projectStatus={data?.status || "N/A"}
       />
+
       <ProjectDescriptionCard
         title="Project Description"
-        description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s..."
+        description={data?.description || "No description available."}
         onEdit={() => console.log("edit description")}
       />
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
-        <Button buttonText="Create Site Incharge" onClick={handleOpenPM}/>
+        <Button buttonText="Create Site Incharge" onClick={handleOpenPM} />
       </div>
 
       <SimpleTable
         columns={columns}
-        data={data}
+        data={
+          data?.assignedSiteIncharges?.map((i) => ({
+            ...i,
+            noOfSection: i.sections.length,
+          })) || []
+        }
         cellComponents={{ action: CustomActionComponent }}
       />
 
@@ -160,11 +148,14 @@ const ProjectInformationTab = () => {
 
       <SimpleTable
         columns={columns}
-        data={data}
+        data={
+          data?.assignedAccountants?.map((i) => ({
+            ...i,
+            noOfSection: i.sections.length,
+          })) || []
+        }
         cellComponents={{ action: CustomActionComponent }}
       />
-
-     
 
       <Modal open={openPM} onClose={() => setOpenPM(false)}>
         <Box sx={style} className="bg-white p-4">

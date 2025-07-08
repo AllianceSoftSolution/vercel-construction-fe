@@ -1,18 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "@/components/ui/TopBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Tabs, Tab, Box } from "@mui/material";
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
 import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
 import SectionTab from "./tabs/SectionTab";
+import apiClient from "@/api/apiClient";
+import toast from "react-hot-toast";
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  console.log("Route ID:", id);
   const [tabIndex, setTabIndex] = useState(0);
+  const [projectData, setProjectData] = useState(null);
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
   };
+
+  const fetchProjectDetail = async () => {
+    try {
+      const response = await apiClient.get(`/projects/${id}`);
+      if (response.ok) {
+        setProjectData(response.data.project);
+      } else {
+        toast.error("Failed to fetch project details.");
+      }
+    } catch (error) {
+      console.error("Error fetching project details:", error);
+      toast.error("Something went wrong while fetching details.");
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchProjectDetail();
+  }, [id]);
 
   return (
     <div className="px-4 py-4 w-full h-full">
@@ -65,9 +88,9 @@ const ProjectDetailPage = () => {
       </Box>
 
       <Box sx={{ mt: 3 }}>
-        {tabIndex === 0 && <ProjectInformationTab />}
-        {tabIndex === 1 && <AssociatedMembersTab />}
-        {tabIndex === 2 && <SectionTab />}
+        {tabIndex === 0 && <ProjectInformationTab data={projectData} />}
+        {tabIndex === 1 && <AssociatedMembersTab data={projectData} />}
+        {tabIndex === 2 && <SectionTab data={projectData?.sections} />}
       </Box>
     </div>
   );
