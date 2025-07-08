@@ -104,7 +104,7 @@ const ProjectInformationTab = ({ data }) => {
         onEdit={() => console.log("edit")}
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
-        section={data?.sectionCount || "0"}
+        section={data?.sections.length || "0"}
         totalAmount={data?.totalAmount ? `$${data.totalAmount}` : "$0"}
         remainingAmount={
           data?.remainingAmount ? `$${data.remainingAmount}` : "$0"

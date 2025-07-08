@@ -16,9 +16,15 @@ const Demands = () => {
 
   const columns = [
     { headerName: "Id", field: "id" },
-    { headerName: "Material Id", field: "materialId" },
-    { headerName: "Qty", field: "quantity" },
+    { headerName: "Material", field: "material.name" },
     { headerName: "Unit", field: "unit" },
+    { headerName: "Qty", field: "quantity" },
+    { headerName: "Date", field: "createdAt" },
+    { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Created By", field: "creator.name" },
+    { headerName: "Project", field: "section.projectName" },
+    { headerName: "Section", field: "section.name" },
+    { headerName: "Status", field: "status" },
     { headerName: "Action", field: "action" },
   ];
 
@@ -29,6 +35,7 @@ const Demands = () => {
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
           ...demand,
+          id: index + 1,
         }));
         setDemands(data);
       } else {
@@ -46,9 +53,7 @@ const Demands = () => {
     fetchDemands();
   }, []);
 
-  const CustomActionComponent = ({ data }) => {
-    const demandId = data?.id;
-
+  const CustomActionComponent = ({ value: demandId }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
