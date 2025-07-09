@@ -29,7 +29,7 @@ import AddStore from "./layouts/admin-dashboard/screens/Forms/AddStore";
 import AddProject from "./layouts/admin-dashboard/screens/Forms/AddProject";
 import ProjectDetailPage from "./layouts/admin-dashboard/screens/Projects/ProjectDetailPage";
 import MemberDetailPage from "./layouts/admin-dashboard/screens/Projects/MemberDetailPage";
-import DemandDetailPage from "./layouts/admin-dashboard/screens/Projects/DemandDetailPage";
+import DemandDetailPage from "./layouts/admin-dashboard/screens/Projects/DemandDetails";
 import PurchaseOrderDetailPage from "./layouts/admin-dashboard/screens/Projects/PurchaseOrderDetailPage";
 import StoreDetail from "./layouts/admin-dashboard/screens/Projects/StoreDetail";
 import AddVendor from "./layouts/admin-dashboard/screens/Forms/AddVendor";
@@ -115,6 +115,7 @@ import SinAddStore from "./layouts/siteIncharge-dashboard/components/Forms/SinAd
 import CreateSectionProject from "./layouts/admin-dashboard/screens/Forms/CreateSectionProject";
 import CreateSection from "./layouts/siteIncharge-dashboard/components/Forms/CreateSection";
 import SiPos from "./layouts/storeIncharge-dashboard/components/SiPos";
+import DemandDetails from "./layouts/admin-dashboard/screens/Projects/DemandDetails";
 
 const theme = createTheme({
   typography: {
@@ -143,7 +144,7 @@ const adminRoutes = [
     path: "admin-dashboard",
     element: <AdminDashboardLayout />,
     children: [
-      { path: "", element: <AdminDashboard /> }, // Default child (Dashboard)
+      { path: "", element: <AdminDashboard /> },
       { path: "user-Management", element: <UserManagement /> },
       { path: "user-Management/addUser", element: <AddUser /> },
       { path: "user-Management/:id", element: <MemberDetailPage /> },
@@ -161,7 +162,7 @@ const adminRoutes = [
       },
 
       { path: "demands", element: <Demands /> },
-      { path: "demands/:id", element: <DemandDetailPage /> },
+      { path: "demands/:id", element: <DemandDetails /> },
       { path: "pOS", element: <POs /> },
       { path: "pOS/:id", element: <PurchaseOrderDetailPage /> },
       { path: "store", element: <Store /> },

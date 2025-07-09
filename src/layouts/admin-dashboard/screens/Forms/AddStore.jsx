@@ -88,7 +88,7 @@ const AddStore = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.type && formik.errors.type}
           />
-          <CustomTextField
+          {/* <CustomTextField
             label={<span className="flex items-center gap-1">Section Id</span>}
             fullWidth
             name="sectionId"
@@ -98,7 +98,7 @@ const AddStore = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             error={formik.touched.sectionId && formik.errors.sectionId}
-          />
+          /> */}
           {/* <CustomTextField
             label={<span className="flex items-center gap-1">CM User Id</span>}
             fullWidth

@@ -76,7 +76,7 @@ const ProjectManagement = () => {
     { headerName: "Description", field: "description" },
     { headerName: "Start Date", field: "startDate" },
     { headerName: "End Date", field: "endDate" },
-    { headerName: "Action", field: "id" }, // ✅ Pass id for action column
+    { headerName: "Action", field: "id" },
   ];
 
   const CustomActionComponent = ({ value: projectId }) => (

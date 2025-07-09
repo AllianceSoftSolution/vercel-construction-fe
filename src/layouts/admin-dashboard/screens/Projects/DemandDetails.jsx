@@ -24,7 +24,7 @@ const style = {
 const DemandDetails = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
-  const [status, setStatus] = useState("Pending");
+  // const [status, setStatus] = useState("Pending");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [demandData, setDemandData] = useState({});
@@ -32,12 +32,21 @@ const DemandDetails = () => {
   const { id } = useParams();
 
   const handleActionClick = (newStatus) => {
-    setPendingStatus(newStatus);
-    setOpen(true);
+    if (newStatus === "Approved") {
+      setPendingStatus(newStatus);
+      setOpen(true);
+    } else {
+      setPendingStatus(newStatus);
+      setOpen(true);
+    }
   };
 
-  const handleReasonSubmit = (reasonText) => {
-    setStatus(pendingStatus);
+  const handleReasonSubmit = async (reasonText) => {
+    if (pendingStatus === "Approved") {
+      await approveDemand(reasonText);
+    } else if (pendingStatus === "Rejected") {
+      await rejectDemand(reasonText);
+    }
     setPendingStatus(null);
     setOpen(false);
   };
@@ -51,8 +60,8 @@ const DemandDetails = () => {
     try {
       setLoading(true);
       const response = await apiClient.get(`/demands/${id}`);
-      if (response?.data?.data) {
-        setDemandData(response.data.data);
+      if (response?.data?.demand) {
+        setDemandData(response.data.demand);
         setStatus(response.data.data.status || "Pending");
         setStatusLogs(response.data.data.statusLogs || []);
       } else {
@@ -70,9 +79,9 @@ const DemandDetails = () => {
   }, [id]);
 
   const columns = [
-    { headerName: "Name", field: "name" },
-    { headerName: "Created Demand", field: "createdDemand" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Name", field: "userName" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Remarks", field: "remarks" },
   ];
 
   const CustomActionComponent = () => {
@@ -80,8 +89,8 @@ const DemandDetails = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          { label: "Rejected", onClick: () => handleActionClick("Rejected") },
-          { label: "Approved", onClick: () => handleActionClick("Approved") },
+          { label: "Reject", onClick: () => handleActionClick("Rejected") },
+          { label: "Approve", onClick: () => handleActionClick("Approved") },
         ]}
       >
         <IconButton>
@@ -91,12 +100,46 @@ const DemandDetails = () => {
     );
   };
 
+  const rejectDemand = async (remarks) => {
+    setLoading(true);
+    try {
+      const response = await apiClient.post(`/demands/${id}/reject`, {
+        remarks,
+      });
+
+      if (response?.data?.demand) {
+        setDemandData(response.data.demand);
+      } else {
+        console.error("Failed to reject", response?.data?.message);
+      }
+    } catch (error) {
+      console.error("API error:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const approveDemand = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.post(`/demands/${id}/approve`);
+      if (response?.data?.demand) {
+        setDemandData(response.data.demand);
+      } else {
+        console.error("Failed to approve", response?.data?.message);
+      }
+    } catch (error) {
+      console.error("API error:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <ReasonModal
-            textAreaPlaceholder="Enter your reason"
+            textAreaPlaceholder="Enter your remarks here..."
             onBackClick={handleClose}
             onSaveClick={handleReasonSubmit}
           />
@@ -113,27 +156,31 @@ const DemandDetails = () => {
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
         <div className="flex flex-wrap justify-between items-center gap-y-4">
           <p className="text-[#444444] font-semibold text-xl">
-            {demandData.projectCode || "Project-A001"}
+            {demandData?.referenceNumber || "-"}
           </p>
           <div className="flex flex-wrap gap-2 items-center">
             <div
               className={`text-white px-6 py-1.5 rounded-lg text-sm ${
-                status === "Approved"
+                demandData?.status === "APPROVED"
                   ? "bg-green-600"
-                  : status === "Rejected"
+                  : demandData?.status === "PARTIALLY_APPROVED"
+                  ? "bg-yellow-500"
+                  : demandData?.status === "REJECTED"
                   ? "bg-red-600"
                   : "bg-[#0252AD]"
               }`}
             >
-              {status}
+              {demandData?.status || "PENDING"}
             </div>
-            {status === "Approved" && (
+
+            {demandData?.status === "APPROVED" && (
               <Button
                 onClick={() => setOpenPurchaseModal(true)}
                 className="bg-primary text-white px-4 py-2 text-sm"
                 buttonText={"Create Purchase Order"}
               />
             )}
+
             <CustomActionComponent />
           </div>
         </div>
@@ -143,38 +190,46 @@ const DemandDetails = () => {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Project Name:</p>
-            <p className="text-[#979797]">{demandData.projectName || "-"}</p>
+            <p className="text-[#979797]">
+              {demandData?.section?.projectName || "-"}
+            </p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Section Name:</p>
-            <p className="text-[#979797]">{demandData.sectionName || "-"}</p>
+            <p className="text-[#979797]">{demandData?.section?.name || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Material:</p>
-            <p className="text-[#979797]">{demandData.material || "-"}</p>
+            <p className="text-[#979797]">
+              {demandData?.material?.name || "-"}
+            </p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Quantity:</p>
-            <p className="text-[#979797]">{demandData.quantity || "-"}</p>
+            <p className="text-[#979797]">{demandData?.quantity || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Unit:</p>
-            <p className="text-[#979797]">{demandData.unit || "-"}</p>
+            <p className="text-[#979797]">{demandData?.unit || "-"}</p>
           </div>
         </div>
 
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">PO Quantity:</p>
-            <p className="text-[#979797]">{demandData.poQuantity || "-"}</p>
+            <p className="text-[#979797]">{demandData?.poQuantity || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Approved By:</p>
-            <p className="text-[#979797]">{demandData.approvedBy || "-"}</p>
+            <p className="text-[#979797]">{demandData?.approvedBy || "-"}</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Created By:</p>
+            <p className="text-[#979797]">{demandData?.creator?.name || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Fulfilled:</p>
-            <p className="text-[#979797]">{demandData.fulfilled || "-"}</p>
+            <p className="text-[#979797]">{demandData?.fulfilled || "-"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">
@@ -186,7 +241,7 @@ const DemandDetails = () => {
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Notes by CM:</p>
-            <p className="text-[#979797]">{demandData.notes || "-"}</p>
+            <p className="text-[#979797]">{demandData?.notes || "-"}</p>
           </div>
         </div>
 
@@ -203,19 +258,30 @@ const DemandDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <DemandQuantityCard
           storeName="Head Store"
-          totalQty={demandData.headStoreQty || 80}
-          material={demandData.material || "Cement"}
+          totalQty={
+            demandData?.headStoreQty === 0 ? 0 : demandData?.headStoreQty || "-"
+          }
+          material={demandData?.material?.name || "Cement"}
+          headStoreId={demandData?.headStoreId}
+          cmStoreId={demandData?.cmStoreId}
           showButton
+          id={id}
         />
         <DemandQuantityCard
           storeName="CM Store"
-          totalQty={demandData.cmStoreQty || 50}
-          material={demandData.material || "Cement"}
+          totalQty={
+            demandData?.cmStoreQty === 0 ? 0 : demandData?.cmStoreQty || "-"
+          }
+          material={demandData?.material?.name || "Cement"}
         />
       </div>
 
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
-      <SimpleTable data={statusLogs} columns={columns} cellComponents={{}} />
+      <SimpleTable
+        data={demandData?.approvals}
+        columns={columns}
+        cellComponents={{}}
+      />
     </>
   );
 };

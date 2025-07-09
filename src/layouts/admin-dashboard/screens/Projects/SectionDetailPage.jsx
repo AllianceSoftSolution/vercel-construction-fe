@@ -1,17 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
+import toast from "react-hot-toast";
+import apiClient from "../../../../api/apiClient";
 
 const style = {
   position: "absolute",
@@ -31,7 +33,8 @@ const SectionDetailPage = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
+  const { id } = useParams();
+  const [sectionData, setSectionData] = useState([]);
   const CustomActionComponent = ({ data }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
@@ -96,6 +99,23 @@ const SectionDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
 
+  const fetchSectionDetail = async () => {
+    try {
+      const response = await apiClient.get(`/sections/${id}`);
+      if (response.ok) {
+        setSectionData(response.data.section);
+      } else {
+        toast.error("Failed to fetch Section details.");
+      }
+    } catch (error) {
+      console.error("Error fetching Section details:", error);
+      toast.error("Something went wrong while fetching details.");
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchSectionDetail();
+  }, [id]);
   return (
     <div className=" sm:p-6 w-full">
       <TopBar
@@ -105,10 +125,19 @@ const SectionDetailPage = () => {
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 ">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-          <InfoItem label="Project Name" value="project name" />
-          <InfoItem label="Project Code" value="project code" />
-          <InfoItem label="Section" value="section" />
-          <InfoItem label="Date" value="date" />
+          <InfoItem
+            label="Project Name"
+            value={sectionData?.project?.name || "-"}
+          />
+          <InfoItem
+            label="Project Code"
+            value={sectionData?.project?.code || "-"}
+          />
+          <InfoItem label="Section" value={sectionData?.name || "-"} />
+          <InfoItem
+            label="Date"
+            value={new Date(sectionData?.createdAt).toLocaleDateString() || "-"}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
@@ -201,7 +230,7 @@ const SectionDetailPage = () => {
 
         <div className="overflow-x-auto mt-4">
           <SimpleTable
-            data={data}
+            data={sectionData?.associatedConstructionManagers || []}
             columns={columns}
             cellComponents={{ action: CustomActionComponent }}
           />

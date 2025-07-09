@@ -107,7 +107,10 @@ const CmAddDemand = () => {
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
 
-      <form onSubmit={formik.handleSubmit} className="flex justify-center">
+      <form
+        onSubmit={formik.handleSubmit}
+        className="flex flex-col items-center"
+      >
         <div className="flex flex-col w-full md:w-[50%] gap-y-4 items-center">
           <CustomTextField
             label="Activity"
@@ -169,6 +172,7 @@ const CmAddDemand = () => {
             error={formik.touched.unit && Boolean(formik.errors.unit)}
             helperText={formik.touched.unit && formik.errors.unit}
           />
+
           <div className="w-full">
             <CustomSelect
               label="Section"
@@ -205,26 +209,25 @@ const CmAddDemand = () => {
             error={formik.touched.notes && Boolean(formik.errors.notes)}
             helperText={formik.touched.notes && formik.errors.notes}
           />
+
+          <div className="flex gap-4 w-full justify-center mt-8">
+            <button
+              type="button"
+              className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </button>
+            <button
+              type="submit"
+              className="bg-primary px-10 py-2 rounded-lg font-medium text-white"
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
       </form>
-
-      <div className="flex gap-4 w-full justify-center mt-8">
-        <button
-          type="button"
-          className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
-          onClick={() => navigate(-1)}
-        >
-          Back
-        </button>
-        <button
-          type="submit"
-          onClick={formik.handleSubmit}
-          className="bg-primary px-10 py-2 rounded-lg font-medium text-white"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save"}
-        </button>
-      </div>
     </div>
   );
 };

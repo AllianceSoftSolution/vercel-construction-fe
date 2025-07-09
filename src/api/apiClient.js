@@ -2,6 +2,7 @@ import { create } from "apisauce";
 import { store } from "../redux/store";
 // const baseURL = import.meta.env.VITE_BASE_URL;
 const baseURL = "http://192.168.1.26:5000/api/";
+// const baseURL = "http://10.122.69.12:5000/api/";
 
 const apiClient = create({
   baseURL: baseURL,

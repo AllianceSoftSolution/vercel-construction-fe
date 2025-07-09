@@ -12,6 +12,7 @@ import { Check } from "@mui/icons-material";
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
 
 const style = {
   position: "absolute",
@@ -25,7 +26,6 @@ const style = {
 
 const PmStoreDetail = () => {
   const { id } = useParams();
-
   const [loading, setLoading] = useState(false);
   const [storeData, setStoreData] = useState({});
 
@@ -33,8 +33,8 @@ const PmStoreDetail = () => {
     try {
       setLoading(true);
       const response = await apiClient.get(`/stores/${id}`);
-      if (response?.data?.data) {
-        setStoreData(response.data.data);
+      if (response?.data?.store) {
+        setStoreData(response.data.store);
       } else {
         console.error("Failed to fetch details", response?.data?.message);
       }
@@ -49,45 +49,6 @@ const PmStoreDetail = () => {
     if (id) fetchStoreDetails();
   }, [id]);
 
-  const data = [
-    {
-      id: 1,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 2,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 3,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-  ];
-
   const columns = [
     { headerName: "Material", field: "material" },
     { headerName: "Linked Demand", field: "linkedDemand" },
@@ -98,18 +59,6 @@ const PmStoreDetail = () => {
     { headerName: "Last Updated", field: "lastUpdated" },
     { headerName: "Vendor", field: "vendor" },
     { headerName: "Status", field: "status" },
-  ];
-
-  const data1 = [
-    {
-      id: 1,
-      date: "12-12-25",
-      material: "Cement",
-      type: "issued",
-      qty: "20bags",
-      handledBy: "John Doe",
-      remarks: "For base pour",
-    },
   ];
 
   const columns1 = [
@@ -176,12 +125,12 @@ const PmStoreDetail = () => {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              width: "90%", // Responsive width
-              maxWidth: 500, // Limit max width
+              width: "90%",
+              maxWidth: 500,
               bgcolor: "background.paper",
               boxShadow: 24,
               borderRadius: "12px",
-              p: { xs: 2, sm: 4 }, // Padding varies by screen size
+              p: { xs: 2, sm: 4 },
             }}
           >
             <div className="flex flex-col gap-4">
@@ -244,7 +193,7 @@ const PmStoreDetail = () => {
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
           <p className="text-[#444444] font-semibold text-lg sm:text-xl">
-            Order Name Here
+            {storeData?.name || "Store Name"}
           </p>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm sm:text-base">
@@ -257,21 +206,22 @@ const PmStoreDetail = () => {
         <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
 
         <div className="flex justify-between gap-x-4 flex-wrap">
-          <InfoRow label="Store ID:" value="store id" />
-          <InfoRow label="Store Name:" value="store name" />
-          <InfoRow label="Project:" value="project" />
-          <InfoRow label="Section:" value="section" />
-          <InfoRow label="Material:" value="material" />
-        </div>
-
-        <div className="flex justify-start gap-x-14 flex-wrap">
-          <InfoRow label="Store Incharge:" value="store incharge" />
-          <InfoRow label="Received:" value="received" />
-          <InfoRow label="PO Quantity:" value="po quantity" />
-          <InfoRow label="Issued:" value="issued" />
-          <InfoRow label="Balance:" value="balance" />
-          <InfoRow label="CM Name:" value="cm name" />
-          <InfoRow label="Accountant:" value="accountant" />
+          <InfoRow label="Store Name:" value={storeData?.name || "-"} />
+          <InfoRow
+            label="Project:"
+            value={storeData?.section?.name?.split(" of ")[1] || "-"}
+          />
+          <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
+          <InfoRow
+            label="Material:"
+            value={storeData?.inventory?.[0]?.material || "N/A"}
+          />
+          <InfoRow
+            label="Store Incharge:"
+            value={
+              storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"
+            }
+          />
         </div>
       </div>
 
@@ -310,7 +260,12 @@ const PmStoreDetail = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={data} columns={columns} cellComponents={{}} />
+
+      <SimpleTable
+        data={storeData.inventory}
+        columns={columns}
+        cellComponents={{}}
+      />
 
       {/* Stock Movement Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
@@ -318,7 +273,11 @@ const PmStoreDetail = () => {
       </h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={data1} columns={columns1} cellComponents={{}} />
+      <SimpleTable
+        data={storeData.transactions}
+        columns={columns1}
+        cellComponents={{}}
+      />
     </>
   );
 };

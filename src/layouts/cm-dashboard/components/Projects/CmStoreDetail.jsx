@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -10,6 +10,8 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
 
 const style = {
   position: "absolute",
@@ -23,6 +25,8 @@ const style = {
 };
 
 const CmStoreDetail = () => {
+  const { id } = useParams();
+  const [storeData, setStoreData] = useState(null);
   const data = [
     {
       id: 1,
@@ -94,6 +98,24 @@ const CmStoreDetail = () => {
     { headerName: "Handled By", field: "handledBy" },
     { headerName: "Remarks", field: "remarks" },
   ];
+
+  const fetchStoreDetail = async () => {
+    try {
+      const response = await apiClient.get(`/stores/${id}`);
+      if (response.ok) {
+        setStoreData(response.data.store);
+      } else {
+        toast.error("Failed to fetch Store details.");
+      }
+    } catch (error) {
+      console.error("Error fetching Store details:", error);
+      toast.error("Something went wrong while fetching details.");
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchStoreDetail();
+  }, [id]);
 
   const CustomActionComponent = () => {
     const [open, setOpen] = useState(false);
@@ -172,7 +194,7 @@ const CmStoreDetail = () => {
       />
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col gap-4 p-4">
-      <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
+        <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
           <p className="text-[#444444] font-semibold text-lg md:text-xl">
             Order Name Here
           </p>
@@ -185,23 +207,24 @@ const CmStoreDetail = () => {
         </div>
 
         <div className="h-[1px] bg-[#CDCDCD] w-full"></div>
-
-        <div className="flex flex-wrap gap-4">
-          <InfoRow label="Store ID:" value="store id" />
-          <InfoRow label="Store Name:" value="store name" />
-          <InfoRow label="Project:" value="project" />
-          <InfoRow label="Section:" value="section" />
-          <InfoRow label="Material:" value="material" />
-        </div>
-
-        <div className="flex flex-wrap gap-4">
-          <InfoRow label="Store Incharge:" value="store incharge" />
-          <InfoRow label="Received:" value="received" />
-          <InfoRow label="PO Quantity:" value="po quantity" />
-          <InfoRow label="Issued:" value="issued" />
-          <InfoRow label="Balance:" value="balance" />
-          <InfoRow label="CM Name:" value="cm name" />
-          <InfoRow label="Accountant:" value="accountant" />
+        <div className="flex justify-between gap-x-4 flex-wrap">
+          <InfoRow label="Store ID:" value={storeData?.id || "-"} />
+          <InfoRow label="Store Name:" value={storeData?.name || "-"} />
+          <InfoRow
+            label="Project:"
+            value={storeData?.section?.name?.split(" of ")[1] || "-"}
+          />
+          <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
+          <InfoRow
+            label="Material:"
+            value={storeData?.inventory?.[0]?.material || "N/A"}
+          />{" "}
+          <InfoRow
+            label="Store Incharge:"
+            value={
+              storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"
+            }
+          />
         </div>
       </div>
 

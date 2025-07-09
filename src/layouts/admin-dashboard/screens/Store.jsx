@@ -48,14 +48,14 @@ const Stores = () => {
     fetchStore();
   }, []);
 
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View",
-            onClick: () => navigate("123"),
+            onClick: () => navigate(`/admin-dashboard/store/${id}`),
             icon: <FaEye />,
           },
           {
@@ -87,7 +87,7 @@ const Stores = () => {
     { headerName: "Store Name", field: "name" },
     { headerName: "Type", field: "type" },
     { headerName: "Section Id", field: "sectionId" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
 
   return (
@@ -109,7 +109,7 @@ const Stores = () => {
         <SimpleTable
           columns={columns}
           data={store}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent }}
         />
       </div>
       {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}

@@ -99,9 +99,6 @@ const ProjectInformationTab = ({ data }) => {
     <>
       <ProjectInfoCard
         title="Project Information"
-        status={data?.status || "IN-PROGRESS"}
-        onDelete={() => console.log("delete")}
-        onEdit={() => console.log("edit")}
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
         section={data?.sections.length || "0"}

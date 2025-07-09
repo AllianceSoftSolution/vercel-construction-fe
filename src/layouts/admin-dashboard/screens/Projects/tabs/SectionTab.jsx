@@ -13,25 +13,6 @@ const SectionTab = ({ data }) => {
   const [section, setSection] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const actions = [
-    {
-      label: "View Section Detail",
-      icon: <FaEye />,
-      onClick: () =>
-        navigate("/admin-dashboard/project-management/sections/123"),
-    },
-    {
-      label: "Edit Project Section",
-      icon: <FaUserEdit />,
-      onClick: () => console.log("Edit clicked"),
-    },
-    {
-      label: "Delete Project Section",
-      icon: <FaTrash />,
-      onClick: () => console.log("Delete clicked"),
-    },
-  ];
-
   return (
     <div className="w-full">
       <TopBar
@@ -44,16 +25,40 @@ const SectionTab = ({ data }) => {
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
       <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
-        {data?.map((sec, index) => (
-          <SectionCard
-            key={sec?.id}
-            sectionNo={index + 1}
-            sectionName={sec?.name}
-            code={sec?.code}
-            description={sec.description}
-            dropdownActions={actions}
-          />
-        ))}
+        {data?.map((sec, index) => {
+          const actions = [
+            {
+              label: "View Section Detail",
+              icon: <FaEye />,
+              onClick: () =>
+                navigate(
+                  `/admin-dashboard/project-management/sections/${sec.id}`
+                ),
+            },
+            {
+              label: "Edit Project Section",
+              icon: <FaUserEdit />,
+              onClick: () => console.log(`Edit clicked for section ${sec.id}`),
+            },
+            {
+              label: "Delete Project Section",
+              icon: <FaTrash />,
+              onClick: () =>
+                console.log(`Delete clicked for section ${sec.id}`),
+            },
+          ];
+
+          return (
+            <SectionCard
+              key={sec?.id}
+              sectionNo={index + 1}
+              sectionName={sec?.name}
+              code={sec?.code}
+              description={sec.description}
+              dropdownActions={actions}
+            />
+          );
+        })}
       </div>
     </div>
   );

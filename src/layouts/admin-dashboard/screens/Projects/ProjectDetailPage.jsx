@@ -11,7 +11,6 @@ import toast from "react-hot-toast";
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  console.log("Route ID:", id);
   const [tabIndex, setTabIndex] = useState(0);
   const [projectData, setProjectData] = useState(null);
 

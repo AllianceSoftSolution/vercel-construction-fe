@@ -13,7 +13,11 @@ import { MdAdd, MdDelete } from "react-icons/md";
 import CustomTextField from "../../../../mui/CustomTextField";
 import CustomSelect from "../../../../mui/CustomSelect";
 import Button from "../../../../components/Button";
-
+import { useFormik } from "formik";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
+import * as Yup from "yup";
+import { useNavigate } from "react-router-dom";
 const style = {
   position: "absolute",
   top: "50%",
@@ -24,6 +28,8 @@ const style = {
 };
 
 export default function PurchaseOrderForm({ isOpen, onClose }) {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [formSections, setFormSections] = useState([
     { id: "1", vendor: "", product: "Cement", quantity: "", total: "50" },
   ]);
@@ -107,6 +113,41 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
     </Box>
   );
 
+  const validationSchema = Yup.object({
+    vendorId: Yup.string().required("Vendor Id is required"),
+    quantity: Yup.string().required("Quantity is required"),
+    notes: Yup.string().required("Notes are required"),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      vendorId: "",
+      quantity: "",
+      notes: "",
+    },
+    validationSchema,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        setLoading(true);
+        const response = await apiClient.post("/purchase-orders", values);
+        if (response.ok) {
+          resetForm();
+          navigate(-1);
+        } else {
+          toast.error("PO creation failed!");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Operation failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
+
   return (
     <Box sx={style}>
       <Dialog open={isOpen} onClose={onClose} fullWidth>
@@ -139,6 +180,8 @@ export default function PurchaseOrderForm({ isOpen, onClose }) {
             buttonText={"Create Purchase Order"}
             variant="contained"
             color="warning"
+            onClick={formik.handleSubmit}
+            disabled={loading}
           />
         </DialogActions>
       </Dialog>

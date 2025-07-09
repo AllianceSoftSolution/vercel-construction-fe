@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -11,6 +11,9 @@ import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import { Check } from "@mui/icons-material";
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const style = {
   position: "absolute",
@@ -22,7 +25,8 @@ const style = {
   borderRadius: "50px",
 };
 
-const PurchaseOrderDetail = () => {
+const StoreDetail = () => {
+  const [storeData, setStoreData] = useState(null);
   const data = [
     {
       id: 1,
@@ -192,7 +196,6 @@ const PurchaseOrderDetail = () => {
                     margin="normal"
                     label="CM ( Construction Manager )"
                   />
-                 
                 </>
               )}
 
@@ -205,6 +208,24 @@ const PurchaseOrderDetail = () => {
       </>
     );
   };
+  const { id } = useParams();
+  const fetchStoreDetail = async () => {
+    try {
+      const response = await apiClient.get(`/stores/${id}`);
+      if (response.ok) {
+        setStoreData(response.data.store);
+      } else {
+        toast.error("Failed to fetch Store details.");
+      }
+    } catch (error) {
+      console.error("Error fetching Store details:", error);
+      toast.error("Something went wrong while fetching details.");
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchStoreDetail();
+  }, [id]);
 
   const [hasMemberInfo, setHasMemberInfo] = useState(false);
 
@@ -216,7 +237,6 @@ const PurchaseOrderDetail = () => {
         showExport={true}
         // buttonText="Add Store"
       />
-
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
           <p className="text-[#444444] font-semibold text-lg md:text-xl">
@@ -233,24 +253,25 @@ const PurchaseOrderDetail = () => {
         <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
 
         <div className="flex justify-between gap-x-4 flex-wrap">
-          <InfoRow label="Store ID:" value="store id" />
-          <InfoRow label="Store Name:" value="store name" />
-          <InfoRow label="Project:" value="project" />
-          <InfoRow label="Section:" value="section" />
-          <InfoRow label="Material:" value="material" />
-        </div>
-
-        <div className="flex justify-start gap-x-14 flex-wrap">
-          <InfoRow label="Store Incharge:" value="store incharge" />
-          <InfoRow label="Received:" value="received" />
-          <InfoRow label="PO Quantity:" value="po quantity" />
-          <InfoRow label="Issued:" value="issued" />
-          <InfoRow label="Balance:" value="balance" />
-          <InfoRow label="CM Name:" value="cm name" />
-          <InfoRow label="Accountant:" value="accountant" />
+          <InfoRow label="Store ID:" value={storeData?.id || "-"} />
+          <InfoRow label="Store Name:" value={storeData?.name || "-"} />
+          <InfoRow
+            label="Project:"
+            value={storeData?.section?.name?.split(" of ")[1] || "-"}
+          />
+          <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
+          <InfoRow
+            label="Material:"
+            value={storeData?.inventory?.[0]?.material || "N/A"}
+          />{" "}
+          <InfoRow
+            label="Store Incharge:"
+            value={
+              storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"
+            }
+          />
         </div>
       </div>
-
       {/* Member Info */}
       <div>
         <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
@@ -281,20 +302,21 @@ const PurchaseOrderDetail = () => {
           />
         )}
       </div>
-
       {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={data} columns={columns} cellComponents={{}} />
-
+      <SimpleTable data={storeData?.inventory || []} columns={columns} />{" "}
       {/* Stock Movement Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
       </h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={data1} columns={columns1} cellComponents={{}} />
+      <SimpleTable
+        data={storeData?.transactions || []}
+        columns={columns1}
+      />{" "}
     </>
   );
 };
@@ -306,4 +328,4 @@ const InfoRow = ({ label, value }) => (
   </div>
 );
 
-export default PurchaseOrderDetail;
+export default StoreDetail;

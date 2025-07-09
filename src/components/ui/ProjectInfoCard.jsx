@@ -6,9 +6,7 @@ import DropdownButton from "../../comments/components/DropdownButton";
 
 const ProjectInfoCard = ({
   title,
-  status,
-  onDelete,
-  onEdit,
+
   projectName,
   projectCode,
   section,
@@ -40,7 +38,7 @@ const ProjectInfoCard = ({
     <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <h3 className="text-xl font-semibold text-[#444444]">{title}</h3>
-        <div className="flex flex-wrap gap-2 items-center">
+        {/* <div className="flex flex-wrap gap-2 items-center">
           {status && (
             <div className="bg-[#0252AD] text-white px-6 py-3 rounded-full flex items-center gap-2 text-sm">
               {status}
@@ -59,7 +57,7 @@ const ProjectInfoCard = ({
               />
             </>
           )}
-        </div>
+        </div> */}
       </div>
 
       <div className="h-[1px] bg-[#CDCDCD] w-full" />

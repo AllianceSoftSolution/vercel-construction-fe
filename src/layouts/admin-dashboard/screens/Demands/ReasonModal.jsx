@@ -1,7 +1,13 @@
-import { Button, TextareaAutosize } from "@mui/material";
+import React, { useState } from "react";
 import CustomTextField from "../../../../mui/CustomTextField";
 
-export default function ReasonModal({onBackClick,onSaveClick, textAreaPlaceholder }) {
+export default function ReasonModal({
+  onBackClick,
+  onSaveClick,
+  textAreaPlaceholder = "Enter your reason here...",
+}) {
+  const [remarks, setRemarks] = useState("");
+
   return (
     <div className="bg-[#ffffff] rounded-xl p-8">
       <div className="max-w-4xl mx-auto">
@@ -9,20 +15,25 @@ export default function ReasonModal({onBackClick,onSaveClick, textAreaPlaceholde
 
         <div className="mb-10">
           <CustomTextField
-            label="Business Structure (Optional)"
+            label="Remarks"
             className="w-full"
             placeholder={textAreaPlaceholder}
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
           />
         </div>
+
         <div className="flex justify-end gap-4">
           <button
-          onClick={onBackClick}
-            variant="outline"
+            onClick={onBackClick}
             className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-8 py-3 rounded-xl text-lg font-medium"
           >
             Back
           </button>
-          <button onClick={onSaveClick} className="bg-[#fc8908] hover:bg-[#e07a07] text-white px-8 py-3 rounded-xl text-lg font-medium">
+          <button
+            onClick={() => onSaveClick(remarks)}
+            className="bg-[#fc8908] hover:bg-[#e07a07] text-white px-8 py-3 rounded-xl text-lg font-medium"
+          >
             Save
           </button>
         </div>

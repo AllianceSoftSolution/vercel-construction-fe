@@ -25,7 +25,7 @@ const Demands = () => {
     { headerName: "Project", field: "section.projectName" },
     { headerName: "Section", field: "section.name" },
     { headerName: "Status", field: "status" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "demandId" },
   ];
 
   const fetchDemands = async () => {
@@ -35,8 +35,10 @@ const Demands = () => {
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
           ...demand,
+          demandId: demand.id,
           id: index + 1,
         }));
+
         setDemands(data);
       } else {
         toast.error("Failed to fetch Demands");
@@ -62,7 +64,7 @@ const Demands = () => {
             label: "View Detail",
             onClick: () => {
               if (demandId) {
-                navigate(`/demands/${demandId}`);
+                navigate(`/admin-dashboard/demands/${demandId}`);
               } else {
                 console.error("Demand ID is undefined.");
               }
@@ -106,7 +108,7 @@ const Demands = () => {
         <SimpleTable
           columns={columns}
           data={demands}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ demandId: CustomActionComponent }}
         />
       </div>
     </div>

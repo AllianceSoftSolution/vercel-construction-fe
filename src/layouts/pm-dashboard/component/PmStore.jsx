@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
@@ -17,6 +17,7 @@ const PmStores = () => {
   const [showModal, setShowModal] = useState(false);
   const [store, setStore] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { id } = useParams();
 
   const handleLinkClick = () => {
     setShowModal(true);
@@ -48,15 +49,14 @@ const PmStores = () => {
     fetchStore();
   }, []);
 
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View",
-            onClick: () =>
-              navigate(`/project-manager-dashboard/store/${data.action}`),
+            onClick: () => navigate(`/project-manager-dashboard/store/${id}`),
 
             icon: <FaEye />,
           },
@@ -74,7 +74,7 @@ const PmStores = () => {
     { headerName: "Store Name", field: "name" },
     { headerName: "Type", field: "type" },
     { headerName: "Section Id", field: "sectionId" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
 
   return (
@@ -94,9 +94,7 @@ const PmStores = () => {
         <SimpleTable
           columns={columns}
           data={store}
-          cellComponents={{
-            action: (row) => <CustomActionComponent data={row} />,
-          }}
+          cellComponents={{ id: CustomActionComponent }}
         />
       </div>
       {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}

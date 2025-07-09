@@ -52,17 +52,18 @@ const AcProjectManagement = () => {
     { headerName: "Description", field: "description" },
     { headerName: "Start Date", field: "startDate" },
     { headerName: "End Date", field: "endDate" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
 
-  const CustomActionComponent = ({ value }) => {
+  const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View Detail Page",
-            onClick: () => navigate("123"),
+            onClick: () =>
+              navigate(`/accountant-dashboard/project-Management/${id}`),
             icon: <FaEye />,
           },
         ]}
@@ -90,7 +91,7 @@ const AcProjectManagement = () => {
         <SimpleTable
           columns={columns}
           data={projects}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent }}
         />
       </div>
 
