@@ -5,13 +5,29 @@ import { FaTrash, FaUserEdit, FaEye } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import apiClient from "../../../../../api/apiClient";
 import toast from "react-hot-toast";
+import DeleteModal from "../../../../../mui/DeleteModal";
 
-const SectionTab = ({ data }) => {
+const SectionTab = ({ data, onSectionDeleted }) => {
   const { id } = useParams();
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
   const navigate = useNavigate();
   const [section, setSection] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
+
+  const deleteSection = async (sectionId) => {
+    try {
+      const response = await apiClient.delete(`/sections/${sectionId}`);
+      if (response.ok) {
+        if (typeof onSectionDeleted === 'function') onSectionDeleted();
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -43,8 +59,10 @@ const SectionTab = ({ data }) => {
             {
               label: "Delete Project Section",
               icon: <FaTrash />,
-              onClick: () =>
-                console.log(`Delete clicked for section ${sec.id}`),
+              onClick: () => {
+                setSelectedSectionId(sec.id);
+                setShowDeleteModal(true);
+              },
             },
           ];
 
@@ -60,6 +78,16 @@ const SectionTab = ({ data }) => {
           );
         })}
       </div>
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={async () => {
+            await deleteSection(selectedSectionId);
+            setShowDeleteModal(false);
+            setSelectedSectionId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

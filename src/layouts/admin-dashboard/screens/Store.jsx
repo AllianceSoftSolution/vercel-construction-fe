@@ -11,12 +11,15 @@ import { IoPersonCircle } from "react-icons/io5";
 import { RiAccountBox2Fill } from "react-icons/ri";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import DeleteModal from "../../../mui/DeleteModal";
 
 const Stores = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [store, setStore] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState(null);
 
   const handleLinkClick = () => {
     setShowModal(true);
@@ -44,6 +47,17 @@ const Stores = () => {
     }
   };
 
+  const deleteStore = async (storeId) => {
+    try {
+      const response = await apiClient.delete(`/stores/${storeId}`);
+      if (response.ok) {
+        fetchStore();
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
   useEffect(() => {
     fetchStore();
   }, []);
@@ -60,7 +74,10 @@ const Stores = () => {
           },
           {
             label: "Delete ",
-            onClick: () => alert("Delete"),
+            onClick: () => {
+              setSelectedStoreId(id);
+              setShowDeleteModal(true);
+            },
             icon: <FaTrash />,
           },
           {
@@ -113,6 +130,16 @@ const Stores = () => {
         />
       </div>
       {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={async () => {
+            await deleteStore(selectedStoreId);
+            setShowDeleteModal(false);
+            setSelectedStoreId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

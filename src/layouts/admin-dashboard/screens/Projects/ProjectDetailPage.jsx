@@ -32,6 +32,11 @@ const ProjectDetailPage = () => {
     }
   };
 
+  // Section refresh handler
+  const handleSectionDeleted = () => {
+    fetchProjectDetail();
+  };
+
   useEffect(() => {
     if (id) fetchProjectDetail();
   }, [id]);
@@ -89,7 +94,12 @@ const ProjectDetailPage = () => {
       <Box sx={{ mt: 3 }}>
         {tabIndex === 0 && <ProjectInformationTab data={projectData} />}
         {tabIndex === 1 && <AssociatedMembersTab data={projectData} />}
-        {tabIndex === 2 && <SectionTab data={projectData?.sections} />}
+        {tabIndex === 2 && (
+          <SectionTab
+            data={projectData?.sections}
+            onSectionDeleted={handleSectionDeleted}
+          />
+        )}
       </Box>
     </div>
   );

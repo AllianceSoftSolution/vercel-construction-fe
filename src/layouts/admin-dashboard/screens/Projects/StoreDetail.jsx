@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
+import MembersOverviewCard from "../../../../mui/MembersOverviewCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
 import DropdownButton from "../../../../comments/components/DropdownButton";
@@ -14,6 +14,7 @@ import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import AddMemberModal from "../users/modals/AddMemberModal";
 
 const style = {
   position: "absolute",
@@ -27,6 +28,8 @@ const style = {
 
 const StoreDetail = () => {
   const [storeData, setStoreData] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedStoreIncharge, setSelectedStoreIncharge] = useState(null);
   const data = [
     {
       id: 1,
@@ -214,6 +217,7 @@ const StoreDetail = () => {
       const response = await apiClient.get(`/stores/${id}`);
       if (response.ok) {
         setStoreData(response.data.store);
+        setSelectedStoreIncharge(response.data.store?.storeInchargeAssignments?.[0]?.user || null);
       } else {
         toast.error("Failed to fetch Store details.");
       }
@@ -227,7 +231,28 @@ const StoreDetail = () => {
     if (id) fetchStoreDetail();
   }, [id]);
 
-  const [hasMemberInfo, setHasMemberInfo] = useState(false);
+  // Handler for adding and assigning a new Store Incharge
+  const handleAddStoreIncharge = async (data) => {
+    try {
+      const response = await apiClient.post("/auth/register", { ...data, role: "STORE_INCHARGE" });
+      if (response.ok) {
+        toast.success("Store Incharge added successfully!");
+        // Assign the new user as Store Incharge
+        const assignRes = await apiClient.post(`/stores/${id}/assign-store-incharge`, { userId: response.data.user.id });
+        if (assignRes.ok) {
+          toast.success("Store Incharge assigned successfully!");
+          fetchStoreDetail();
+          setShowModal(false);
+        } else {
+          toast.error(assignRes.data?.message || "Failed to assign Store Incharge");
+        }
+      } else {
+        toast.error(response.data?.message || "Failed to add Store Incharge");
+      }
+    } catch (error) {
+      toast.error(error.message || "Error adding Store Incharge");
+    }
+  };
 
   return (
     <>
@@ -266,9 +291,7 @@ const StoreDetail = () => {
           />{" "}
           <InfoRow
             label="Store Incharge:"
-            value={
-              storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"
-            }
+            value={storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"}
           />
         </div>
       </div>
@@ -277,29 +300,47 @@ const StoreDetail = () => {
         <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
           Members Overview
         </h4>
-        {hasMemberInfo ? (
+        {selectedStoreIncharge ? (
           <MemberInfoCard
             title="General information - Store Incharge"
             image={manager}
-            name="Manager name here"
-            phone="+92 300 000 090"
-            role="Store Head"
-            email="example@gmail.com"
-            joiningDate="January 8, 2001"
-            id="9090"
-            address="address here"
-            country="United States"
-            linkedStores={["Store A", "Store B", "Store C"]}
+            name={selectedStoreIncharge.name}
+            phone={selectedStoreIncharge.phone || "-"}
+            role={selectedStoreIncharge.role || "Store Incharge"}
+            email={selectedStoreIncharge.email}
+            joiningDate={selectedStoreIncharge.joiningDate || "-"}
+            id={selectedStoreIncharge.id}
+            address={selectedStoreIncharge.address || "-"}
+            country={selectedStoreIncharge.country || "-"}
+            linkedStores={selectedStoreIncharge.linkedStores || []}
           />
         ) : (
-          <MemebersOverviewCard
+          <MembersOverviewCard
             title="General Information"
             subTitle="Store Incharge"
             linkText="Assign Store Incharge"
             imageSrc={Search}
             imageAlt="Search Illustration"
-            onManagerClick={() => setHasMemberInfo(true)}
+            onManagerClick={() => setShowModal(true)}
           />
+        )}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white w-full max-w-[450px] max-h-[90vh] border-[0.5px] border-[#CDC9C9] rounded-2xl p-0 flex flex-col overflow-hidden">
+              <div className="p-4 border-b border-[#CDCDCD]">
+                <TopBar
+                  title="Add Store Incharge"
+                  detail="Add and assign a Store Incharge to this Store"
+                />
+              </div>
+              <div className="flex-1 overflow-auto p-4 flex flex-col gap-y-4">
+                <AddMemberModal
+                  onClose={() => setShowModal(false)}
+                  onAddUserClick={handleAddStoreIncharge}
+                />
+              </div>
+            </div>
+          </div>
         )}
       </div>
       {/* Inventory Table */}

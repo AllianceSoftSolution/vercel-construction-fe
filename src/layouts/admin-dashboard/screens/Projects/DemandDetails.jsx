@@ -149,6 +149,10 @@ const DemandDetails = () => {
       <PurchaseOrderForm
         isOpen={openPurchaseModal}
         onClose={() => setOpenPurchaseModal(false)}
+        demandId={demandData?.id}
+        sectionId={demandData?.sectionId}
+        materialName={demandData?.material?.name}
+        materialId={demandData?.material?.id}
       />
 
       <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
@@ -167,6 +171,8 @@ const DemandDetails = () => {
                   ? "bg-yellow-500"
                   : demandData?.status === "REJECTED"
                   ? "bg-red-600"
+                  : demandData?.status === "PO_CREATED"
+                  ? "bg-purple-700"
                   : "bg-[#0252AD]"
               }`}
             >

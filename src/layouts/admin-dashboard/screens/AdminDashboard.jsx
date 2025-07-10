@@ -25,6 +25,7 @@ import apiClient from "../../../api/apiClient";
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
   const analyticsData = [
     {
       label: "Total Projects",
@@ -125,8 +126,34 @@ function AdminDashboard() {
     }
   };
 
+  // Fetch recent purchase orders
+  const fetchPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/purchase-orders");
+      if (response.ok) {
+        // Map the API response to match the columns
+        const data = response.data.data.map((po) => ({
+          id: po.id,
+          materialId: po.materialId,
+          quantity: po.quantity,
+          unit: po.demand?.unit || "-",
+        }));
+        setPurchaseOrders(data);
+      } else {
+        toast.error("Failed to fetch Purchase Orders");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+      toast.error("Error fetching purchase orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDemands();
+    fetchPurchaseOrders();
   }, []);
   return (
     <div className=" md:px- w-full">
@@ -179,7 +206,7 @@ function AdminDashboard() {
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable columns={columns} data={purchaseOrders} cellComponents={{}} />
       </div>
     </div>
   );

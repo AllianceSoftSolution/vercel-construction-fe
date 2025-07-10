@@ -8,7 +8,7 @@ import DropdownButton from "../../../../comments/components/DropdownButton";
 import { useNavigate, useParams } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
-import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
+import MembersOverviewCard from "../../../../mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
@@ -28,13 +28,12 @@ const style = {
 const SectionDetailPage = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [hasMemberInfo, sethasMemberInfo] = useState(false);
-  const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [openPMModal, setOpenPMModal] = useState(false);
+  const [openStoreModal, setOpenStoreModal] = useState(false);
+  const [selectedPM, setSelectedPM] = useState(null);
+  const [selectedStoreHead, setSelectedStoreHead] = useState(null);
   const { id } = useParams();
-  const [sectionData, setSectionData] = useState([]);
+  const [sectionData, setSectionData] = useState({});
   const CustomActionComponent = ({ data }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
@@ -104,6 +103,9 @@ const SectionDetailPage = () => {
       const response = await apiClient.get(`/sections/${id}`);
       if (response.ok) {
         setSectionData(response.data.section);
+        setSelectedPM(response.data.section.associatedProjectManager?.user || null);
+        const headStore = response.data.section.associatedHeadStores?.[0];
+        setSelectedStoreHead(headStore?.storeInchargeAssignments?.[0]?.user || null);
       } else {
         toast.error("Failed to fetch Section details.");
       }
@@ -116,6 +118,71 @@ const SectionDetailPage = () => {
   useEffect(() => {
     if (id) fetchSectionDetail();
   }, [id]);
+
+  const handleAssignPM = (user) => {
+    setSelectedPM(user);
+    setOpenPMModal(false);
+    fetchSectionDetail();
+  };
+
+  const handleAssignStoreHead = (user) => {
+    setSelectedStoreHead(user);
+    setOpenStoreModal(false);
+    fetchSectionDetail();
+  };
+
+  const handleAddMember = async (data, type) => {
+    try {
+      const response = await apiClient.post("/auth/register", data);
+      if (response.ok) {
+        toast.success("Member added successfully!");
+        fetchSectionDetail();
+        if (type === "pm") setOpenPMModal(false);
+        if (type === "store") setOpenStoreModal(false);
+      } else {
+        toast.error(response.data?.message || "Failed to add member");
+      }
+    } catch (error) {
+      toast.error(error.message || "Error adding member");
+    }
+  };
+
+  // Add this helper to get available CMs from sectionData
+  const availableCMs = sectionData?.availableConstructionManagers || [];
+
+  // Handler for assigning a Construction Manager
+  const handleAssignCM = async (user) => {
+    try {
+      const response = await apiClient.post(`/sections/${id}/assign-construction-manager`, { userId: user.id });
+      if (response.ok) {
+        toast.success("Construction Manager assigned successfully!");
+        fetchSectionDetail();
+        setShowModal(false);
+      } else {
+        toast.error(response.data?.message || "Failed to assign Construction Manager");
+      }
+    } catch (error) {
+      toast.error(error.message || "Error assigning Construction Manager");
+    }
+  };
+
+  // Handler for adding a new Construction Manager
+  const handleAddCM = async (data) => {
+    try {
+      const response = await apiClient.post("/auth/register", { ...data, role: "CONSTRUCTION_MANAGER" });
+      if (response.ok) {
+        toast.success("Construction Manager added successfully!");
+        await handleAssignCM(response.data.user);
+        setShowModal(false);
+        fetchSectionDetail();
+      } else {
+        toast.error(response.data?.message || "Failed to add Construction Manager");
+      }
+    } catch (error) {
+      toast.error(error.message || "Error adding Construction Manager");
+    }
+  };
+
   return (
     <div className=" sm:p-6 w-full">
       <TopBar
@@ -136,7 +203,7 @@ const SectionDetailPage = () => {
           <InfoItem label="Section" value={sectionData?.name || "-"} />
           <InfoItem
             label="Date"
-            value={new Date(sectionData?.createdAt).toLocaleDateString() || "-"}
+            value={sectionData?.createdAt ? new Date(sectionData?.createdAt).toLocaleDateString() : "-"}
           />
         </div>
 
@@ -155,53 +222,55 @@ const SectionDetailPage = () => {
         </h4>
 
         <div className="flex flex-col lg:flex-row h-full gap-6 w-full">
-          {hasMemberInfo ? (
+          {selectedPM ? (
             <MemberInfoCard
               title="General information - Project Manager"
               image={manager}
-              name="Manager name here"
-              phone="+92 300 000 090"
-              role="Project Manager"
-              email="example@gmail.com"
-              joiningDate="January 8, 2001"
-              id="9090"
-              address="addresshere"
-              country="Pakistan"
-              linkedStores={["Store A", "Store B", "Store C"]}
+              name={selectedPM.name}
+              phone={selectedPM.phone || "-"}
+              role={selectedPM.role || "Project Manager"}
+              email={selectedPM.email}
+              joiningDate={selectedPM.joiningDate || "-"}
+              id={selectedPM.id}
+              address={selectedPM.address || "-"}
+              country={selectedPM.country || "-"}
+              linkedStores={selectedPM.linkedStores || []}
             />
           ) : (
-            <MemebersOverviewCard
+            <MembersOverviewCard
               title="General Information"
               subTitle="Project Manager"
               linkText="Assign Project Manager"
               imageSrc={Search}
               imageAlt="Search Illustration"
-              onManagerClick={() => sethasMemberInfo(true)}
+              onManagerClick={handleAssignPM}
+              className=""
             />
           )}
 
-          {hasStoreHeadInfo ? (
+          {selectedStoreHead ? (
             <MemberInfoCard
               title="General information - Store Head"
               image={manager}
-              name="Manager name here"
-              phone="+92 300 000 090"
-              role="Store Head"
-              email="example@gmail.com"
-              joiningDate="January 8, 2001"
-              id="9090"
-              address="addresshere"
-              country="Pakistan"
-              linkedStores={["Store A", "Store B", "Store C"]}
+              name={selectedStoreHead.name}
+              phone={selectedStoreHead.phone || "-"}
+              role={selectedStoreHead.role || "Store Head"}
+              email={selectedStoreHead.email}
+              joiningDate={selectedStoreHead.joiningDate || "-"}
+              id={selectedStoreHead.id}
+              address={selectedStoreHead.address || "-"}
+              country={selectedStoreHead.country || "-"}
+              linkedStores={selectedStoreHead.linkedStores || []}
             />
           ) : (
-            <MemebersOverviewCard
+            <MembersOverviewCard
               title="General Information"
               subTitle="Store Head"
               linkText="Assign Store Head"
               imageSrc={Search}
               imageAlt="Search Illustration"
-              onManagerClick={() => setHasStoreHeadInfo(true)}
+              onManagerClick={handleAssignStoreHead}
+              className=""
             />
           )}
         </div>
@@ -211,22 +280,9 @@ const SectionDetailPage = () => {
         <TopBar
           title="Construction Managers"
           detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-          buttonText="Add CM"
-          onButtonClick={handleOpen}
+          buttonText="Add CM" 
+          onButtonClick={() => setShowModal(true)}
         />
-
-        {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-
-        <Modal open={open} onClose={handleClose}>
-          <Box sx={style}>
-            <AssignProjectManagerModal
-              onCreateClick={(bool) => {
-                setShowModal(bool);
-                setOpen(false);
-              }}
-            />
-          </Box>
-        </Modal>
 
         <div className="overflow-x-auto mt-4">
           <SimpleTable
@@ -236,6 +292,66 @@ const SectionDetailPage = () => {
           />
         </div>
       </div>
+
+      <Modal open={openPMModal} onClose={() => setOpenPMModal(false)}>
+        <Box sx={style}>
+          <AssignProjectManagerModal
+            onManagerClick={handleAssignPM}
+            onCreateClick={() => setShowModal(true)}
+          />
+        </Box>
+      </Modal>
+
+      <Modal open={openStoreModal} onClose={() => setOpenStoreModal(false)}>
+        <Box sx={style}>
+          <AssignProjectManagerModal
+            onManagerClick={handleAssignStoreHead}
+            onCreateClick={() => setShowModal(true)}
+          />
+        </Box>
+      </Modal>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-[450px] max-h-[90vh] border-[0.5px] border-[#CDC9C9] rounded-2xl p-0 flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-[#CDCDCD]">
+              <TopBar
+                title="Add Construction Manager"
+                detail="Assign or Add a Construction Manager to this Section"
+              />
+            </div>
+            <div className="flex-1 overflow-auto p-4 flex flex-col gap-y-4">
+              {availableCMs.length > 0 ? (
+                <>
+                  <div className="mb-2 font-semibold">Select from existing Construction Managers:</div>
+                  {availableCMs.map((cm) => (
+                    <div
+                      key={cm.id}
+                      className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm transition-all border-2 border-transparent cursor-pointer hover:border-2 hover:border-[#fc8908] mb-2"
+                      onClick={() => handleAssignCM(cm)}
+                    >
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-[#f7f7f8] flex-shrink-0">
+                        <img src={cm.avatar || manager} alt="CM avatar" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-[#043b6a] font-medium text-base">{cm.name}</span>
+                    </div>
+                  ))}
+                  <div className="mt-4 text-center text-sm text-gray-500">Or add a new Construction Manager below:</div>
+                  <AddMemberModal
+                    onClose={() => setShowModal(false)}
+                    onAddUserClick={handleAddCM}
+                  />
+                </>
+              ) : (
+                <AddMemberModal
+                  onClose={() => setShowModal(false)}
+                  onAddUserClick={handleAddCM}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

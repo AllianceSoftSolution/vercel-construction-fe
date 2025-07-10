@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProjectInfoCard from "@/components/ui/ProjectInfoCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -7,17 +7,19 @@ import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const PurchaseOrderDetailPage = () => {
-  const data = [
-    { id: 1, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-    { id: 2, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-    { id: 3, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-  ];
+  const { id } = useParams();
+  const [purchaseOrderData, setPurchaseOrderData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const columns = [
     { headerName: "Name", field: "name" },
-    { headerName: "Created Demand", field: "createdDemand" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Remarks", field: "remarks" },
     { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
@@ -44,6 +46,42 @@ const PurchaseOrderDetailPage = () => {
     </DropdownButton>
   );
 
+  const fetchPurchaseOrderDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/purchase-orders/${id}`);
+      if (response.ok) {
+        setPurchaseOrderData(response.data.data);
+      } else {
+        toast.error("Failed to fetch purchase order details.");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase order details:", error);
+      toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchPurchaseOrderDetail();
+  }, [id]);
+
+  // Prepare approvals data for Store Sync Status table
+  const storeSyncData =
+    purchaseOrderData?.demand?.approvals?.map((approval) => ({
+      id: approval.id,
+      name: approval.user?.name || "-",
+      createdDemand: approval.status || "-",
+      date: approval.createdAt
+        ? new Date(approval.createdAt).toLocaleDateString()
+        : "-",
+      action: "",
+    })) || [];
+
+  // Placeholder for Finance table (no real data in API response)
+  const financeData = [];
+
   return (
     <div className="px-4 md:px-6 py-4">
       <TopBar
@@ -55,11 +93,11 @@ const PurchaseOrderDetailPage = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between gap-4">
           <p className="text-[#444444] font-semibold text-lg md:text-xl">
-            Order Name Here
+            {purchaseOrderData?.referenceNumber || "Order Name Here"}
           </p>
           <div className="flex flex-wrap gap-2 items-center">
             <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-sm">
-              Partial
+              {purchaseOrderData?.status || "Partial"}
             </div>
             <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
           </div>
@@ -69,19 +107,43 @@ const PurchaseOrderDetailPage = () => {
 
         {/* Info Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Info label="Demand ID" value="demand id" />
-          <Info label="Demand Name" value="demand name" />
-          <Info label="Project" value="project" />
-          <Info label="Section" value="section" />
-          <Info label="Material" value="material" />
+          <Info
+            label="Demand ID"
+            value={purchaseOrderData?.demand?.referenceNumber || "-"}
+          />
+          <Info
+            label="Demand Name"
+            value={purchaseOrderData?.demand?.referenceNumber || "-"}
+          />
+          <Info
+            label="Project"
+            value={purchaseOrderData?.demand?.section?.project?.name || "-"}
+          />
+          <Info
+            label="Section"
+            value={purchaseOrderData?.demand?.section?.name || "-"}
+          />
+          <Info label="Material" value={purchaseOrderData?.materialId || "-"} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Info label="Quantity" value="quantity" />
-          <Info label="Unit" value="unit" />
-          <Info label="PO Quantity" value="po quantity" />
-          <Info label="Assigned Vendor" value="assigned vendor" />
-          <Info label="Vendor Phone No" value="phone no" />
+          <Info
+            label="Quantity"
+            value={purchaseOrderData?.demand?.quantity || "-"}
+          />
+          <Info label="Unit" value={purchaseOrderData?.demand?.unit || "-"} />
+          <Info
+            label="PO Quantity"
+            value={purchaseOrderData?.quantity || "-"}
+          />
+          <Info
+            label="Assigned Vendor"
+            value={purchaseOrderData?.vendorId || "-"}
+          />
+          <Info
+            label="Vendor Phone No"
+            value={purchaseOrderData?.vendor?.phone || "-"}
+          />
         </div>
       </div>
 
@@ -92,19 +154,7 @@ const PurchaseOrderDetailPage = () => {
         </h4>
         <p className="text-[#979797] text-sm">lorem ipsum dolor sit amet</p>
         <SimpleTable
-          data={data}
-          columns={columns}
-          cellComponents={{ action: CustomActionComponent }}
-        />
-      </div>
-
-      <div className="mt-8">
-        <h4 className="text-[#444444] font-semibold text-lg md:text-xl">
-          Finance
-        </h4>
-        <p className="text-[#979797] text-sm">lorem ipsum dolor sit amet</p>
-        <SimpleTable
-          data={data}
+          data={storeSyncData}
           columns={columns}
           cellComponents={{ action: CustomActionComponent }}
         />
