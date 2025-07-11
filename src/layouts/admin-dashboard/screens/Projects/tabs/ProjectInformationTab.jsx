@@ -11,6 +11,9 @@ import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
 import { useNavigate } from "react-router-dom";
 import AssignProjectManagerModal from "../../../../../components/AssignProjectManagerModal";
+import AssignMemberModal from "../../../../../components/AssignMemberModal";
+import apiClient from "../../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const style = {
   position: "absolute",
@@ -21,12 +24,14 @@ const style = {
   boxShadow: 24,
 };
 
-const ProjectInformationTab = ({ data }) => {
+const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
   const navigate = useNavigate();
 
   const [openPM, setOpenPM] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
   const [openSection, setOpenSection] = useState(false);
+  const [openAssignModal, setOpenAssignModal] = useState(false);
+  const [assignRole, setAssignRole] = useState("");
 
   const handleOpenPM = () => setOpenPM(true);
   const handlePMCreate = () => {
@@ -38,6 +43,114 @@ const ProjectInformationTab = ({ data }) => {
     setOpenSection(true);
   };
   const handleSectionDone = () => setOpenSection(false);
+
+  // API-integrated functions for Site Incharge and Accountant assignment
+  const fetchUsers = async (role) => {
+    let apiRole = null;
+    if (role === "Site Incharge") apiRole = "SITE_INCHARGE";
+    if (role === "Accountant") apiRole = "ACCOUNTANT";
+    if (!apiRole) return [];
+    try {
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: apiRole,
+        projectId: data.id,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const fetchSectionsSiteIncharge = async (userId) => {
+    try {
+      const response = await apiClient.get(
+        `/assignments/site-incharge/sections-with-status`,
+        {
+          projectId: data.id,
+          userId,
+        }
+      );
+      if (response.ok && response.data?.sections) {
+        return response.data.sections;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch sections");
+      return [];
+    }
+  };
+
+  const fetchSectionsAccountant = async (userId) => {
+    try {
+      const response = await apiClient.get(
+        `/assignments/accountant/sections-with-status`,
+        {
+          projectId: data.id,
+          userId,
+        }
+      );
+      if (response.ok && response.data?.sections) {
+        return response.data.sections;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch sections");
+      return [];
+    }
+  };
+
+  const createUser = async (userData, role) => {
+    let apiRole = null;
+    if (role === "Site Incharge") apiRole = "SITE_INCHARGE";
+    if (role === "Accountant") apiRole = "ACCOUNTANT";
+    if (!apiRole) return null;
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: apiRole,
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
+  const handleAssign = async ({ userId, sectionIds }) => {
+    let endpoint = null;
+    if (assignRole === "Site Incharge") endpoint = "/assignments/site-incharge";
+    if (assignRole === "Accountant") endpoint = "/assignments/accountant";
+    if (!endpoint) return false;
+    try {
+      const response = await apiClient.post(endpoint, {
+        userId,
+        projectId: data.id,
+        sectionIds,
+      });
+      if (response.ok) {
+        toast.success("Sections assigned successfully");
+        if (typeof onAssignmentSuccess === "function") {
+          onAssignmentSuccess();
+        }
+        return true;
+      } else {
+        toast.error(response.data?.message || "Failed to assign sections");
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign sections");
+      return false;
+    }
+  };
 
   const membersData = [
     {
@@ -124,7 +237,13 @@ const ProjectInformationTab = ({ data }) => {
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
-        <Button buttonText="Create Site Incharge" onClick={handleOpenPM} />
+        <Button
+          buttonText="Create Site Incharge"
+          onClick={() => {
+            setAssignRole("Site Incharge");
+            setOpenAssignModal(true);
+          }}
+        />
       </div>
 
       <SimpleTable
@@ -140,7 +259,13 @@ const ProjectInformationTab = ({ data }) => {
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
-        <Button buttonText="Create An Accountant" onClick={handleOpenPM} />
+        <Button
+          buttonText="Create An Accountant"
+          onClick={() => {
+            setAssignRole("Accountant");
+            setOpenAssignModal(true);
+          }}
+        />
       </div>
 
       <SimpleTable
@@ -152,6 +277,22 @@ const ProjectInformationTab = ({ data }) => {
           })) || []
         }
         cellComponents={{ action: CustomActionComponent }}
+      />
+
+      <AssignMemberModal
+        role={assignRole}
+        open={openAssignModal}
+        onClose={() => setOpenAssignModal(false)}
+        fetchUsers={fetchUsers}
+        createUser={createUser}
+        fetchSections={
+          assignRole === "Site Incharge"
+            ? (userId) => fetchSectionsSiteIncharge(userId)
+            : assignRole === "Accountant"
+            ? (userId) => fetchSectionsAccountant(userId)
+            : undefined
+        }
+        onAssign={handleAssign}
       />
 
       <Modal open={openPM} onClose={() => setOpenPM(false)}>

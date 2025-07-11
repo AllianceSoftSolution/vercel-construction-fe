@@ -92,7 +92,7 @@ const ProjectDetailPage = () => {
       </Box>
 
       <Box sx={{ mt: 3 }}>
-        {tabIndex === 0 && <ProjectInformationTab data={projectData} />}
+        {tabIndex === 0 && <ProjectInformationTab data={projectData} onAssignmentSuccess={fetchProjectDetail} />}
         {tabIndex === 1 && <AssociatedMembersTab data={projectData} />}
         {tabIndex === 2 && (
           <SectionTab

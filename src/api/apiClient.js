@@ -1,7 +1,7 @@
 import { create } from "apisauce";
 import { store } from "../redux/store";
 // const baseURL = import.meta.env.VITE_BASE_URL;
-const baseURL = "http://192.168.1.26:5000/api/";
+const baseURL = "http://localhost:5000/api/";
 // const baseURL = "http://10.122.69.12:5000/api/";
 
 const apiClient = create({
@@ -28,6 +28,11 @@ apiClient?.addResponseTransform((response) => {
 function setAuthToken(token) {
   apiClient.setHeader("authorization", `Bearer ${token}`);
 }
+
+// Get all users
+export const getAllUsers = async () => {
+  return await apiClient.get("/auth/users");
+};
 
 export { setAuthToken };
 export default apiClient;

@@ -29,60 +29,56 @@ import {
   Person2Outlined,
   Person3,
 } from "@mui/icons-material";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const UserManagement = () => {
   const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getAllUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/auth/users");
+      if (response.ok) {
+        // Adjust mapping as needed based on API response structure
+        const data =
+          response.data.users?.map((user, index) => ({
+            ...user,
+            iD: user.id || index + 1,
+          })) || [];
+        setUsers(data);
+      } else {
+        toast.error("Failed to fetch users");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Error fetching users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    getAllUsers();
+  }, []);
 
   const handleActionClick = () => {
     setShowModal(true);
   };
 
-  const data = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Project Manager",
-      status: "Pending",
-      note: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Construction Manager",
-      status: "Approved",
-      note: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      iD: "03",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Site Manager",
-      status: "In Progress",
-      note: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
   const columns = [
-    { headerName: "ID", field: "iD" },
+    { headerName: "ID", field: "employeeId" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
+    // { headerName: "Phone Number", field: "phone" },
     { headerName: "Role", field: "role" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Note", field: "note" },
-    { headerName: "Date", field: "date" },
+    // { headerName: "Status", field: "status" },
+    // { headerName: "Note", field: "note" },
+    { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
       field: "action",
@@ -190,8 +186,9 @@ const UserManagement = () => {
         <h2 className="text-xl font-bold mb-4 mt-4">Users</h2>
         <SimpleTable
           columns={columns}
-          data={data}
+          data={users}
           cellComponents={{ action: CustomActionComponent }}
+          loading={loading}
         />
       </div>
 
