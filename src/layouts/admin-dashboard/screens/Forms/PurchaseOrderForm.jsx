@@ -8,6 +8,8 @@ import {
   Box,
   MenuItem,
   IconButton,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import CustomTextField from "../../../../mui/CustomTextField";
 import CustomSelect from "../../../../mui/CustomSelect";
@@ -32,6 +34,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
     { vendorId: "", quantity: "", notes: "" }
   ]);
   const [errors, setErrors] = useState([]);
+  const [confirmations, setConfirmations] = useState([false]);
 
   useEffect(() => {
     async function fetchVendors() {
@@ -52,17 +55,23 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
   const addPoEntry = () => {
     setPoEntries((prev) => [...prev, { vendorId: "", quantity: "", notes: "" }]);
     setErrors((prev) => [...prev, {}]);
+    setConfirmations((prev) => [...prev, false]);
   };
 
   const removePoEntry = (idx) => {
     if (poEntries.length === 1) return;
     setPoEntries((prev) => prev.filter((_, i) => i !== idx));
     setErrors((prev) => prev.filter((_, i) => i !== idx));
+    setConfirmations((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleConfirmationChange = (idx, checked) => {
+    setConfirmations((prev) => prev.map((conf, i) => i === idx ? checked : conf));
   };
 
   const validateEntries = () => {
     let valid = true;
-    const newErrors = poEntries.map((entry) => {
+    const newErrors = poEntries.map((entry, idx) => {
       const entryErrors = {};
       if (!entry.vendorId) {
         entryErrors.vendorId = "Vendor is required";
@@ -73,6 +82,10 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
         valid = false;
       }
       if (Number(entry.quantity) > Number(demandQuantity)) {
+        if (!confirmations[idx]) {
+          entryErrors.confirmation = "Please confirm that you want to create this PO with quantity greater than demand";
+          valid = false;
+        }
         if (!entry.notes || entry.notes.trim() === "") {
           entryErrors.notes = "Notes are required if PO quantity exceeds demand";
           valid = false;
@@ -113,7 +126,9 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
       toast.success("All purchase orders created!");
       setPoEntries([{ vendorId: "", quantity: "", notes: "" }]);
       setErrors([]);
+      setConfirmations([false]);
       onClose();
+      window.location.reload();
     }
   };
 
@@ -148,6 +163,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                   value={entry.vendorId}
                   onChange={e => handleEntryChange(idx, "vendorId", e.target.value)}
                   error={!!errors[idx]?.vendorId}
+                  fullWidth
                 >
                   <MenuItem value="" disabled>Select Vendor</MenuItem>
                   {vendors.map((vendor) => (
@@ -170,6 +186,25 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                 error={!!errors[idx]?.quantity}
                 helperText={errors[idx]?.quantity}
               />
+              {Number(entry.quantity) > Number(demandQuantity) && (
+                <Box mt={2} p={2} bgcolor="#fff3cd" borderRadius={1} border="1px solid #ffeaa7">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={confirmations[idx]}
+                        onChange={(e) => handleConfirmationChange(idx, e.target.checked)}
+                        color="primary"
+                      />
+                    }
+                    label="Are you sure you want to create this PO with quantity greater than demand?"
+                  />
+                  {errors[idx]?.confirmation && (
+                    <Typography color="error" variant="caption" display="block" mt={1}>
+                      {errors[idx].confirmation}
+                    </Typography>
+                  )}
+                </Box>
+              )}
               <CustomTextField
                 fullWidth
                 margin="normal"

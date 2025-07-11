@@ -15,6 +15,8 @@ import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
 import AddMemberModal from "../users/modals/AddMemberModal";
+import CustomSelect from "../../../../mui/CustomSelect";
+import MenuItem from "@mui/material/MenuItem";
 
 const style = {
   position: "absolute",
@@ -119,17 +121,68 @@ const StoreDetail = () => {
   const CustomActionComponent = () => {
     const [open, setOpen] = useState(false);
     const [modalType, setModalType] = useState("");
+    // Stock In form state
+    const [stockInForm, setStockInForm] = useState({
+      po: "",
+      qty: "",
+      note: "",
+      materialId: "",
+    });
+    const [loading, setLoading] = useState(false);
+    const [materials, setMaterials] = useState([]);
+    const [materialsLoading, setMaterialsLoading] = useState(false);
 
-    const handleOpen = (type) => {
+    const handleOpen = async (type) => {
       setModalType(type);
       setOpen(true);
+      if (type === "stock-in") {
+        setMaterialsLoading(true);
+        try {
+          const res = await apiClient.get("/materials");
+          if (res.ok) {
+            setMaterials(res.data.materials || []);
+          } else {
+            toast.error("Failed to load materials");
+          }
+        } catch (err) {
+          toast.error("Error loading materials");
+        } finally {
+          setMaterialsLoading(false);
+        }
+      }
     };
     const handleClose = () => {
       setOpen(false);
       setModalType("");
+      setStockInForm({ po: "", qty: "", note: "", materialId: "" });
     };
 
-    const currentOptions = modalType === "stock-in" ? stockIn : stockOut;
+    const handleStockInChange = (field, value) => {
+      setStockInForm((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleStockInSubmit = async () => {
+      setLoading(true);
+      try {
+        const res = await apiClient.post(`/stores/${id}/stock-in`, {
+          materialId: stockInForm.materialId,
+          quantity: stockInForm.qty,
+          notes: stockInForm.note,
+          po: stockInForm.po,
+        });
+        if (res.ok) {
+          toast.success("Stock In successful!");
+          handleClose();
+          if (typeof fetchStoreDetail === 'function') fetchStoreDetail();
+        } else {
+          toast.error(res.data?.message || "Stock In failed");
+        }
+      } catch (err) {
+        toast.error(err.message || "Stock In error");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     return (
       <>
@@ -171,20 +224,47 @@ const StoreDetail = () => {
               </h1>
 
               {modalType === "stock-in" ? (
-                <>
-                  <CustomTextField
-                    fullWidth
-                    margin="normal"
-                    label="PO ( Purchase Order )"
-                  />
-                  <CustomTextField
-                    fullWidth
-                    margin="normal"
-                    label="QTY ( Quantity )"
-                  />
-                  <CustomTextField fullWidth margin="normal" label="Note" />
-                  <CustomTextField fullWidth margin="normal" label="Product" />
-                </>
+                materialsLoading ? (
+                  <div className="text-center py-4">Loading materials...</div>
+                ) : (
+                  <>
+                    <CustomSelect
+                      label="Material"
+                      name="materialId"
+                      value={stockInForm.materialId}
+                      onChange={e => handleStockInChange("materialId", e.target.value)}
+                      fullWidth
+                    >
+                      <MenuItem value="">Select Material</MenuItem>
+                      {materials.map((item) => (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.name}
+                        </MenuItem>
+                      ))}
+                    </CustomSelect>
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="PO ( Purchase Order )"
+                      value={stockInForm.po}
+                      onChange={e => handleStockInChange("po", e.target.value)}
+                    />
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="QTY ( Quantity )"
+                      value={stockInForm.qty}
+                      onChange={e => handleStockInChange("qty", e.target.value)}
+                    />
+                    <CustomTextField
+                      fullWidth
+                      margin="normal"
+                      label="Note"
+                      value={stockInForm.note}
+                      onChange={e => handleStockInChange("note", e.target.value)}
+                    />
+                  </>
+                )
               ) : (
                 <>
                   <CustomTextField fullWidth margin="normal" label="Material" />
@@ -203,7 +283,15 @@ const StoreDetail = () => {
               )}
 
               <div className="mt-4 flex justify-end">
-                <Button buttonText={"Save"} onClick={handleClose} />
+                {modalType === "stock-in" ? (
+                  <Button
+                    buttonText={loading ? "Saving..." : "Save"}
+                    onClick={handleStockInSubmit}
+                    disabled={loading || materialsLoading}
+                  />
+                ) : (
+                  <Button buttonText={"Save"} onClick={handleClose} />
+                )}
               </div>
             </div>
           </Box>
@@ -265,7 +353,7 @@ const StoreDetail = () => {
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
           <p className="text-[#444444] font-semibold text-lg md:text-xl">
-            Order Name Here
+            {storeData?.name || "Order Name Here"}
           </p>
           <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
             <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
@@ -295,54 +383,24 @@ const StoreDetail = () => {
           />
         </div>
       </div>
-      {/* Member Info */}
-      <div>
-        <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
-          Members Overview
-        </h4>
-        {selectedStoreIncharge ? (
-          <MemberInfoCard
-            title="General information - Store Incharge"
-            image={manager}
-            name={selectedStoreIncharge.name}
-            phone={selectedStoreIncharge.phone || "-"}
-            role={selectedStoreIncharge.role || "Store Incharge"}
-            email={selectedStoreIncharge.email}
-            joiningDate={selectedStoreIncharge.joiningDate || "-"}
-            id={selectedStoreIncharge.id}
-            address={selectedStoreIncharge.address || "-"}
-            country={selectedStoreIncharge.country || "-"}
-            linkedStores={selectedStoreIncharge.linkedStores || []}
-          />
-        ) : (
-          <MembersOverviewCard
-            title="General Information"
-            subTitle="Store Incharge"
-            linkText="Assign Store Incharge"
-            imageSrc={Search}
-            imageAlt="Search Illustration"
-            onManagerClick={() => setShowModal(true)}
-          />
-        )}
-        {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white w-full max-w-[450px] max-h-[90vh] border-[0.5px] border-[#CDC9C9] rounded-2xl p-0 flex flex-col overflow-hidden">
-              <div className="p-4 border-b border-[#CDCDCD]">
-                <TopBar
-                  title="Add Store Incharge"
-                  detail="Add and assign a Store Incharge to this Store"
-                />
-              </div>
-              <div className="flex-1 overflow-auto p-4 flex flex-col gap-y-4">
-                <AddMemberModal
-                  onClose={() => setShowModal(false)}
-                  onAddUserClick={handleAddStoreIncharge}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Head Store Table */}
+      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Head Store Assignments</h4>
+      <SimpleTable
+        data={(storeData?.storeInchargeAssignments || []).map(a => ({
+          id: a.id,
+          userName: a.user?.name || "-",
+          email: a.user?.email || "-",
+          role: a.user?.role || "-",
+          createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
+        }))}
+        columns={[
+          { headerName: "Assignment ID", field: "id" },
+          { headerName: "Store Incharge Name", field: "userName" },
+          { headerName: "Email", field: "email" },
+          { headerName: "Role", field: "role" },
+          { headerName: "Assigned At", field: "createdAt" },
+        ]}
+      />
       {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>

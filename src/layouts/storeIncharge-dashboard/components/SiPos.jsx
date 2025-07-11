@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import DropdownButton from "../../../comments/components/DropdownButton";
@@ -8,10 +8,14 @@ import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
 import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate } from "react-router-dom";
+import  apiClient  from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const SiPos = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const navigate = useNavigate();
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
   const data = [
     {
       id: 1,
@@ -64,17 +68,50 @@ const SiPos = () => {
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Status", field: "status" },
     { headerName: "Assigned Vendors", field: "assingedVendors" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
 
-  const CustomActionComponent = ({ data }) => {
+  const fetchPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/purchase-orders");
+      if (response.ok) {
+        const data = response.data.data.map((po, index) => ({
+          id: po.id,
+          demandId: po.demand?.referenceNumber || "-",
+          project: po.demand?.section?.project?.name || "-",
+          demandName: po.demand?.referenceNumber || "-",
+          material: po.materialId,
+          section: po.demand?.section?.name || "-",
+          qty: po.demand?.quantity || "-",
+          unit: po.demand?.unit || "-",
+          poQty: po.quantity || "-",
+          status: po.status || "-",
+          assingedVendors: po.vendorId,
+        }));
+        setPurchaseOrders(data);
+      } else {
+        toast.error("Failed to fetch purchase orders");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPurchaseOrders();
+  }, []);
+
+  const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View",
-            onClick: () => navigate("123"),
+            onClick: () => navigate(`/store-incharge-dashboard/pos/${id}`),
             icon: <IoIosEye />,
           },
           // {
@@ -106,8 +143,8 @@ const SiPos = () => {
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
-          data={data}
-          cellComponents={{ action: CustomActionComponent }}
+          data={purchaseOrders}
+          cellComponents={{ id: CustomActionComponent }}
         />
       </div>
 

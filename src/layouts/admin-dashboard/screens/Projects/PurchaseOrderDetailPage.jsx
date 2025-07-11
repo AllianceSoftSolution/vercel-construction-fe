@@ -79,8 +79,7 @@ const PurchaseOrderDetailPage = () => {
       action: "",
     })) || [];
 
-  // Placeholder for Finance table (no real data in API response)
-  const financeData = [];
+ 
 
   return (
     <div className="px-4 md:px-6 py-4">

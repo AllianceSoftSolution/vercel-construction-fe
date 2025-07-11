@@ -7,8 +7,14 @@ import AnalyticsCard from "../../../mui/AnalyticsCard";
 import PieGraph from "../../../components/ui/Graphs/PieGraph";
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
+import { useEffect } from "react";
+import { useState } from "react";
+import  apiClient  from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 function PmDashboard() {
+  const [demands, setDemands] = useState([]);
+  const [loading, setLoading] = useState(false);
   const data = [
     {
       id: 1,
@@ -47,10 +53,11 @@ function PmDashboard() {
 
   const columns = [
     { headerName: "Ref No", field: "refNo" },
-    { headerName: "Projects", field: "project" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
+    { headerName: "Project Name", field: "project" },
+    { headerName: "Material", field: "material" },
+    { headerName: "Section", field: "section" },
     { headerName: "Qty", field: "qty" },
+    { headerName: "Unit", field: "unit" },
     { headerName: "Status", field: "status" },
     { headerName: "CM Name", field: "cmName" },
     { headerName: "Date", field: "date" },
@@ -76,6 +83,38 @@ function PmDashboard() {
       percentage: 10,
     },
   ];
+
+  const fetchDemand = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          refNo: demand.referenceNumber || `REF-${index + 1}`,
+          project: demand.section?.projectName || "N/A",
+          material: demand.material?.name || "N/A",
+          section: demand.section?.name || "N/A",
+          qty: demand.quantity || "N/A",
+          unit: demand.unit || "N/A",
+          status: demand.status || "N/A",
+          cmName: demand.creator?.name || "N/A",
+          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "N/A",
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch demands");
+      }
+    } catch (error) {
+      toast.error("Error fetching demands");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDemand();
+  }, []);
 
   return (
     <div className="h-full">
@@ -120,7 +159,7 @@ function PmDashboard() {
 
       <div className="overflow-x-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
       </div>
     </div>
   );

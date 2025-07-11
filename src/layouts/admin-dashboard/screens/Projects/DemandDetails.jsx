@@ -62,7 +62,7 @@ const DemandDetails = () => {
       const response = await apiClient.get(`/demands/${id}`);
       if (response?.data?.demand) {
         setDemandData(response.data.demand);
-        setStatus(response.data.data.status || "Pending");
+        setStatus(response.data.data.status || "");
         setStatusLogs(response.data.data.statusLogs || []);
       } else {
         console.error("Failed to fetch details", response?.data?.message);

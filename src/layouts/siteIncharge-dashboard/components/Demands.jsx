@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -6,56 +6,49 @@ import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const Demands = () => {
   const navigate = useNavigate();
-  const data = [
-    {
-      id: 1,
-      no: "REF001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      unit: "ton",
-      poQty: 100,
-      status: "Pending",
-      approvedBy: "Owner",
-      fulfilled: 12,
-      date: "2023-01-01",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      no: "REF002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      unit: "ton",
-      poQty: 100,
-      status: "Approved",
-      approvedBy: "Site Manager",
-      fulfilled: 13,
-      date: "2023-01-01",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      no: "REF003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      unit: "ton",
-      poQty: 100,
-      status: "In Progress",
-      approvedBy: "Owner",
-      fulfilled: 12,
-      date: "2023-01-01",
-      action: "id-here",
-    },
-  ];
+  const [loading, setLoading] = useState(false);
+  const [demands, setDemands] = useState([]);
+
+  const fetchDemand = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          no: demand.referenceNumber || `REF-${index + 1}`,
+          project: demand.section?.project?.name || "N/A",
+          material: demand.material?.name || "N/A",
+          section: demand.section?.name || "N/A",
+          qty: demand.quantity || "N/A",
+          unit: demand.unit || "N/A",
+          poQty: demand.poQuantity || "0",
+          status: demand.status || "N/A",
+          approvedBy: demand.approvedBy || "N/A",
+          fulfilled: demand.quantityFulfilled || "0",
+          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "N/A",
+          action: demand.id,
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch demands");
+      }
+    } catch (error) {
+      toast.error("Error fetching demands");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDemand();
+  }, []);
+
   const columns = [
     { headerName: "No", field: "no" },
     { headerName: "Project Name", field: "project" },
@@ -70,14 +63,14 @@ const Demands = () => {
     { headerName: "Date", field: "date" },
     { headerName: "Action", field: "action" },
   ];
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate("123"),
+            onClick: () => navigate(`/siteincharge-dashboard/demands/${value}`),
             icon: <FaEye />,
           },
           {
@@ -114,11 +107,18 @@ const Demands = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{ action: CustomActionComponent }}
-        />
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-2 text-gray-600">Loading demands...</p>
+          </div>
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={demands}
+            cellComponents={{ action: CustomActionComponent }}
+          />
+        )}
       </div>
     </div>
   );

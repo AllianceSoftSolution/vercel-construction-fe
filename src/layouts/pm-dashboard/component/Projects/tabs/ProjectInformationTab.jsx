@@ -19,42 +19,7 @@ const style = {
   width: "600px",
   boxShadow: 24,
 };
-const ProjectInformationTab = () => {
-  const data = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Project Manager",
-      status: "Pending",
-      note: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Construction Manager",
-      status: "Approved",
-      note: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      iD: "03",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Site Manager",
-      status: "In Progress",
-      note: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
+const ProjectInformationTab = ({ data }) => {
   const columns = [
     { headerName: "ID", field: "iD" },
     { headerName: "Name", field: "name" },
@@ -127,20 +92,19 @@ const ProjectInformationTab = () => {
     <>
       <ProjectInfoCard
         title="Project Information"
-        status="IN-PROGRESS"
-        onDelete={() => console.log("delete")}
-        onEdit={() => console.log("edit")}
-        projectName="Project Name Here"
-        projectCode="123"
-        section="4"
-        amount="$12333"
-        date="12/04/2025"
-        projectLocation="United Kingdom 11 street Real Estate London"
-        projectStatus="IN-PROGRESS"
+        projectName={data?.name || "N/A"}
+        projectCode={data?.code || "N/A"}
+        section={data?.sections?.length || "0"}
+        totalAmount={data?.totalAmount ? `$${data.totalAmount}` : "$0"}
+        remainingAmount={data?.remainingAmount ? `$${data.remainingAmount}` : "$0"}
+        paidAmount={data?.paidAmount ? `$${data.paidAmount}` : "$0"}
+        date={data?.startDate ? new Date(data.startDate).toLocaleDateString() : "N/A"}
+        projectLocation={data?.location || "Not specified"}
+        projectStatus={data?.status || "N/A"}
       />
       <ProjectDescriptionCard
         title="Project Description"
-        description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
+        description={data?.description || "No description available."}
         onEdit={() => console.log("edit description")}
       />
       

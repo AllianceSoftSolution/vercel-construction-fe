@@ -1,13 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BackButton from "../../../../components/BackButton";
 import { Modal, Box, Typography, TextField, Button } from "@mui/material";
 import CustomTextField from "../../../../mui/CustomTextField";
 import CreatePOModal from "./CreatePOModal";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const DemandDetail = () => {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
-  const totalQuantity = 100; // example
+  const [demandData, setDemandData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { id } = useParams();
+
+  const fetchDemandDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/demands/${id}`);
+      if (response.ok) {
+        setDemandData(response.data.demand);
+      } else {
+        toast.error("Failed to fetch demand details");
+      }
+    } catch (error) {
+      console.error("Error fetching demand details:", error);
+      toast.error("Something went wrong while fetching demand details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchDemandDetail();
+    }
+  }, [id]);
 
   const handleApproveClick = () => {
     setOpen(true);
@@ -29,6 +57,22 @@ const DemandDetail = () => {
     // Reset handled inside modal after submit
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">Loading demand details...</div>
+      </div>
+    );
+  }
+
+  if (!demandData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg text-red-500">Demand not found</div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* TopBar */}
@@ -43,10 +87,10 @@ const DemandDetail = () => {
       {/* Body */}
       <div className="bg-[#f7f7f7] rounded-md px-3 py-5">
         <div className="flex items-center justify-between">
-          <h4 className="font-semibold">Demand R203423</h4>
+          <h4 className="font-semibold">Demand {demandData.referenceNumber}</h4>
           <div className="flex items-center gap-x-1">
             <span className="px-4 py-2 border border-gray-200 rounded-full">
-              Pending
+              {demandData.status}
             </span>
             <button
               onClick={handleApproveClick}
@@ -67,47 +111,50 @@ const DemandDetail = () => {
         <hr />
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
           <p className="flex items-center gap-x-1 text-black/60">
-            <span className="font-medium text-black">Project Name</span> Name
-            Here
+            <span className="font-medium text-black">Project Name</span>
+            {demandData.section?.project?.name || "N/A"}
           </p>
           <p className="flex items-center gap-x-1 text-black/60">
-            <span className="font-medium text-black">Section Name</span> Name
-            Here
-          </p>{" "}
+            <span className="font-medium text-black">Section Name</span>
+            {demandData.section?.name || "N/A"}
+          </p>
           <p className="flex items-center gap-x-1 text-black/60">
-            <span className="font-medium text-black">Material</span> Name Here
-          </p>{" "}
+            <span className="font-medium text-black">Material</span>
+            {demandData.material?.name || "N/A"}
+          </p>
           <p className="flex items-center gap-x-1 text-black/60">
-            <span className="font-medium text-black">Quantity</span> 100 Here
-          </p>{" "}
+            <span className="font-medium text-black">Quantity</span>
+            {demandData.quantity || "N/A"}
+          </p>
           <p className="flex items-center gap-x-1 text-black/60">
-            <span className="font-medium text-black">Unit</span> Ton
-          </p>{" "}
+            <span className="font-medium text-black">Unit</span>
+            {demandData.unit || "N/A"}
+          </p>
           <p className="flex items-center gap-x-1 text-black/60">
-            <span className="font-medium text-black">PO Quantity</span> Name
-            Here
-          </p>{" "}
+            <span className="font-medium text-black">PO Quantity</span>
+            {demandData.poQuantity || "0"}
+          </p>
           <p className="flex items-center gap-x-1 text-black/60 col-span-2">
-            <span className="font-medium text-black">Approved by</span> Name
-            Here, Name here
-          </p>{" "}
+            <span className="font-medium text-black">Approved by</span>
+            {demandData.approvedBy || "N/A"}
+          </p>
           <p className="flex items-center gap-x-1 text-black/60">
-            <span className="font-medium text-black">Fulfilled</span> 20
+            <span className="font-medium text-black">Fulfilled</span>
+            {demandData.quantityFulfilled || "0"}
           </p>
           <p className="flex items-center gap-x-1 text-black/60 sm:col-span-2">
             <span className="font-medium text-black">
               Activity Description:
             </span>
-            Foundation concrete for base slab
+            {demandData.activity || "N/A"}
           </p>
           <p className="flex items-center gap-x-1 text-black/60 sm:col-span-2">
-            <span className="font-medium text-black">Notes by CM:</span>"Site
-            has no remaining stock, requires urgent delivery."
+            <span className="font-medium text-black">Notes by CM:</span>
+            {demandData.notes || "N/A"}
           </p>
           <p className="flex items-center gap-x-1 text-black/60 sm:col-span-2">
             <span className="font-medium text-black">Remarks:</span>
-            PM: "Approved – planned for Thursday" SM: "Delivery confirmed with
-            store availability" Owner: "Approved – vendor confirmed"
+            {demandData.remarks || "No remarks"}
           </p>
         </div>
       </div>
@@ -163,13 +210,13 @@ const DemandDetail = () => {
         open={poOpen}
         onClose={() => setPoOpen(false)}
         onSubmit={handleCreatePO}
-        product="Steel Rods"
+        product={demandData.material?.name || "N/A"}
         quantity={quantity}
         setQuantity={setQuantity}
         vendor={vendor}
         setVendor={setVendor}
         vendorOptions={vendorOptions}
-        totalQuantity={totalQuantity}
+        totalQuantity={demandData.quantity || 0}
       />
     </div>
   );

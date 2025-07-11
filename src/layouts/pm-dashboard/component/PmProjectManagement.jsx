@@ -53,10 +53,10 @@ const PmProjectManagement = () => {
     { headerName: "Description", field: "description" },
     { headerName: "Start Date", field: "startDate" },
     { headerName: "End Date", field: "endDate" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
 
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
@@ -64,7 +64,7 @@ const PmProjectManagement = () => {
           {
             label: "View Detail Page",
             onClick: () =>
-              navigate(`/project-manager-dashboard/project-Management/${data}`),
+              navigate(`/project-manager-dashboard/project-Management/${id}`),
             icon: <FaEye />,
           },
         ]}
@@ -93,7 +93,7 @@ const PmProjectManagement = () => {
         <SimpleTable
           columns={columns}
           data={projects}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent }}
           loading={loading}
         />
       </div>

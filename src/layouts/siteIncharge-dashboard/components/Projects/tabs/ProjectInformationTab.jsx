@@ -19,91 +19,14 @@ const style = {
   width: "600px",
   boxShadow: 24,
 };
-const ProjectInformationTab = () => {
-  const data = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Project Manager",
-      status: "Pending",
-      note: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Construction Manager",
-      status: "Approved",
-      note: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      iD: "03",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Site Manager",
-      status: "In Progress",
-      note: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
-  const columns = [
-    { headerName: "ID", field: "iD" },
-    { headerName: "Name", field: "name" },
-    { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
-    { headerName: "Role", field: "role" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Note", field: "note" },
-    { headerName: "Date", field: "date" },
-    {
-      headerName: "Action",
-      field: "action",
-    },
-  ];
-  const CustomActionComponent = ({ data }) => {
-    const [showModal, setShowModal] = useState(false);
 
-    return (
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          {
-            label: "View Detail",
-            onClick: () =>
-              navigate("/siteincharge-dashboard/user-management/123"),
-            icon: <FaEye />,
-          },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
-        ]}
-        // onClick={handleActionClick}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
-
+const ProjectInformationTab = ({ data, loading }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-
   const [showModal, setShowModal] = useState(
     searchParams?.get("isLinkOpen") == "true" ? true : false
   );
   const [open, setOpen] = useState(false);
+  
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -111,6 +34,7 @@ const ProjectInformationTab = () => {
     setShowModal(true);
     setSearchParams({ isLinkOpen: true });
   };
+  
   const handleSubmit = () => {
     handleClose();
     setShowModal(false);
@@ -118,34 +42,90 @@ const ProjectInformationTab = () => {
 
   const closeAddUserFormModal = () => {
     setShowModal(false);
-
     setSearchParams({
       isLinkOpen: "false",
     });
   };
+
+  // Format date function
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not set";
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
+  // Get project status
+  const getProjectStatus = () => {
+    if (!data) return "Unknown";
+    if (data.isActive) return "ACTIVE";
+    return "INACTIVE";
+  };
+
+  // Get total sections count
+  const getTotalSections = () => {
+    if (!data?.sections) return "0";
+    return data.sections.length.toString();
+  };
+
+  // Get total assigned members
+  const getTotalMembers = () => {
+    if (!data?.associatedMembers) return "0";
+    return data.associatedMembers.length.toString();
+  };
+
   return (
     <>
-      <ProjectInfoCard
-        title="Project Information"
-        status="IN-PROGRESS"
-        onDelete={() => console.log("delete")}
-        onEdit={() => console.log("edit")}
-        projectName="Project Name Here"
-        projectCode="123"
-        section="4"
-        totalAmount="1000"
-        paidAmount="500"
-        remainingAmount="500"
-        date="12/04/2025"
-        projectLocation="United Kingdom 11 street Real Estate London"
-        projectStatus="IN-PROGRESS"
-      />
-      <ProjectDescriptionCard
-        title="Project Description"
-        description={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...`}
-        onEdit={() => console.log("edit description")}
-      />
-    
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="mt-2 text-gray-600">Loading project information...</p>
+        </div>
+      ) : (
+        <>
+          <ProjectInfoCard
+            title="Project Information"
+            status={getProjectStatus()}
+            onDelete={() => console.log("delete")}
+            onEdit={() => console.log("edit")}
+            projectName={data?.name || "Project Name Not Available"}
+            projectCode={data?.code || "N/A"}
+            section={getTotalSections()}
+            totalAmount="1000" // This would come from API if available
+            paidAmount="500"   // This would come from API if available
+            remainingAmount="500" // This would come from API if available
+            date={formatDate(data?.createdAt)}
+            projectLocation="Location not available in API" // This would come from API if available
+            projectStatus={getProjectStatus()}
+          />
+          
+          <ProjectDescriptionCard
+            title="Project Description"
+            description={data?.description || "No description available for this project."}
+            onEdit={() => console.log("edit description")}
+          />
+
+          {/* Associated Members Table */}
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-4">Associated Members</h3>
+            <SimpleTable
+              columns={[
+                { headerName: "Name", field: "name" },
+                { headerName: "Email", field: "email" },
+                { headerName: "Role", field: "role" },
+                { headerName: "Assigned Sections", field: "assignments" },
+              ]}
+              data={data?.associatedMembers ? data.associatedMembers.map((member, index) => ({
+                id: member.id,
+                name: member.name,
+                email: member.email,
+                role: member.role?.replace(/_/g, ' '),
+                assignments: member.assignments?.length || 0,
+              })) : []}
+              cellComponents={{}}
+            />
+          </div>
+        </>
+      )}
     </>
   );
 };

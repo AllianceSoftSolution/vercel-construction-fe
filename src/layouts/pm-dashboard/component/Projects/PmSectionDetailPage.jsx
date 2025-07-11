@@ -6,13 +6,15 @@ import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
+import toast from "react-hot-toast";
+import apiClient from "../../../../api/apiClient";
 
 const style = {
   position: "absolute",
@@ -26,10 +28,13 @@ const style = {
 
 const PmSectionDetailPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [showModal, setShowModal] = useState(false);
-  const [hasMemberInfo, sethasMemberInfo] = useState(false);
-  const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
   const [open, setOpen] = useState(false);
+  const [sectionData, setSectionData] = useState({});
+  const [selectedPM, setSelectedPM] = useState(null);
+  const [selectedStoreHead, setSelectedStoreHead] = useState(null);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -60,31 +65,6 @@ const PmSectionDetailPage = () => {
     </DropdownButton>
   );
 
-  const data = [
-    {
-      id: 1,
-      cmId: "1",
-      constructionManager: "Hassan",
-      email: "h@gmail.com",
-      phone: +123455666,
-      address: "A1",
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      cmId: "2",
-      constructionManager: "Ali",
-      email: "ali@gmail.com",
-      phone: +123455667,
-      address: "B2",
-      status: "Approved",
-      date: "2025-06-16",
-      action: "id-here",
-    },
-  ];
-
   const columns = [
     { headerName: "CM ID", field: "cmId" },
     { headerName: "Construction Manager", field: "constructionManager" },
@@ -96,6 +76,27 @@ const PmSectionDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
 
+  const fetchSectionDetail = async () => {
+    try {
+      const response = await apiClient.get(`/sections/${id}`);
+      if (response.ok) {
+        setSectionData(response.data.section);
+        setSelectedPM(response.data.section.associatedProjectManager?.user || null);
+        const headStore = response.data.section.associatedHeadStores?.[0];
+        setSelectedStoreHead(headStore?.storeInchargeAssignments?.[0]?.user || null);
+      } else {
+        toast.error("Failed to fetch Section details.");
+      }
+    } catch (error) {
+      console.error("Error fetching Section details:", error);
+      toast.error("Something went wrong while fetching details.");
+    }
+  };
+
+  React.useEffect(() => {
+    if (id) fetchSectionDetail();
+  }, [id]);
+
   return (
     <div className="p-2 sm:p-4">
       <TopBar
@@ -106,15 +107,15 @@ const PmSectionDetailPage = () => {
       {/* Project Info Box */}
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-4">
         <div className="flex flex-wrap justify-between gap-4">
-          <InfoItem label="Project Name" value="project name" />
-          <InfoItem label="Project Code" value="project code" />
-          <InfoItem label="Section" value="section" />
-          <InfoItem label="Amount" value="amount" />
-          <InfoItem label="Date" value="date" />
+          <InfoItem label="Project Name" value={sectionData?.project?.name || "-"} />
+          <InfoItem label="Project Code" value={sectionData?.project?.code || "-"} />
+          <InfoItem label="Section" value={sectionData?.name || "-"} />
+          <InfoItem label="Amount" value={sectionData?.amount || "-"} />
+          <InfoItem label="Date" value={sectionData?.createdAt ? new Date(sectionData?.createdAt).toLocaleDateString() : "-"} />
         </div>
         <div className="flex flex-wrap gap-10 mt-2">
-          <InfoItem label="Project Location" value="project location" />
-          <InfoItem label="Project Status" value="project status" />
+          <InfoItem label="Project Location" value={sectionData?.project?.location || "-"} />
+          <InfoItem label="Project Status" value={sectionData?.project?.status || "-"} />
         </div>
       </div>
 
@@ -124,19 +125,19 @@ const PmSectionDetailPage = () => {
           Members Overview
         </h4>
         <div className="flex flex-col lg:flex-row gap-6">
-          {hasMemberInfo ? (
+          {selectedPM ? (
             <MemberInfoCard
               title="General information - Project Manager"
               image={manager}
-              name="Manager name here"
-              phone="+92 300 000 090"
-              role="Project Manager"
-              email="example@gmail.com"
-              joiningDate="January 8, 2001"
-              id="9090"
-              address="addresshere"
-              country="Pakistan"
-              linkedStores={["Store A", "Store B", "Store C"]}
+              name={selectedPM.name}
+              phone={selectedPM.phone || "-"}
+              role={selectedPM.role || "Project Manager"}
+              email={selectedPM.email}
+              joiningDate={selectedPM.joiningDate || "-"}
+              id={selectedPM.id}
+              address={selectedPM.address || "-"}
+              country={selectedPM.country || "-"}
+              linkedStores={selectedPM.linkedStores || []}
             />
           ) : (
             <MemebersOverviewCard
@@ -145,22 +146,22 @@ const PmSectionDetailPage = () => {
               linkText="Assign Project Manager"
               imageSrc={Search}
               imageAlt="Search Illustration"
-              onManagerClick={() => sethasMemberInfo(true)}
+              onManagerClick={() => setShowModal(true)}
             />
           )}
-          {hasStoreHeadInfo ? (
+          {selectedStoreHead ? (
             <MemberInfoCard
               title="General information - Store Head"
               image={manager}
-              name="Manager name here"
-              phone="+92 300 000 090"
-              role="Store Head"
-              email="example@gmail.com"
-              joiningDate="January 8, 2001"
-              id="9090"
-              address="addresshere"
-              country="Pakistan"
-              linkedStores={["Store A", "Store B", "Store C"]}
+              name={selectedStoreHead.name}
+              phone={selectedStoreHead.phone || "-"}
+              role={selectedStoreHead.role || "Store Head"}
+              email={selectedStoreHead.email}
+              joiningDate={selectedStoreHead.joiningDate || "-"}
+              id={selectedStoreHead.id}
+              address={selectedStoreHead.address || "-"}
+              country={selectedStoreHead.country || "-"}
+              linkedStores={selectedStoreHead.linkedStores || []}
             />
           ) : (
             <MemebersOverviewCard
@@ -169,7 +170,7 @@ const PmSectionDetailPage = () => {
               linkText="Assign Store Head"
               imageSrc={Search}
               imageAlt="Search Illustration"
-              onManagerClick={() => setHasStoreHeadInfo(true)}
+              onManagerClick={() => setShowModal(true)}
             />
           )}
         </div>
@@ -200,7 +201,7 @@ const PmSectionDetailPage = () => {
 
         <div className="overflow-x-auto mt-4">
           <SimpleTable
-            data={data}
+            data={sectionData?.associatedConstructionManagers || []}
             columns={columns}
             cellComponents={{ action: CustomActionComponent }}
           />

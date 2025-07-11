@@ -10,7 +10,7 @@ import apiClient from "../../../../api/apiClient";
 import CustomSelect from "../../../../mui/CustomSelect";
 import { MenuItem } from "@mui/material";
 
-const CmAddDemand = () => {
+const PmAddDemand = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [materials, setMaterials] = useState([]);
@@ -232,4 +232,4 @@ const CmAddDemand = () => {
   );
 };
 
-export default CmAddDemand;
+export default PmAddDemand; 

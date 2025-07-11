@@ -12,7 +12,14 @@ import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
+import { useEffect } from "react";
+import { useState } from "react";
+import  apiClient  from "../../../api/apiClient";
+import toast from "react-hot-toast";
+
 function StoreInchargeDashboard() {
+  const [demands, setDemands] = useState([]);
+  const [loading, setLoading] = useState(false);
   const data = [
     {
       id: 1,
@@ -80,6 +87,38 @@ function StoreInchargeDashboard() {
     },
   ];
 
+  const fetchDemands = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          refNo: demand.referenceNumber || "-",
+          project: demand.section?.projectName || "-",
+          material: demand.material?.name || "-",
+          section: demand.section?.name || "-",
+          qty: demand.quantity || "-",
+          status: demand.status || "-",
+          cmName: demand.creator?.name || "-",
+          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "-",
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch Demands");
+      }
+    } catch (error) {
+      console.error("Error fetching demands:", error);
+      toast.error("Error fetching demands");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDemands();
+  }, []);
+
+  
   return (
     <div className="h-full">
       {/* Header */}
@@ -114,7 +153,7 @@ function StoreInchargeDashboard() {
       {/* table */}
       <div className="overflow-x-auto">
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
       </div>
       {/* <div>
         <h2 className="text-xl font-bold mb-4">Recent POs</h2>

@@ -7,49 +7,52 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaEye, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const AssociatedMembersTab = () => {
+const AssociatedMembersTab = ({ data, loading }) => {
   const navigate = useNavigate();
-  const data = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      date: "2025-06-15",
-      role: "Project Manager",
-      status: "Pending",
-      note: "empty..",
 
-      // action: "id-here",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      date: "2025-06-15",
-      role: "Construction Manager",
-      status: "Approved",
-      note: "empty..",
+  // Format date function
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not available";
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
 
-      // action: "id-here",
-    },
-    {
-      id: 3,
-      iD: "03",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      date: "2025-06-15",
-      role: "Site Manager",
-      status: "In Progress",
-      note: "empty..",
+  // Format role function
+  const formatRole = (role) => {
+    if (!role) return "Unknown";
+    return role.replace(/_/g, ' ');
+  };
 
-      // action: "id-here",
-    },
-  ];
+  // Get assignments summary
+  const getAssignmentsSummary = (assignments) => {
+    if (!assignments || assignments.length === 0) return "No assignments";
+    
+    const sections = assignments.map(assignment => assignment.section?.name).filter(Boolean);
+    if (sections.length === 0) return "No sections assigned";
+    
+    if (sections.length === 1) return sections[0];
+    if (sections.length <= 3) return sections.join(", ");
+    return `${sections.length} sections assigned`;
+  };
+
+  // Transform API data to table format
+  const transformMembersData = () => {
+    if (!data?.associatedMembers) return [];
+    
+    return data.associatedMembers.map((member, index) => ({
+      id: member.id,
+      iD: (index + 1).toString().padStart(2, '0'),
+      name: member.name || "Unknown",
+      email: member.email || "No email",
+      phone: "Not available", // Phone not in API response
+      date: formatDate(data.createdAt), // Using project creation date as fallback
+      role: formatRole(member.role),
+      status: "Active", // Status not in API response, assuming active
+      note: getAssignmentsSummary(member.assignments),
+      action: member.id,
+    }));
+  };
+
   const columns = [
     { headerName: "ID", field: "iD" },
     { headerName: "Name", field: "name" },
@@ -61,7 +64,8 @@ const AssociatedMembersTab = () => {
     { headerName: "Note", field: "note" },
     { headerName: "Action", field: "action" },
   ];
-  const CustomActionComponent = ({ data }) => {
+
+  const CustomActionComponent = ({ value: memberId }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
@@ -69,16 +73,15 @@ const AssociatedMembersTab = () => {
           {
             label: "View Member Detail",
             onClick: () =>
-              navigate("/siteincharge-dashboard/user-management/123"),
+              navigate(`/siteincharge-dashboard/user-management/${memberId}`),
             icon: <FaEye />,
           },
           {
             label: "Delete Assign Member",
-            onClick: () => alert("Delete"),
+            onClick: () => alert("Delete functionality not implemented"),
             icon: <FaTrash />,
           },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -86,13 +89,23 @@ const AssociatedMembersTab = () => {
       </DropdownButton>
     );
   };
+
+  const membersData = transformMembersData();
+
   return (
     <div>
-      <SimpleTable
-        data={data}
-        columns={columns}
-        cellComponents={{ action: CustomActionComponent }}
-      />
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="mt-2 text-gray-600">Loading members...</p>
+        </div>
+      ) : (
+        <SimpleTable
+          data={membersData}
+          columns={columns}
+          cellComponents={{ action: CustomActionComponent }}
+        />
+      )}
     </div>
   );
 };

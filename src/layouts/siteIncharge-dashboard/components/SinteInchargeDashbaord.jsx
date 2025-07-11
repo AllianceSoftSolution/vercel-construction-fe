@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 // import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa";
 import { IoStorefrontSharp } from "react-icons/io5";
 import TopBar from "../../../components/ui/TopBar";
@@ -9,79 +9,15 @@ import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBar
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 import SimpleTable from "../../../components/SimpleTable";
 import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
+
 
 function SinteInchargeDashbaord() {
-  const data = [
-    {
-      id: 1,
-      refNo: "REF-001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
+  const [demands, setDemands] = useState([]);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const data2 = [
-    {
-      id: 1,
-      refNo: "REF-001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -130,6 +66,70 @@ function SinteInchargeDashbaord() {
     { headerName: "Date", field: "date" },
   ];
 
+
+  const fetchDemands = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand) => ({
+          id: demand.id,
+          refNo: demand.referenceNumber,
+          project: demand.section?.projectName || "-",
+          material: demand.material?.name || "-",
+          section: demand.section?.name || "-",
+          qty: demand.quantity,
+          status: demand.status,
+          cmName: demand.creator?.name || "-",
+          date: new Date(demand.createdAt).toLocaleDateString(),
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch Demands");
+      }
+    } catch (error) {
+      console.error("Error fetching demands:", error);
+      toast.error("Error fetching demands");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch recent purchase orders
+  const fetchPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/purchase-orders");
+      if (response.ok) {
+        // Map the API response to match the columns
+        const data = response.data.data.map((po) => ({
+          id: po.id,
+          refNo: po.referenceNumber,
+          project: po.demand?.section?.project?.name || po.section?.project?.name || "-",
+          material: po.material?.name || "-",
+          section: po.section?.name || "-",
+          qty: po.quantity,
+          status: po.status,
+          cmName: po.demand?.creator?.name || "-",
+          date: new Date(po.createdAt).toLocaleDateString(),
+        }));
+        setPurchaseOrders(data);
+      } else {
+        toast.error("Failed to fetch Purchase Orders");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+      toast.error("Error fetching purchase orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDemands();
+    fetchPurchaseOrders();
+  }, []);
+
   return (
     <div className="px-4 md:px-6 lg:px-8 py-4 w-full">
       <TopBar
@@ -169,11 +169,11 @@ function SinteInchargeDashbaord() {
 
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
       </div>
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent POs</h2>
-        <SimpleTable columns={columns2} data={data2} cellComponents={{}} />
+        <SimpleTable columns={columns2} data={purchaseOrders} cellComponents={{}} />
       </div>
     </div>
   );

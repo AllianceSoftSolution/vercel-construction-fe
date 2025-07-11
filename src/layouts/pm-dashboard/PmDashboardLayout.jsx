@@ -22,7 +22,7 @@ import LogOutModal from "../../mui/LogOutModal";
 const PmDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [openLogoutModal, setOpenLogoutModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -126,7 +126,7 @@ const PmDashboardLayout = ({ role }) => {
               </ul>
               <div className="border-t border-gray-300 px-6 py-6">
                 <button
-                  onClick={() => setOpenLogoutModal(true)}
+                  onClick={() => setShowLogoutModal(true)}
                   className="w-full bg-[#222222] text-white rounded-[10px] py-3"
                 >
                   Log Out
@@ -240,12 +240,11 @@ const PmDashboardLayout = ({ role }) => {
         </div>
       </div>
 
-      {/* Log Out Modal */}
       <LogOutModal
-        open={openLogoutModal}
-        onClose={() => setOpenLogoutModal(false)}
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
         onConfirm={() => {
-          setOpenLogoutModal(false);
+          localStorage.clear();
           navigate("/");
         }}
       />

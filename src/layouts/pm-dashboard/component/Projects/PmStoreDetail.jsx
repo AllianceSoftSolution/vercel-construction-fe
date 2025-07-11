@@ -225,36 +225,24 @@ const PmStoreDetail = () => {
         </div>
       </div>
 
-      {/* Member Info */}
-      <div>
-        <h4 className="mt-8 text-[#12141D] font-semibold text-xl">
-          Members Overview
-        </h4>
-        {hasMemberInfo ? (
-          <MemberInfoCard
-            title="General information - Store Incharge"
-            image={manager}
-            name="Manager name here"
-            phone="+92 300 000 090"
-            role="Store Head"
-            email="example@gmail.com"
-            joiningDate="January 8, 2001"
-            id="9090"
-            address="address here"
-            country="United States"
-            linkedStores={["Store A", "Store B", "Store C"]}
-          />
-        ) : (
-          <MemebersOverviewCard
-            title="General Information"
-            subTitle="Store Incharge"
-            linkText="Assign Store Incharge"
-            imageSrc={Search}
-            imageAlt="Search Illustration"
-            onManagerClick={() => setHasMemberInfo(true)}
-          />
-        )}
-      </div>
+      {/* Store Incharge Assignments Table */}
+      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Store Incharge Assignments</h4>
+      <SimpleTable
+        data={(storeData.storeInchargeAssignments || []).map(a => ({
+          id: a.id,
+          userName: a.user?.name || "-",
+          email: a.user?.email || "-",
+          role: a.user?.role || "-",
+          createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
+        }))}
+        columns={[
+          { headerName: "Assignment ID", field: "id" },
+          { headerName: "Store Incharge Name", field: "userName" },
+          { headerName: "Email", field: "email" },
+          { headerName: "Role", field: "role" },
+          { headerName: "Assigned At", field: "createdAt" },
+        ]}
+      />
 
       {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>

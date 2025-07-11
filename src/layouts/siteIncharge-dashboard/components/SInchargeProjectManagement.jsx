@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
@@ -7,52 +7,77 @@ import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
+import toast from "react-hot-toast";
+import apiClient from "../../../api/apiClient";
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import DeleteModal from "../../../mui/DeleteModal";
 
 const SInchargeProjectManagement = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
 
-  const handleActionClick = () => {
-    setShowModal(true);
+  function formatDateToDDMMYYYY(dateInput) {
+    const date = new Date(dateInput);
+    if (isNaN(date)) return "";
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/projects");
+      if (response.ok) {
+        const data = response.data.projects.map((project, index) => ({
+          ...project,
+          no: index + 1,
+          projectName: project.name,
+          code: project.code,
+          location: project.location || "-",
+          section: project.sections?.length || 0,
+          amount: project.budget || 0,
+          status: project.status || "Active",
+          date: formatDateToDDMMYYYY(project.createdAt),
+          startDate: formatDateToDDMMYYYY(project.startDate),
+          endDate: formatDateToDDMMYYYY(project.endDate),
+        }));
+        setProjects(data);
+      } else {
+        toast.error("Failed to fetch projects");
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      toast.error("Error fetching projects");
+    } finally {
+      setLoading(false);
+    }
   };
-  const data = [
-    {
-      id: 1,
-      no: "1",
-      projectName: "Bridge Construction",
-      code: 9909,
-      location: "London",
-      section: "A1",
-      amount: 120000,
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      no: "2",
-      projectName: "Highway Expansion",
-      code: 9909,
-      location: "New York",
-      section: "B2",
-      amount: 2500000,
-      status: "Approved",
-      date: "2025-06-14",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      no: "3",
-      projectName: "Metro Rail",
-      code: 9909,
-      location: "Paris",
-      section: "C3",
-      amount: 3000000,
-      status: "In Progress",
-      date: "2025-06-13",
-      action: "id-here",
-    },
-  ];
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const deleteProject = async () => {
+    try {
+      const response = await apiClient.delete(`/projects/${selectedProjectId}`);
+      if (response.ok) {
+        fetchProjects();
+        setShowDeleteModal(false);
+        toast.success("Project deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete project");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
   const columns = [
     { headerName: "No", field: "no" },
     { headerName: "Project Name", field: "projectName" },
@@ -62,55 +87,73 @@ const SInchargeProjectManagement = () => {
     { headerName: "Construction Amount", field: "amount" },
     { headerName: "Status", field: "status" },
     { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
-  const CustomActionComponent = ({ data }) => {
-    return (
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          {
-            label: "View Detail Page",
-            onClick: () => navigate("123"),
-            icon: <FaEye />,
+
+  const CustomActionComponent = ({ value: projectId }) => (
+    <DropdownButton
+      className="bg-[#FF0000] font-semibold"
+      items={[
+        {
+          label: "View Detail Page",
+          icon: <FaEye />,
+          onClick: () =>
+            navigate(`/siteincharge-dashboard/project-management/${projectId}`),
+        },
+        {
+          label: "Edit",
+          icon: <FaUserEdit />,
+          onClick: () =>
+            navigate(`/siteincharge-dashboard/project-management/edit/${projectId}`),
+        },
+        {
+          label: "Delete",
+          icon: <FaTrash />,
+          onClick: () => {
+            setSelectedProjectId(projectId);
+            setShowDeleteModal(true);
           },
-          // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          // {
-          //   label: "Delete ",
-          //   onClick: () => alert("Delete"),
-          //   icon: <FaTrash />,
-          // },
-        ]}
-        // onClick={handleActionClick}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
+        },
+      ]}
+    >
+      <IconButton>
+        <BsThreeDotsVertical />
+      </IconButton>
+    </DropdownButton>
+  );
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Project Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        // showExport={true}
+        detail="Manage all your construction projects in one place."
         showFilter={true}
         filterOptions={["Completed", "In-Progress", "Cancelled"]}
         onFilterChange={(selected) =>
           console.log("Selected Filters:", selected)
         }
+        buttonText="Create Project"
+        onButtonClick={() =>
+          navigate("/siteincharge-dashboard/project-management/addProject")
+        }
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* table */}
+      
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{ action: CustomActionComponent }}
-          // showCheckbox={true}
-        />
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-2 text-gray-600">Loading projects...</p>
+          </div>
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={projects}
+            cellComponents={{ id: CustomActionComponent }}
+          />
+        )}
       </div>
+
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl relative">
@@ -123,24 +166,33 @@ const SInchargeProjectManagement = () => {
             <ActionModal
               showProfile={false}
               buttonText="View Project Details"
-              onButtonClick={() => navigate("123")}
-              // actions={[
-              //   {
-              //     type: "edit",
-              //     icon: <FaUserEdit />,
-              //     label: "Edit",
-              //     onClick: () => console.log("Edit clicked"),
-              //   },
-              //   {
-              //     type: "delete",
-              //     icon: <RiDeleteBin5Fill />,
-              //     label: "Delete",
-              //     onClick: () => console.log("Delete clicked"),
-              //   },
-              // ]}
+              onButtonClick={() =>
+                navigate("/siteincharge-dashboard/project-management/123")
+              }
+              actions={[
+                {
+                  type: "edit",
+                  icon: <FaUserEdit />,
+                  label: "Edit",
+                  onClick: () => console.log("Edit clicked"),
+                },
+                {
+                  type: "delete",
+                  icon: <RiDeleteBin5Fill />,
+                  label: "Delete",
+                  onClick: () => console.log("Delete clicked"),
+                },
+              ]}
             />
           </div>
         </div>
+      )}
+
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={deleteProject}
+        />
       )}
     </div>
   );

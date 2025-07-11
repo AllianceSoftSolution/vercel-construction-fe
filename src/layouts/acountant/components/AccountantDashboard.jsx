@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaBoxesStacked } from "react-icons/fa6";
 import { FaHandHoldingHeart } from "react-icons/fa";
 import SimpleTable from "../../../components/SimpleTable";
@@ -6,8 +6,12 @@ import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import PieGraph from "../../../components/ui/Graphs/PieGraph";
 import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 function AccountantDashboard() {
+  const [demands, setDemands] = useState([]);
+  const [loading, setLoading] = useState(false);
   const data = [
     {
       id: 1,
@@ -75,6 +79,37 @@ function AccountantDashboard() {
     },
   ];
 
+  const fetchDemands = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          refNo: demand.referenceNumber,
+          project: demand.section?.projectName || "-",
+          material: demand.material?.name || "-",
+          section: demand.section?.name || "-",
+          qty: demand.quantity,
+          status: demand.status,
+          cmName: demand.creator?.name || "-",
+          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "-",
+        }));
+        setDemands(data);
+      } else {
+        toast.error("Failed to fetch Demands");
+      }
+    } catch (error) {
+      console.error("Error fetching demands:", error);
+      toast.error("Error fetching demands");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDemands();
+  }, []);
+
   return (
     <div className="w-full h-full overflow-y-auto">
       <TopBar
@@ -113,7 +148,7 @@ function AccountantDashboard() {
 
       <div className="overflow-x-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
       </div>
     </div>
   );

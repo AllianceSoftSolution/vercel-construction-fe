@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -8,6 +8,9 @@ import DropdownButton from "../../../../comments/components/DropdownButton";
 import ReasonModalCm from "../Demands/ReasonModalCm";
 import PurchaseOrderForm from "../Forms/CmPurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const style = {
   position: "absolute",
@@ -23,6 +26,32 @@ const CmDemandDetailPage = () => {
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
   // const [status, setStatus] = useState("Pending");
   const [pendingStatus, setPendingStatus] = useState(null);
+  const [demandData, setDemandData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { id } = useParams();
+
+  const fetchDemandDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/demands/${id}`);
+      if (response.ok) {
+        setDemandData(response.data.demand);
+      } else {
+        toast.error("Failed to fetch demand details");
+      }
+    } catch (error) {
+      console.error("Error fetching demand details:", error);
+      toast.error("Something went wrong while fetching demand details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchDemandDetail();
+    }
+  }, [id]);
 
   const handleActionClick = (newStatus) => {
     setPendingStatus(newStatus);
@@ -73,6 +102,22 @@ const CmDemandDetailPage = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">Loading demand details...</div>
+      </div>
+    );
+  }
+
+  if (!demandData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg text-red-500">Demand not found</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Modal
@@ -95,13 +140,18 @@ const CmDemandDetailPage = () => {
       <PurchaseOrderForm
         isOpen={openPurchaseModal}
         onClose={() => setOpenPurchaseModal(false)}
+        demandId={demandData?.id}
+        sectionId={demandData?.sectionId}
+        materialName={demandData?.material?.name}
+        materialId={demandData?.materialId}
+        demandQuantity={demandData?.quantity}
       />
 
       <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex justify-between">
-          <p className="text-[#444444] font-semibold text-xl">Project-A001</p>
+          <p className="text-[#444444] font-semibold text-xl">{demandData.referenceNumber}</p>
           <div className="flex gap-x-2 items-center">
             {/* <div
               className={`text-white px-8 py-2 rounded-lg  ${
@@ -134,67 +184,65 @@ const CmDemandDetailPage = () => {
             <p className="text-[#444444] font-semibold text-xl">
               Project Name:
             </p>
-            <p className="text-[#979797]">project name</p>
+            <p className="text-[#979797]">{demandData.section?.project?.name || "N/A"}</p>
           </div>
           <div className="flex gap-x-4 items-center">
             <p className="text-[#444444] font-semibold text-xl">
               Section Name:
             </p>
-            <p className="text-[#979797]">section name</p>
+            <p className="text-[#979797]">{demandData.section?.name || "N/A"}</p>
           </div>
           <div className="flex gap-x-4 items-center">
             <p className="text-[#444444] font-semibold text-xl">Material</p>
-            <p className="text-[#979797]">material</p>
+            <p className="text-[#979797]">{demandData.material?.name || "N/A"}</p>
           </div>
           <div className="flex gap-x-4 items-center">
             <p className="text-[#444444] font-semibold text-xl">Quantity</p>
-            <p className="text-[#979797]">quantity</p>
+            <p className="text-[#979797]">{demandData.quantity || "N/A"}</p>
           </div>
           <div className="flex gap-x-4 items-center">
             <p className="text-[#444444] font-semibold text-xl">Unit</p>
-            <p className="text-[#979797]">unit</p>
+            <p className="text-[#979797]">{demandData.unit || "N/A"}</p>
           </div>
         </div>
 
         <div className="flex justify-start gap-x-14 flex-wrap">
           <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold text-xl">PO Quantity:</p>
-            <p className="text-[#979797]">po quantity</p>
+            <p className="text-[#979797]">{demandData.poQuantity || "0"}</p>
           </div>
           <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold text-xl">Approved By</p>
-            <p className="text-[#979797]">approved by</p>
+            <p className="text-[#979797]">{demandData.approvedBy || "N/A"}</p>
           </div>
           <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold text-xl">Fulfilled</p>
-            <p className="text-[#979797]">fulfilled</p>
+            <p className="text-[#979797]">{demandData.quantityFulfilled || "0"}</p>
           </div>
           <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold text-xl">
               Activity Description
             </p>
-            <p className="text-[#979797]">activity description</p>
+            <p className="text-[#979797]">{demandData.activity || "N/A"}</p>
           </div>
           <div className="flex gap-x-4 items-center mt-6">
             <p className="text-[#444444] font-semibold text-xl">Notes by CM</p>
-            <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+            <p className="text-[#979797]">{demandData.notes || "N/A"}</p>
           </div>
         </div>
 
         <div className="flex gap-x-8 items-center mt-2">
           <p className="text-[#444444] font-semibold text-xl">Remarks</p>
           <ul>
-            <li className="text-[#979797]">lorem ipsum dolor sit amet</li>
-            <li className="text-[#979797]">lorem ipsum dolor sit amet</li>
-            <li className="text-[#979797]">lorem ipsum dolor sit amet</li>
+            <li className="text-[#979797]">{demandData.remarks || "No remarks"}</li>
           </ul>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
         <DemandQuantityCard
           storeName="Head Store"
-          totalQty={80}
-          material="Cement"
+          totalQty={demandData.quantity || 0}
+          material={demandData.material?.name || "N/A"}
           showButton
         />
         <DemandQuantityCard

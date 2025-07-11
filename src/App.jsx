@@ -46,7 +46,7 @@ import SInchargeUserManagement from "./layouts/siteIncharge-dashboard/components
 import SInchargeSectionTab from "./layouts/siteIncharge-dashboard/components/Projects/tabs/SInchargeSectionTab";
 import SiAddProject from "./layouts/siteIncharge-dashboard/components/Forms/SiAddProject";
 import SinMemberDetailPage from "./layouts/siteIncharge-dashboard/components/Projects/SinMemberDetailPage";
-
+import SiDemands from "./layouts/siteIncharge-dashboard/components/Demands";
 // pm dashboard
 import PmProjectDetailPage from "./layouts/pm-dashboard/component/Projects/PmProjectDetailPage";
 import PmDemandDetails from "./layouts/pm-dashboard/component/Projects/PmDemandDetailPage";
@@ -198,7 +198,7 @@ const siteInchargeRoutes = [
         element: <SiSectionDetailPage />,
       },
 
-      { path: "demands", element: <Demands /> },
+      { path: "demands", element: <SiDemands /> },
       { path: "demands/:id", element: <SiDemandDetails /> },
       { path: "pOS", element: <SiPOs /> },
       { path: "pOS/:id", element: <SinPurchaseOrderDetailPage /> },

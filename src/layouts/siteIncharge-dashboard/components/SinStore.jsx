@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
@@ -9,39 +9,63 @@ import DropdownButton from "../../../comments/components/DropdownButton";
 import AddMemberModal from "./users/modals/AddMemberModal";
 import { IoPersonCircle } from "react-icons/io5";
 import { RiAccountBox2Fill } from "react-icons/ri";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const SinStores = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [store, setStore] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchStore();
+  }, []);
 
   const handleLinkClick = () => {
     setShowModal(true);
   };
-  const CustomActionComponent = ({ data }) => {
+
+  const fetchStore = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/stores");
+      if (response.status === 200) {
+        const data = response.data.stores.map((store, index) => ({
+          storeId: store.id,
+          storeName: store.name,
+          project: store.section?.name || "-",
+          storeHead: store.type === "HEAD_STORE" ? (store.storeInchargeAssignments[0]?.user?.name || "-") : "-",
+          storeIncharge: store.type === "CM_STORE" ? (store.storeInchargeAssignments[0]?.user?.name || "-") : "-",
+          manager: store.cmUser?.name || "-",
+          accountant: store.accountant?.name || "-",
+          status: store.isActive ? "Active" : "Inactive",
+          action: store.id,
+        }));
+        setStore(data);
+      } else {
+        toast.error("Failed to fetch stores");
+      }
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+      toast.error("Error fetching stores");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View",
-            onClick: () => navigate("123"),
+              onClick: () => navigate(`/siteincharge-dashboard/store/${id}`),
             icon: <FaEye />,
           },
-          // {
-          //   label: "Delete ",
-          //   onClick: () => alert("Delete"),
-          //   icon: <FaTrash />,
-          // },
-          // {
-          //   label: "Assign Store Incharge",
-          //   onClick: () => handleLinkClick(),
-          //   icon: <IoPersonCircle />,
-          // },
-          // {
-          //   label: "Assign Accountant",
-          //   onClick: () => handleLinkClick(),
-          //   icon: <RiAccountBox2Fill />,
-          // },
+             
         ]}
         // onClick={handleActionClick}
       >
@@ -51,52 +75,6 @@ const SinStores = () => {
       </DropdownButton>
     );
   };
-  const data = [
-    {
-      id: 1,
-      storeId: "ST-001",
-      storeName: "name here",
-      project: "Bridge Construction",
-      storeHead: "Ahmad",
-      storeIncharge: "Ali",
-      manager: "Hasan",
-      accountant: "Ahmed",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      storeId: "ST-001",
-      storeName: "name here",
-      project: "Bridge Construction",
-      storeHead: "Ahmad",
-      storeIncharge: "Ali",
-      manager: "Hasan",
-      accountant: "Ahmed",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      storeId: "ST-001",
-      storeName: "name here",
-      project: "Bridge Construction",
-      storeHead: "Ahmad",
-      storeIncharge: "Ali",
-      manager: "Hasan",
-      accountant: "Ahmed",
-      status: "Pending",
-    },
-    {
-      id: 4,
-      storeId: "ST-001",
-      storeName: "name here",
-      project: "Bridge Construction",
-      storeHead: "Ahmad",
-      storeIncharge: "Ali",
-      manager: "Hasan",
-      accountant: "Ahmed",
-      status: "Pending",
-    },
-  ];
   const columns = [
     { headerName: "Store Id", field: "storeId" },
     { headerName: "Store Name", field: "storeName" },
@@ -127,7 +105,7 @@ const SinStores = () => {
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
-          data={data}
+          data={store}
           cellComponents={{ action: CustomActionComponent }}
         />
       </div>

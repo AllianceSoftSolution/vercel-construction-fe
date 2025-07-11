@@ -8,12 +8,14 @@ import { IoStorefrontSharp } from "react-icons/io5";
 import { FaBars, FaSearch, FaToolbox } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
+import LogOutModal from "../../mui/LogOutModal";
 import logo from "../../assets/construction/logo.png";
 import Profile from "../../assets/construction/profile.png";
 
 const StoreInchargeDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -107,7 +109,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
               </ul>
               <div className="border-t border-gray-300 px-6 py-6">
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={() => setShowLogoutModal(true)}
                   className="w-full bg-[#222222] text-white rounded-[10px] py-3"
                 >
                   Log Out
@@ -220,6 +222,15 @@ const StoreInchargeDashboardLayout = ({ role }) => {
           </div>
         </div>
       </div>
+
+      <LogOutModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          localStorage.clear();
+          navigate("/");
+        }}
+      />
     </div>
   );
 };

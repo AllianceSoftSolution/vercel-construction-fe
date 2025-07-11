@@ -15,7 +15,7 @@ import Profile from "../../assets/construction/profile.png";
 const AccountantDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -104,7 +104,7 @@ const AccountantDashboardLayout = ({ role }) => {
               </ul>
               <div className="border-t border-gray-300 px-6 py-6">
                 <button
-                  onClick={() => setIsLogoutModalOpen(true)} // ✅ Trigger modal
+                  onClick={() => setShowLogoutModal(true)}
                   className="w-full bg-[#222222] text-white rounded-[10px] py-3"
                 >
                   Log Out
@@ -218,16 +218,14 @@ const AccountantDashboardLayout = ({ role }) => {
         </div>
       </div>
 
-      {/* ✅ Log Out Modal */}
-      {isLogoutModalOpen && (
-        <LogOutModal
-          onConfirm={() => {
-            setIsLogoutModalOpen(false);
-            navigate("/");
-          }}
-          onCancel={() => setIsLogoutModalOpen(false)}
-        />
-      )}
+      <LogOutModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          localStorage.clear();
+          navigate("/");
+        }}
+      />
     </div>
   );
 };

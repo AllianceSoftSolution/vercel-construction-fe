@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaBoxesStacked,
   FaEye,
@@ -16,45 +16,44 @@ import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBar
 import SimpleTable from "../../../components/SimpleTable";
 import SectionCard from "../../../components/ui/SectionCard";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
 
 function CmDashboard() {
-  const data = [
-    {
-      id: 1,
-      refNo: "REF-001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
-
+  const [demands, setDemands] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDemands = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get("/demands");
+        if (response.ok) {
+          const data = response.data.demands.map((demand, index) => ({
+            refNo: demand.referenceNumber || `REF-${index + 1}`,
+            project: demand.section?.project?.name || "N/A",
+            material: demand.material?.name || "N/A",
+            section: demand.section?.name || "N/A",
+            qty: demand.quantity || "N/A",
+            status: demand.status || "N/A",
+            cmName: demand.creator?.name || "N/A",
+            date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "N/A",
+          }));
+          setDemands(data);
+        } else {
+          toast.error("Failed to fetch demands");
+        }
+      } catch (error) {
+        toast.error("Error fetching demands");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDemands();
+  }, []);
+
   const actions = [
     // {
     //   label: "View Section Detail",
@@ -104,6 +103,29 @@ function CmDashboard() {
     },
   ];
 
+  // Remove the hardcoded SectionCard and render dynamically if you have section data
+  // For now, use a placeholder empty array for sections
+  const sections = [];
+
+  // Helper for section actions
+  const sectionActions = (sec) => [
+    {
+      label: "View Section Detail",
+      icon: <FaEye />,
+      onClick: () => navigate(`/construction-manager-dashboard/sections/${sec.id}`),
+    },
+    {
+      label: "Edit Project Section",
+      icon: <FaUserEdit />,
+      onClick: () => console.log(`Edit clicked for section ${sec.id}`),
+    },
+    {
+      label: "Delete Project Section",
+      icon: <FaTrash />,
+      onClick: () => console.log(`Delete clicked for section ${sec.id}`),
+    },
+  ];
+
   return (
     <div className="">
       <TopBar
@@ -139,18 +161,27 @@ function CmDashboard() {
 
         <HorixontalBarchartGraph title={"Fulfillment Progress"} />
       </div>
-      <SectionCard
-        sectionNo="01"
-        sectionName="Piles"
-        totalDemands="14"
-        manager="Imran"
-        linkedStores="01"
-        dropdownActions={actions}
-      />
+      {/* Section Cards */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
+        {sections.length === 0 ? (
+          <div className="text-gray-400 text-center col-span-2">No sections available.</div>
+        ) : (
+          sections.map((sec, index) => (
+            <SectionCard
+              key={sec.id}
+              sectionNo={index + 1}
+              sectionName={sec.name}
+              code={sec.code}
+              description={sec.description}
+              dropdownActions={sectionActions(sec)}
+            />
+          ))
+        )}
+      </div>
 
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} loading={loading} cellComponents={{}} />
       </div>
     </div>
   );

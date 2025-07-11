@@ -51,10 +51,15 @@ const CmDemands = () => {
       const response = await apiClient.get("/demands");
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
-          no: `REF-${index + 1}`,
-          materialId: materialsMap[demand.materialId] || "N/A",
-          sectionId: sectionsMap[demand.sectionId] || "N/A",
-          action: demand._id,
+          no: demand.referenceNumber || `REF-${index + 1}`,
+          activity: demand.activity || "N/A",
+          materialId: demand.material?.name || "N/A",
+          quantity: demand.quantity || "N/A",
+          unit: demand.unit || "N/A",
+          sectionId: demand.section?.name || "N/A",
+          notes: demand.notes || "N/A",
+          status: demand.status || "N/A",
+          action: demand.id,
         }));
         setDemands(data);
       } else {
@@ -89,6 +94,7 @@ const CmDemands = () => {
     { headerName: "Unit", field: "unit" },
     { headerName: "Section", field: "sectionId" },
     { headerName: "Notes", field: "notes" },
+    { headerName: "Status", field: "status" },
     { headerName: "Action", field: "action" },
   ];
 
