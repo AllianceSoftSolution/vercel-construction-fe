@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "@/components/ui/TopBar";
 import CustomTextField from "@/mui/CustomTextField";
 
 const AddMemberModal = ({ onClose, onAddUserClick }) => {
+  const [form, setForm] = useState({ name: "", email: "" });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onAddUserClick(form);
+  };
+
   return (
     <div className="fixed  inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white w-full max-w-[450px] max-h-[90vh] border-[0.5px] border-[#CDC9C9] rounded-2xl p-0 flex flex-col overflow-hidden">
@@ -15,13 +26,18 @@ const AddMemberModal = ({ onClose, onAddUserClick }) => {
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-auto p-4 flex flex-col gap-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-auto p-4 flex flex-col gap-y-4"
+        >
           <CustomTextField
             label="Member Name"
             fullWidth
             name="name"
             placeholder="Enter Member Name"
             type="text"
+            value={form.name}
+            onChange={handleChange}
           />
           <CustomTextField
             label="Email"
@@ -29,48 +45,25 @@ const AddMemberModal = ({ onClose, onAddUserClick }) => {
             name="email"
             placeholder="Enter Member Email"
             type="email"
+            value={form.email}
+            onChange={handleChange}
           />
-          <CustomTextField
-            label="Phone Number"
-            fullWidth
-            name="phone"
-            placeholder="Enter Member Phone Number"
-            type="number"
-          />
-          <CustomTextField
-            label="Password"
-            fullWidth
-            name="password"
-            placeholder="Enter Password"
-            type="password"
-          />
-          <CustomTextField
-            label="Date Of Joining"
-            fullWidth
-            name="date"
-            placeholder="Enter Member's Date of Joining"
-            type="date"
-          />
-          <CustomTextField
-            label="Address"
-            fullWidth
-            name="address"
-            placeholder="Enter Member Address"
-            type="text"
-          />
-
           <div className="flex gap-x-4 justify-end mt-4">
             <button
+              type="button"
               className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
               onClick={onClose}
             >
               Cancel
             </button>
-            <button onClick={onAddUserClick} className="bg-primary px-8 py-2 rounded-lg font-medium text-white">
+            <button
+              type="submit"
+              className="bg-primary px-8 py-2 rounded-lg font-medium text-white"
+            >
               Save & Add User
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

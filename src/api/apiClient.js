@@ -30,5 +30,10 @@ function setAuthToken(token) {
   apiClient.setHeader("authorization", `Bearer ${token}`);
 }
 
+// Get all users
+export const getAllUsers = async () => {
+  return await apiClient.get("/auth/users");
+};
+
 export { setAuthToken };
 export default apiClient;

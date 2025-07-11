@@ -17,7 +17,9 @@ const MemberInfoCard = ({
 }) => (
   <div className="border border-[#CDC9C9] rounded-2xl p-4 w-full sm:w-[90%] md:w-[80%] lg:w-[60%] h-fit mt-6 mx-auto bg-white ">
     <div className="flex justify-between items-start flex-wrap">
-      <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold">{title}</h3>
+      <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold">
+        {title}
+      </h3>
       <MoreVertIcon className="w-6 h-6 bg-[#F7F7F7] rounded-md cursor-pointer mt-2 sm:mt-0" />
     </div>
 
@@ -31,7 +33,9 @@ const MemberInfoCard = ({
             className="w-full h-full object-cover"
           />
         </div>
-        <h3 className="text-sm font-semibold mt-3 text-center sm:text-left">{name}</h3>
+        <h3 className="text-sm font-semibold mt-3 text-center sm:text-left">
+          {name}
+        </h3>
         <div className="flex items-center mt-1 text-sm text-[#5A5A5A]">
           <FaWhatsapp className="text-green-500 mr-2" />
           <span>{phone}</span>
@@ -44,14 +48,14 @@ const MemberInfoCard = ({
           <Info label="Member Role" value={role} />
           <Info label="Email" value={email} />
         </div>
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
+        {/* <div className="flex flex-col sm:flex-row justify-between gap-4">
           <Info label="Joining Date" value={joiningDate} />
           <Info label="ID" value={id} />
         </div>
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <Info label="Address" value={address} />
           <Info label="Country" value={country} />
-        </div>
+        </div> */}
         <div className="flex">
           <Info
             label="Linked Store"
@@ -65,9 +69,13 @@ const MemberInfoCard = ({
 );
 
 const Info = ({ label, value, fullWidth }) => (
-  <div className={`flex flex-col ${fullWidth ? "w-full" : "w-full sm:w-[48%]"}`}>
+  <div
+    className={`flex flex-col ${fullWidth ? "w-full" : "w-full sm:w-[48%]"}`}
+  >
     <span className="text-[#979797] text-sm">{label}</span>
-    <span className="text-[#000000] font-medium text-sm break-words">{value}</span>
+    <span className="text-[#000000] font-medium text-sm break-words">
+      {value}
+    </span>
   </div>
 );
 

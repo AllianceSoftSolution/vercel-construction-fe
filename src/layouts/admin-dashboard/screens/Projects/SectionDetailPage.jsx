@@ -14,6 +14,7 @@ import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
 import toast from "react-hot-toast";
 import apiClient from "../../../../api/apiClient";
+import AssignMemberModal from "../../../../components/AssignMemberModal";
 
 const style = {
   position: "absolute",
@@ -30,6 +31,10 @@ const SectionDetailPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [openPMModal, setOpenPMModal] = useState(false);
   const [openStoreModal, setOpenStoreModal] = useState(false);
+  const [openAssignPMModal, setOpenAssignPMModal] = useState(false);
+  const [openAssignCMModal, setOpenAssignCMModal] = useState(false);
+  const [openAssignStoreInchargeModal, setOpenAssignStoreInchargeModal] =
+    useState(false);
   const [selectedPM, setSelectedPM] = useState(null);
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
   const { id } = useParams();
@@ -88,13 +93,13 @@ const SectionDetailPage = () => {
   ];
 
   const columns = [
-    { headerName: "CM ID", field: "cmId" },
-    { headerName: "Construction Manager", field: "constructionManager" },
-    { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
-    { headerName: "Address", field: "address" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
+    { headerName: "CM ID", field: "id" },
+    { headerName: "Name", field: "user.name" },
+    { headerName: "Email", field: "user.email" },
+    // { headerName: "Phone Number", field: "user.phone" },
+    // { headerName: "Address", field: "user.address" },
+    { headerName: "Created By", field: "user.creator.name" },
+    { headerName: "CM Store", field: "cmStore.name" },
     { headerName: "Action", field: "action" },
   ];
 
@@ -103,9 +108,13 @@ const SectionDetailPage = () => {
       const response = await apiClient.get(`/sections/${id}`);
       if (response.ok) {
         setSectionData(response.data.section);
-        setSelectedPM(response.data.section.associatedProjectManager?.user || null);
+        setSelectedPM(
+          response.data.section.associatedProjectManager?.user || null
+        );
         const headStore = response.data.section.associatedHeadStores?.[0];
-        setSelectedStoreHead(headStore?.storeInchargeAssignments?.[0]?.user || null);
+        setSelectedStoreHead(
+          headStore?.storeInchargeAssignments?.[0]?.user || null
+        );
       } else {
         toast.error("Failed to fetch Section details.");
       }
@@ -153,13 +162,18 @@ const SectionDetailPage = () => {
   // Handler for assigning a Construction Manager
   const handleAssignCM = async (user) => {
     try {
-      const response = await apiClient.post(`/sections/${id}/assign-construction-manager`, { userId: user.id });
+      const response = await apiClient.post(
+        `/sections/${id}/assign-construction-manager`,
+        { userId: user.id }
+      );
       if (response.ok) {
         toast.success("Construction Manager assigned successfully!");
         fetchSectionDetail();
         setShowModal(false);
       } else {
-        toast.error(response.data?.message || "Failed to assign Construction Manager");
+        toast.error(
+          response.data?.message || "Failed to assign Construction Manager"
+        );
       }
     } catch (error) {
       toast.error(error.message || "Error assigning Construction Manager");
@@ -169,17 +183,197 @@ const SectionDetailPage = () => {
   // Handler for adding a new Construction Manager
   const handleAddCM = async (data) => {
     try {
-      const response = await apiClient.post("/auth/register", { ...data, role: "CONSTRUCTION_MANAGER" });
+      const response = await apiClient.post("/auth/register", {
+        ...data,
+        role: "CONSTRUCTION_MANAGER",
+      });
       if (response.ok) {
         toast.success("Construction Manager added successfully!");
         await handleAssignCM(response.data.user);
         setShowModal(false);
         fetchSectionDetail();
       } else {
-        toast.error(response.data?.message || "Failed to add Construction Manager");
+        toast.error(
+          response.data?.message || "Failed to add Construction Manager"
+        );
       }
     } catch (error) {
       toast.error(error.message || "Error adding Construction Manager");
+    }
+  };
+
+  // Project Manager assignment logic
+  const fetchPMUsers = async () => {
+    try {
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: "PROJECT_MANAGER",
+        projectId: sectionData?.project?.id,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const createPMUser = async (userData) => {
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: "PROJECT_MANAGER",
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
+  const handleAssignPMGeneric = async ({ userId }) => {
+    try {
+      const response = await apiClient.post(`/assignments/project-manager`, {
+        userId,
+        projectId: sectionData?.project?.id,
+        sectionId: sectionData?.id,
+      });
+      if (response.ok) {
+        toast.success("Project Manager assigned successfully");
+        setOpenAssignPMModal(false);
+        fetchSectionDetail();
+        return true;
+      } else {
+        toast.error(
+          response.data?.message || "Failed to assign Project Manager"
+        );
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign Project Manager");
+      return false;
+    }
+  };
+
+  // Construction Manager assignment logic
+  const fetchCMUsers = async () => {
+    try {
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: "CONSTRUCTION_MANAGER",
+        projectId: sectionData?.project?.id,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const createCMUser = async (userData) => {
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: "CONSTRUCTION_MANAGER",
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
+  const handleAssignCMGeneric = async ({ userId }) => {
+    try {
+      const response = await apiClient.post(
+        `/assignments/construction-manager`,
+        { userId, sectionId: id }
+      );
+      if (response.ok) {
+        toast.success("Construction Manager assigned successfully!");
+        setOpenAssignCMModal(false);
+        fetchSectionDetail();
+        return true;
+      } else {
+        toast.error(
+          response.data?.message || "Failed to assign Construction Manager"
+        );
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign Construction Manager");
+      return false;
+    }
+  };
+
+  // Store Incharge assignment logic
+  const fetchStoreInchargeUsers = async () => {
+    try {
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: "STORE_INCHARGE",
+        projectId: sectionData?.project?.id,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const createStoreInchargeUser = async (userData) => {
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: "STORE_INCHARGE",
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
+  const handleAssignStoreInchargeGeneric = async ({ userId }) => {
+    try {
+      const response = await apiClient.post(`/assignments/store-incharge`, {
+        userId,
+        storeId: sectionData?.headStore?.id,
+      });
+      if (response.ok) {
+        toast.success("Store Incharge assigned successfully!");
+        fetchSectionDetail();
+        setOpenAssignStoreInchargeModal(false);
+        return true;
+      } else {
+        toast.error(
+          response.data?.message || "Failed to assign Store Incharge"
+        );
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign Store Incharge");
+      return false;
     }
   };
 
@@ -203,7 +397,11 @@ const SectionDetailPage = () => {
           <InfoItem label="Section" value={sectionData?.name || "-"} />
           <InfoItem
             label="Date"
-            value={sectionData?.createdAt ? new Date(sectionData?.createdAt).toLocaleDateString() : "-"}
+            value={
+              sectionData?.createdAt
+                ? new Date(sectionData?.createdAt).toLocaleDateString()
+                : "-"
+            }
           />
         </div>
 
@@ -222,6 +420,7 @@ const SectionDetailPage = () => {
         </h4>
 
         <div className="flex flex-col lg:flex-row h-full gap-6 w-full">
+          {/* Project Manager Card */}
           {selectedPM ? (
             <MemberInfoCard
               title="General information - Project Manager"
@@ -243,36 +442,106 @@ const SectionDetailPage = () => {
               linkText="Assign Project Manager"
               imageSrc={Search}
               imageAlt="Search Illustration"
-              onManagerClick={handleAssignPM}
+              onManagerClick={() => setOpenAssignPMModal(true)}
               className=""
             />
           )}
 
-          {selectedStoreHead ? (
-            <MemberInfoCard
-              title="General information - Store Head"
-              image={manager}
-              name={selectedStoreHead.name}
-              phone={selectedStoreHead.phone || "-"}
-              role={selectedStoreHead.role || "Store Head"}
-              email={selectedStoreHead.email}
-              joiningDate={selectedStoreHead.joiningDate || "-"}
-              id={selectedStoreHead.id}
-              address={selectedStoreHead.address || "-"}
-              country={selectedStoreHead.country || "-"}
-              linkedStores={selectedStoreHead.linkedStores || []}
-            />
-          ) : (
-            <MembersOverviewCard
-              title="General Information"
-              subTitle="Store Head"
-              linkText="Assign Store Head"
-              imageSrc={Search}
-              imageAlt="Search Illustration"
-              onManagerClick={handleAssignStoreHead}
-              className=""
-            />
-          )}
+          {/* Head Store Card - Improved Flow */}
+          <div className="w-full sm:w-[90%] md:w-[75%] lg:w-[50%] lg:h-80 h-full mt-6">
+            {sectionData?.headStore ? (
+              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 h-full flex flex-col justify-between bg-white">
+                <div>
+                  <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
+                    Head Store
+                  </h3>
+                  <div className="mb-2">
+                    <span className="font-semibold">Name:</span>{" "}
+                    {sectionData.headStore.name}
+                  </div>
+                  <div className="mb-2">
+                    <span className="font-semibold">Type:</span>{" "}
+                    {sectionData.headStore.type}
+                  </div>
+                  <div className="mb-2">
+                    <span className="font-semibold">ID:</span>{" "}
+                    {sectionData.headStore.id}
+                  </div>
+                </div>
+                {/* Store Incharge Section */}
+                <div className="mt-4 border-t pt-4">
+                  <h4 className="font-semibold text-base mb-2">
+                    Store Incharge
+                  </h4>
+                  {sectionData.headStore.storeInchargeAssignments &&
+                  sectionData.headStore.storeInchargeAssignments.length > 0 &&
+                  sectionData.headStore.storeInchargeAssignments[0].user ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Name:</span>
+                        <span>
+                          {
+                            sectionData.headStore.storeInchargeAssignments[0]
+                              .user.name
+                          }
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Email:</span>
+                        <span>
+                          {sectionData.headStore.storeInchargeAssignments[0]
+                            .user.email || "-"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Phone:</span>
+                        <span>
+                          {sectionData.headStore.storeInchargeAssignments[0]
+                            .user.phone || "-"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Joining Date:</span>
+                        <span>
+                          {sectionData.headStore.storeInchargeAssignments[0]
+                            .user.joiningDate
+                            ? new Date(
+                                sectionData.headStore.storeInchargeAssignments[0].user.joiningDate
+                              ).toLocaleDateString()
+                            : "-"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Role:</span>
+                        <span>
+                          {sectionData.headStore.storeInchargeAssignments[0]
+                            .user.role || "Store Incharge"}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-start gap-2">
+                      <span className="text-[#979797]">
+                        No Store Incharge assigned.
+                      </span>
+                      <button
+                        className="mt-2 px-4 py-2 bg-[#BF1017] text-white rounded hover:bg-[#a00e13] transition"
+                        onClick={() => setOpenAssignStoreInchargeModal(true)}
+                      >
+                        Assign Store Incharge
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 h-full flex items-center justify-center bg-white">
+                <span className="text-[#979797] text-base">
+                  No Head Store assigned to this section.
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -280,8 +549,8 @@ const SectionDetailPage = () => {
         <TopBar
           title="Construction Managers"
           detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-          buttonText="Add CM" 
-          onButtonClick={() => setShowModal(true)}
+          buttonText="Add CM"
+          onButtonClick={() => setOpenAssignCMModal(true)}
         />
 
         <div className="overflow-x-auto mt-4">
@@ -293,14 +562,14 @@ const SectionDetailPage = () => {
         </div>
       </div>
 
-      <Modal open={openPMModal} onClose={() => setOpenPMModal(false)}>
-        <Box sx={style}>
-          <AssignProjectManagerModal
-            onManagerClick={handleAssignPM}
-            onCreateClick={() => setShowModal(true)}
-          />
-        </Box>
-      </Modal>
+      <AssignMemberModal
+        role="Project Manager"
+        open={openAssignPMModal}
+        onClose={() => setOpenAssignPMModal(false)}
+        fetchUsers={fetchPMUsers}
+        createUser={createPMUser}
+        onAssign={handleAssignPMGeneric}
+      />
 
       <Modal open={openStoreModal} onClose={() => setOpenStoreModal(false)}>
         <Box sx={style}>
@@ -311,47 +580,23 @@ const SectionDetailPage = () => {
         </Box>
       </Modal>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-[450px] max-h-[90vh] border-[0.5px] border-[#CDC9C9] rounded-2xl p-0 flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-[#CDCDCD]">
-              <TopBar
-                title="Add Construction Manager"
-                detail="Assign or Add a Construction Manager to this Section"
-              />
-            </div>
-            <div className="flex-1 overflow-auto p-4 flex flex-col gap-y-4">
-              {availableCMs.length > 0 ? (
-                <>
-                  <div className="mb-2 font-semibold">Select from existing Construction Managers:</div>
-                  {availableCMs.map((cm) => (
-                    <div
-                      key={cm.id}
-                      className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm transition-all border-2 border-transparent cursor-pointer hover:border-2 hover:border-[#fc8908] mb-2"
-                      onClick={() => handleAssignCM(cm)}
-                    >
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-[#f7f7f8] flex-shrink-0">
-                        <img src={cm.avatar || manager} alt="CM avatar" className="w-full h-full object-cover" />
-                      </div>
-                      <span className="text-[#043b6a] font-medium text-base">{cm.name}</span>
-                    </div>
-                  ))}
-                  <div className="mt-4 text-center text-sm text-gray-500">Or add a new Construction Manager below:</div>
-                  <AddMemberModal
-                    onClose={() => setShowModal(false)}
-                    onAddUserClick={handleAddCM}
-                  />
-                </>
-              ) : (
-                <AddMemberModal
-                  onClose={() => setShowModal(false)}
-                  onAddUserClick={handleAddCM}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <AssignMemberModal
+        role="Construction Manager"
+        open={openAssignCMModal}
+        onClose={() => setOpenAssignCMModal(false)}
+        fetchUsers={fetchCMUsers}
+        createUser={createCMUser}
+        onAssign={handleAssignCMGeneric}
+      />
+
+      <AssignMemberModal
+        role="Store Incharge"
+        open={openAssignStoreInchargeModal}
+        onClose={() => setOpenAssignStoreInchargeModal(false)}
+        fetchUsers={fetchStoreInchargeUsers}
+        createUser={createStoreInchargeUser}
+        onAssign={handleAssignStoreInchargeGeneric}
+      />
     </div>
   );
 };
