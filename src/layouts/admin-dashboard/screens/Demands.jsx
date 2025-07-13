@@ -8,6 +8,8 @@ import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { date } from "zod";
 import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const Demands = () => {
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ const Demands = () => {
     } catch (error) {
       console.error("Error fetching demands:", error);
       toast.error("Error fetching demands");
-    } finally {
+    } finally {   
       setLoading(false);
     }
   };
@@ -105,11 +107,15 @@ const Demands = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={demands}
-          cellComponents={{ demandId: CustomActionComponent }}
-        />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={demands}
+            cellComponents={{ demandId: CustomActionComponent }}
+          />
+        )}
       </div>
     </div>
   );

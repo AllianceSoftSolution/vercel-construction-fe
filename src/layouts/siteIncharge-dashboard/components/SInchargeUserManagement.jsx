@@ -22,60 +22,58 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IconButton } from "@mui/material";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { MdNoAccounts } from "react-icons/md";
+import {
+  Person,
+  Person3,
+} from "@mui/icons-material";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const SInchargeUserManagement = () => {
   const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getAllUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/auth/users");
+      if (response.ok) {
+        // Adjust mapping as needed based on API response structure
+        const data =
+          response.data.users?.map((user, index) => ({
+            ...user,
+            iD: user.id || index + 1,
+          })) || [];
+        setUsers(data);
+      } else {
+        toast.error("Failed to fetch users");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Error fetching users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    getAllUsers();
+  }, []);
 
   const handleActionClick = () => {
     setShowModal(true);
   };
 
-  const data = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Project Manager",
-      status: "Pending",
-      note: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Construction Manager",
-      status: "Approved",
-      note: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      iD: "03",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Site Manager",
-      status: "In Progress",
-      note: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
   const columns = [
-    { headerName: "ID", field: "iD" },
+    { headerName: "ID", field: "employeeId" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
     { headerName: "Role", field: "role" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Note", field: "note" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
       field: "action",
@@ -90,13 +88,13 @@ const SInchargeUserManagement = () => {
     },
     {
       label: "Project Manager",
-      icon: FaPeopleLine,
+      icon: Person,
       count: 10,
       percentage: 10,
     },
     {
       label: "Construction Manager",
-      icon: FaPeopleLine,
+      icon: Person3,
       count: 10,
       percentage: 10,
     },
@@ -121,7 +119,7 @@ const SInchargeUserManagement = () => {
           {
             label: "Ban",
             // onClick: () => alert("Delete"),
-            icon: <MdNoAccounts />,
+            icon: <MdNoAccounts className="w-5 h-5" />,
           },
           {
             label: "Suspend Account",
@@ -141,7 +139,7 @@ const SInchargeUserManagement = () => {
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="User Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
         showFilter={true}
         filterOptions={[
@@ -163,31 +161,34 @@ const SInchargeUserManagement = () => {
       <h2 className="text-2xl font-semibold text-primary">
         Total Users Overview
       </h2>
-      <div className="border rounded-xl p-4 mt-4  grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {teamAnalytics.map((item, index) => {
-          return (
-            <div
-              key={index}
-              className={`relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] `}
-            >
-              <AnalyticsCard
-                label={item.label}
-                icon={item.icon}
-                count={item.count}
-                percentage={item.percentage}
-              />
-            </div>
-          );
-        })}
+      <div className="border border-[#CDC9C9] mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {teamAnalytics.map((item, index) => (
+          <div
+            key={index}
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] lg:last:after:hidden"
+          >
+            <AnalyticsCard
+              label={item.label}
+              icon={item.icon}
+              count={item.count}
+              percentage={item.percentage}
+            />
+          </div>
+        ))}
       </div>
       
       <div>
-        <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{ action: CustomActionComponent }}
-        />
+        <h2 className="text-xl font-bold mb-4 mt-4">Users</h2>
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={users}
+            cellComponents={{ action: CustomActionComponent }}
+            loading={loading}
+          />
+        )}
       </div>
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

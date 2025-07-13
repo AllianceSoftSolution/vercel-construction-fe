@@ -11,45 +11,12 @@ import { useEffect } from "react";
 import { useState } from "react";
 import  apiClient  from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 function PmDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      refNo: "REF-001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
+
 
   const columns = [
     { headerName: "Ref No", field: "refNo" },
@@ -159,7 +126,11 @@ function PmDashboard() {
 
       <div className="overflow-x-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        )}
       </div>
     </div>
   );

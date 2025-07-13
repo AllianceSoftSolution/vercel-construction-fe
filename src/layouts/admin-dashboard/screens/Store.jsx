@@ -12,6 +12,7 @@ import { RiAccountBox2Fill } from "react-icons/ri";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import DeleteModal from "../../../mui/DeleteModal";
+import Loader from "../../../components/ui/Loader";
 
 const Stores = () => {
   const navigate = useNavigate();
@@ -123,11 +124,15 @@ const Stores = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={store}
-          cellComponents={{ id: CustomActionComponent }}
-        />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={store}
+            cellComponents={{ id: CustomActionComponent }}
+          />
+        )}
       </div>
       {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
       {showDeleteModal && (

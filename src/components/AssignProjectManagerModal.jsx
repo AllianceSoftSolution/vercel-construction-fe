@@ -1,10 +1,11 @@
-import { Button, Input } from "@mui/material";
+import { Button, Input, CircularProgress } from "@mui/material";
 
 import { PlusOne, Search } from "@mui/icons-material";
 
 export default function AssignProjectManagerModal({
   onCreateClick,
   onManagerClick,
+  loading = false,
 }) {
   const members = Array(10)
     .fill(0)
@@ -20,6 +21,7 @@ export default function AssignProjectManagerModal({
         <button
           onClick={onCreateClick}
           className="flex items-center w-full gap-3 rounded-xl px-4 py-4 bg-white"
+          disabled={loading}
         >
           <div className="bg-[#fc8908] text-white px-2  rounded-sm text-center">
             +
@@ -31,28 +33,37 @@ export default function AssignProjectManagerModal({
           <Input
             placeholder="Search Member"
             className="bg-white w-full rounded-xl px-4 py-3 h-auto text-base placeholder:text-[#8897ad] pr-12 "
+            disabled={loading}
           />
           <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#8897ad]" />
         </div>
 
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-          {members.map((member, index) => (
-            <div 
-              onClick={() => onManagerClick(member.id)}
-              className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm transition-all border-2 border-transparent cursor-pointer hover:border-2 hover:border-[#fc8908]"
-            >
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-[#f7f7f8] flex-shrink-0">
-                <img
-                  src={member.avatar || "/placeholder.svg"}
-                  alt="Member avatar"
-                  className="w-full h-full object-cover"
-                />
+        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 min-h-[48px] flex flex-col items-center justify-center">
+          {loading ? (
+            <CircularProgress size={28} thickness={4} />
+          ) : members.length === 0 ? (
+            <span className="text-gray-400 text-sm">No members found.</span>
+          ) : (
+            members.map((member, index) => (
+              <div 
+                key={member.id}
+                onClick={() => onManagerClick(member.id)}
+                className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm transition-all border-2 border-transparent cursor-pointer hover:border-2 hover:border-[#fc8908] w-full"
+                style={{ pointerEvents: loading ? 'none' : 'auto' }}
+              >
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-[#f7f7f8] flex-shrink-0">
+                  <img
+                    src={member.avatar || "/placeholder.svg"}
+                    alt="Member avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-[#043b6a] font-medium text-base">
+                  {member.name}
+                </span>
               </div>
-              <span className="text-[#043b6a] font-medium text-base">
-                {member.name}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

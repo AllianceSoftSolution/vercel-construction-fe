@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ProjectInfoCard from "@/components/ui/ProjectInfoCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
+import Loader from "../../../../components/ui/Loader";
 import { MdDelete } from "react-icons/md";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
@@ -83,67 +84,79 @@ const PurchaseOrderDetailPage = () => {
 
   return (
     <div className="px-4 md:px-6 py-4">
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
       <TopBar
         title="Purchase Order Detail Page"
         detail="lorem ipsum dolor sit amet"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between gap-4">
-          <p className="text-[#444444] font-semibold text-lg md:text-xl">
-            {purchaseOrderData?.referenceNumber || "Order Name Here"}
-          </p>
-          <div className="flex flex-wrap gap-2 items-center">
-            <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-sm">
-              {purchaseOrderData?.status || "Partial"}
-            </div>
-            <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[200px]">
+            <Loader />
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between gap-4">
+              <p className="text-[#444444] font-semibold text-lg md:text-xl">
+                {purchaseOrderData?.referenceNumber || "Order Name Here"}
+              </p>
+              <div className="flex flex-wrap gap-2 items-center">
+                <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-sm">
+                  {purchaseOrderData?.status || "Partial"}
+                </div>
+                <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+              </div>
+            </div>
 
-        <div className="border-t border-[#CDCDCD]"></div>
+            <div className="border-t border-[#CDCDCD]"></div>
 
-        {/* Info Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Info
-            label="Demand ID"
-            value={purchaseOrderData?.demand?.referenceNumber || "-"}
-          />
-          <Info
-            label="Demand Name"
-            value={purchaseOrderData?.demand?.referenceNumber || "-"}
-          />
-          <Info
-            label="Project"
-            value={purchaseOrderData?.demand?.section?.project?.name || "-"}
-          />
-          <Info
-            label="Section"
-            value={purchaseOrderData?.demand?.section?.name || "-"}
-          />
-          <Info label="Material" value={purchaseOrderData?.materialId || "-"} />
-        </div>
+            {/* Info Section */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+              <Info
+                label="Demand ID"
+                value={purchaseOrderData?.demand?.referenceNumber || "-"}
+              />
+              <Info
+                label="Demand Name"
+                value={purchaseOrderData?.demand?.referenceNumber || "-"}
+              />
+              <Info
+                label="Project"
+                value={purchaseOrderData?.demand?.section?.project?.name || "-"}
+              />
+              <Info
+                label="Section"
+                value={purchaseOrderData?.demand?.section?.name || "-"}
+              />
+              <Info label="Material" value={purchaseOrderData?.materialId || "-"} />
+            </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Info
-            label="Quantity"
-            value={purchaseOrderData?.demand?.quantity || "-"}
-          />
-          <Info label="Unit" value={purchaseOrderData?.demand?.unit || "-"} />
-          <Info
-            label="PO Quantity"
-            value={purchaseOrderData?.quantity || "-"}
-          />
-          <Info
-            label="Assigned Vendor"
-            value={purchaseOrderData?.vendorId || "-"}
-          />
-          <Info
-            label="Vendor Phone No"
-            value={purchaseOrderData?.vendor?.phone || "-"}
-          />
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+              <Info
+                label="Quantity"
+                value={purchaseOrderData?.demand?.quantity || "-"}
+              />
+              <Info label="Unit" value={purchaseOrderData?.demand?.unit || "-"} />
+              <Info
+                label="PO Quantity"
+                value={purchaseOrderData?.quantity || "-"}
+              />
+              <Info
+                label="Assigned Vendor"
+                value={purchaseOrderData?.vendorId || "-"}
+              />
+              <Info
+                label="Vendor Phone No"
+                value={purchaseOrderData?.vendor?.phone || "-"}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Tables */}
@@ -152,12 +165,22 @@ const PurchaseOrderDetailPage = () => {
           Store Sync Status
         </h4>
         <p className="text-[#979797] text-sm">lorem ipsum dolor sit amet</p>
-        <SimpleTable
-          data={storeSyncData}
-          columns={columns}
-          cellComponents={{ action: CustomActionComponent }}
-        />
-      </div>
+        <div className="relative">
+          {loading ? (
+            <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+              <Loader />
+            </div>
+          ) : (
+            <SimpleTable
+              data={storeSyncData}
+              columns={columns}
+              cellComponents={{ action: CustomActionComponent }}
+            />
+          )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

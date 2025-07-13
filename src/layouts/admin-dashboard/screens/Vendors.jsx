@@ -7,6 +7,7 @@ import DropdownButton from "@/comments/components/DropdownButton";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -46,16 +47,16 @@ const Vendors = () => {
     { headerName: "Phone", field: "phone" },
     { headerName: "Email", field: "email" },
     { headerName: "Address", field: "address" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value : id}) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate("123"),
+            onClick: () => navigate(`/admin-dashboard/vendors/${id}`),
             // icon: <FaUserEdit />,
           },
           {
@@ -89,11 +90,15 @@ const Vendors = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={vendors}
-          cellComponents={{ action: CustomActionComponent }}
-        />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={vendors}
+            cellComponents={{ id: CustomActionComponent }}
+          />
+        )}
       </div>
     </div>
   );

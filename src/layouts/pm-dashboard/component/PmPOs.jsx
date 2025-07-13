@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUserEdit } from "react-icons/fa";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const PmPOs = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
@@ -138,11 +139,15 @@ const PmPOs = () => {
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="overflow-x-auto">
+        {loading ? (
+          <Loader/>
+        ) : (
         <SimpleTable
           columns={columns}
           data={purchaseOrders}
-          cellComponents={{ id: CustomActionComponent }}
-        />
+            cellComponents={{ id: CustomActionComponent }}
+          />
+        )}
       </div>
 
       {/* Modal */}

@@ -1,10 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import TopBar from "../../../../../components/ui/TopBar";
 import CustomTextField from "../../../../../mui/CustomTextField";
 import { MenuItem, Modal, Box } from "@mui/material";
 import CustomSelect from "../../../../../mui/CustomSelect";
 
-const ChangeVendor = ({ open, onClose }) => {
+const ChangeVendor = ({ open, onClose, onSave, loading = false }) => {
+  const [form, setForm] = useState({
+    vendorName: "",
+    product: "",
+    quantity: ""
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave(form);
+    }
+  };
+
   return (
     <Modal open={open} onClose={onClose}>
       <Box
@@ -25,32 +41,53 @@ const ChangeVendor = ({ open, onClose }) => {
         <TopBar title="Assign Vendor" detail="Add New Vendor" />
         <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
         <div>
-          <CustomSelect label="Vendor Name" fullWidth name="name" select>
+          <CustomSelect 
+            label="Vendor Name" 
+            fullWidth 
+            name="vendorName" 
+            select
+            value={form.vendorName}
+            onChange={handleChange}
+            disabled={loading}
+          >
             <MenuItem value="1">Option 1</MenuItem>
             <MenuItem value="2">Option 2</MenuItem>
           </CustomSelect>
-          <CustomSelect label="Add Product" fullWidth name="product" select>
+          <CustomSelect 
+            label="Add Product" 
+            fullWidth 
+            name="product" 
+            select
+            value={form.product}
+            onChange={handleChange}
+            disabled={loading}
+          >
             <MenuItem value="1">Option 1</MenuItem>
             <MenuItem value="2">Option 2</MenuItem>
           </CustomSelect>
           <CustomTextField
             label="Quantity"
             fullWidth
-            name="code"
+            name="quantity"
             placeholder="Enter Quantity"
+            value={form.quantity}
+            onChange={handleChange}
+            disabled={loading}
           />
           <div className="flex gap-4 w-full mt-8">
             <button
               className="bg-[#DDDDDD]  px-8 py-2 rounded-lg font-medium text-[#000000] "
-              onClick={() => navigate(-1)}
+              onClick={onClose}
+              disabled={loading}
             >
               Back
             </button>
             <button
               className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
-              onClick={() => navigate(-1)}
+              onClick={handleSave}
+              disabled={loading}
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
           </div>
         </div>

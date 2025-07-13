@@ -4,6 +4,7 @@ import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const Materials = () => {
   const navigate = useNavigate();
@@ -55,12 +56,15 @@ const Materials = () => {
 
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={materials}
-          loading={loading}
-          cellComponents={{}}
-        />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={materials}
+            cellComponents={{}}
+          />
+        )}
       </div>
     </div>
   );

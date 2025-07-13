@@ -10,6 +10,7 @@ import DemandQuantityCard from "../../../../components/DemandQuantityCard";
 import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
+import Loader from "../../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -136,7 +137,11 @@ const DemandDetails = () => {
 
   return (
     <>
-      <Modal open={open} onClose={handleClose}>
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <ReasonModal
             textAreaPlaceholder="Enter your remarks here..."
@@ -288,6 +293,9 @@ const DemandDetails = () => {
         columns={columns}
         cellComponents={{}}
       />
+      </>
+      
+      )}
     </>
   );
 };

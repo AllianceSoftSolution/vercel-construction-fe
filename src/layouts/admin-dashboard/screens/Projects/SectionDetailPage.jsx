@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
+import Loader from "../../../../components/ui/Loader";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
@@ -39,6 +40,9 @@ const SectionDetailPage = () => {
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
   const { id } = useParams();
   const [sectionData, setSectionData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  
   const CustomActionComponent = ({ data }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
@@ -105,6 +109,7 @@ const SectionDetailPage = () => {
 
   const fetchSectionDetail = async () => {
     try {
+      setLoading(true);
       const response = await apiClient.get(`/sections/${id}`);
       if (response.ok) {
         setSectionData(response.data.section);
@@ -121,6 +126,8 @@ const SectionDetailPage = () => {
     } catch (error) {
       console.error("Error fetching Section details:", error);
       toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -142,6 +149,7 @@ const SectionDetailPage = () => {
 
   const handleAddMember = async (data, type) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post("/auth/register", data);
       if (response.ok) {
         toast.success("Member added successfully!");
@@ -153,6 +161,8 @@ const SectionDetailPage = () => {
       }
     } catch (error) {
       toast.error(error.message || "Error adding member");
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -162,6 +172,7 @@ const SectionDetailPage = () => {
   // Handler for assigning a Construction Manager
   const handleAssignCM = async (user) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post(
         `/sections/${id}/assign-construction-manager`,
         { userId: user.id }
@@ -177,12 +188,15 @@ const SectionDetailPage = () => {
       }
     } catch (error) {
       toast.error(error.message || "Error assigning Construction Manager");
+    } finally {
+      setModalLoading(false);
     }
   };
 
   // Handler for adding a new Construction Manager
   const handleAddCM = async (data) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post("/auth/register", {
         ...data,
         role: "CONSTRUCTION_MANAGER",
@@ -199,12 +213,15 @@ const SectionDetailPage = () => {
       }
     } catch (error) {
       toast.error(error.message || "Error adding Construction Manager");
+    } finally {
+      setModalLoading(false);
     }
   };
 
   // Project Manager assignment logic
   const fetchPMUsers = async () => {
     try {
+      setModalLoading(true);
       const response = await apiClient.get(`/assignments/users-by-role`, {
         role: "PROJECT_MANAGER",
         projectId: sectionData?.project?.id,
@@ -216,11 +233,14 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to fetch users");
       return [];
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const createPMUser = async (userData) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post(`/auth/register`, {
         ...userData,
         role: "PROJECT_MANAGER",
@@ -234,11 +254,14 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to create user");
       return null;
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const handleAssignPMGeneric = async ({ userId }) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post(`/assignments/project-manager`, {
         userId,
         projectId: sectionData?.project?.id,
@@ -258,12 +281,15 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to assign Project Manager");
       return false;
+    } finally {
+      setModalLoading(false);
     }
   };
 
   // Construction Manager assignment logic
   const fetchCMUsers = async () => {
     try {
+      setModalLoading(true);
       const response = await apiClient.get(`/assignments/users-by-role`, {
         role: "CONSTRUCTION_MANAGER",
         projectId: sectionData?.project?.id,
@@ -275,11 +301,14 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to fetch users");
       return [];
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const createCMUser = async (userData) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post(`/auth/register`, {
         ...userData,
         role: "CONSTRUCTION_MANAGER",
@@ -293,11 +322,14 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to create user");
       return null;
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const handleAssignCMGeneric = async ({ userId }) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post(
         `/assignments/construction-manager`,
         { userId, sectionId: id }
@@ -316,12 +348,15 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to assign Construction Manager");
       return false;
+    } finally {
+      setModalLoading(false);
     }
   };
 
   // Store Incharge assignment logic
   const fetchStoreInchargeUsers = async () => {
     try {
+      setModalLoading(true);
       const response = await apiClient.get(`/assignments/users-by-role`, {
         role: "STORE_INCHARGE",
         projectId: sectionData?.project?.id,
@@ -333,11 +368,14 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to fetch users");
       return [];
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const createStoreInchargeUser = async (userData) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post(`/auth/register`, {
         ...userData,
         role: "STORE_INCHARGE",
@@ -351,11 +389,14 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to create user");
       return null;
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const handleAssignStoreInchargeGeneric = async ({ userId }) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.post(`/assignments/store-incharge`, {
         userId,
         storeId: sectionData?.headStore?.id,
@@ -374,6 +415,8 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to assign Store Incharge");
       return false;
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -395,18 +438,10 @@ const SectionDetailPage = () => {
             value={sectionData?.project?.code || "-"}
           />
           <InfoItem label="Section" value={sectionData?.name || "-"} />
-          <InfoItem
-            label="Date"
-            value={
-              sectionData?.createdAt
-                ? new Date(sectionData?.createdAt).toLocaleDateString()
-                : "-"
-            }
-          />
+        
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
-          <InfoItem label="Project Location" value="project location" />
           <InfoItem label="Project Status" value="project status" />
           <InfoItem label="Total Amount" value="1200$" />
           <InfoItem label="Paid Amount" value="1500$" />
@@ -419,38 +454,50 @@ const SectionDetailPage = () => {
           Members Overview
         </h4>
 
-        <div className="flex flex-col lg:flex-row h-full gap-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
           {/* Project Manager Card */}
-          {selectedPM ? (
-            <MemberInfoCard
-              title="General information - Project Manager"
-              image={manager}
-              name={selectedPM.name}
-              phone={selectedPM.phone || "-"}
-              role={selectedPM.role || "Project Manager"}
-              email={selectedPM.email}
-              joiningDate={selectedPM.joiningDate || "-"}
-              id={selectedPM.id}
-              address={selectedPM.address || "-"}
-              country={selectedPM.country || "-"}
-              linkedStores={selectedPM.linkedStores || []}
-            />
-          ) : (
-            <MembersOverviewCard
-              title="General Information"
-              subTitle="Project Manager"
-              linkText="Assign Project Manager"
-              imageSrc={Search}
-              imageAlt="Search Illustration"
-              onManagerClick={() => setOpenAssignPMModal(true)}
-              className=""
-            />
-          )}
+          <div className="w-full relative">
+            {loading ? (
+              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px] flex items-center justify-center">
+                <Loader />
+              </div>
+            ) : selectedPM ? (
+              <div className="w-full [&_.border]:!w-full [&_.sm\\:w-\\[90\\%\\]]:!w-full [&_.md\\:w-\\[80\\%\\]]:!w-full [&_.lg\\:w-\\[60\\%\\]]:!w-full">
+                <MemberInfoCard
+                  title="General information - Project Manager"
+                  image={manager}
+                  name={selectedPM.name}
+                  phone={selectedPM.phone || "-"}
+                  role={selectedPM.role || "Project Manager"}
+                  email={selectedPM.email}
+                  joiningDate={selectedPM.joiningDate || "-"}
+                  id={selectedPM.id}
+                  address={selectedPM.address || "-"}
+                  country={selectedPM.country || "-"}
+                  linkedStores={selectedPM.linkedStores || []}
+                />
+              </div>
+            ) : (
+              <MembersOverviewCard
+                title="General Information"
+                subTitle="Project Manager"
+                linkText="Assign Project Manager"
+                imageSrc={Search}
+                imageAlt="Search Illustration"
+                onManagerClick={() => setOpenAssignPMModal(true)}
+                className="!w-full !sm:w-full !md:w-full !lg:w-full"
+              />
+            )}
+          </div>
 
           {/* Head Store Card - Improved Flow */}
-          <div className="w-full sm:w-[90%] md:w-[75%] lg:w-[50%] lg:h-80 h-full mt-6">
-            {sectionData?.headStore ? (
-              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 h-full flex flex-col justify-between bg-white">
+          <div className="w-full relative">
+            {loading ? (
+              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px] flex items-center justify-center">
+                <Loader />
+              </div>
+            ) : sectionData?.headStore ? (
+              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px]">
                 <div>
                   <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
                     Head Store
@@ -535,7 +582,7 @@ const SectionDetailPage = () => {
                 </div>
               </div>
             ) : (
-              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 h-full flex items-center justify-center bg-white">
+              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px] w-full flex items-center justify-center">
                 <span className="text-[#979797] text-base">
                   No Head Store assigned to this section.
                 </span>
@@ -553,12 +600,18 @@ const SectionDetailPage = () => {
           onButtonClick={() => setOpenAssignCMModal(true)}
         />
 
-        <div className="overflow-x-auto mt-4">
-          <SimpleTable
-            data={sectionData?.associatedConstructionManagers || []}
-            columns={columns}
-            cellComponents={{ action: CustomActionComponent }}
-          />
+        <div className="overflow-x-auto mt-4 relative">
+          {loading ? (
+            <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+              <Loader />
+            </div>
+          ) : (
+            <SimpleTable
+              data={sectionData?.associatedConstructionManagers || []}
+              columns={columns}
+              cellComponents={{ action: CustomActionComponent }}
+            />
+          )}
         </div>
       </div>
 
@@ -569,6 +622,7 @@ const SectionDetailPage = () => {
         fetchUsers={fetchPMUsers}
         createUser={createPMUser}
         onAssign={handleAssignPMGeneric}
+        loading={modalLoading}
       />
 
       <Modal open={openStoreModal} onClose={() => setOpenStoreModal(false)}>
@@ -587,6 +641,7 @@ const SectionDetailPage = () => {
         fetchUsers={fetchCMUsers}
         createUser={createCMUser}
         onAssign={handleAssignCMGeneric}
+        loading={modalLoading}
       />
 
       <AssignMemberModal
@@ -596,6 +651,7 @@ const SectionDetailPage = () => {
         fetchUsers={fetchStoreInchargeUsers}
         createUser={createStoreInchargeUser}
         onAssign={handleAssignStoreInchargeGeneric}
+        loading={modalLoading}
       />
     </div>
   );

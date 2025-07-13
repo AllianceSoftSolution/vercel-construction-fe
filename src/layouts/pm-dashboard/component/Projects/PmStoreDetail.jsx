@@ -13,6 +13,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
+import Loader from "../../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -184,7 +185,9 @@ const PmStoreDetail = () => {
 
   return (
     <>
-      <TopBar
+      {loading ? <Loader/> : (
+        <>
+          <TopBar
         title="Store Detail"
         detail="lorem ipsum dolor sit amet"
         showExport={true}
@@ -266,6 +269,8 @@ const PmStoreDetail = () => {
         columns={columns1}
         cellComponents={{}}
       />
+        </>
+      )}
     </>
   );
 };

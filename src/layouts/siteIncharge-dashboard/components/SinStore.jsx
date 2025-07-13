@@ -11,6 +11,7 @@ import { IoPersonCircle } from "react-icons/io5";
 import { RiAccountBox2Fill } from "react-icons/ri";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const SinStores = () => {
   const navigate = useNavigate();
@@ -103,11 +104,15 @@ const SinStores = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
+        {loading ? (
+          <Loader />
+        ) : (
         <SimpleTable
           columns={columns}
           data={store}
           cellComponents={{ action: CustomActionComponent }}
-        />
+          />
+        )}
       </div>
       {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
     </div>

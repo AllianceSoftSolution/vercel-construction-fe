@@ -8,6 +8,7 @@ import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
 import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
 import SimpleTable from "../../../components/SimpleTable";
+import Loader from "../../../components/ui/Loader";
 import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
@@ -16,7 +17,8 @@ import toast from "react-hot-toast";
 function SinteInchargeDashbaord() {
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingDemands, setLoadingDemands] = useState(false);
+  const [loadingPurchaseOrders, setLoadingPurchaseOrders] = useState(false);
 
   const columns = [
     { headerName: "Ref No", field: "refNo" },
@@ -69,7 +71,7 @@ function SinteInchargeDashbaord() {
 
   const fetchDemands = async () => {
     try {
-      setLoading(true);
+      setLoadingDemands(true);
       const response = await apiClient.get("/demands");
       if (response.ok) {
         const data = response.data.demands.map((demand) => ({
@@ -91,14 +93,14 @@ function SinteInchargeDashbaord() {
       console.error("Error fetching demands:", error);
       toast.error("Error fetching demands");
     } finally {
-      setLoading(false);
+      setLoadingDemands(false);
     }
   };
 
   // Fetch recent purchase orders
   const fetchPurchaseOrders = async () => {
     try {
-      setLoading(true);
+      setLoadingPurchaseOrders(true);
       const response = await apiClient.get("/purchase-orders");
       if (response.ok) {
         // Map the API response to match the columns
@@ -121,7 +123,7 @@ function SinteInchargeDashbaord() {
       console.error("Error fetching purchase orders:", error);
       toast.error("Error fetching purchase orders");
     } finally {
-      setLoading(false);
+      setLoadingPurchaseOrders(false);
     }
   };
 
@@ -167,13 +169,22 @@ function SinteInchargeDashbaord() {
         <BasicBarChart />
       </div>
 
-      <div className="overflow-x-auto mt-8">
+      <div className="overflow-x-auto mt-8">  
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        {loadingDemands ? (
+          <Loader />
+        ) : (
+          <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        )}
       </div>
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent POs</h2>
-        <SimpleTable columns={columns2} data={purchaseOrders} cellComponents={{}} />
+
+        {loadingPurchaseOrders ? (
+          <Loader />
+        ) : (
+          <SimpleTable columns={columns2} data={purchaseOrders} cellComponents={{}} />
+        )}
       </div>
     </div>
   );

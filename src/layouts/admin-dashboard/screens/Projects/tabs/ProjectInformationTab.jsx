@@ -14,6 +14,7 @@ import AssignProjectManagerModal from "../../../../../components/AssignProjectMa
 import AssignMemberModal from "../../../../../components/AssignMemberModal";
 import apiClient from "../../../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -32,7 +33,16 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
   const [openSection, setOpenSection] = useState(false);
   const [openAssignModal, setOpenAssignModal] = useState(false);
   const [assignRole, setAssignRole] = useState("");
-
+  
+  // Loading states for different operations
+  const [siteInchargeLoading, setSiteInchargeLoading] = useState(false);
+  const [accountantLoading, setAccountantLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [pmModalLoading, setPmModalLoading] = useState(false);
+  const [addUserModalLoading, setAddUserModalLoading] = useState(false);
+  const [sectionModalLoading, setSectionModalLoading] = useState(false);
+  const [initialDataLoading, setInitialDataLoading] = useState(false);
+  
   const handleOpenPM = () => setOpenPM(true);
   const handlePMCreate = () => {
     setOpenPM(false);
@@ -44,6 +54,34 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
   };
   const handleSectionDone = () => setOpenSection(false);
 
+  // Handle opening assign modal with loading state
+  const handleOpenAssignModal = async (role) => {
+    setAssignRole(role);
+    setInitialDataLoading(true);
+    setOpenAssignModal(true);
+    
+    try {
+      // Pre-fetch users for the selected role
+      let apiRole = null;
+      if (role === "Site Incharge") apiRole = "SITE_INCHARGE";
+      if (role === "Accountant") apiRole = "ACCOUNTANT";
+      
+      if (apiRole) {
+        const response = await apiClient.get(`/assignments/users-by-role`, {
+          role: apiRole,
+          projectId: data.id,
+        });
+        if (!response.ok) {
+          toast.error("Failed to fetch users");
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to fetch initial data");
+    } finally {
+      setInitialDataLoading(false);
+    }
+  };
+
   // API-integrated functions for Site Incharge and Accountant assignment
   const fetchUsers = async (role) => {
     let apiRole = null;
@@ -51,6 +89,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     if (role === "Accountant") apiRole = "ACCOUNTANT";
     if (!apiRole) return [];
     try {
+      setModalLoading(true);
       const response = await apiClient.get(`/assignments/users-by-role`, {
         role: apiRole,
         projectId: data.id,
@@ -62,11 +101,14 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     } catch (e) {
       toast.error("Failed to fetch users");
       return [];
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const fetchSectionsSiteIncharge = async (userId) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.get(
         `/assignments/site-incharge/sections-with-status`,
         {
@@ -81,11 +123,14 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     } catch (e) {
       toast.error("Failed to fetch sections");
       return [];
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const fetchSectionsAccountant = async (userId) => {
     try {
+      setModalLoading(true);
       const response = await apiClient.get(
         `/assignments/accountant/sections-with-status`,
         {
@@ -100,6 +145,8 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     } catch (e) {
       toast.error("Failed to fetch sections");
       return [];
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -109,6 +156,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     if (role === "Accountant") apiRole = "ACCOUNTANT";
     if (!apiRole) return null;
     try {
+      setModalLoading(true);
       const response = await apiClient.post(`/auth/register`, {
         ...userData,
         role: apiRole,
@@ -122,13 +170,21 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     } catch (e) {
       toast.error("Failed to create user");
       return null;
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const handleAssign = async ({ userId, sectionIds }) => {
     let endpoint = null;
-    if (assignRole === "Site Incharge") endpoint = "/assignments/site-incharge";
-    if (assignRole === "Accountant") endpoint = "/assignments/accountant";
+    if (assignRole === "Site Incharge") {
+      endpoint = "/assignments/site-incharge";
+      setSiteInchargeLoading(true);
+    }
+    if (assignRole === "Accountant") {
+      endpoint = "/assignments/accountant";
+      setAccountantLoading(true);
+    }
     if (!endpoint) return false;
     try {
       const response = await apiClient.post(endpoint, {
@@ -149,6 +205,55 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     } catch (e) {
       toast.error("Failed to assign sections");
       return false;
+    } finally {
+      if (assignRole === "Site Incharge") {
+        setSiteInchargeLoading(false);
+      }
+      if (assignRole === "Accountant") {
+        setAccountantLoading(false);
+      }
+    }
+  };
+
+  // Mock functions for other modals (these would be replaced with actual API calls)
+  const handlePMModalAction = async (action) => {
+    try {
+      setPmModalLoading(true);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (action === 'create') {
+        handlePMCreate();
+      }
+    } catch (error) {
+      toast.error("Failed to process action");
+    } finally {
+      setPmModalLoading(false);
+    }
+  };
+
+  const handleAddUserModalAction = async (userData) => {
+    try {
+      setAddUserModalLoading(true);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      handleAddUserDone();
+    } catch (error) {
+      toast.error("Failed to add user");
+    } finally {
+      setAddUserModalLoading(false);
+    }
+  };
+
+  const handleSectionModalAction = async () => {
+    try {
+      setSectionModalLoading(true);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      handleSectionDone();
+    } catch (error) {
+      toast.error("Failed to assign sections");
+    } finally {
+      setSectionModalLoading(false);
     }
   };
 
@@ -238,46 +343,49 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
         <Button
-          buttonText="Create Site Incharge"
-          onClick={() => {
-            setAssignRole("Site Incharge");
-            setOpenAssignModal(true);
-          }}
+          buttonText={initialDataLoading && assignRole === "Site Incharge" ? "Loading..." : "Create Site Incharge"}
+          onClick={() => handleOpenAssignModal("Site Incharge")}
+          disabled={initialDataLoading}
         />
       </div>
 
-      <SimpleTable
-        columns={columns}
-        data={
-          data?.assignedSiteIncharges?.map((i) => ({
-            ...i,
-            noOfSection: i.sections.length,
-          })) || []
-        }
-        cellComponents={{ action: CustomActionComponent }}
-      />
+      {siteInchargeLoading ? (
+        <Loader />
+      ) : (
+        <SimpleTable
+          columns={columns}
+          data={
+            data?.assignedSiteIncharges?.map((i) => ({
+              ...i,
+              noOfSection: i.sections.length,
+            })) || []
+          }
+          cellComponents={{ action: CustomActionComponent }}
+        />
+      )}
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
         <Button
-          buttonText="Create An Accountant"
-          onClick={() => {
-            setAssignRole("Accountant");
-            setOpenAssignModal(true);
-          }}
+          buttonText={initialDataLoading && assignRole === "Accountant" ? "Loading..." : "Create An Accountant"}
+          onClick={() => handleOpenAssignModal("Accountant")}
+          disabled={initialDataLoading}
         />
       </div>
-
-      <SimpleTable
-        columns={columns}
-        data={
-          data?.assignedAccountants?.map((i) => ({
-            ...i,
-            noOfSection: i.sections.length,
-          })) || []
-        }
-        cellComponents={{ action: CustomActionComponent }}
-      />
+      {accountantLoading ? (
+        <Loader />
+      ) : (
+        <SimpleTable
+          columns={columns}
+          data={
+            data?.assignedAccountants?.map((i) => ({
+              ...i,
+              noOfSection: i.sections.length,
+            })) || []
+          }
+          cellComponents={{ action: CustomActionComponent }}
+        />
+      )}
 
       <AssignMemberModal
         role={assignRole}
@@ -293,26 +401,54 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
             : undefined
         }
         onAssign={handleAssign}
+        loading={modalLoading || initialDataLoading}
       />
 
       <Modal open={openPM} onClose={() => setOpenPM(false)}>
         <Box sx={style} className="bg-white p-4">
-          <AssignProjectManagerModal onCreateClick={handlePMCreate} />
+          {pmModalLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader />
+            </div>
+          ) : (
+            <AssignProjectManagerModal 
+              onCreateClick={() => handlePMModalAction('create')}
+              onManagerClick={(id) => handlePMModalAction('select')}
+              loading={pmModalLoading}
+            />
+          )}
         </Box>
       </Modal>
 
       <Modal open={openAddUser} onClose={() => setOpenAddUser(false)}>
         <Box sx={style} className="bg-white p-4">
-          <AddMemberModal onAddUserClick={handleAddUserDone} />
+          {addUserModalLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader />
+            </div>
+          ) : (
+            <AddMemberModal 
+              onAddUserClick={handleAddUserModalAction}
+              onClose={() => setOpenAddUser(false)}
+              loading={addUserModalLoading}
+            />
+          )}
         </Box>
       </Modal>
 
       <Modal open={openSection} onClose={handleSectionDone}>
         <Box sx={style} className="bg-white p-4">
-          <AssignSectionModal
-            handleSubmit={handleSectionDone}
-            handleCancel={handleSectionDone}
-          />
+          {sectionModalLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader />
+            </div>
+          ) : (
+            <AssignSectionModal
+              handleSubmit={handleSectionModalAction}
+              handleCancel={handleSectionDone}
+              loading={sectionModalLoading}
+            />
+          )}
         </Box>
       </Modal>
     </>

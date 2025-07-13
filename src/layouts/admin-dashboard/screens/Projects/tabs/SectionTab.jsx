@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TopBar from "../../../../../components/ui/TopBar";
 import SectionCard from "../../../../../components/ui/SectionCard";
+import Loader from "../../../../../components/ui/Loader";
 import { FaTrash, FaUserEdit, FaEye } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import apiClient from "../../../../../api/apiClient";
@@ -18,6 +19,7 @@ const SectionTab = ({ data, onSectionDeleted }) => {
 
   const deleteSection = async (sectionId) => {
     try {
+      setLoading(true);
       const response = await apiClient.delete(`/sections/${sectionId}`);
       if (response.ok) {
         if (typeof onSectionDeleted === 'function') onSectionDeleted();
@@ -31,6 +33,7 @@ const SectionTab = ({ data, onSectionDeleted }) => {
 
   return (
     <div className="w-full">
+      {loading && <Loader />}
       <TopBar
         title="Project Sections"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

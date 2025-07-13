@@ -10,6 +10,7 @@ import { IconButton } from "@mui/material";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { RiDeleteBin5Fill } from "react-icons/ri";
+import Loader from "../../../components/ui/Loader";
 
 const PmProjectManagement = () => {
   const navigate = useNavigate();
@@ -90,12 +91,15 @@ const PmProjectManagement = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 
       <div className="overflow-x-auto">
+        {loading ? (
+          <Loader />
+        ) : (
         <SimpleTable
           columns={columns}
           data={projects}
           cellComponents={{ id: CustomActionComponent }}
-          loading={loading}
-        />
+          />
+        )}
       </div>
 
       {showModal && (

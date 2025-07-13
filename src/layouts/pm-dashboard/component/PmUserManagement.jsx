@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "@/components/ui/TopBar";
 import CustomCardComponent from "../../../mui/CustomCardComponent";
 import {
@@ -22,83 +22,86 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IconButton } from "@mui/material";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { MdNoAccounts } from "react-icons/md";
+import {
+  Person,
+  Person3,
+} from "@mui/icons-material";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const PmUserManagement = () => {
   const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [managerStats, setManagerStats] = useState([]);
+
+  const getAllUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/auth/users");
+      if (response.ok) {
+        const usersData = response.data.users || [];
+        setUsers(usersData);
+        
+        // Calculate analytics based on actual user data
+        const roleCounts = usersData.reduce((acc, user) => {
+          const role = user.role;
+          acc[role] = (acc[role] || 0) + 1;
+          return acc;
+        }, {});
+        
+        // Update analytics with real counts
+        setManagerStats([
+          {
+            label: "Site Manager",
+            icon: FaPeopleLine,
+            count: roleCounts.SITE_INCHARGE || 0,
+            percentage: usersData.length > 0 ? Math.round((roleCounts.SITE_INCHARGE || 0) / usersData.length * 100) : 0,
+          },
+          {
+            label: "Project Manager",
+            icon: Person,
+            count: roleCounts.PROJECT_MANAGER || 0,
+            percentage: usersData.length > 0 ? Math.round((roleCounts.PROJECT_MANAGER || 0) / usersData.length * 100) : 0,
+          },
+          {
+            label: "Construction Manager",
+            icon: Person3,
+            count: roleCounts.CONSTRUCTION_MANAGER || 0,
+            percentage: usersData.length > 0 ? Math.round((roleCounts.CONSTRUCTION_MANAGER || 0) / usersData.length * 100) : 0,
+          },
+        ]);
+      } else {
+        toast.error("Failed to fetch users");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Error fetching users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+  }, []);
 
   const handleActionClick = () => {
     setShowModal(true);
   };
 
-  const data = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Project Manager",
-      status: "Pending",
-      note: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Construction Manager",
-      status: "Approved",
-      note: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      iD: "03",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Site Manager",
-      status: "In Progress",
-      note: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
   const columns = [
-    { headerName: "ID", field: "iD" },
+    { headerName: "ID", field: "employeeId" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
     { headerName: "Role", field: "role" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Note", field: "note" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
       field: "action",
-    },
-  ];
-  const managerStats = [
-    {
-      label: "Site Manager",
-      icon: FaPeopleLine,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Project Manager",
-      icon: FaPeopleLine,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Construction Manager",
-      icon: FaPeopleLine,
-      count: 10,
-      percentage: 10,
     },
   ];
 
@@ -112,24 +115,7 @@ const PmUserManagement = () => {
             onClick: () => navigate("123"),
             icon: <FaEye />,
           },
-          // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          // {
-          //   label: "Delete ",
-          //   onClick: () => alert("Delete"),
-          //   icon: <FaTrash />,
-          // },
-          // {
-          //   label: "Ban",
-          //   onClick: () => alert("Delete"),
-          //   icon: <MdNoAccounts />,
-          // },
-          // {
-          //   label: "Suspend Account",
-          //   onClick: () => alert("Delete"),
-          //   icon: <FaBan />,
-          // },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -137,106 +123,111 @@ const PmUserManagement = () => {
       </DropdownButton>
     );
   };
+
   return (
     <div className="h-full">
-      <TopBar
-        title="User Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
-        showFilter={true}
-        filterOptions={[
-          "Project Manager",
-          "Const Manager",
-          "Site Manager",
-          "Store-INCHARGE",
-          "Accountant",
-        ]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
-        buttonText="Create New User"
-        onButtonClick={() =>
-          navigate("/project-manager-dashboard/user-management/addUser")
-        }
-      />
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      <h2 className="text-2xl font-semibold text-primary">
-        Total Users Overview
-      </h2>
-      <div className="border rounded-xl p-4 mt-4  grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {managerStats.map((item, index) => {
-         
-
-          return (
-            <div
-              key={index}
-              className={`relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0]`}
-            >
-              <AnalyticsCard
-                label={item.label}
-                icon={item.icon}
-                count={item.count}
-                percentage={item.percentage}
-              />
-            </div>
-          );
-        })}
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{ action: CustomActionComponent }}
-        />
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl relative">
-            <button
-              className="absolute top-2 right-3 text-lg font-bold"
-              onClick={() => setShowModal(false)}
-            >
-              &times;
-            </button>
-            <ActionModal
-              user={{ name: "Jane Doe" }}
-              showProfile={true}
-              buttonText="Add Note"
-              actions={[
-                {
-                  type: "edit",
-                  icon: <FaUserEdit />,
-                  label: "Edit",
-                  onClick: () => console.log("Edit clicked"),
-                },
-                {
-                  type: "delete",
-                  icon: <RiDeleteBin5Fill />,
-                  label: "Delete",
-                  onClick: () => console.log("Delete clicked"),
-                },
-
-                {
-                  type: "ban",
-                  icon: <IoPersonCircle />,
-                  label: "Ban",
-                  onClick: () => console.log("Ban clicked"),
-                },
-                {
-                  type: "suspend",
-                  icon: <FaBan />,
-                  label: "Suspend Account",
-                  onClick: () => console.log("Suspend clicked"),
-                },
-                {
-                  type: "note",
-                },
-              ]}
+      {loading ? (
+        <div className="flex items-center justify-center h-full">
+          <Loader />
+        </div>
+      ) : (
+        <>
+          <TopBar
+            title="User Management"
+            detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            showExport={true}
+            showFilter={true}
+            filterOptions={[
+              "Project Manager",
+              "Const Manager",
+              "Site Manager",
+              "Store-INCHARGE",
+              "Accountant",
+            ]}
+            onFilterChange={(selected) =>
+              console.log("Selected Filters:", selected)
+            }
+            buttonText="Create New User"
+            onButtonClick={() =>
+              navigate("/project-manager-dashboard/user-management/addUser")
+            }
+          />
+          <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+          <h2 className="text-2xl font-semibold text-primary">
+            Total Users Overview
+          </h2>
+          <div className="border border-[#CDC9C9] mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {managerStats.map((item, index) => (
+              <div
+                key={index}
+                className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] lg:last:after:hidden"
+              >
+                <AnalyticsCard
+                  label={item.label}
+                  icon={item.icon}
+                  count={item.count}
+                  percentage={item.percentage}
+                />
+              </div>
+            ))}
+          </div>
+          <div>
+            <h2 className="text-xl font-bold mb-4 mt-4">Users</h2>
+            <SimpleTable
+              columns={columns}
+              data={users}
+              cellComponents={{ action: CustomActionComponent }}
+              loading={loading}
             />
           </div>
-        </div>
+
+          {showModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-xl relative">
+                <button
+                  className="absolute top-2 right-3 text-lg font-bold"
+                  onClick={() => setShowModal(false)}
+                >
+                  &times;
+                </button>
+                <ActionModal
+                  user={{ name: "Jane Doe" }}
+                  showProfile={true}
+                  buttonText="Add Note"
+                  actions={[
+                    {
+                      type: "edit",
+                      icon: <FaUserEdit />,
+                      label: "Edit",
+                      onClick: () => console.log("Edit clicked"),
+                    },
+                    {
+                      type: "delete",
+                      icon: <RiDeleteBin5Fill />,
+                      label: "Delete",
+                      onClick: () => console.log("Delete clicked"),
+                    },
+                    {
+                      type: "ban",
+                      icon: <IoPersonCircle />,
+                      label: "Ban",
+                      onClick: () => console.log("Ban clicked"),
+                    },
+                    {
+                      type: "suspend",
+                      icon: <FaBan />,
+                      label: "Suspend Account",
+                      onClick: () => console.log("Suspend clicked"),
+                    },
+                    {
+                      type: "note",
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

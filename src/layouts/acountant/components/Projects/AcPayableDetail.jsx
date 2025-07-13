@@ -1,82 +1,122 @@
-import React from "react";
-import TopBar from "@/components/ui/TopBar";
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Typography,
-} from "@mui/material";
-import {
-  AccountBalance,
-  AvTimerSharp,
-  CloudDownload,
-  Paid,
-} from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import TopBar from "../../../../components/ui/TopBar";
+import { Box, IconButton } from "@mui/material";
 import SimpleTable from "../../../../components/SimpleTable";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { CiDollar } from "react-icons/ci";
+import { AccountBalance, AccountTree, Paid } from "@mui/icons-material";
+import { RiRecordMailLine } from "react-icons/ri";
+import apiClient from "../../../../api/apiClient";
+import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
-const data = [
-  {
-    id: 1,
-    vendorName: "ABC Supplies Ltd.",
-    amountPaid: 1200,
-    remainingBalance: 300,
-    date: "2025-06-25",
-    paidBy: "John Doe",
-    fileUrl: "/docs/payment-receipt-abc.pdf",
-  },
-  {
-    id: 2,
-    vendorName: "Tech Solutions Inc.",
-    amountPaid: 800,
-    remainingBalance: 0,
-    date: "2025-06-26",
-    paidBy: "Sarah Khan",
-    fileUrl: "/docs/payment-receipt-tech.pdf",
-  },
-  {
-    id: 3,
-    vendorName: "Global Office Equipment",
-    amountPaid: 1500,
-    remainingBalance: 500,
-    date: "2025-06-27",
-    paidBy: "Ahmed Raza",
-    fileUrl: "/docs/payment-receipt-global.pdf",
-  },
-];
-
-const columns = [
-  { headerName: "Vendor Name", field: "vendorName" },
-  { headerName: "Amount Paid", field: "amountPaid" },
-  { headerName: "Remaining Balance", field: "remainingBalance" },
+const paymentColumns = [
   { headerName: "Date", field: "date" },
-  { headerName: "Paid By", field: "paidBy" },
-  { headerName: "Attachment", field: "fileUrl" },
-];
-const analyticsData = [
-  { label: "Total Payables", icon: AvTimerSharp, count: 120000 },
-  { label: "Total Paid", icon: Paid, count: 250000 },
-  { label: "Balance Remaining", icon: AccountBalance, count: 1900000 },
+  { headerName: "Description", field: "description" },
+  { headerName: "Type", field: "type" },
+  { headerName: "Amount", field: "amount" },
+  { headerName: "Balance", field: "balance" },
+  { headerName: "Reference", field: "reference" },
 ];
 
 export default function AcPayableDetails() {
-  return (
-    <Box>
-      <TopBar
-        title="Payables Detail"
-        detail="Detailed view of material stock movement transactions for selected Purchase Order."
-        showFilter={true}
-        filterOptions={["Assigned", "Not-Assigned"]}
-      />
+  const { id } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [vendorAccount, setVendorAccount] = useState(null);
+  const [transactions, setTransactions] = useState([]);
 
+  const fetchDetails = async () => {
+    try {
+      setLoading(true);
+      console.log("Fetching vendor account details for ID:", id);
+      
+      const response = await apiClient.get(`/vendor-account/vendors/${id}/statement`);
+      console.log("API Response:", response);
+      
+      if (response.ok) {
+        // The API returns data directly, not nested under vendorAccount
+        setVendorAccount(response.data.data);
+        
+        // Map transactions to table format
+        const transactionData = response.data.data.transactions?.map((transaction) => ({
+          id: transaction.id,
+          date: new Date(transaction.createdAt).toLocaleDateString(),
+          description: transaction.note || transaction.type,
+          type: transaction.type,
+          amount: transaction.amount ? `$${parseFloat(transaction.amount).toLocaleString()}` : "-",
+          balance: "-", // API doesn't provide balanceAfter, so we'll show "-"
+          reference: transaction.purchaseOrderId || transaction.vendorPaymentId || "-",
+        })) || [];
+        
+        setTransactions(transactionData);
+      } else {
+        console.error("API Error Response:", response.data);
+        toast.error(response.data?.message || "Failed to fetch vendor account details");
+      }
+    } catch (error) {
+      console.error("API error:", error);
+      console.error("Error response:", error.response?.data);
+      toast.error(error.response?.data?.message || "Error fetching vendor account details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchDetails();
+    }
+  }, [id]);
+
+  const analyticsData = [
+    {
+      id: 1,
+      label: "Total Credited",
+      icon: AccountTree,
+      count: vendorAccount?.totalCredited ? parseFloat(vendorAccount.totalCredited).toLocaleString() : "0",
+    },
+    {
+      id: 2,
+      label: "Total Debited",
+      icon: Paid,
+      count: vendorAccount?.totalDebited ? parseFloat(vendorAccount.totalDebited).toLocaleString() : "0",
+    },
+    {
+      id: 3,
+      label: "Current Balance",
+      icon: RiRecordMailLine,
+      count: vendorAccount?.balance ? parseFloat(vendorAccount.balance).toLocaleString() : "0",
+    },
+  ];
+
+  if (loading) {
+    return (
+      <Box className="p-4">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading vendor account details...</div>
+        </div>
+      </Box>
+    );
+  }
+
+  if (!vendorAccount) {
+    return (
+      <Box className="p-4">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg text-red-600">No vendor account found</div>
+        </div>
+      </Box>
+    );
+  }
+
+  return (
+    <Box className="p-4">
+      <TopBar
+        title={`Payables Detail - ${vendorAccount?.vendor?.name || 'Vendor'}`}
+        detail={`Vendor account details for ${vendorAccount?.vendor?.name || 'Vendor'} - Last updated: ${vendorAccount?.lastUpdated ? new Date(vendorAccount.lastUpdated).toLocaleDateString() : 'N/A'}`}
+        showFilter={true}
+        filterOptions={["All", "Credits", "Debits"]}
+      />
       <div className="border rounded-xl p-4 mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {analyticsData.map((item, index) => (
           <div
@@ -88,18 +128,21 @@ export default function AcPayableDetails() {
               label={item.label}
               icon={item.icon}
               count={item.count}
-              percentage={item.percentage}
             />
           </div>
         ))}
       </div>
       <div className="mt-10">
         <TopBar
-          title="Transaction Details"
-          detail="Detailed view of material stock movement transactions for selected Purchase Order."
+          title="Transaction History"
+          detail="Complete list of all transactions for this vendor account."
         />
-        <div className="mt-3">
-          <SimpleTable data={data} columns={columns} cellComponents={{}} />
+        <div className="mt-4 overflow-x-auto">
+          <SimpleTable
+            data={transactions}
+            columns={paymentColumns}
+            cellComponents={{}}
+          />
         </div>
       </div>
     </Box>

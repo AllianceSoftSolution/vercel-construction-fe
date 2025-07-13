@@ -255,15 +255,14 @@ const AdminDashboardLayout = ({ role }) => {
         </div>
       </div>
 
-      {showLogoutModal && (
-        <LogOutModal
-          onClose={() => setShowLogoutModal(false)}
-          onConfirm={() => {
-            localStorage.clear();
-            navigate("/login");
-          }}
-        />
-      )}
+      <LogOutModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          localStorage.clear();
+          navigate("/");
+        }}
+      />
     </div>
   );
 };

@@ -11,52 +11,13 @@ import { useNavigate } from "react-router-dom";
 import { FaUserEdit } from "react-icons/fa";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 const SiPOs = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const navigate = useNavigate();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      demandId: "001",
-      demandName: "Cement",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      unit: "ton",
-      poQty: 100,
-      status: "Pending",
-      assingedVendors: "Owner",
-    },
-    {
-      id: 2,
-      demandId: "002",
-      demandName: "Cement",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      unit: "ton",
-      poQty: 100,
-      status: "Approved",
-    },
-    {
-      id: 3,
-      demandId: "003",
-      demandName: "Cement",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      unit: "ton",
-      poQty: 100,
-      status: "In Progress",
-      assingedVendors: "Owner",
-    },
-  ];
-
+ 
   const columns = [
     { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
@@ -149,11 +110,15 @@ const SiPOs = () => {
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="overflow-x-auto">
+        {loading ? (
+          <Loader />
+        ) : (
         <SimpleTable
           columns={columns}
           data={purchaseOrders}
           cellComponents={{ id: CustomActionComponent }}
-        />
+          />
+        )}
       </div>
 
       {/* Modal */}

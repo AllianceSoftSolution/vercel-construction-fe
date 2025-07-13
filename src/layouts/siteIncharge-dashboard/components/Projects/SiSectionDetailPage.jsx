@@ -177,56 +177,103 @@ const SiSectionDetailPage = () => {
           <h4 className="mt-10 text-[#12141D] font-semibold text-xl">
             Members Overview
           </h4>
-          <div className="flex flex-col lg:flex-row gap-5 mt-4">
-            {hasMemberInfo && sectionData.constructionManagerAssignments?.length > 0 ? (
-              <MemberInfoCard
-                title="General information - Construction Manager"
-                image={manager}
-                name={sectionData.constructionManagerAssignments[0].user?.name || "Unknown"}
-                phone="Not available"
-                role="Construction Manager"
-                email={sectionData.constructionManagerAssignments[0].user?.email || "No email"}
-                joiningDate={formatDate(sectionData.createdAt)}
-                id={sectionData.constructionManagerAssignments[0].user?.id || "N/A"}
-                address="Not available"
-                country="Not available"
-                linkedStores={sectionData.stores?.map(store => store.name) || []}
-              />
-            ) : (
-              <MemebersOverviewCard
-                title="General Information"
-                subTitle="Construction Manager"
-                linkText="Assign Construction Manager"
-                imageSrc={Search}
-                imageAlt="Search Illustration"
-                onManagerClick={() => setHasMemberInfo(true)}
-              />
-            )}
-
-            {hasStoreHeadInfo && storeIncharges.length > 0 ? (
-              <MemberInfoCard
-                title="General information - Store Head"
-                image={manager}
-                name={storeIncharges[0].user?.name || "Unknown"}
-                phone="Not available"
-                role="Store Head"
-                email={storeIncharges[0].user?.email || "No email"}
-                joiningDate={formatDate(sectionData.createdAt)}
-                id={storeIncharges[0].user?.id || "N/A"}
-                address="Not available"
-                country="Not available"
-                linkedStores={sectionData.stores?.map(store => store.name) || []}
-              />
-            ) : (
-              <MemebersOverviewCard
-                title="General Information"
-                subTitle="Store Head"
-                linkText="Assign Store Head"
-                imageSrc={Search}
-                imageAlt="Search Illustration"
-                onManagerClick={() => setHasStoreHeadInfo(true)}
-              />
-            )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-4">
+            {/* Construction Manager Card */}
+            <div className="w-full">
+              {sectionData?.associatedConstructionManagers && sectionData.associatedConstructionManagers.length > 0 ? (
+                <div className="w-full">
+                  <MemberInfoCard
+                    title="General information - Construction Manager"
+                    image={manager}
+                    name={sectionData.associatedConstructionManagers[0].user?.name || "Unknown"}
+                    phone={sectionData.associatedConstructionManagers[0].user?.phone || "-"}
+                    role={sectionData.associatedConstructionManagers[0].user?.role || "Construction Manager"}
+                    email={sectionData.associatedConstructionManagers[0].user?.email || "-"}
+                    joiningDate={sectionData.associatedConstructionManagers[0].user?.createdAt ? new Date(sectionData.associatedConstructionManagers[0].user.createdAt).toLocaleDateString() : "-"}
+                    id={sectionData.associatedConstructionManagers[0].user?.id || "-"}
+                    address={sectionData.associatedConstructionManagers[0].user?.address || "-"}
+                    country={sectionData.associatedConstructionManagers[0].user?.country || "-"}
+                    linkedStores={[sectionData.associatedConstructionManagers[0].cmStore?.name || "-"]}
+                  />
+                </div>
+              ) : (
+                <div className="w-full">
+                  <MemebersOverviewCard
+                    title="General Information"
+                    subTitle="Construction Manager"
+                    linkText="Assign Construction Manager"
+                    imageSrc={Search}
+                    imageAlt="Search Illustration"
+                    onManagerClick={() => setHasMemberInfo(true)}
+                  />
+                </div>
+              )}
+            </div>
+            {/* Head Store Card */}
+            <div className="w-full">
+              {sectionData?.headStore ? (
+                <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px] w-full">
+                  <div>
+                    <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
+                      Head Store
+                    </h3>
+                    <div className="mb-2">
+                      <span className="font-semibold">Name:</span> {sectionData.headStore.name}
+                    </div>
+                    <div className="mb-2">
+                      <span className="font-semibold">Type:</span> {sectionData.headStore.type}
+                    </div>
+                    <div className="mb-2">
+                      <span className="font-semibold">ID:</span> {sectionData.headStore.id}
+                    </div>
+                  </div>
+                  {/* Store Incharge Section */}
+                  <div className="mt-4 border-t pt-4">
+                    <h4 className="font-semibold text-base mb-2">Store Incharge</h4>
+                    {sectionData.headStore.storeInchargeAssignments &&
+                    sectionData.headStore.storeInchargeAssignments.length > 0 &&
+                    sectionData.headStore.storeInchargeAssignments[0].user ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">Name:</span>
+                          <span>{sectionData.headStore.storeInchargeAssignments[0].user.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">Email:</span>
+                          <span>{sectionData.headStore.storeInchargeAssignments[0].user.email || "-"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">Phone:</span>
+                          <span>{sectionData.headStore.storeInchargeAssignments[0].user.phone || "-"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">Joining Date:</span>
+                          <span>{sectionData.headStore.storeInchargeAssignments[0].user.joiningDate ? new Date(sectionData.headStore.storeInchargeAssignments[0].user.joiningDate).toLocaleDateString() : "-"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">Role:</span>
+                          <span>{sectionData.headStore.storeInchargeAssignments[0].user.role || "Store Incharge"}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-start gap-2">
+                        <span className="text-[#979797]">No Store Incharge assigned.</span>
+                        <button
+                          className="mt-2 px-4 py-2 bg-[#BF1017] text-white rounded hover:bg-[#a00e13] transition"
+                          onClick={() => setHasStoreHeadInfo(true)}
+                        >
+                          Assign Store Incharge
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px] w-full flex items-center justify-center">
+                  <span className="text-[#979797] text-base">No Head Store assigned to this section.</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Stores Information */}

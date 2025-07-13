@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import ProjectInfoCard from "../../../../components/ui/ProjectInfoCard";
 import SimpleTable from "../../../../components/SimpleTable";
+import Loader from "../../../../components/ui/Loader";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
@@ -34,6 +35,7 @@ const PmSectionDetailPage = () => {
   const [sectionData, setSectionData] = useState({});
   const [selectedPM, setSelectedPM] = useState(null);
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -78,6 +80,7 @@ const PmSectionDetailPage = () => {
 
   const fetchSectionDetail = async () => {
     try {
+      setLoading(true);
       const response = await apiClient.get(`/sections/${id}`);
       if (response.ok) {
         setSectionData(response.data.section);
@@ -90,6 +93,8 @@ const PmSectionDetailPage = () => {
     } catch (error) {
       console.error("Error fetching Section details:", error);
       toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,114 +104,122 @@ const PmSectionDetailPage = () => {
 
   return (
     <div className="p-2 sm:p-4">
-      <TopBar
-        title="Section Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-      />
-
-      {/* Project Info Box */}
-      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-4">
-        <div className="flex flex-wrap justify-between gap-4">
-          <InfoItem label="Project Name" value={sectionData?.project?.name || "-"} />
-          <InfoItem label="Project Code" value={sectionData?.project?.code || "-"} />
-          <InfoItem label="Section" value={sectionData?.name || "-"} />
-          <InfoItem label="Amount" value={sectionData?.amount || "-"} />
-          <InfoItem label="Date" value={sectionData?.createdAt ? new Date(sectionData?.createdAt).toLocaleDateString() : "-"} />
+      {loading ? (
+        <div className="flex items-center justify-center h-full min-h-[400px]">
+          <Loader/>
         </div>
-        <div className="flex flex-wrap gap-10 mt-2">
-          <InfoItem label="Project Location" value={sectionData?.project?.location || "-"} />
-          <InfoItem label="Project Status" value={sectionData?.project?.status || "-"} />
-        </div>
-      </div>
-
-      {/* Member Overview */}
-      <div className="mt-10">
-        <h4 className="text-[#12141D] font-semibold text-xl mb-4">
-          Members Overview
-        </h4>
-        <div className="flex flex-col lg:flex-row gap-6">
-          {selectedPM ? (
-            <MemberInfoCard
-              title="General information - Project Manager"
-              image={manager}
-              name={selectedPM.name}
-              phone={selectedPM.phone || "-"}
-              role={selectedPM.role || "Project Manager"}
-              email={selectedPM.email}
-              joiningDate={selectedPM.joiningDate || "-"}
-              id={selectedPM.id}
-              address={selectedPM.address || "-"}
-              country={selectedPM.country || "-"}
-              linkedStores={selectedPM.linkedStores || []}
-            />
-          ) : (
-            <MemebersOverviewCard
-              title="General Information"
-              subTitle="Project Manager"
-              linkText="Assign Project Manager"
-              imageSrc={Search}
-              imageAlt="Search Illustration"
-              onManagerClick={() => setShowModal(true)}
-            />
-          )}
-          {selectedStoreHead ? (
-            <MemberInfoCard
-              title="General information - Store Head"
-              image={manager}
-              name={selectedStoreHead.name}
-              phone={selectedStoreHead.phone || "-"}
-              role={selectedStoreHead.role || "Store Head"}
-              email={selectedStoreHead.email}
-              joiningDate={selectedStoreHead.joiningDate || "-"}
-              id={selectedStoreHead.id}
-              address={selectedStoreHead.address || "-"}
-              country={selectedStoreHead.country || "-"}
-              linkedStores={selectedStoreHead.linkedStores || []}
-            />
-          ) : (
-            <MemebersOverviewCard
-              title="General Information"
-              subTitle="Store Head"
-              linkText="Assign Store Head"
-              imageSrc={Search}
-              imageAlt="Search Illustration"
-              onManagerClick={() => setShowModal(true)}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Construction Manager Table */}
-      <div className="mt-10">
-        <TopBar
-          title="Construction Managers"
-          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-          buttonText="Add CM"
-          onButtonClick={handleOpen}
-        />
-
-        {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-
-        {/* Modal */}
-        <Modal open={open} onClose={handleClose}>
-          <Box sx={style}>
-            <AssignProjectManagerModal
-              onCreateClick={(bool) => {
-                setShowModal(bool);
-                setOpen(false);
-              }}
-            />
-          </Box>
-        </Modal>
-
-        <div className="overflow-x-auto mt-4">
-          <SimpleTable
-            data={sectionData?.associatedConstructionManagers || []}
-            columns={columns}
-            cellComponents={{ action: CustomActionComponent }}
+      ) : (
+        <>
+          <TopBar
+            title="Section Details"
+            detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
           />
-        </div>
-      </div>
+
+          {/* Project Info Box */}
+          <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-4">
+            <div className="flex flex-wrap justify-between gap-4">
+              <InfoItem label="Project Name" value={sectionData?.project?.name || "-"} />
+              <InfoItem label="Project Code" value={sectionData?.project?.code || "-"} />
+              <InfoItem label="Section" value={sectionData?.name || "-"} />
+              <InfoItem label="Amount" value={sectionData?.amount || "-"} />
+              <InfoItem label="Date" value={sectionData?.createdAt ? new Date(sectionData?.createdAt).toLocaleDateString() : "-"} />
+            </div>
+            <div className="flex flex-wrap gap-10 mt-2">
+              <InfoItem label="Project Location" value={sectionData?.project?.location || "-"} />
+              <InfoItem label="Project Status" value={sectionData?.project?.status || "-"} />
+            </div>
+          </div>
+
+          {/* Member Overview */}
+          <div className="mt-10">
+            <h4 className="text-[#12141D] font-semibold text-xl mb-4">
+              Members Overview
+            </h4>
+            <div className="flex flex-col lg:flex-row gap-6">
+              {selectedPM ? (
+                <MemberInfoCard
+                  title="General information - Project Manager"
+                  image={manager}
+                  name={selectedPM.name}
+                  phone={selectedPM.phone || "-"}
+                  role={selectedPM.role || "Project Manager"}
+                  email={selectedPM.email}
+                  joiningDate={selectedPM.joiningDate || "-"}
+                  id={selectedPM.id}
+                  address={selectedPM.address || "-"}
+                  country={selectedPM.country || "-"}
+                  linkedStores={selectedPM.linkedStores || []}
+                />
+              ) : (
+                <MemebersOverviewCard
+                  title="General Information"
+                  subTitle="Project Manager"
+                  linkText="Assign Project Manager"
+                  imageSrc={Search}
+                  imageAlt="Search Illustration"
+                  onManagerClick={() => setShowModal(true)}
+                />
+              )}
+              {selectedStoreHead ? (
+                <MemberInfoCard
+                  title="General information - Store Head"
+                  image={manager}
+                  name={selectedStoreHead.name}
+                  phone={selectedStoreHead.phone || "-"}
+                  role={selectedStoreHead.role || "Store Head"}
+                  email={selectedStoreHead.email}
+                  joiningDate={selectedStoreHead.joiningDate || "-"}
+                  id={selectedStoreHead.id}
+                  address={selectedStoreHead.address || "-"}
+                  country={selectedStoreHead.country || "-"}
+                  linkedStores={selectedStoreHead.linkedStores || []}
+                />
+              ) : (
+                <MemebersOverviewCard
+                  title="General Information"
+                  subTitle="Store Head"
+                  linkText="Assign Store Head"
+                  imageSrc={Search}
+                  imageAlt="Search Illustration"
+                  onManagerClick={() => setShowModal(true)}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Construction Manager Table */}
+          <div className="mt-10">
+            <TopBar
+              title="Construction Managers"
+              detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+              buttonText="Add CM"
+              onButtonClick={handleOpen}
+            />
+
+            {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+
+            {/* Modal */}
+            <Modal open={open} onClose={handleClose}>
+              <Box sx={style}>
+                <AssignProjectManagerModal
+                  onCreateClick={(bool) => {
+                    setShowModal(bool);
+                    setOpen(false);
+                  }}
+                />
+              </Box>
+            </Modal>
+
+            <div className="overflow-x-auto mt-4">
+              <SimpleTable
+                data={sectionData?.associatedConstructionManagers || []}
+                columns={columns}
+                cellComponents={{ action: CustomActionComponent }}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

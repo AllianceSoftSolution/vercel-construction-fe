@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import Loader from "../../../components/ui/Loader";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
@@ -101,12 +102,16 @@ const Demands = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={demands}
-          loading={loading}
-          cellComponents={{ action: CustomActionComponent }}
-        />
+        {loading ? (
+          <Loader/>
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={demands}
+            loading={loading}
+            cellComponents={{ action: CustomActionComponent }}
+          />
+        )}
       </div>
     </div>
   );

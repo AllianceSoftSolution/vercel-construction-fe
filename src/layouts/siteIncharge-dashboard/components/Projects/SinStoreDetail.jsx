@@ -14,6 +14,7 @@ import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -114,7 +115,7 @@ const SinStoreDetail = () => {
         showExport={true}
       />
       {loading ? (
-        <div className="flex justify-center items-center h-40 text-lg">Loading store details...</div>
+        <Loader />
       ) : error ? (
         <div className="flex justify-center items-center h-40 text-red-500 text-lg">{error}</div>
       ) : (

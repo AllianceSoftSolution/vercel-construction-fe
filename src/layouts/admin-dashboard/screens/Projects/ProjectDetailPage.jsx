@@ -5,6 +5,7 @@ import { Tabs, Tab, Box } from "@mui/material";
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
 import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
 import SectionTab from "./tabs/SectionTab";
+import Loader from "@/components/ui/Loader";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 
@@ -13,6 +14,7 @@ const ProjectDetailPage = () => {
   const { id } = useParams();
   const [tabIndex, setTabIndex] = useState(0);
   const [projectData, setProjectData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
@@ -20,6 +22,7 @@ const ProjectDetailPage = () => {
 
   const fetchProjectDetail = async () => {
     try {
+      setLoading(true);
       const response = await apiClient.get(`/projects/${id}`);
       if (response.ok) {
         setProjectData(response.data.project);
@@ -29,6 +32,8 @@ const ProjectDetailPage = () => {
     } catch (error) {
       console.error("Error fetching project details:", error);
       toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,7 +50,7 @@ const ProjectDetailPage = () => {
     <div className="px-4 py-4 w-full h-full">
       <TopBar
         title="Project Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
       />
 
@@ -92,13 +97,19 @@ const ProjectDetailPage = () => {
       </Box>
 
       <Box sx={{ mt: 3 }}>
-        {tabIndex === 0 && <ProjectInformationTab data={projectData} onAssignmentSuccess={fetchProjectDetail} />}
-        {tabIndex === 1 && <AssociatedMembersTab data={projectData} />}
-        {tabIndex === 2 && (
-          <SectionTab
-            data={projectData?.sections}
-            onSectionDeleted={handleSectionDeleted}
-          />
+        {loading ? (
+          <Loader />
+        ) : (
+          <>
+            {tabIndex === 0 && <ProjectInformationTab data={projectData} onAssignmentSuccess={fetchProjectDetail} />}
+            {tabIndex === 1 && <AssociatedMembersTab data={projectData} />}
+            {tabIndex === 2 && (
+              <SectionTab
+                data={projectData?.sections}
+                onSectionDeleted={handleSectionDeleted}
+              />
+            )}
+          </>
         )}
       </Box>
     </div>

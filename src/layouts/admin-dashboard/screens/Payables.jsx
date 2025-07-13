@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
@@ -8,9 +8,12 @@ import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import CustomTextField from "../../../mui/CustomTextField";
 import Button from "../../../components/Button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoPeopleSharp } from "react-icons/io5";
 import { AccountBalance, Balance } from "@mui/icons-material";
+import apiClient from "../../../api/apiClient";
+import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -23,85 +26,215 @@ const style = {
   borderRadius: "16px",
 };
 
-const AddPriceModal = ({ open, onClose }) => (
-  <Modal open={open} onClose={onClose}>
-    <Box sx={style} className="bg-white p-5">
-      <h1 className="text-3xl font-semibold mb-4">Add Price Details</h1>
-      <div className="flex flex-col gap-5">
-        <CustomTextField label="PO Quantity" placeholder="Enter PO Quantity" />
-        <CustomTextField label="Material" placeholder="Enter Material" />
-        <CustomTextField label="Price" placeholder="Enter Price" />
-        <CustomTextField label="Total Price" placeholder="Total Price" />
-      </div>
-      <div className="flex justify-end gap-3 mt-6">
-        <button
-          onClick={onClose}
-          className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
-        >
-          Cancel
-        </button>
-        <Button buttonText="Add Price" />
-      </div>
-    </Box>
-  </Modal>
-);
+const AddPriceModal = ({ open, onClose, poData }) => {
+  const [formData, setFormData] = useState({
+    unitPrice: '',
+    notes: ''
+  });
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-const TransactionModal = ({ open, onClose }) => (
-  <Modal open={open} onClose={onClose}>
-    <Box sx={style} className="bg-white p-5">
-      <h1 className="text-3xl font-semibold mb-4">Transaction Details</h1>
-      <div className="flex flex-col gap-5">
-        <CustomTextField
-          label="Total Balance"
-          placeholder="Enter Total Balance"
-        />
-        <CustomTextField
-          label="Received Balance"
-          placeholder="Enter Received Balance"
-        />
-        <label className="text-sm font-medium text-gray-700">Upload File</label>
-        <input type="file" className="border border-gray-300 rounded p-2" />
-      </div>
-      <div className="flex justify-end gap-3 mt-6">
-        <button
-          className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
-          onClick={onClose}
-        >
-          Cancel
-        </button>
-        <Button buttonText="Submit" />
-      </div>
-    </Box>
-  </Modal>
-);
-
-const CustomActionComponent = () => {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const onNavigation = () => {
-    navigate("/admin-dashboard/payables/details/23232");
+  console.log("AddPriceModal poData:", poData); // Debug log
+  
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      
+      // Create form data for file upload
+      const submitData = new FormData();
+      submitData.append('poId', poData?.id); // Get PO ID from the purchase order data
+      submitData.append('unitPrice', formData.unitPrice);
+      submitData.append('notes', formData.notes);
+      if (file) {
+        submitData.append('document', file);
+      }
+
+      const response = await apiClient.post('/purchase-orders/add-price', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.ok) {
+        toast.success('Price added successfully!');
+        onClose();
+        // Reset form
+        setFormData({ unitPrice: '', notes: '' });
+        setFile(null);
+        // Refresh the purchase orders list
+        window.location.reload();
+      } else {
+        toast.error(response.data?.message || 'Failed to add price');
+      }
+    } catch (error) {
+      console.error('Error adding price:', error);
+      toast.error('Error adding price');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({ unitPrice: '', notes: '' });
+    setFile(null);
+    onClose();
+  };
+  
   return (
-    <>
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[{ label: "Add Price", onClick: () => setOpen(true) }, ,]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-      <AddPriceModal open={open} onClose={() => setOpen(false)} />
-    </>
+    <Modal open={open} onClose={handleClose}>
+      <Box sx={style} className="bg-white p-5">
+        <h1 className="text-3xl font-semibold mb-4">Add Price Details</h1>
+        <div className="flex flex-col gap-5">
+          <CustomTextField 
+            label="PO ID" 
+            placeholder="PO ID" 
+            value={poData?.referenceNumber || ""} 
+            disabled 
+          />
+          <CustomTextField 
+            label="Material" 
+            placeholder="Material" 
+            value={poData?.material?.name || ""} 
+            disabled 
+          />
+          <CustomTextField 
+            label="Unit Price" 
+            placeholder="Enter Unit Price" 
+            value={formData.unitPrice}
+            onChange={(e) => handleInputChange('unitPrice', e.target.value)}
+            type="number"
+          />
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Upload Document</label>
+            <input 
+              type="file" 
+              className="border border-gray-300 rounded p-2 w-full" 
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+            />
+          </div>
+          <CustomTextField 
+            label="Notes" 
+            placeholder="Enter Notes" 
+            multiline
+            rows={3}
+            value={formData.notes}
+            onChange={(e) => handleInputChange('notes', e.target.value)}
+          />
+        </div>
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={handleClose}
+            className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <Button 
+            buttonText={loading ? "Submitting..." : "Add Price"} 
+            onClick={handleSubmit}
+            disabled={loading || !formData.unitPrice}
+          />
+        </div>
+      </Box>
+    </Modal>
   );
 };
 
-const ActionComforRegPOs = () => {
+const TransactionModal = ({ open, onClose, onSave, loading = false }) => {
+  const [formData, setFormData] = useState({
+    totalBalance: '',
+    receivedBalance: '',
+    file: null
+  });
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      file: e.target.files[0]
+    }));
+  };
+
+  const handleSubmit = () => {
+    if (onSave) {
+      onSave(formData);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Box sx={style} className="bg-white p-5">
+        <h1 className="text-3xl font-semibold mb-4">Transaction Details</h1>
+        <div className="flex flex-col gap-5">
+          <CustomTextField
+            label="Total Balance"
+            placeholder="Enter Total Balance"
+            value={formData.totalBalance}
+            onChange={(e) => handleInputChange('totalBalance', e.target.value)}
+            disabled={loading}
+          />
+          <CustomTextField
+            label="Received Balance"
+            placeholder="Enter Received Balance"
+            value={formData.receivedBalance}
+            onChange={(e) => handleInputChange('receivedBalance', e.target.value)}
+            disabled={loading}
+          />
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Upload File</label>
+            <input 
+              type="file" 
+              className="border border-gray-300 rounded p-2 w-full" 
+              onChange={handleFileChange}
+              disabled={loading}
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <Button 
+            buttonText={loading ? "Submitting..." : "Submit"} 
+            onClick={handleSubmit}
+            disabled={loading}
+          />
+        </div>
+      </Box>
+    </Modal>
+  );
+};
+
+const CustomActionComponent = ({ value:id }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  
   const onNavigation = () => {
-    navigate("/admin-dashboard/payables/details/45435");
+    navigate(`/admin-dashboard/payables/details/${id}`);
   };
+  
   return (
     <>
       <DropdownButton
@@ -120,119 +253,161 @@ const ActionComforRegPOs = () => {
   );
 };
 
-const ActionComForPayableDetails = () => {
-  const navigate = useNavigate();
+const ActionComforRegPOs = ({ value: id, rowData, ...props }) => {
   const [open, setOpen] = useState(false);
-  const onNavigation = () => {
-    navigate("/admin-dashboard/payables/details/:id");
-  };
+  const navigate = useNavigate();
+  
+  // Get the full data from rowData (which now contains the full row)
+  const fullData = rowData?.fullData || rowData;
+  
+  console.log("ActionComforRegPOs rowData:", rowData); // Debug rowData
+  console.log("ActionComforRegPOs fullData:", fullData); // Debug fullData
+  
   return (
     <>
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
-        items={[{ label: "Details", onClick: onNavigation }]}
+        items={[
+          { label: "Add Price", onClick: () => setOpen(true) },
+
+        ]}
       >
         <IconButton>
           <BsThreeDotsVertical />
         </IconButton>
       </DropdownButton>
-      <TransactionModal open={open} onClose={() => setOpen(false)} />
+      <AddPriceModal open={open} onClose={() => setOpen(false)} poData={fullData} />
     </>
   );
 };
 
-const payablesData = [
-  {
-    label: "Total Payables",
-    icon: IoPeopleSharp,
-    count: 120000,
-  },
-  {
-    label: "Total Paid",
-    icon: AccountBalance,
-    count: 250000,
-  },
-  {
-    label: "Balance Remaining",
-    icon: Balance,
-    count: 1900000,
-  },
-];
-
 const Payables = () => {
-  const data = [
-    {
-      id: 1,
-      poRefer: "PO-001",
-      project: "Bridge Construction",
-      demand: "Cement",
-      section: "A1",
-      qty: 120,
-      payables: "Pending",
-      amount: 12000,
-      vendors: "Qurrat",
-    },
+  const [loading, setLoading] = useState(false);
+  const [vendorAccounts, setVendorAccounts] = useState([]);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [payablesSummary, setPayablesSummary] = useState({
+    totalVendors: 0,
+    totalCredited: 0,
+    totalDebited: 0,
+    totalBalance: 0,
+    vendorsWithOverdue: 0,
+    vendorsWithAdvance: 0
+  });
+
+  // Vendor Accounts columns
+  const vendorColumns = [
+    { headerName: "No.", field: "no" },
+    { headerName: "Vendor Name", field: "vendorName" },
+    { headerName: "Total Balance", field: "totalBalance" },
+    { headerName: "Remaining Balance", field: "remainingBalance" },
+    { headerName: "Paid Amount", field: "paidAmount" },
+    { headerName: "Action", field: "id" },
   ];
 
-  const columns = [
-    { headerName: "PO Ref", field: "poRefer" },
-    { headerName: "Projects", field: "project" },
-    { headerName: "Demands", field: "demand" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty Received", field: "qty" },
-    { headerName: "Payables", field: "payables" },
+  // Purchase Orders columns
+  const purchaseOrderColumns = [
+    { headerName: "No.", field: "no" },
+    { headerName: "PO Reference", field: "poReference" },
+    { headerName: "Project", field: "project" },
+    { headerName: "Material", field: "material" },
+    { headerName: "Quantity", field: "quantity" },
+    { headerName: "Unit", field: "unit" },
     { headerName: "Amount", field: "amount" },
-    { headerName: "Vendors", field: "vendors" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Action", field: "id" },
   ];
 
-  const data1 = [
+  const fetchVendorAccount = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/vendor-account/vendors");
+      if (response.ok) {
+        const vendorData = response.data.data || [];
+        const summary = response.data.summary || {};
+        
+        // Map vendor account data to table format
+        const mappedData = vendorData.map((account, index) => {
+          console.log("Vendor account data:", account);
+          return {
+            id: account.vendorId, // Use vendorId for navigation to detail page
+            no: index + 1,
+            vendorName: account.vendor?.name || "-",
+            totalBalance: account.totalCredited ? `$${account.totalCredited.toLocaleString()}` : "-",
+            remainingBalance: account.remainingAmount ? `$${account.remainingAmount.toLocaleString()}` : "-",
+            paidAmount: account.paidAmount ? `$${account.paidAmount.toLocaleString()}` : "-",
+          };
+        });
+        
+        setVendorAccounts(mappedData);
+        setPayablesSummary(summary);
+      } else {
+        toast.error("Failed to fetch vendor accounts");
+      }
+    } catch (error) {
+      console.error("Error fetching vendor accounts:", error);
+      toast.error("Error fetching vendor accounts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVendorAccount();
+  }, []);
+
+  // Update analytics with real data from API
+  const payablesData = [
     {
-      id: 1,
-      No: "1",
-      projectName: "Bridge Construction",
-      projectCode: 9909,
-      section: "A1",
-      materialSupplied: 120000,
-      poRef: "PO-001",
-      poQty: "20 bags",
-      deliveryDate: "2025-06-15",
-      status: "Pending",
+      label: "Total Payables",
+      icon: IoPeopleSharp,
+      count: payablesSummary.totalCredited || 0,
     },
     {
-      id: 2,
-      No: "2",
-      projectName: "Bridge Construction",
-      projectCode: 9909,
-      section: "A1",
-      materialSupplied: 120000,
-      poRef: "PO-001",
-      poQty: "20 bags",
-      deliveryDate: "2025-06-15",
-      status: "Pending",
+      label: "Total Paid",
+      icon: AccountBalance,
+      count: payablesSummary.totalDebited || 0,
     },
     {
-      id: 3,
-      No: "3",
-      projectName: "Bridge Construction",
-      projectCode: 9909,
-      section: "A1",
-      materialSupplied: 120000,
-      poRef: "PO-001",
-      poQty: "20 bags",
-      deliveryDate: "2025-06-15",
-      status: "Pending",
+      label: "Balance Remaining",
+      icon: Balance,
+      count: payablesSummary.totalBalance || 0,
     },
   ];
 
-  const columns1 = [
-    { headerName: "No.", field: "No" },
-    { headerName: "Vendor Name", field: "projectName" },
-    { headerName: "Total Balance", field: "projectCode" },
-    { headerName: "Remaining Balance", field: "section" },
-    { headerName: "Paid Amount", field: "materialSupplied" },
-    { headerName: "Action", field: "action" },
-  ];
+  const fetchNewPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/purchase-orders?hasAmount=false");
+      if (response.ok) {
+        const data = response.data.data.map((po, index) => ({
+          id: po.id,
+          no: index + 1,
+          poReference: po.referenceNumber || po.id || "-",
+          project: po.demand?.section?.project?.name || "-",
+          material: po.material?.name || "-",
+          quantity: po.quantity || "-",
+          unit: po.demand?.unit || "-",
+          amount: po.totalAmount ? `$${po.totalAmount.toLocaleString()}` : "-",
+          status: po.status || "-",
+          // Store full PO data for modal
+          fullData: po
+        }));
+        setPurchaseOrders(data);
+      } else {
+        toast.error("Failed to fetch purchase orders");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+      toast.error("Error fetching purchase orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNewPurchaseOrders();
+  }, []);
+
   return (
     <div className=" ">
       <TopBar
@@ -262,25 +437,35 @@ const Payables = () => {
 
       <div className="mt-10">
         <h1 className="text-xl md:text-2xl font-bold mb-5">
-          New Purchase Orders
+          Purchase Orders
         </h1>
         <div className="overflow-x-auto">
-          <SimpleTable
-            columns={columns}
-            data={data}
-            cellComponents={{ action: CustomActionComponent }}
-          />
+          {loading ? (
+            <Loader />
+          ) : (
+            <SimpleTable
+            columns={purchaseOrderColumns}
+            data={purchaseOrders}
+            cellComponents={{ 
+              id: ActionComforRegPOs
+            }}
+            />
+          )}
         </div>
       </div>
 
       <div className="mt-10">
-        <h1 className="text-xl md:text-2xl font-bold mb-5">Vendor List</h1>
+        <h1 className="text-xl md:text-2xl font-bold mb-5">Vendor Accounts</h1>
         <div className="overflow-x-auto">
-          <SimpleTable
-            columns={columns1}
-            data={data1}
-            cellComponents={{ action: ActionComforRegPOs }}
-          />
+          {loading ? (
+            <Loader />
+          ) : (
+            <SimpleTable
+              columns={vendorColumns}
+              data={vendorAccounts}
+              cellComponents={{ id: CustomActionComponent }}
+            />
+          )}
         </div>
       </div>
     </div>

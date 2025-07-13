@@ -37,10 +37,15 @@ const AssociatedMembersTab = ({ data }) => {
       </DropdownButton>
     );
   };
+  // Only show Construction Managers
+  const cmMembers = (data?.associatedMembers || []).filter(
+    (member) => member.role === "CONSTRUCTION_MANAGER"
+  );
+
   return (
     <div>
       <SimpleTable
-        data={data?.associatedMembers || []}
+        data={cmMembers}
         columns={columns}
         cellComponents={{ action: CustomActionComponent }}
       />

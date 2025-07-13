@@ -10,12 +10,13 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../../components/ui/Loader";
 
 
 const PmPurchaseOrderDetailPage = () => {
   const { id } = useParams();
   const [purchaseOrderData, setPurchaseOrderData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const columns = [
     { headerName: "Name", field: "name" },
@@ -76,7 +77,9 @@ const PmPurchaseOrderDetailPage = () => {
 
   return (
     <>
-      <TopBar
+      {loading ? <Loader/> : (
+        <>
+          <TopBar
         title="Purchase Order Detail Page"
         detail="lorem ipsum dolor sit amet"
       />
@@ -151,6 +154,8 @@ const PmPurchaseOrderDetailPage = () => {
         columns={columns}
         cellComponents={{ id: CustomActionComponent }}
       />
+        </>
+      )}
     </>
   );
 };

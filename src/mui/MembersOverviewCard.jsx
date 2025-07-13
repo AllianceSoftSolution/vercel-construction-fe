@@ -31,7 +31,7 @@ const MembersOverviewCard = ({
   // Remove internal modal state
   return (
     <div
-      className={`border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 w-full sm:w-[90%] md:w-[75%] lg:w-[50%] lg:h-80 h-full  mt-6 ${className}`}
+      className={`border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 ${className}`}
     >
       <div className="flex flex-col sm:flex-row justify-between gap-2">
         <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold">

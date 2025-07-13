@@ -1,61 +1,104 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "../../../../components/ui/TopBar";
+import Loader from "../../../../components/ui/Loader";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { FaBoxesStacked } from "react-icons/fa6";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import SimpleTable from "../../../../components/SimpleTable";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const VendorDetailPage = () => {
-  const data = [
-    {
-      id: 1,
-      po: "1",
-      projectName: "Bridge Construction",
-      projectCode: 9909,
-      section: "A1",
-      materialSupplied: 120000,
-      poRef: "PO-001",
-      poQty: "20 bags",
-      deliveryDate: "2025-06-15",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      po: "1",
-      projectName: "Bridge Construction",
-      projectCode: 9909,
-      section: "A1",
-      materialSupplied: 120000,
-      poRef: "PO-001",
-      poQty: "20 bags",
-      deliveryDate: "2025-06-15",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      po: "1",
-      projectName: "Bridge Construction",
-      projectCode: 9909,
-      section: "A1",
-      materialSupplied: 120000,
-      poRef: "PO-001",
-      poQty: "20 bags",
-      deliveryDate: "2025-06-15",
-      status: "Pending",
-    },
-  ];
+  const { id } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [vendorData, setVendorData] = useState(null);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+
+  const fetchVendorDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/vendors/${id}`);
+      if (response.ok) {
+        setVendorData(response.data.vendor);
+      } else {
+        toast.error("Failed to fetch vendor details.");
+      }
+    } catch (error) {
+      console.error("Error fetching vendor details:", error);
+      toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/purchase-orders");
+      if (response.ok) {
+        // Filter purchase orders for this specific vendor
+        const vendorPOs = response.data.data.filter(po => po.vendorId === id);
+        setPurchaseOrders(vendorPOs || []);
+      } else {
+        toast.error("Failed to fetch purchase orders.");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+      toast.error("Something went wrong while fetching purchase orders.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchVendorDetails();
+      fetchPurchaseOrders();
+    }
+  }, [id]);
+
+  // Transform purchase order data for table display
+  const transformedPurchaseOrders = purchaseOrders.map(po => ({
+    id: po.id,
+    referenceNumber: po.referenceNumber,
+    projectName: po.demand?.section?.project?.name || "N/A",
+    projectCode: po.demand?.section?.project?.code || "N/A",
+    sectionName: po.demand?.section?.name || "N/A",
+    sectionCode: po.demand?.section?.code || "N/A",
+    materialName: po.material?.name || "N/A",
+    materialUnit: po.material?.unit || "N/A",
+    quantity: po.quantity,
+    unitPrice: po.unitPrice,
+    totalAmount: po.totalAmount,
+    status: po.status,
+    createdAt: new Date(po.createdAt).toLocaleDateString(),
+    amountAddedAt: po.amountAddedAt ? new Date(po.amountAddedAt).toLocaleDateString() : "N/A"
+  }));
 
   const columns = [
-    { headerName: "PO", field: "po" },
-    { headerName: "Project Name", field: "projectName" },
+    { headerName: "PO Reference", field: "referenceNumber" },
+    { headerName: "Project", field: "projectName" },
     { headerName: "Project Code", field: "projectCode" },
-    { headerName: "Section", field: "section" },
-    { headerName: "Material Supplied", field: "materialSupplied" },
-    { headerName: "PO Ref", field: "poRef" },
-    { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Delivery Date", field: "deliveryDate" },
+    { headerName: "Section", field: "sectionName" },
+    { headerName: "Section Code", field: "sectionCode" },
+    { headerName: "Material", field: "materialName" },
+    { headerName: "Quantity", field: "quantity" },
+    { headerName: "Unit Price", field: "unitPrice" },
+    { headerName: "Total Amount", field: "totalAmount" },
     { headerName: "Status", field: "status" },
+    { headerName: "Created Date", field: "createdAt" },
   ];
+
+  if (loading) {
+    return (
+      <div className="px-4 py-2">
+        <div className="flex items-center justify-center h-64">
+          <Loader />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-2">
@@ -69,19 +112,19 @@ const VendorDetailPage = () => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <p className="font-semibold text-[#979797]">Vendor Name</p>
-              <p>Hassan</p>
+              <p>{vendorData?.name || "N/A"}</p>
             </div>
             <div className="flex justify-between">
               <p className="font-semibold text-[#979797]">Email</p>
-              <p>example@gmail.com</p>
+              <p>{vendorData?.email || "N/A"}</p>
             </div>
             <div className="flex justify-between">
               <p className="font-semibold text-[#979797]">Phone Number</p>
-              <p>90909090</p>
+              <p>{vendorData?.phone || "N/A"}</p>
             </div>
             <div className="flex justify-between">
               <p className="font-semibold text-[#979797]">Address</p>
-              <p>Lahore, Pakistan</p>
+              <p>{vendorData?.address || "N/A"}</p>
             </div>
           </div>
         </div>
@@ -98,9 +141,9 @@ const VendorDetailPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <AnalyticsCard
-              label="Total Projects"
+              label="Total Purchase Orders"
               icon={FaBoxesStacked}
-              count={10}
+              count={purchaseOrders.length || 0}
             />
           </div>
         </div>
@@ -109,10 +152,16 @@ const VendorDetailPage = () => {
       {/* Table Section */}
       <div className="mt-10">
         <h3 className="text-xl font-semibold text-[#BF1017] mb-4">
-          Recent Purchase Order
+          Purchase Orders
         </h3>
         <div className="overflow-x-auto">
-          <SimpleTable data={data} columns={columns} cellComponents={{}} />
+          {purchaseOrders.length > 0 ? (
+            <SimpleTable data={transformedPurchaseOrders} columns={columns} cellComponents={{}} />
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              No purchase orders found for this vendor.
+            </div>
+          )}
         </div>
       </div>
     </div>

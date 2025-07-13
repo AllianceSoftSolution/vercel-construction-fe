@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaUserEdit } from "react-icons/fa";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
+import Loader from "../../../components/ui/Loader";
 
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
@@ -18,56 +19,18 @@ const PurchaseOrder = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const data = [
-    {
-      id: 1,
-      demandId: "001",
-      demandName: "Cement",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      unit: "ton",
-      poQty: 100,
-      status: "Pending",
-      assingedVendors: "Owner",
-    },
-    {
-      id: 2,
-      demandId: "002",
-      demandName: "Cement",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      unit: "ton",
-      poQty: 100,
-      status: "Approved",
-    },
-    {
-      id: 3,
-      demandId: "003",
-      demandName: "Cement",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      unit: "ton",
-      poQty: 100,
-      status: "In Progress",
-      assingedVendors: "Owner",
-    },
-  ];
+
 
   const columns = [
     { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
-    { headerName: "Demand ", field: "demandName" },
+    { headerName: "Demand", field: "demandName" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
+    { headerName: "Amount", field: "amount" },
     { headerName: "Status", field: "status" },
     { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "id" },
@@ -82,13 +45,14 @@ const PurchaseOrder = () => {
           demandId: po.demand?.referenceNumber || "-",
           project: po.demand?.section?.project?.name || "-",
           demandName: po.demand?.referenceNumber || "-",
-          material: po.materialId,
+          material: po.material?.name || "-",
           section: po.demand?.section?.name || "-",
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
+          amount: po.totalAmount ? `$${po.totalAmount}` : "-",
           status: po.status || "-",
-          assingedVendors: po.vendorId,
+          assingedVendors: po.vendorId || "-",
         }));
         setPurchaseOrders(data);
       } else {
@@ -96,6 +60,7 @@ const PurchaseOrder = () => {
       }
     } catch (error) {
       console.error("Error fetching purchase orders:", error);
+      toast.error("Error fetching purchase orders");
     } finally {
       setLoading(false);
     }
@@ -146,11 +111,15 @@ const PurchaseOrder = () => {
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={purchaseOrders}
-          cellComponents={{ id: CustomActionComponent }}
-        />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={purchaseOrders}
+            cellComponents={{ id: CustomActionComponent }}
+          />
+        )}
       </div>
 
       {/* Modal */}

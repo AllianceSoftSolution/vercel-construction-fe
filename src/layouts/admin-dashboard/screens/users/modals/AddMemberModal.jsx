@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import TopBar from "@/components/ui/TopBar";
 import CustomTextField from "@/mui/CustomTextField";
 
-const AddMemberModal = ({ onClose, onAddUserClick }) => {
+const AddMemberModal = ({ onClose, onAddUserClick, loading = false }) => {
   const [form, setForm] = useState({ name: "", email: "" });
 
   const handleChange = (e) => {
@@ -38,6 +38,7 @@ const AddMemberModal = ({ onClose, onAddUserClick }) => {
             type="text"
             value={form.name}
             onChange={handleChange}
+            disabled={loading}
           />
           <CustomTextField
             label="Email"
@@ -47,20 +48,23 @@ const AddMemberModal = ({ onClose, onAddUserClick }) => {
             type="email"
             value={form.email}
             onChange={handleChange}
+            disabled={loading}
           />
           <div className="flex gap-x-4 justify-end mt-4">
             <button
               type="button"
               className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
               onClick={onClose}
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="bg-primary px-8 py-2 rounded-lg font-medium text-white"
+              disabled={loading}
             >
-              Save & Add User
+              {loading ? "Saving..." : "Save & Add User"}
             </button>
           </div>
         </form>

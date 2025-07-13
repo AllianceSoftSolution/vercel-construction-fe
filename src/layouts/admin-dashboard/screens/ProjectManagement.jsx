@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import DeleteModal from "../../../mui/DeleteModal";
+import Loader from "../../../components/ui/Loader";
 
 const ProjectManagement = () => {
   const navigate = useNavigate();
@@ -129,12 +130,15 @@ const ProjectManagement = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 
       <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={projects}
-          cellComponents={{ id: CustomActionComponent }}
-          loading={loading}
-        />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={projects}
+            cellComponents={{ id: CustomActionComponent }}
+          />
+        )}
       </div>
 
       {showModal && (

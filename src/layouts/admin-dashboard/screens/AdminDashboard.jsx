@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
-
 import { IoTabletLandscape } from "react-icons/io5";
-
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import PieGraph from "../../../components/ui/Graphs/PieGraph";
@@ -21,6 +19,7 @@ import {
 import Divider from "../../../components/Divider";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
+import Loader from "../../../components/ui/Loader";
 
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
@@ -157,9 +156,10 @@ function AdminDashboard() {
   }, []);
   return (
     <div className=" md:px- w-full">
+     
       <TopBar
         title="Admin Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
       />
 
@@ -202,11 +202,19 @@ function AdminDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />
-        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        )}
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />
-        <SimpleTable columns={columns} data={purchaseOrders} cellComponents={{}} />
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable columns={columns} data={purchaseOrders} cellComponents={{}} />
+        )}
       </div>
     </div>
   );

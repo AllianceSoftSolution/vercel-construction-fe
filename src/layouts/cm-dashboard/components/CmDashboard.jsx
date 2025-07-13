@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 function CmDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sections, setSections] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +53,42 @@ function CmDashboard() {
       }
     };
     fetchDemands();
+  }, []);
+
+  // Fetch only sections assigned to the current CM
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        setLoading(true);
+        // Try to get only assigned sections (adjust endpoint as needed)
+        let response = await apiClient.get("/sections?assignedToMe=true");
+        if (response.ok) {
+          setSections(response.data.sections);
+        } else {
+          // Fallback: fetch all and filter by current user
+          response = await apiClient.get("/sections");
+          if (response.ok) {
+            // Assume userId is stored in localStorage (adjust as needed)
+            const userId = localStorage.getItem("userId");
+            setSections(
+              response.data.sections.filter(
+                (section) =>
+                  section.assignedCMId === userId ||
+                  (section.assignedCMs && section.assignedCMs.some((cm) => cm.id === userId))
+              )
+            );
+          } else {
+            setSections([]);
+          }
+        }
+      } catch (error) {
+        toast.error("Error fetching sections");
+        setSections([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSections();
   }, []);
 
   const actions = [
@@ -103,10 +140,6 @@ function CmDashboard() {
     },
   ];
 
-  // Remove the hardcoded SectionCard and render dynamically if you have section data
-  // For now, use a placeholder empty array for sections
-  const sections = [];
-
   // Helper for section actions
   const sectionActions = (sec) => [
     {
@@ -125,6 +158,16 @@ function CmDashboard() {
       onClick: () => console.log(`Delete clicked for section ${sec.id}`),
     },
   ];
+
+  // Get current CM user ID (adjust as needed)
+  const currentUserId = localStorage.getItem("userId");
+
+  // Only show sections assigned to this CM
+  const assignedSections = sections.filter(section =>
+    section.stores && section.stores.some(
+      store => store.type === "CM_STORE" && store.cmUserId === currentUserId
+    )
+  );
 
   return (
     <div className="">
@@ -163,10 +206,10 @@ function CmDashboard() {
       </div>
       {/* Section Cards */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
-        {sections.length === 0 ? (
+        {assignedSections.length === 0 ? (
           <div className="text-gray-400 text-center col-span-2">No sections available.</div>
         ) : (
-          sections.map((sec, index) => (
+          assignedSections.map((sec, index) => (
             <SectionCard
               key={sec.id}
               sectionNo={index + 1}

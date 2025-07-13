@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ProjectInfoCard from "@/components/ui/ProjectInfoCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
+import Loader from "../../../../components/ui/Loader";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../../comments/components/DropdownButton";
@@ -29,7 +30,7 @@ const PmDemandDetails = () => {
   const [status, setStatus] = useState("Pending");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [demandData, setDemandData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { id } = useParams();
 
   const fetchDemandDetail = async () => {
@@ -144,8 +145,8 @@ const PmDemandDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Loading demand details...</div>
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader/>
       </div>
     );
   }

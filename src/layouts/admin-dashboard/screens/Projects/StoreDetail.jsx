@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import CustomSelect from "../../../../mui/CustomSelect";
 import MenuItem from "@mui/material/MenuItem";
+import Loader from "../../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -32,6 +33,7 @@ const StoreDetail = () => {
   const [storeData, setStoreData] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedStoreIncharge, setSelectedStoreIncharge] = useState(null);
+  const [loading, setLoading] = useState(false);
   const data = [
     {
       id: 1,
@@ -225,7 +227,9 @@ const StoreDetail = () => {
 
               {modalType === "stock-in" ? (
                 materialsLoading ? (
-                  <div className="text-center py-4">Loading materials...</div>
+                  <div className="flex items-center justify-center py-4">
+                    <Loader />
+                  </div>
                 ) : (
                   <>
                     <CustomSelect
@@ -302,6 +306,7 @@ const StoreDetail = () => {
   const { id } = useParams();
   const fetchStoreDetail = async () => {
     try {
+      setLoading(true);
       const response = await apiClient.get(`/stores/${id}`);
       if (response.ok) {
         setStoreData(response.data.store);
@@ -312,6 +317,8 @@ const StoreDetail = () => {
     } catch (error) {
       console.error("Error fetching Store details:", error);
       toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -344,6 +351,10 @@ const StoreDetail = () => {
 
   return (
     <>
+    {loading ? (
+        <Loader />
+      ) : (
+        <>
       <TopBar
         title="Store Detail"
         detail="lorem ipsum dolor sit amet"
@@ -416,6 +427,8 @@ const StoreDetail = () => {
         data={storeData?.transactions || []}
         columns={columns1}
       />{" "}
+      </>
+      )}
     </>
   );
 };
