@@ -27,6 +27,15 @@ function CmDashboard() {
   const [pageLoading, setPageLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Analytics and chart data states
+  const [projectStats, setProjectStats] = useState([
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+  ]);
+  const [demandBreakdown, setDemandBreakdown] = useState([]);
+  const [fulfillmentProgress, setFulfillmentProgress] = useState([]);
+
   useEffect(() => {
     const fetchDemands = async () => {
       try {
@@ -94,6 +103,32 @@ function CmDashboard() {
     fetchSections();
   }, []);
 
+  useEffect(() => {
+    // Fetch analytics and chart data
+    const fetchAnalytics = async () => {
+      try {
+        const response = await apiClient.get("/analytics/construction-manager/dashboard");
+        if (response.ok && response.data?.data?.summary) {
+          const summary = response.data.data.summary;
+          const charts = response.data.data.charts || {};
+          setProjectStats([
+            { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 },
+            { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
+            { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
+          ]);
+          setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
+          setFulfillmentProgress(charts.fulfillmentProgress || []);
+        } else {
+          toast.error("Failed to fetch analytics data");
+        }
+      } catch (error) {
+        toast.error("Error fetching analytics data");
+        console.error(error);
+      }
+    };
+    fetchAnalytics();
+  }, []);
+
   const actions = [
     // {
     //   label: "View Section Detail",
@@ -120,27 +155,6 @@ function CmDashboard() {
     { headerName: "Status", field: "status" },
     { headerName: "CM Name", field: "cmName" },
     { headerName: "Date", field: "date" },
-  ];
-
-  const projectStats = [
-    {
-      label: "Total Projects",
-      icon: FaBoxesStacked,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Approved Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Rejected Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
   ];
 
   // Helper for section actions
@@ -212,9 +226,12 @@ function CmDashboard() {
       </div>
 
       <div className="mt-6 flex flex-col  lg:flex-row gap-6">
-        <PieGraph />
-
-        <HorixontalBarchartGraph title={"Fulfillment Progress"} />
+        <PieGraph pieTitle="Demand Status" data={demandBreakdown} />
+        <HorixontalBarchartGraph
+          title={"Fulfillment Progress"}
+          dataset={fulfillmentProgress}
+          series={[{ dataKey: "progress", label: "Progress" }]}
+        />
       </div>
       {/* Section Cards */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 mt-8">

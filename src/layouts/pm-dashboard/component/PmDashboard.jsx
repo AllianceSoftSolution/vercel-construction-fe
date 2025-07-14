@@ -17,6 +17,14 @@ function PmDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Analytics and chart data states
+  const [analyticsData, setAnalyticsData] = useState([
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+  ]);
+  const [demandBreakdown, setDemandBreakdown] = useState([]);
+  const [amountByVendor, setAmountByVendor] = useState([]);
 
   const columns = [
     { headerName: "Ref No", field: "refNo" },
@@ -30,26 +38,27 @@ function PmDashboard() {
     { headerName: "Date", field: "date" },
   ];
 
-  const analyticsData = [
-    {
-      label: "Total Projects",
-      icon: FaBoxesStacked,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Approved Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Rejected Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-  ];
+  const fetchAnalytics = async () => {
+    try {
+      const response = await apiClient.get("analytics/project-manager/dashboard");
+      if (response.ok && response.data?.data?.summary) {
+        const summary = response.data.data.summary;
+        const charts = response.data.data.charts || {};
+        setAnalyticsData([
+          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 },
+          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
+          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
+        ]);
+        setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
+        setAmountByVendor(charts.amountByVendor || []);
+      } else {
+        toast.error("Failed to fetch analytics data");
+      }
+    } catch (error) {
+      toast.error("Error fetching analytics data");
+      console.error(error);
+    }
+  };
 
   const fetchDemand = async () => {
     try {
@@ -80,6 +89,7 @@ function PmDashboard() {
   };
 
   useEffect(() => {
+    fetchAnalytics();
     fetchDemand();
   }, []);
 
@@ -99,8 +109,7 @@ function PmDashboard() {
         {analyticsData.map((item, index) => (
           <div
             key={index}
-            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300
-                     xl:last:after:hidden"
+            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 xl:last:after:hidden"
           >
             <AnalyticsCard
               label={item.label}
@@ -114,11 +123,13 @@ function PmDashboard() {
 
       <div className="flex flex-col xl:flex-row gap-6 mt-6 flex-wrap">
         <div className="flex  flex-col lg:flex-row gap-6 flex-1 w-full xl:w-2/3">
-          <PieGraph pieTitle={"Demand Status"} />
-
-          <HorixontalBarchartGraph title={"PO Distribution by Vendor"} />
+          <PieGraph pieTitle={"Demand Status"} data={demandBreakdown} />
+          <HorixontalBarchartGraph
+            title={"Amount by Vendor"}
+            dataset={amountByVendor}
+            series={[{ dataKey: "totalAmount", label: "Total Amount" }]}
+          />
         </div>
-
         <div className="flex-1 w-full xl:w-1/3 min-w-[300px]">
           <BasicBarChart />
         </div>

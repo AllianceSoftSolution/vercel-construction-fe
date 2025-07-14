@@ -25,80 +25,20 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const analyticsData = [
-    {
-      label: "Total Projects",
-      icon: FaBoxesStacked,
-      count: 2132,
-      percentage: 10.25,
-    },
-    {
-      label: "Approved Demands",
-      icon: FaHandHoldingHeart,
-      count: 2132,
-      percentage: 10.25,
-    },
-    {
-      label: "Rejected Demands",
-      icon: IoTabletLandscape,
-      count: 2132,
-      percentage: 10.25,
-    },
-    {
-      label: "Total POs Created",
-      icon: NewReleasesOutlined,
-      count: 2132,
-      percentage: 10.25,
-    },
-    {
-      label: "Total Amount Paid",
-      icon: NewspaperOutlined,
-      count: 2132,
-      percentage: 10.25,
-    },
-    {
-      label: "Balance Amount",
-      icon: CachedSharp,
-      count: 2132,
-      percentage: 10.25,
-    },
-  ];
+  const [analyticsData, setAnalyticsData] = useState([
+    // Initial empty state to avoid undefined errors
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total POs Created", icon: NewReleasesOutlined, count: 0, percentage: 0 },
+    { label: "Total Amount Paid", icon: NewspaperOutlined, count: 0, percentage: 0 },
+    { label: "Balance Amount", icon: CachedSharp, count: 0, percentage: 0 },
+  ]);
+  // Chart data states
+  const [demandBreakdown, setDemandBreakdown] = useState([]);
+  const [poDistributionByVendor, setPoDistributionByVendor] = useState([]);
+  const [amountByVendor, setAmountByVendor] = useState([]);
+  const [financialProgress, setFinancialProgress] = useState([]);
 
-  const data = [
-    {
-      id: 1,
-      refNo: "REF-001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
   const columns = [
     { headerName: "Id", field: "id" },
     { headerName: "Material Id", field: "materialId" },
@@ -150,7 +90,69 @@ function AdminDashboard() {
     }
   };
 
+  // Fetch analytics data for dashboard
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/analytics/admin/dashboard");
+      if (response.ok && response.data?.data?.summary) {
+        const summary = response.data.data.summary;
+        const charts = response.data.data.charts || {};
+        setAnalyticsData([
+          {
+            label: "Total Projects",
+            icon: FaBoxesStacked,
+            count: summary.totalProjects || 0,
+            percentage: 0,
+          },
+          {
+            label: "Total Demands",
+            icon: FaHandHoldingHeart,
+            count: summary.totalDemands || 0,
+            percentage: 0,
+          },
+          {
+            label: "Total POs Created",
+            icon: NewReleasesOutlined,
+            count: summary.totalPOsCreated || 0,
+            percentage: 0,
+          },
+          {
+            label: "Total Amount Paid",
+            icon: NewspaperOutlined,
+            count: summary.totalAmountPaid || 0,
+            percentage: 0,
+          },
+          {
+            label: "Balance Amount",
+            icon: CachedSharp,
+            count: summary.totalAmountPending || 0,
+            percentage: 0,
+          },
+        ]);
+        // Set chart data
+        setDemandBreakdown(
+          (charts.demandBreakdown || []).map((item) => ({
+            label: item.status,
+            value: item.count,
+          }))
+        );
+        setPoDistributionByVendor(charts.poDistributionByVendor || []);
+        setAmountByVendor(charts.amountByVendor || []);
+        setFinancialProgress(charts.financialProgressPerProject || []);
+      } else {
+        toast.error("Failed to fetch analytics data");
+      }
+    } catch (error) {
+      console.error("Error fetching analytics data:", error);
+      toast.error("Error fetching analytics data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    fetchAnalytics();
     fetchDemands();
     fetchPurchaseOrders();
   }, []);
@@ -187,17 +189,32 @@ function AdminDashboard() {
       </div>
 
       <div className="mt-6 flex flex-col lg:flex-row gap-6">
-        <PieGraph pieTitle="Demand Status" />
+        <PieGraph pieTitle="Demand Status" data={demandBreakdown} />
         <div className="flex-1 min-w-[280px]">
-          <HorixontalBarchartGraph title="PO Distribution by Vendor" />
+          <HorixontalBarchartGraph
+            title="PO Distribution by Vendor"
+            dataset={poDistributionByVendor}
+            series={[{ dataKey: "poCount", label: "PO Count" }]}
+          />
         </div>
         <div className="flex-1 min-w-[280px]">
-          <VertcleBarChart verTitle="Top 5 Requested Material" />
+          <VertcleBarChart
+            verTitle="Amount by Vendor"
+            dataset={amountByVendor}
+            series={[{ dataKey: "totalAmount", label: "Total Amount" }]}
+          />
         </div>
       </div>
 
       <div className="mt-6">
-        <BasicBarChart />
+        <BasicBarChart
+          xAxis={financialProgress.map((p) => p.projectName)}
+          series={[
+            { data: financialProgress.map((p) => p.total), label: "Total Amount", color: "#1D4ED8" },
+            { data: financialProgress.map((p) => p.paid), label: "Paid", color: "#FDBA74" },
+            { data: financialProgress.map((p) => p.balance), label: "Balance", color: "#EF4444" },
+          ]}
+        />
       </div>
 
       <div className="overflow-x-auto mt-8">

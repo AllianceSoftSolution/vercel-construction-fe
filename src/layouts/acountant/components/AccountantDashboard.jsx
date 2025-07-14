@@ -15,6 +15,15 @@ function AccountantDashboard() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
+  // Analytics and chart data states
+  const [analyticsData, setAnalyticsData] = useState([
+    { label: "Total Vendors", icon: FaBoxesStacked, count: 0, percentage: 0 },
+    { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Assigned Sections", icon: FaBoxesStacked, count: 0, percentage: 0 },
+  ]);
+  const [topVendorAccounts, setTopVendorAccounts] = useState([]);
 
   const columns = [
     { headerName: "Ref No", field: "refNo" },
@@ -26,26 +35,28 @@ function AccountantDashboard() {
     { headerName: "CM Name", field: "cmName" },
     { headerName: "Date", field: "date" },
   ];
-  const analyticsData = [
-    {
-      label: "Total Projects",
-      icon: FaBoxesStacked,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Approved Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Rejected Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-  ];
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await apiClient.get("/analytics/accountant/dashboard");
+      if (response.ok && response.data?.data?.summary) {
+        const summary = response.data.data.summary;
+        setAnalyticsData([
+          { label: "Total Vendors", icon: FaBoxesStacked, count: summary.totalVendors || 0, percentage: 0 },
+          { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: summary.totalAmountSpent || 0, percentage: 0 },
+          { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: summary.totalAmountPending || 0, percentage: 0 },
+          { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: summary.totalAmountPaid || 0, percentage: 0 },
+          { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0 },
+        ]);
+        setTopVendorAccounts(response.data.data.topVendorAccounts || []);
+      } else {
+        toast.error("Failed to fetch analytics data");
+      }
+    } catch (error) {
+      toast.error("Error fetching analytics data");
+      console.error(error);
+    }
+  };
 
   const fetchDemands = async () => {
     try {
@@ -76,6 +87,7 @@ function AccountantDashboard() {
   };
 
   useEffect(() => {
+    fetchAnalytics();
     fetchDemands();
   }, []);
 
@@ -118,9 +130,12 @@ function AccountantDashboard() {
       </div>
 
       <div className="mt-8 flex flex-col lg:flex-row gap-6">
-        <PieGraph pieTitle="Payable" />
-
-        <VertcleBarChart verTitle="Fulfillment Progress" />
+        <PieGraph pieTitle="Payable" data={[]} />
+        <VertcleBarChart
+          verTitle="Top Vendor Balances"
+          dataset={topVendorAccounts.map(v => ({ vendorName: v.vendorName, balance: Number(v.balance) }))}
+          series={[{ dataKey: "balance", label: "Balance" }]}
+        />
       </div>
 
       <div className="overflow-x-auto mt-10">

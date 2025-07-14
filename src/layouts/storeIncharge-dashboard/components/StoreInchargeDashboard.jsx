@@ -22,41 +22,16 @@ function StoreInchargeDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const data = [
-    {
-      id: 1,
-      refNo: "REF-001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
+
+  // Analytics data state
+  const [projectStats, setProjectStats] = useState([
+    { label: "Total Stores", icon: IoStorefrontSharp, count: 0, percentage: 0 },
+    { label: "Total Materials", icon: FaToolbox, count: 0, percentage: 0 },
+    { label: "Total Stock", icon: FaBoxesStacked, count: 0, percentage: 0 },
+    { label: "Total Reserved", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Assigned Sections", icon: IoStorefrontSharp, count: 0, percentage: 0 },
+  ]);
+
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -68,26 +43,26 @@ function StoreInchargeDashboard() {
     { headerName: "Date", field: "date" },
   ];
 
-  const projectStats = [
-    {
-      label: "Total Projects",
-      icon: FaBoxesStacked,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Approved Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Rejected Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-  ];
+  const fetchAnalytics = async () => {
+    try {
+      const response = await apiClient.get("/analytics/store-incharge/dashboard");
+      if (response.ok && response.data?.data?.summary) {
+        const summary = response.data.data.summary;
+        setProjectStats([
+          { label: "Total Stores", icon: IoStorefrontSharp, count: summary.totalStores || 0, percentage: 0 },
+          { label: "Total Materials", icon: FaToolbox, count: summary.totalMaterials || 0, percentage: 0 },
+          { label: "Total Stock", icon: FaBoxesStacked, count: summary.totalStock || 0, percentage: 0 },
+          { label: "Total Reserved", icon: FaHandHoldingHeart, count: summary.totalReserved || 0, percentage: 0 },
+          { label: "Assigned Sections", icon: IoStorefrontSharp, count: summary.assignedSections || 0, percentage: 0 },
+        ]);
+      } else {
+        toast.error("Failed to fetch analytics data");
+      }
+    } catch (error) {
+      toast.error("Error fetching analytics data");
+      console.error(error);
+    }
+  };
 
   const fetchDemands = async () => {
     try {
@@ -118,6 +93,7 @@ function StoreInchargeDashboard() {
   };
 
   useEffect(() => {
+    fetchAnalytics();
     fetchDemands();
   }, []);
 

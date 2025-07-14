@@ -20,6 +20,17 @@ function SinteInchargeDashbaord() {
   const [loadingDemands, setLoadingDemands] = useState(false);
   const [loadingPurchaseOrders, setLoadingPurchaseOrders] = useState(false);
 
+  // Analytics and chart data states
+  const [dashboardStats, setDashboardStats] = useState([
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Assigned Sections", icon: IoStorefrontSharp, count: 0, percentage: 0 },
+  ]);
+  const [demandBreakdown, setDemandBreakdown] = useState([]);
+  const [poDistributionByVendor, setPoDistributionByVendor] = useState([]);
+  const [amountByVendor, setAmountByVendor] = useState([]);
+
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -29,32 +40,6 @@ function SinteInchargeDashbaord() {
     { headerName: "Status", field: "status" },
     { headerName: "CM Name", field: "cmName" },
     { headerName: "Date", field: "date" },
-  ];
-  const dashboardStats = [
-    {
-      label: "Total Projects",
-      icon: FaBoxesStacked,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Approved Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Rejected Demands",
-      icon: FaHandHoldingHeart,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Store Synced",
-      icon: IoStorefrontSharp,
-      count: 5,
-      percentage: 8,
-    },
   ];
 
   const columns2 = [
@@ -127,7 +112,33 @@ function SinteInchargeDashbaord() {
     }
   };
 
+  // Fetch dashboard analytics and chart data
+  const fetchDashboardAnalytics = async () => {
+    try {
+      const response = await apiClient.get("/analytics/site-incharge/dashboard");
+      if (response.ok && response.data?.data?.summary) {
+        const summary = response.data.data.summary;
+        const charts = response.data.data.charts || {};
+        setDashboardStats([
+          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 },
+          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
+          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
+          { label: "Assigned Sections", icon: IoStorefrontSharp, count: summary.assignedSections || 0, percentage: 0 },
+        ]);
+        setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
+        setPoDistributionByVendor(charts.poDistributionByVendor || []);
+        setAmountByVendor(charts.amountByVendor || []);
+      } else {
+        toast.error("Failed to fetch dashboard analytics");
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard analytics:", error);
+      toast.error("Error fetching dashboard analytics");
+    }
+  };
+
   useEffect(() => {
+    fetchDashboardAnalytics();
     fetchDemands();
     fetchPurchaseOrders();
   }, []);
@@ -160,9 +171,17 @@ function SinteInchargeDashbaord() {
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <PieGraph pieTitle={"Demand Status"} />
-        <HorixontalBarchartGraph title={"PO Distribution by Vendor"} />
-        <VertcleBarChart verTitle={"Top 5 Requested Materials"} />
+        <PieGraph pieTitle={"Demand Status"} data={demandBreakdown} />
+        <HorixontalBarchartGraph
+          title={"PO Distribution by Vendor"}
+          dataset={poDistributionByVendor}
+          series={[{ dataKey: "poCount", label: "PO Count" }]}
+        />
+        <VertcleBarChart
+          verTitle={"Amount by Vendor"}
+          dataset={amountByVendor}
+          series={[{ dataKey: "totalAmount", label: "Total Amount" }]}
+        />
       </div>
 
       <div className="mt-8">
