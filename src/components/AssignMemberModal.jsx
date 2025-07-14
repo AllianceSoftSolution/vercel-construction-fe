@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import AddMemberModal from "../layouts/admin-dashboard/screens/users/modals/AddMemberModal";
 import { Button, Input, CircularProgress } from "@mui/material";
 import { Search } from "@mui/icons-material";
+import Loader from "./ui/Loader";
 
 const style = {
   position: "absolute",
@@ -35,6 +36,8 @@ const AssignMemberModal = ({
   const [selectedSections, setSelectedSections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [assignLoading, setAssignLoading] = useState(false);
+  const [sectionsLoading, setSectionsLoading] = useState(false);
+  const [createUserLoading, setCreateUserLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -58,13 +61,20 @@ const AssignMemberModal = ({
     setSelectedUser(user);
     if (fetchSections) {
       setStep(3);
-      // Fetch sections for the selected user
-      const fetchedSections = await fetchSections(user.id);
-      setSections(fetchedSections);
-      // Pre-select sections assigned to current user
-      setSelectedSections(
-        fetchedSections.filter((s) => s.assignedToCurrentUser).map((s) => s.id)
-      );
+      setSectionsLoading(true);
+      try {
+        // Fetch sections for the selected user
+        const fetchedSections = await fetchSections(user.id);
+        setSections(fetchedSections);
+        // Pre-select sections assigned to current user
+        setSelectedSections(
+          fetchedSections.filter((s) => s.assignedToCurrentUser).map((s) => s.id)
+        );
+      } catch (error) {
+        console.error("Error fetching sections:", error);
+      } finally {
+        setSectionsLoading(false);
+      }
     } else {
       onAssign({ userId: user.id });
       onClose();
@@ -72,33 +82,50 @@ const AssignMemberModal = ({
   };
 
   const handleCreateUser = async (userData) => {
-    setLoading(true);
-    const newUser = await createUser(userData, role);
-    setLoading(false);
-    if (newUser && newUser.id) {
-      setSelectedUser(newUser);
-      if (fetchSections) {
-        setStep(3);
-        // Fetch sections for the newly created user
-        const fetchedSections = await fetchSections(newUser.id);
-        setSections(fetchedSections);
-        setSelectedSections(
-          fetchedSections
-            .filter((s) => s.assignedToCurrentUser)
-            .map((s) => s.id)
-        );
-      } else {
-        onAssign({ userId: newUser.id });
-        onClose();
+    setCreateUserLoading(true);
+    try {
+      const newUser = await createUser(userData, role);
+      if (newUser && newUser.id) {
+        setSelectedUser(newUser);
+        if (fetchSections) {
+          setStep(3);
+          setSectionsLoading(true);
+          try {
+            // Fetch sections for the newly created user
+            const fetchedSections = await fetchSections(newUser.id);
+            setSections(fetchedSections);
+            setSelectedSections(
+              fetchedSections
+                .filter((s) => s.assignedToCurrentUser)
+                .map((s) => s.id)
+            );
+          } catch (error) {
+            console.error("Error fetching sections:", error);
+          } finally {
+            setSectionsLoading(false);
+          }
+        } else {
+          onAssign({ userId: newUser.id });
+          onClose();
+        }
       }
+    } catch (error) {
+      console.error("Error creating user:", error);
+    } finally {
+      setCreateUserLoading(false);
     }
   };
 
   const fetchSectionsList = async () => {
-    setLoading(true);
-    const result = await fetchSections();
-    setSections(result || []);
-    setLoading(false);
+    setSectionsLoading(true);
+    try {
+      const result = await fetchSections();
+      setSections(result || []);
+    } catch (error) {
+      console.error("Error fetching sections:", error);
+    } finally {
+      setSectionsLoading(false);
+    }
   };
 
   // Step 1: User selection (AssignProjectManagerModal UI)
@@ -126,7 +153,9 @@ const AssignMemberModal = ({
         </div>
         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 min-h-[48px] flex flex-col items-center justify-center">
           {loading ? (
-            <CircularProgress size={28} thickness={4} />
+            <div className="flex justify-center items-center py-8">
+              <Loader text="Loading users..." />
+            </div>
           ) : users.length === 0 ? (
             <span className="text-gray-400 text-sm">No users found.</span>
           ) : (
@@ -157,10 +186,16 @@ const AssignMemberModal = ({
   // Step 2: User creation (AddMemberModal UI, but as a step)
   const renderUserCreation = () => (
     <div className="flex flex-col items-center justify-center">
-      <AddMemberModal
-        onClose={() => setStep(1)}
-        onAddUserClick={handleCreateUser}
-      />
+      {createUserLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader text="Creating user..." />
+        </div>
+      ) : (
+        <AddMemberModal
+          onClose={() => setStep(1)}
+          onAddUserClick={handleCreateUser}
+        />
+      )}
     </div>
   );
 
@@ -170,9 +205,13 @@ const AssignMemberModal = ({
       <h2 className="text-2xl font-semibold text-[#043b6a] mb-4">
         Assign Sections
       </h2>
-      {assignLoading ? (
-        <div className="flex justify-center items-center min-h-[80px]">
-          <CircularProgress size={28} thickness={4} />
+      {sectionsLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader text="Loading sections..." />
+        </div>
+      ) : assignLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader text="Assigning sections..." />
         </div>
       ) : (
         <AssignSectionStep

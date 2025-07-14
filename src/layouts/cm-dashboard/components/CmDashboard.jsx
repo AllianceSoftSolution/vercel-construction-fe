@@ -15,6 +15,7 @@ import PieGraph from "../../../components/ui/Graphs/PieGraph";
 import HorixontalBarchartGraph from "../../../components/ui/Graphs/HorixontalBarchartGraph";
 import SimpleTable from "../../../components/SimpleTable";
 import SectionCard from "../../../components/ui/SectionCard";
+import Loader from "../../../components/ui/Loader";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
@@ -23,6 +24,7 @@ function CmDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
+  const [pageLoading, setPageLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -86,6 +88,7 @@ function CmDashboard() {
         setSections([]);
       } finally {
         setLoading(false);
+        setPageLoading(false);
       }
     };
     fetchSections();
@@ -169,8 +172,17 @@ function CmDashboard() {
     )
   );
 
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader/>
+      </div>
+    );
+  }
+
   return (
     <div className="">
+    
       <TopBar
         title="Construction Manager"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."

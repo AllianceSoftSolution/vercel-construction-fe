@@ -10,7 +10,7 @@ import Button from "../../../../../components/Button";
 import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
 import { useSearchParams } from "react-router-dom";
-
+import Loader from "../../../../../components/ui/Loader";
 const style = {
   position: "absolute",
   top: "50%",
@@ -20,7 +20,8 @@ const style = {
   boxShadow: 24,
 };
 const ProjectInformationTab = ({ data }) => {
-  // const data = [
+  const [pageLoading, setPageLoading] = useState(true);
+    // const data = [
   //   {
   //     id: 1,
   //     iD: "01",
@@ -122,6 +123,21 @@ const ProjectInformationTab = ({ data }) => {
       isLinkOpen: "false",
     });
   };
+
+  // Set pageLoading to false when data is available
+  React.useEffect(() => {
+    if (data) {
+      setPageLoading(false);
+    }
+  }, [data]);
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <>
       <ProjectInfoCard

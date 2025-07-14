@@ -73,16 +73,7 @@ const Demands = () => {
             onClick: () => navigate(`/siteincharge-dashboard/demands/${value}`),
             icon: <FaEye />,
           },
-          {
-            label: "Edit",
-            onClick: () => alert("Edit"),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
+    
         ]}
         // onClick={handleActionClick}
       >

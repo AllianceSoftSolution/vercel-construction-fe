@@ -41,6 +41,7 @@ const SectionDetailPage = () => {
   const { id } = useParams();
   const [sectionData, setSectionData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
   
   const CustomActionComponent = ({ data }) => (
@@ -128,12 +129,21 @@ const SectionDetailPage = () => {
       toast.error("Something went wrong while fetching details.");
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
   useEffect(() => {
     if (id) fetchSectionDetail();
   }, [id]);
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   const handleAssignPM = (user) => {
     setSelectedPM(user);
@@ -221,7 +231,6 @@ const SectionDetailPage = () => {
   // Project Manager assignment logic
   const fetchPMUsers = async () => {
     try {
-      setModalLoading(true);
       const response = await apiClient.get(`/assignments/users-by-role`, {
         role: "PROJECT_MANAGER",
         projectId: sectionData?.project?.id,
@@ -233,14 +242,11 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to fetch users");
       return [];
-    } finally {
-      setModalLoading(false);
     }
   };
 
   const createPMUser = async (userData) => {
     try {
-      setModalLoading(true);
       const response = await apiClient.post(`/auth/register`, {
         ...userData,
         role: "PROJECT_MANAGER",
@@ -254,14 +260,11 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to create user");
       return null;
-    } finally {
-      setModalLoading(false);
     }
   };
 
   const handleAssignPMGeneric = async ({ userId }) => {
     try {
-      setModalLoading(true);
       const response = await apiClient.post(`/assignments/project-manager`, {
         userId,
         projectId: sectionData?.project?.id,
@@ -281,15 +284,12 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to assign Project Manager");
       return false;
-    } finally {
-      setModalLoading(false);
     }
   };
 
   // Construction Manager assignment logic
   const fetchCMUsers = async () => {
     try {
-      setModalLoading(true);
       const response = await apiClient.get(`/assignments/users-by-role`, {
         role: "CONSTRUCTION_MANAGER",
         projectId: sectionData?.project?.id,
@@ -301,14 +301,11 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to fetch users");
       return [];
-    } finally {
-      setModalLoading(false);
     }
   };
 
   const createCMUser = async (userData) => {
     try {
-      setModalLoading(true);
       const response = await apiClient.post(`/auth/register`, {
         ...userData,
         role: "CONSTRUCTION_MANAGER",
@@ -322,8 +319,6 @@ const SectionDetailPage = () => {
     } catch (e) {
       toast.error("Failed to create user");
       return null;
-    } finally {
-      setModalLoading(false);
     }
   };
 

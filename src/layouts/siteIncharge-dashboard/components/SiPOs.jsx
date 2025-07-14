@@ -44,16 +44,7 @@ const SiPOs = () => {
             onClick: () => navigate(`/siteincharge-dashboard/pOS/${id}`),
             icon: <IoIosEye />,
           },
-          {
-            label: "Edit",
-            onClick: () => setVendorModalOpen(true),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Change Vendor",
-            onClick: () => setVendorModalOpen(true),
-            icon: <RiFileEditFill />,
-          },
+      
         ]}
       >
         <IconButton>

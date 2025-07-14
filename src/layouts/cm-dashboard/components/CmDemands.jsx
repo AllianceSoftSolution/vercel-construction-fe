@@ -8,9 +8,10 @@ import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
-
+import Loader from "../../../components/ui/Loader"; 
 const CmDemands = () => {
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [demands, setDemands] = useState([]);
   const [materialsMap, setMaterialsMap] = useState({});
   const [sectionsMap, setSectionsMap] = useState({});
@@ -70,6 +71,7 @@ const CmDemands = () => {
       console.error(error);
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -115,6 +117,14 @@ const CmDemands = () => {
       </IconButton>
     </DropdownButton>
   );
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

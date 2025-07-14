@@ -155,8 +155,8 @@ const SinPurchaseOrderDetailPage = () => {
 
         {/* Info Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Info label="Demand ID" value={purchaseOrderData.demand?.referenceNumber || "N/A"} />
-          <Info label="Demand Name" value={purchaseOrderData.demand?.referenceNumber || "N/A"} />
+          {/* <Info label="Demand ID" value={purchaseOrderData.demand?.referenceNumber || "N/A"} /> */}
+          {/* <Info label="Demand Name" value={purchaseOrderData.demand?.referenceNumber || "N/A"} /> */}
           <Info label="Project" value={purchaseOrderData.demand?.section?.project?.name || "N/A"} />
           <Info label="Section" value={purchaseOrderData.section?.name || "N/A"} />
           <Info label="Material" value={purchaseOrderData.demand?.material?.name || "N/A"} />

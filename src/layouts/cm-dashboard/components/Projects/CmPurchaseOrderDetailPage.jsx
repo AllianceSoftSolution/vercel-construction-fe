@@ -10,6 +10,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../../components/ui/Loader";
 
 const CmPurchaseOrderDetail = () => {
   const { id } = useParams();
@@ -72,6 +73,14 @@ const CmPurchaseOrderDetail = () => {
   const get = (obj, path, fallback = "-") => {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj) || fallback;
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">

@@ -6,47 +6,15 @@ import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import PieGraph from "../../../components/ui/Graphs/PieGraph";
 import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
+import Loader from "../../../components/ui/Loader";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 
 function AccountantDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      refNo: "REF-001",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      status: "Pending",
-      cmName: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      refNo: "REF-002",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      status: "Approved",
-      cmName: "Fatima Khan",
-      date: "2025-06-14",
-    },
-    {
-      id: 3,
-      refNo: "REF-003",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      status: "In Progress",
-      cmName: "Hassan Ali",
-      date: "2025-06-13",
-    },
-  ];
+  const [pageLoading, setPageLoading] = useState(true);
+
 
   const columns = [
     { headerName: "Ref No", field: "refNo" },
@@ -103,12 +71,21 @@ function AccountantDashboard() {
       toast.error("Error fetching demands");
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
   useEffect(() => {
     fetchDemands();
   }, []);
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full overflow-y-auto">

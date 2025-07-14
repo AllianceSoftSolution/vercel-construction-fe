@@ -104,26 +104,7 @@ const ProjectInformationTab = ({ data, loading }) => {
             onEdit={() => console.log("edit description")}
           />
 
-          {/* Associated Members Table */}
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-4">Associated Members</h3>
-            <SimpleTable
-              columns={[
-                { headerName: "Name", field: "name" },
-                { headerName: "Email", field: "email" },
-                { headerName: "Role", field: "role" },
-                { headerName: "Assigned Sections", field: "assignments" },
-              ]}
-              data={data?.associatedMembers ? data.associatedMembers.map((member, index) => ({
-                id: member.id,
-                name: member.name,
-                email: member.email,
-                role: member.role?.replace(/_/g, ' '),
-                assignments: member.assignments?.length || 0,
-              })) : []}
-              cellComponents={{}}
-            />
-          </div>
+        
         </>
       )}
     </>

@@ -12,6 +12,7 @@ import SimpleTable from "../../../components/SimpleTable";
 import TopBar from "../../../components/ui/TopBar";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import BasicBarChart from "../../../components/ui/Graphs/BasicBarChart";
+import Loader from "../../../components/ui/Loader";
 import { useEffect } from "react";
 import { useState } from "react";
 import  apiClient  from "../../../api/apiClient";
@@ -20,6 +21,7 @@ import toast from "react-hot-toast";
 function StoreInchargeDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const data = [
     {
       id: 1,
@@ -111,6 +113,7 @@ function StoreInchargeDashboard() {
       toast.error("Error fetching demands");
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -118,7 +121,14 @@ function StoreInchargeDashboard() {
     fetchDemands();
   }, []);
 
-  
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <div className="h-full">
       {/* Header */}

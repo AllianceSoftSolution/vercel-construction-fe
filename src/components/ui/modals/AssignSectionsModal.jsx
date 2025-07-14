@@ -1,20 +1,18 @@
 import { Checkbox, Input, Button } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useState } from "react";
+import Loader from "../Loader";
 
-export default function AssignSectionModal({ handleCancel, handleSubmit, userData }) {
-  const sections = [
-    { id: 1, name: "Frontend Development" },
-    { id: 2, name: "Backend API" },
-    { id: 3, name: "Authentication Module" },
-    { id: 4, name: "UI/UX Design" },
-    { id: 5, name: "Database Schema" },
-    { id: 6, name: "Deployment" },
-  ];
-
+export default function AssignSectionModal({ 
+  handleCancel, 
+  handleSubmit, 
+  userData, 
+  sections = [], 
+  loading = false, 
+  submitting = false 
+}) {
   console.log("User data in checkbox :- ", userData);
   
-
   const [selectedSections, setSelectedSections] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -44,6 +42,24 @@ export default function AssignSectionModal({ handleCancel, handleSubmit, userDat
   const isAllSelected =
     filteredSections.length > 0 &&
     filteredSections.every((s) => selectedSections.includes(s.id));
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl w-full mx-auto bg-white rounded-2xl shadow-md p-6 space-y-6">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-semibold text-[#043b6a]">
+            Assign Sections
+          </h2>
+          <p className="text-sm text-gray-500">
+            Select the sections to assign from the list below.
+          </p>
+        </div>
+        <div className="flex justify-center items-center py-12">
+          <Loader text="Loading sections..." />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl w-full mx-auto bg-white rounded-2xl shadow-md p-6 space-y-6">
@@ -79,34 +95,42 @@ export default function AssignSectionModal({ handleCancel, handleSubmit, userDat
       )}
 
       <div className="max-h-96 overflow-y-auto space-y-2 pr-1">
-        {filteredSections.map((section) => (
-          <div
-            key={section.id}
-            className="flex justify-between items-center rounded-xl border border-gray-100 bg-white px-4 py-3 hover:shadow-sm transition cursor-pointer hover:border-[#fc8908]"
-          >
-            <span className="text-sm text-[#043b6a] font-medium">
-              {section.name}
-            </span>
-            <Checkbox
-              checked={selectedSections.includes(section.id)}
-              onChange={() => handleCheckboxChange(section.id)}
-            />
+        {filteredSections.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No sections found.
           </div>
-        ))}
+        ) : (
+          filteredSections.map((section) => (
+            <div
+              key={section.id}
+              className="flex justify-between items-center rounded-xl border border-gray-100 bg-white px-4 py-3 hover:shadow-sm transition cursor-pointer hover:border-[#fc8908]"
+            >
+              <span className="text-sm text-[#043b6a] font-medium">
+                {section.name}
+              </span>
+              <Checkbox
+                checked={selectedSections.includes(section.id)}
+                onChange={() => handleCheckboxChange(section.id)}
+              />
+            </div>
+          ))
+        )}
       </div>
 
       <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
         <button
           onClick={handleCancel}
           className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
+          disabled={submitting}
         >
           Cancel
         </button>
         <button
           onClick={handleSubmit}
-          className="bg-primary px-8 py-2 rounded-lg font-medium text-white"
+          className="bg-primary px-8 py-2 rounded-lg font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={submitting}
         >
-          Submit
+          {submitting ? "Assigning..." : "Submit"}
         </button>
       </div>
     </div>

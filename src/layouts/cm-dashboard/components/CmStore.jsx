@@ -11,6 +11,7 @@ import { IoPersonCircle } from "react-icons/io5";
 import { RiAccountBox2Fill } from "react-icons/ri";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 
 const CmStores = () => {
   const navigate = useNavigate();
@@ -76,6 +77,13 @@ const CmStores = () => {
     { headerName: "Action", field: "id" },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="h-full">
       <TopBar

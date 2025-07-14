@@ -13,6 +13,7 @@ import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
+import AssignMemberModal from "../../../../components/AssignMemberModal";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
 
@@ -31,6 +32,9 @@ const SiSectionDetailPage = () => {
   const { id } = useParams();
   const [sectionData, setSectionData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [openAssignCMModal, setOpenAssignCMModal] = useState(false);
 
   // Format date function
   const formatDate = (dateString) => {
@@ -97,12 +101,74 @@ const SiSectionDetailPage = () => {
       toast.error("Something went wrong while fetching details.");
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
   useEffect(() => {
     if (id) fetchSectionDetail();
   }, [id]);
+
+  // Construction Manager assignment logic
+  const fetchCMUsers = async () => {
+    try {
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: "CONSTRUCTION_MANAGER",
+        projectId: sectionData?.project?.id,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const createCMUser = async (userData) => {
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: "CONSTRUCTION_MANAGER",
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
+  const handleAssignCMGeneric = async ({ userId }) => {
+    try {
+      setModalLoading(true);
+      const response = await apiClient.post(
+        `/assignments/construction-manager`,
+        { userId, sectionId: id }
+      );
+      if (response.ok) {
+        toast.success("Construction Manager assigned successfully!");
+        setOpenAssignCMModal(false);
+        fetchSectionDetail();
+        return true;
+      } else {
+        toast.error(
+          response.data?.message || "Failed to assign Construction Manager"
+        );
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign Construction Manager");
+      return false;
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   const CustomActionComponent = ({ value: memberId }) => (
     <DropdownButton
@@ -140,6 +206,24 @@ const SiSectionDetailPage = () => {
 
   const constructionManagersData = transformConstructionManagersData();
   const storeIncharges = getStoreInchargeAssignments();
+
+  // Show page loader until initial data is loaded
+  if (pageLoading) {
+    return (
+      <div className="px-4 md:px-8 py-4">
+        <TopBar
+          title="Section Details"
+          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        />
+        <div className="flex justify-center items-center h-full min-h-[400px]">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-2 text-gray-600">Loading section details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 md:px-8 py-4">
@@ -204,7 +288,7 @@ const SiSectionDetailPage = () => {
                     linkText="Assign Construction Manager"
                     imageSrc={Search}
                     imageAlt="Search Illustration"
-                    onManagerClick={() => setHasMemberInfo(true)}
+                    onManagerClick={() => setOpenAssignCMModal(true)}
                   />
                 </div>
               )}
@@ -321,33 +405,34 @@ const SiSectionDetailPage = () => {
               title="Construction Managers"
               detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
               buttonText="Add CM"
-              onButtonClick={() => setOpen(true)}
+              onButtonClick={() => setOpenAssignCMModal(true)}
             />
 
-            {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-
-            <Modal
-              open={open}
-              onClose={() => setOpen(false)}
-              aria-labelledby="modal-modal-title"
-              aria-describedby="modal-modal-description"
-            >
-              <Box sx={style}>
-                <AssignProjectManagerModal
-                  onCreateClick={(bool) => {
-                    setShowModal(bool);
-                    setOpen(false);
-                  }}
+            <div className="overflow-x-auto mt-4 relative">
+              {loading ? (
+                <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <SimpleTable
+                  data={constructionManagersData}
+                  columns={columns}
+                  cellComponents={{ action: CustomActionComponent }}
                 />
-              </Box>
-            </Modal>
-
-            <SimpleTable
-              data={constructionManagersData}
-              columns={columns}
-              cellComponents={{ action: CustomActionComponent }}
-            />
+              )}
+            </div>
           </div>
+
+          {/* AssignMemberModal for Construction Manager */}
+          <AssignMemberModal
+            role="Construction Manager"
+            open={openAssignCMModal}
+            onClose={() => setOpenAssignCMModal(false)}
+            fetchUsers={fetchCMUsers}
+            createUser={createCMUser}
+            onAssign={handleAssignCMGeneric}
+            loading={modalLoading}
+          />
         </>
       ) : (
         <div className="text-center py-8">

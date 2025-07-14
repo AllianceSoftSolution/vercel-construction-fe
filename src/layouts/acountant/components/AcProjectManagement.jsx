@@ -10,11 +10,12 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import ActionModal from "./users/modals/ActionModal";
 import { RiDeleteBin5Fill } from "react-icons/ri";
-
+import Loader from "../../../components/ui/Loader";
 const AcProjectManagement = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   const fetchProjects = async () => {
@@ -38,6 +39,7 @@ const AcProjectManagement = () => {
       toast.error("Error fetching projects");
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -74,6 +76,15 @@ const AcProjectManagement = () => {
       </DropdownButton>
     );
   };
+
+  if (pageLoading) {
+
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full">

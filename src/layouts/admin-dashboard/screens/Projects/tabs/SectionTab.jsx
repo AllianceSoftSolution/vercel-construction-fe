@@ -14,6 +14,7 @@ const SectionTab = ({ data, onSectionDeleted }) => {
   const navigate = useNavigate();
   const [section, setSection] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState(null);
 
@@ -30,6 +31,21 @@ const SectionTab = ({ data, onSectionDeleted }) => {
       setLoading(false);
     }
   };
+
+  // Set pageLoading to false when data is available
+  React.useEffect(() => {
+    if (data) {
+      setPageLoading(false);
+    }
+  }, [data]);
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

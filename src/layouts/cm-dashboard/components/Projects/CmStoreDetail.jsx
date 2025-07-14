@@ -12,6 +12,8 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
+import Loader from "../../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -27,6 +29,7 @@ const style = {
 const CmStoreDetail = () => {
   const { id } = useParams();
   const [storeData, setStoreData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const data = [
     {
       id: 1,
@@ -101,6 +104,7 @@ const CmStoreDetail = () => {
 
   const fetchStoreDetail = async () => {
     try {
+      setLoading(true);
       const response = await apiClient.get(`/stores/${id}`);
       if (response.ok) {
         setStoreData(response.data.store);
@@ -110,6 +114,8 @@ const CmStoreDetail = () => {
     } catch (error) {
       console.error("Error fetching Store details:", error);
       toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,6 +190,15 @@ const CmStoreDetail = () => {
   };
 
   const [hasMemberInfo, setHasMemberInfo] = useState(false);
+
+  if (loading) {
+
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6">

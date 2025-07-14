@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import MembersOverviewCard from "../../../../mui/MembersOverviewCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
+import Loader from "../../../../components/ui/Loader";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { Box, IconButton, Modal } from "@mui/material";
 import Search from "../../../../../src/assets/construction/Search.png";
@@ -32,44 +33,8 @@ const SiStoreDetail = () => {
   const [storeData, setStoreData] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedStoreIncharge, setSelectedStoreIncharge] = useState(null);
-  const data = [
-    {
-      id: 1,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 2,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 3,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-  ];
+  const [loading, setLoading] = useState(false);
+ 
 
   // Preprocess inventory and transactions for flat fields
   const inventoryTableData = (storeData?.inventory || []).map(item => ({
@@ -444,6 +409,7 @@ const SiStoreDetail = () => {
   const { id } = useParams();
   const fetchStoreDetail = async () => {
     try {
+      setLoading(true);
       const response = await apiClient.get(`/stores/${id}`);
       if (response.ok) {
         setStoreData(response.data.store);
@@ -454,12 +420,22 @@ const SiStoreDetail = () => {
     } catch (error) {
       console.error("Error fetching Store details:", error);
       toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     if (id) fetchStoreDetail();
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   // Handler for adding and assigning a new Store Incharge
   const handleAddStoreIncharge = async (data) => {

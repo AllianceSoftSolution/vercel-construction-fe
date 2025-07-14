@@ -153,6 +153,23 @@ const SiDemandDetails = () => {
     );
   }
 
+
+  const fulfillDemand = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.post(`/demands/${id}/fulfill`);
+      if (response?.data?.demand) {
+        setDemandData(response.data.demand);
+      } else {
+        toast.error(response?.data?.message || "Failed to fulfill");
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "API error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Modal open={open} onClose={handleClose}>
@@ -268,7 +285,8 @@ const SiDemandDetails = () => {
           storeName="Head Store"
           totalQty={demandData.quantity || 0}
           material={demandData.material?.name || "N/A"}
-          showButton
+              showButton
+              onButtonClick={fulfillDemand}
         />
         <DemandQuantityCard
           storeName="CM Store"

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import Loader from "../../../components/ui/Loader";
 import { useNavigate } from "react-router-dom";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -17,6 +18,7 @@ const SiStore = () => {
   const [showModal, setShowModal] = useState(false);
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   React.useEffect(() => {
     const fetchStores = async () => {
@@ -32,6 +34,7 @@ const SiStore = () => {
         toast.error("Error fetching stores");
       } finally {
         setLoading(false);
+        setPageLoading(false);
       }
     };
     fetchStores();
@@ -40,6 +43,15 @@ const SiStore = () => {
   const handleLinkClick = () => {
     setShowModal(true);
   };
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
+
   const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
@@ -106,15 +118,12 @@ const SiStore = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        {loading ? (
-          <div className="text-center py-8">Loading stores...</div>
-        ) : (
-          <SimpleTable
-            columns={columns}
-            data={tableData}
-            cellComponents={{ id: CustomActionComponent }}
-          />
-        )}
+        <SimpleTable
+          columns={columns}
+          data={tableData}
+          loading={loading}
+          cellComponents={{ id: CustomActionComponent }}
+        />
       </div>
       {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
     </div>

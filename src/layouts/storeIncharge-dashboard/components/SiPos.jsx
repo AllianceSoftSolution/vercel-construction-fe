@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import Loader from "../../../components/ui/Loader";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -16,46 +17,8 @@ const SiPos = () => {
   const navigate = useNavigate();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      demandId: "001",
-      demandName: "Cement",
-      project: "Bridge Construction",
-      material: "Cement",
-      section: "A1",
-      qty: 120,
-      unit: "ton",
-      poQty: 100,
-      status: "Pending",
-      assingedVendors: "Owner",
-    },
-    {
-      id: 2,
-      demandId: "002",
-      demandName: "Cement",
-      project: "Highway Expansion",
-      material: "Steel",
-      section: "B2",
-      qty: 250,
-      unit: "ton",
-      poQty: 100,
-      status: "Approved",
-    },
-    {
-      id: 3,
-      demandId: "003",
-      demandName: "Cement",
-      project: "Metro Rail",
-      material: "Concrete",
-      section: "C3",
-      qty: 300,
-      unit: "ton",
-      poQty: 100,
-      status: "In Progress",
-      assingedVendors: "Owner",
-    },
-  ];
+  const [pageLoading, setPageLoading] = useState(true);
+ 
 
   const columns = [
     { headerName: "Demand ID", field: "demandId" },
@@ -97,12 +60,21 @@ const SiPos = () => {
       console.error("Error fetching purchase orders:", error);
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
   useEffect(() => {
     fetchPurchaseOrders();
   }, []);
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   const CustomActionComponent = ({ value: id }) => {
     return (

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ProjectInfoCard from "@/components/ui/ProjectInfoCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
+import Loader from "../../../../components/ui/Loader";
 import { MdDelete } from "react-icons/md";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
@@ -70,6 +71,14 @@ const SiPurchaseOrderDetailPage = () => {
   useEffect(() => {
     if (id) fetchPurchaseOrderDetail();
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="">

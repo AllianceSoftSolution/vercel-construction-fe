@@ -7,42 +7,10 @@ import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import apiClient from "../../../../../api/apiClient";
-
-const SectionTab = () => {
-  const [section, setSection] = useState([]);
-  const [loading, setLoading] = useState(false);
-  // const [hasMemberInfo, sethasMemberInfo] = useState(false);
-
-  // const [showModal, setShowModal] = useState(false);
-
-  // const handleLinkClick = () => {
-  //   setShowModal(true);
-  // };
+import Loader from "../../../../../components/ui/Loader";
+const SectionTab = ({ data }) => {
+  const [pageLoading, setPageLoading] = useState(true);
   const navigate = useNavigate();
-
-  const fetchSection = async () => {
-    try {
-      setLoading(true);
-      const response = await apiClient.get("/sections");
-      if (response.ok) {
-        const data = response.data.sections.map((section, index) => ({
-          ...section,
-        }));
-        setSection(data);
-      } else {
-        toast.error("Failed to fetch section");
-      }
-    } catch (error) {
-      console.error("Error fetching section:", error);
-      toast.error("Error fetching section");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSection();
-  }, []);
 
   // const actions = [
   //   // {
@@ -61,6 +29,21 @@ const SectionTab = () => {
   //     onClick: () => console.log("Delete clicked"),
   //   },
   // ];
+
+  // Set pageLoading to false when data is available
+  React.useEffect(() => {
+    if (data) {
+      setPageLoading(false);
+    }
+  }, [data]);
+
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div>
       <TopBar
@@ -70,7 +53,7 @@ const SectionTab = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="flex justify-between gap-x-2">
         <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
-          {section.map((sec, index) => (
+          {data?.sections?.map((sec, index) => (
             <SectionCard
               key={sec.id}
               sectionNo={index + 1}
@@ -82,7 +65,7 @@ const SectionTab = () => {
             />
           ))}
         </div>
-      </div>{" "}
+      </div>
       {/* Modal */}
       {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />} */}
     </div>

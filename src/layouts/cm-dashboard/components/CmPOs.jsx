@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import Loader from "../../../components/ui/Loader";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -16,6 +17,7 @@ const CmPos = () => {
   const navigate = useNavigate();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const data = [
     {
       id: 1,
@@ -126,6 +128,7 @@ const CmPos = () => {
       console.error("Error fetching purchase orders:", error);
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -133,6 +136,13 @@ const CmPos = () => {
     fetchPurchaseOrders();
   }, []);
 
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full">
@@ -150,6 +160,7 @@ const CmPos = () => {
         <SimpleTable
           columns={columns}
           data={purchaseOrders}
+          loading={loading}
           cellComponents={{ id: CustomActionComponent }}
         />
       </div>
