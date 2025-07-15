@@ -142,7 +142,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
           </div>
 
           <div className="hidden lg:flex items-center gap-5">
-            <div className="relative w-full max-w-sm">
+            {/* <div className="relative w-full max-w-sm">
               <input
                 type="text"
                 placeholder="Search..."
@@ -151,11 +151,11 @@ const StoreInchargeDashboardLayout = ({ role }) => {
               <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white p-2.5 rounded-full cursor-pointer">
                 <FaSearch className="text-sm" />
               </div>
-            </div>
+            </div> */}
 
             <div className="flex gap-3">
               <IoMdNotifications className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
-              <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              {/* <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" /> */}
             </div>
 
             <div className="flex flex-col items-end">
@@ -186,7 +186,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
 
         {isMenuOpen && (
           <div className="lg:hidden flex flex-col gap-3 px-4 pb-4 border-b bg-white">
-            <div className="relative">
+            {/* <div className="relative">
               <input
                 type="text"
                 placeholder="Search..."
@@ -195,7 +195,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
               <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white p-2 rounded-full cursor-pointer">
                 <FaSearch className="text-sm" />
               </div>
-            </div>
+            </div> */}
 
             <div className="flex gap-3">
               <IoMdNotifications className="w-8 h-8 rounded-full border border-gray-300 text-gray-400 p-1.5" />
