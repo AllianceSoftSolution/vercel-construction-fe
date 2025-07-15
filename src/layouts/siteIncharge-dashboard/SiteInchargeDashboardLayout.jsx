@@ -164,7 +164,7 @@ const SiteInchargeDashboardLayout = ({ role }) => {
           </div>
 
           <div className="hidden lg:flex items-center gap-5">
-            <div className="relative w-full max-w-sm">
+            {/* <div className="relative w-full max-w-sm">
               <input
                 type="text"
                 placeholder="Search..."
@@ -173,11 +173,11 @@ const SiteInchargeDashboardLayout = ({ role }) => {
               <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white p-2.5 rounded-full cursor-pointer">
                 <FaSearch className="text-sm" />
               </div>
-            </div>
+            </div> */}
 
             <div className="flex gap-3">
               <IoMdNotifications className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
-              <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              {/* <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" /> */}
             </div>
 
             <div className="flex flex-col items-end">
