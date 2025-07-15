@@ -105,11 +105,11 @@ const PurchaseOrder = () => {
             label: "Edit",
             icon: <FaUserEdit />,
           },
-          {
-            label: "Change Vendor",
-            onClick: () => setVendorModalOpen(true),
-            icon: <RiFileEditFill />,
-          },
+          // {  
+          //   label: "Change Vendor",
+          //   onClick: () => setVendorModalOpen(true),
+          //   icon: <RiFileEditFill />,
+          // },
         ]}
       >
         <IconButton>

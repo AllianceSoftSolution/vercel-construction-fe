@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa6";
 import { IoPersonCircle, IoStorefrontSharp } from "react-icons/io5";
 import CustomTable from "../../../mui/CustomTable";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BsProjector, BsThreeDotsVertical } from "react-icons/bs";
 import ActionModal from "../../admin-dashboard/screens/users/modals/ActionModal";
 import SimpleTable from "../../../components/SimpleTable";
@@ -35,7 +35,7 @@ import Loader from "../../../components/ui/Loader";
 
 const UserManagement = () => {
   const navigate = useNavigate();
-
+  const { id } = useParams();
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ const UserManagement = () => {
     { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
-      field: "action",
+      field: "id",
     },
   ];
 
@@ -107,14 +107,15 @@ const UserManagement = () => {
     },
   ];
 
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value : id  }) => {
+    
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate("123"),
+            onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
@@ -191,7 +192,7 @@ const UserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ action: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent }}
           />
         )}
       </div>
