@@ -4,12 +4,35 @@ import SimpleTable from "../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
-import { IconButton } from "@mui/material";
+import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { date } from "zod";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+
+// Status color mapping
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
 
 const Demands = () => {
   const navigate = useNavigate();
@@ -113,7 +136,7 @@ const Demands = () => {
           <SimpleTable
             columns={columns}
             data={demands}
-            cellComponents={{ demandId: CustomActionComponent }}
+            cellComponents={{ demandId: CustomActionComponent, status: StatusChip }}
           />
         )}
       </div>

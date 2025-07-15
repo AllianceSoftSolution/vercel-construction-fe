@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import DropdownButton from "../../../comments/components/DropdownButton";
-import { IconButton } from "@mui/material";
+import { IconButton, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
@@ -12,6 +12,27 @@ import { FaUserEdit } from "react-icons/fa";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
+
+// Status color mapping for purchase order status
+const statusColorMap = {
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  PENDING: "#f59e42", // orange
+  REJECTED: "#ef4444", // red
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
 
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
@@ -117,7 +138,7 @@ const PurchaseOrder = () => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
-            cellComponents={{ id: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent, status: StatusChip }}
           />
         )}
       </div>

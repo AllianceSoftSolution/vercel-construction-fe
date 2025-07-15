@@ -4,7 +4,7 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import Button from "../Button";
-import { useNavigate } from "react-router-dom"; // ✅ Import navigate
+import { useNavigate } from "react-router-dom"; 
 
 const TopBar = ({
   title = "",
@@ -14,9 +14,9 @@ const TopBar = ({
   showExport = false,
   showFilter = false,
   filterOptions = [],
-  showIcon = false, // ✅ Back Icon toggle
+  showIcon = false, 
 }) => {
-  const navigate = useNavigate(); // ✅ Create navigate instance
+  const navigate = useNavigate(); 
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState("");
   const filterRef = useRef(null);
