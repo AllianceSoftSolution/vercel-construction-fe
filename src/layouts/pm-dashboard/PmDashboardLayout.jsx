@@ -172,7 +172,7 @@ const PmDashboardLayout = ({ role }) => {
 
             <div className="flex gap-3">
               <IoMdNotifications className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
-              <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              {/* <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" /> */}
             </div>
 
             <div className="flex flex-col items-end">
