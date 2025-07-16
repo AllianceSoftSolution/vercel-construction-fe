@@ -1,69 +1,57 @@
 import { useEffect, useState } from "react";
+import { messaging, getToken, onMessage } from "../utils/firebase";
 
-const usePushNotification = () => {
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscription, setSubscription] = useState(null);
+const DEFAULT_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
 
-  // Check if the browser supports Push Notifications and Service Workers
+const usePushNotification = (vapidKey = DEFAULT_VAPID_KEY) => {
+  const [token, setToken] = useState(null);
+  const [permission, setPermission] = useState(Notification.permission);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    if ("Notification" in window && "serviceWorker" in navigator) {
-      // Request notification permission
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          console.log("Notification permission granted.");
-        } else {
-          console.log("Notification permission denied.");
-        }
-      });
-
-      // Register the Service Worker
-      navigator.serviceWorker
-        .register("/service-worker.js")
-        .then((registration) => {
-          console.log("Service Worker registered:", registration);
-
-          // Subscribe to push notifications
-          registration.pushManager
-            .subscribe({
-              userVisibleOnly: true,
-              applicationServerKey:
-                "BJsKrdZzG85-YV3_DUKQrpaQWfzj66UrGg4BFTO3rTvgsGvrPY5wZ2yEEnXD3QsGJAMtSbiQbX0k0xTm6F1ZiTk", // Replace with your VAPID public key
-            })
-            .then((subscription) => {
-              console.log("Push subscription:", subscription);
-              setSubscription(subscription);
-              setIsSubscribed(true);
-            })
-            .catch((err) => {
-              console.error("Error subscribing to push notifications", err);
-            });
-        })
-        .catch((err) => {
-          console.error("Error registering service worker:", err);
-        });
+    console.log("VAPID Key used for FCM:", vapidKey); // Debug log
+    if (!vapidKey) return;
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      setError("Push notifications are not supported in this browser.");
+      return;
     }
-  }, []);
 
-  // Function to trigger a push notification
-  const triggerNotification = (title, body) => {
-    if (isSubscribed) {
-      navigator.serviceWorker.ready.then((registration) => {
-        registration.showNotification(title, {
-          body: body,
-          icon: "favicon3percent.png",
-          badge: "favicon3percent.png",
-          data: {
-            url: "https://tax-advisor-fe.netlify.app",
-          },
-        });
-      });
-    }
+    Notification.requestPermission().then((permission) => {
+      setPermission(permission);
+      if (permission === "granted") {
+        navigator.serviceWorker
+          .register("/firebase-messaging-sw.js")
+          .then((registration) => {
+            getToken(messaging, {
+              vapidKey,
+              serviceWorkerRegistration: registration,
+            })
+              .then((currentToken) => {
+                if (currentToken) {
+                  setToken(currentToken);
+                } else {
+                  setError("No registration token available.");
+                }
+              })
+              .catch((err) => {
+                setError("An error occurred while retrieving token.");
+                console.error(err);
+              });
+          })
+          .catch((err) => {
+            setError("Service worker registration failed.");
+            console.error(err);
+          });
+      }
+    });
+  }, [vapidKey]);
+
+  // Listen for foreground messages
+  const onMessageListener = (callback) => {
+    return onMessage(messaging, callback);
   };
 
-  return {
-    isSubscribed,
-    triggerNotification,
-  };
+  return { token, onMessageListener, permission, error };
 };
 
 export default usePushNotification;

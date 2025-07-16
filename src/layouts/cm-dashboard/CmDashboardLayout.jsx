@@ -16,6 +16,19 @@ import SideBarItem from "@/components/ui/SideBarItem";
 import LogOutModal from "../../mui/LogOutModal";
 import logo from "../../assets/construction/logo.png";
 import Profile from "../../assets/construction/profile.png";
+import { useSelector } from "react-redux";
+import { selectAuthToken } from "../../redux/authSlice";
+import usePushNotification from "../../hooks/usePushNotification";
+import apiClient from "../../api/apiClient";
+import toast from "react-hot-toast";
+import NotificationsModal from "../../components/ui/modals/NotificationsModal";
+import {
+  getNotifications,
+  addNotification,
+  markAllAsRead,
+  markAsRead,
+  syncNotificationsFromIndexedDB,
+} from "../../utils/notificationStorage";
 
 const CmDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -25,6 +38,54 @@ const CmDashboardLayout = ({ role }) => {
   const location = useLocation();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
+  const authToken = useSelector(selectAuthToken);
+  const { token: fcmToken } = usePushNotification(); // Uses env VAPID key
+  const [notifications, setNotifications] = useState([]);
+  const [notifModalOpen, setNotifModalOpen] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  // Load notifications from localStorage and IndexedDB on mount
+  useEffect(() => {
+    (async () => {
+      const merged = await syncNotificationsFromIndexedDB();
+      setNotifications(merged);
+    })();
+  }, []);
+
+  // Listen for new FCM notifications (foreground)
+  const { onMessageListener } = usePushNotification();
+  useEffect(() => {
+    const unsubscribe = onMessageListener((payload) => {
+      const { title, body } = payload.notification || {};
+      const id = payload.messageId || Date.now();
+      const time = new Date().toISOString();
+      const notif = { id, title, body, time, read: false };
+      addNotification(notif);
+      setNotifications(getNotifications());
+    });
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [onMessageListener]);
+
+  // Show badge if there are unread notifications
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Open modal and mark all as read
+  const handleOpenNotifModal = () => {
+    setNotifModalOpen(true);
+    markAllAsRead();
+    setNotifications(getNotifications());
+  };
+
+  // Mark single notification as read
+  const handleMarkRead = (notif) => {
+    markAsRead(notif.id);
+    setNotifications(getNotifications());
+  };
+
+  // Infinite scroll handler (not needed for localStorage, but placeholder)
+  const handleNotifScroll = () => {};
 
   useEffect(() => {
     const handleResize = () => {
@@ -160,7 +221,32 @@ const CmDashboardLayout = ({ role }) => {
             </div>
 
             <div className="flex gap-3">
-              <IoMdNotifications className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              <div style={{ position: "relative" }}>
+                <IoMdNotifications
+                  className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5 cursor-pointer"
+                  onClick={handleOpenNotifModal}
+                />
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 2,
+                      right: 2,
+                      background: "#d32f2f",
+                      color: "#fff",
+                      borderRadius: "50%",
+                      width: 18,
+                      height: 18,
+                      fontSize: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
               <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
             </div>
 
@@ -232,10 +318,28 @@ const CmDashboardLayout = ({ role }) => {
       <LogOutModal
         open={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
-        onConfirm={() => {
+        onConfirm={async () => {
+          // Remove device token from backend if available
+          if (fcmToken && authToken) {
+            try {
+              await apiClient.delete("/auth/device-token", {
+                data: { token: fcmToken },
+              });
+            } catch (err) {
+              toast.error("Failed to remove device from notifications");
+            }
+          }
           localStorage.clear();
           navigate("/");
         }}
+      />
+      <NotificationsModal
+        open={notifModalOpen}
+        onClose={() => setNotifModalOpen(false)}
+        notifications={notifications}
+        loading={notifLoading}
+        onScroll={handleNotifScroll}
+        onMarkRead={handleMarkRead}
       />
     </div>
   );
