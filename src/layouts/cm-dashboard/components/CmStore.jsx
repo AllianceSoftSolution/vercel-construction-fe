@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { useNavigate, useParams } from "react-router-dom";
-import { IconButton } from "@mui/material";
+import { IconButton, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../comments/components/DropdownButton";
@@ -12,6 +12,7 @@ import { RiAccountBox2Fill } from "react-icons/ri";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 const CmStores = () => {
   const navigate = useNavigate();
@@ -23,10 +24,46 @@ const CmStores = () => {
     setShowModal(true);
   };
 
+  const typeOptions = [
+    { label: "Head Store", value: "HEAD_STORE" },
+    { label: "CM Store", value: "CM_STORE" },
+  ];
+  const filters = [
+    { label: "Type", options: typeOptions.map(o => o.label) },
+  ];
+  const [filter, setFilter] = useState({ Type: [] });
+
+  const typeColorMap = {
+    "CM STORE": "#0ea5e9", // blue
+    "HEAD STORE": "#22c55e", // green
+    default: "#6b7280", // gray
+  };
+
+  const TypeChip = ({ value }) => {
+    const type = (value || "").toUpperCase();
+    const color = typeColorMap[type] || typeColorMap.default;
+    return (
+      <Chip
+        label={type.replace(/_/g, " ")}
+        size="small"
+        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+      />
+    );
+  };
+
   const fetchStore = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/stores");
+      let url = "/stores";
+      if (filter.Type && filter.Type.length > 0) {
+        const backendTypes = filter.Type.map(
+          label => typeOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (backendTypes.length > 0) {
+          url += `?type=${encodeURIComponent(backendTypes.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.status === 200) {
         const data = response.data.stores.map((store, index) => ({
           storeId: index + 1,
@@ -47,7 +84,8 @@ const CmStores = () => {
 
   useEffect(() => {
     fetchStore();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -69,6 +107,12 @@ const CmStores = () => {
     );
   };
 
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+
+  const handleFilterClear = () => setFilter({ Type: [] });
+
   const columns = [
     { headerName: "Store Id", field: "storeId" },
     { headerName: "Store Name", field: "name" },
@@ -89,19 +133,24 @@ const CmStores = () => {
       <TopBar
         title="Stores"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showFilter={true}
-        filterOptions={["ON-GOING", "Pending", "Not Started"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
       />
+      <div className="my-4 flex justify-end">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by type"
+          dropdownAlign="left"
+        />
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
           data={store}
-          cellComponents={{ id: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent, type: TypeChip }}
         />
       </div>
       {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}

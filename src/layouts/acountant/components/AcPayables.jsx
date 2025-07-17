@@ -14,6 +14,8 @@
     import apiClient from "../../../api/apiClient";
     import toast from "react-hot-toast";
     import Loader from "../../../components/ui/Loader";
+    import { useSelector } from "react-redux"; // ✅ add this line
+
     const style = {
       position: "absolute",
       top: "50%",
@@ -33,7 +35,7 @@
       const [file, setFile] = useState(null);
       const [loading, setLoading] = useState(false);
 
-      console.log("AddPriceModal poData:", poData); // Debug log
+      console.log("AddPriceModal poData:", poData); 
       
       const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -247,6 +249,8 @@
         vendorsWithAdvance: 0
       });
       const [pageLoading, setPageLoading] = useState(true);
+      const isHead = useSelector((state) => state.auth.user?.isHead); // ✅ get isHead
+
       // Vendor Accounts columns
       const vendorColumns = [
         { headerName: "No.", field: "no" },
@@ -416,16 +420,19 @@
             </div>
           </div>
 
-          <div className="mt-10">
-            <h1 className="text-xl md:text-2xl font-bold mb-5">Vendor Accounts</h1>
-            <div className="overflow-x-auto">
-              <SimpleTable
-                columns={vendorColumns}
-                data={vendorAccounts}
-                cellComponents={{ id: CustomActionComponent }}
-              />
-            </div>
-          </div>
+          {isHead && (
+  <div className="mt-10">
+    <h1 className="text-xl md:text-2xl font-bold mb-5">Vendor Accounts</h1>
+    <div className="overflow-x-auto">
+      <SimpleTable
+        columns={vendorColumns}
+        data={vendorAccounts}
+        cellComponents={{ id: CustomActionComponent }}
+      />
+    </div>
+  </div>
+)}
+
         </div>
       );
     };

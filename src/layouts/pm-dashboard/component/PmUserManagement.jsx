@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa6";
 import { IoPersonCircle, IoStorefrontSharp } from "react-icons/io5";
 import CustomTable from "../../../mui/CustomTable";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import ActionModal from "../../admin-dashboard/screens/users/modals/ActionModal";
 import SimpleTable from "../../../components/SimpleTable";
@@ -29,19 +29,41 @@ import {
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 const PmUserManagement = () => {
   const navigate = useNavigate();
-
+  const { id } = useParams();
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [managerStats, setManagerStats] = useState([]);
+  const [filter, setFilter] = useState({ Role: [] });
 
+  // Role filter options (label: UI, value: backend)
+  const roleOptions = [
+    { label: "admin", value: "ADMIN" },
+    { label: "site_incharge", value: "SITE_INCHARGE" },
+    { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
+    { label: "store_incharge", value: "STORE_INCHARGE" },
+    { label: "accountant", value: "ACCOUNTANT" },
+    { label: "project_management", value: "PROJECT_MANAGEMENT" },
+  ];
+
+  // Fetch users with optional role filter
   const getAllUsers = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/auth/users");
+      let url = "/auth/users";
+      if (filter.Role && filter.Role.length > 0) {
+        const roleBackend = filter.Role.map(
+          label => roleOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (roleBackend.length > 0) {
+          url += `?role=${encodeURIComponent(roleBackend.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.ok) {
         const usersData = response.data.users || [];
         setUsers(usersData);
@@ -87,7 +109,8 @@ const PmUserManagement = () => {
 
   useEffect(() => {
     getAllUsers();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
 
   const handleActionClick = () => {
     setShowModal(true);
@@ -101,18 +124,18 @@ const PmUserManagement = () => {
     { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
-      field: "action",
+      field: "id",
     },
   ];
 
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value : id  }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate("123"),
+            onClick: () => navigate(`/project-manager-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
         ]}
@@ -123,6 +146,15 @@ const PmUserManagement = () => {
       </DropdownButton>
     );
   };
+
+  // CustomFilterDropdown config
+  const filters = [
+    { label: "Role", options: roleOptions.map(o => o.label) },
+  ];
+  const handleFilterChange = (selection) => {
+    setFilter(selection);
+  };
+  const handleFilterClear = () => setFilter({ Role: [] });
 
   return (
     <div className="h-full">
@@ -136,22 +168,20 @@ const PmUserManagement = () => {
             title="User Management"
             detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
             showExport={true}
-            showFilter={true}
-            filterOptions={[
-              "Project Manager",
-              "Const Manager",
-              "Site Manager",
-              "Store-INCHARGE",
-              "Accountant",
-            ]}
-            onFilterChange={(selected) =>
-              console.log("Selected Filters:", selected)
-            }
             buttonText="Create New User"
             onButtonClick={() =>
               navigate("/project-manager-dashboard/user-management/addUser")
             }
           />
+          <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+            <CustomFilterDropdown
+              filters={filters}
+              selected={filter}
+              onChange={handleFilterChange}
+              onClear={handleFilterClear}
+              placeholder="Filter by role"
+            />
+          </div>
           <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
           <h2 className="text-2xl font-semibold text-primary">
             Total Users Overview
@@ -176,7 +206,7 @@ const PmUserManagement = () => {
             <SimpleTable
               columns={columns}
               data={users}
-              cellComponents={{ action: CustomActionComponent }}
+                cellComponents={{ id: CustomActionComponent }}
               loading={loading}
             />
           </div>

@@ -34,44 +34,7 @@ const StoreDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedStoreIncharge, setSelectedStoreIncharge] = useState(null);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 2,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 3,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-  ];
+
 
   const columns = [
     { headerName: "Material", field: "material" },
@@ -106,19 +69,6 @@ const StoreDetail = () => {
     { headerName: "Remarks", field: "remarks" },
   ];
 
-  const stockIn = [
-    { id: "1", label: "PO ( Purchase Order )" },
-    { id: "2", label: "QTY ( Quantity )" },
-    { id: "3", label: "Note" },
-    { id: "4", label: "Product" },
-  ];
-
-  const stockOut = [
-    { id: "1", label: "Material" },
-    { id: "2", label: "QTY ( Quantity )" },
-    { id: "3", label: "CM ( Construction Manager )" },
-    { id: "4", label: "Note" },
-  ];
 
   const CustomActionComponent = () => {
     const [open, setOpen] = useState(false);
@@ -411,12 +361,16 @@ const StoreDetail = () => {
           { headerName: "Role", field: "role" },
           { headerName: "Assigned At", field: "createdAt" },
         ]}
+        cellComponents={{}}
       />
       {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={storeData?.inventory || []} columns={columns} />{" "}
+      <SimpleTable
+       data={storeData?.inventory || []} 
+      columns={columns} 
+      cellComponents={{}} />{" "}
       {/* Stock Movement Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
@@ -426,6 +380,7 @@ const StoreDetail = () => {
       <SimpleTable
         data={storeData?.transactions || []}
         columns={columns1}
+        cellComponents={{}}
       />{" "}
       </>
       )}

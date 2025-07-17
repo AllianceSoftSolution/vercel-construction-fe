@@ -10,6 +10,7 @@ import apiClient from "../../../../api/apiClient";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import Loader from "../../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../../components/ui/CustomFilterDropdown";
 
 const paymentColumns = [
   { headerName: "Date", field: "date" },
@@ -25,6 +26,16 @@ export default function PayableDetails() {
   const [loading, setLoading] = useState(false);
   const [vendorAccount, setVendorAccount] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [filter, setFilter] = useState({ Type: [] });
+
+  // Filter options for transaction type
+  const typeOptions = [
+    { label: "Credit", value: "CREDIT" },
+    { label: "Debit", value: "DEBIT" },
+  ];
+  const filters = [
+    { label: "Type", options: typeOptions.map(o => o.label) },
+  ];
 
   const fetchDetails = async () => {
     try {
@@ -67,6 +78,19 @@ export default function PayableDetails() {
       fetchDetails();
     }
   }, [id]);
+
+  // Filtered transactions based on selected type
+  const filteredTransactions = transactions.filter((txn) => {
+    if (!filter.Type || filter.Type.length === 0) return true;
+    // Map frontend label to backend value
+    const backendTypes = filter.Type.map(label => typeOptions.find(o => o.label === label)?.value);
+    return backendTypes.includes(txn.type);
+  });
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ Type: [] });
 
   const analyticsData = [
     {
@@ -114,8 +138,6 @@ export default function PayableDetails() {
       <TopBar
         title={`Payables Detail - ${vendorAccount?.vendor?.name || 'Vendor'}`}
         detail={`Vendor account details for ${vendorAccount?.vendor?.name || 'Vendor'} - Last updated: ${vendorAccount?.lastUpdated ? new Date(vendorAccount.lastUpdated).toLocaleDateString() : 'N/A'}`}
-        showFilter={true}
-        filterOptions={["All", "Credits", "Debits"]}
       />
       
       <div className="border rounded-xl p-4 mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -139,9 +161,18 @@ export default function PayableDetails() {
           title="Transaction History"
           detail="Complete list of all transactions for this vendor account."
         />
+        <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+          <CustomFilterDropdown
+            filters={filters}
+            selected={filter}
+            onChange={handleFilterChange}
+            onClear={handleFilterClear}
+            placeholder="Filter by type"
+          />
+        </div>
         <div className="mt-4 overflow-x-auto relative">
           <SimpleTable
-            data={transactions}
+            data={filteredTransactions}
             columns={paymentColumns}
             cellComponents={{}}
           />

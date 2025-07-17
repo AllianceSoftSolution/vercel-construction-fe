@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import manager from "../../../../assets/construction/manager.png";
 import { FaWhatsapp } from "react-icons/fa";
@@ -7,9 +7,15 @@ import { MdDelete, MdEdit } from "react-icons/md";
 import { FaBoxesStacked } from "react-icons/fa6";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import SimpleTable from "../../../../components/SimpleTable";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const SinMemberDetailPage = () => {
-  const data = [
+  const { id } = useParams();
+  const [memberData, setMemberData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const data = [  
     {
       id: 1,
       no: "1",
@@ -60,37 +66,55 @@ const SinMemberDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
 
-  return (
+  const fetchMemberDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/auth/users/${id}`);
+      if (response.ok) {
+        setMemberData(response.data.user);
+      } else {
+        toast.error("Failed to fetch user details.");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchMemberDetails();
+    }
+  }, [id]);
+
+    return (
     <div className="px-4 md:px-6 py-4">
-      <TopBar title="Memeber" detail="lorem ipsum" showExport={true} />
+      <TopBar title="Member Detail" detail="lorem ipsum" showExport={true} />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
 
       <div className="flex flex-col lg:flex-row gap-4 mt-4">
         {/* Left Sidebar */}
         <div className="w-full lg:w-1/3 border-[0.5px] border-[#CDCDCD] rounded-xl p-4">
           <div className="flex flex-col items-center gap-y-2">
-            <img src={manager} className="w-[100px] h-[100px]" />
-            <h3 className="text-lg font-semibold">Manager Name Here</h3>
+            <img src={manager} className="w-[100px] h-[100px] rounded-full" />
+            <h3 className="text-lg font-semibold">{memberData?.name || "-"}</h3>
             <div className="flex items-center gap-1 text-[#979797] text-sm">
               <FaWhatsapp className="w-5 h-5" />
-              <span>1234567890</span>
+              <span>{memberData?.phone || "-"}</span>
             </div>
             <div className="h-[1px] w-full bg-[#CDCDCD] my-2"></div>
           </div>
 
           <div className="mt-4 space-y-2">
             <h3 className="text-[#BF1017] font-semibold">General Information</h3>
-            <InfoRow label="Email" value="example@gmail.com" />
-            <InfoRow label="Joining Date" value="12/04/2025" />
-            <InfoRow label="Manager ID" value="9090" />
-            <InfoRow label="Language" value="English" />
-            <div className="flex justify-between items-center">
-              <p className="font-semibold">Country</p>
-              <div className="flex items-center gap-1">
-                <p>Pakistan</p>
-                <img src={flag} className="w-6 h-6" />
-              </div>
-            </div>
+            <InfoRow label="Email" value={memberData?.email || "-"} />
+            <InfoRow label="Joining Date" value={memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString() : "-"} />
+            <InfoRow label="Employee ID" value={memberData?.employeeId || "-"} />
+            <InfoRow label="Role" value={memberData?.role || "-"} />
+            <InfoRow label="Status" value={memberData?.isActive ? "Active" : "Inactive"} />
+            <InfoRow label="Created By" value={memberData?.creator?.name || "-"} />
           </div>
         </div>
 
@@ -105,9 +129,9 @@ const SinMemberDetailPage = () => {
           </div>
 
           <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-            <AnalyticsCard label={"Total Projects"} icon={FaBoxesStacked} count={10} />
+            <AnalyticsCard label={"Total Projects"} icon={FaBoxesStacked} count={memberData?.createdUsers?.length || 0} />
           </div>
-
+{/* 
           <div>
             <h3 className="text-xl font-semibold text-[#BF1017] mt-4">
               Project History
@@ -115,7 +139,7 @@ const SinMemberDetailPage = () => {
             <div className="overflow-x-auto mt-2">
               <SimpleTable data={data} columns={columns} cellComponents={{}} />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import Loader from "../../../components/ui/Loader";
 import DropdownButton from "../../../comments/components/DropdownButton";
-import { IconButton } from "@mui/material";
+import { IconButton, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
@@ -12,12 +12,16 @@ import { useNavigate } from "react-router-dom";
 import { FaUserEdit } from "react-icons/fa";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+
 const CmPos = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const navigate = useNavigate();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [filter, setFilter] = useState({ Status: [] });
+
   const data = [
     {
       id: 1,
@@ -101,11 +105,54 @@ const CmPos = () => {
     );
   };
 
+  // Status color mapping for purchase order status
+  const statusColorMap = {
+    COMPLETED: "#22c55e", // green
+    PARTIAL: "#eab308", // yellow
+    PENDING: "#f59e42", // orange
+    REJECTED: "#ef4444", // red
+    default: "#0252AD", // fallback blue
+  };
+
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
+    return (
+      <Chip
+        label={status.replace(/_/g, " ")}
+        size="small"
+        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+      />
+    );
+  };
+
+  const statusOptions = [
+    { label: "Order Placed", value: "ORDER_PLACED" },
+    { label: "Created", value: "CREATED" },
+    { label: "Confirmed", value: "CONFIRMED" },
+    { label: "In Transit", value: "IN_TRANSIT" },
+    { label: "In Store", value: "IN_STORE" },
+    { label: "Completed", value: "COMPLETED" },
+    { label: "Cancelled", value: "CANCELLED" },
+  ];
+
+  const filters = [
+    { label: "Status", options: statusOptions.map(o => o.label) },
+  ];
 
   const fetchPurchaseOrders = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/purchase-orders");
+      let url = "/purchase-orders";
+      if (filter.Status && filter.Status.length > 0) {
+        const backendStatus = filter.Status.map(
+          label => statusOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (backendStatus.length > 0) {
+          url += `?status=${encodeURIComponent(backendStatus.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.ok) {
         const data = response.data.data.map((po, index) => ({
           id: po.id,
@@ -134,7 +181,14 @@ const CmPos = () => {
 
   useEffect(() => {
     fetchPurchaseOrders();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+
+  const handleFilterClear = () => setFilter({ Status: [] });
 
   if (pageLoading) {
     return (
@@ -149,19 +203,23 @@ const CmPos = () => {
       <TopBar
         title="Purchase Orders"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showFilter={true}
-        filterOptions={["Completed", "Partial", "Pending"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
       />
+      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by status"
+        />
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
           data={purchaseOrders}
           loading={loading}
-          cellComponents={{ id: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent, status: StatusChip }}
         />
       </div>
 

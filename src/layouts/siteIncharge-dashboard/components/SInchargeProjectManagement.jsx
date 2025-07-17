@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import DeleteModal from "../../../mui/DeleteModal";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 const SInchargeProjectManagement = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const SInchargeProjectManagement = () => {
   const [projects, setProjects] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [filter, setFilter] = useState({ "Project Name": [], "Project Code": [] });
 
   function formatDateToDDMMYYYY(dateInput) {
     const date = new Date(dateInput);
@@ -122,21 +124,49 @@ const SInchargeProjectManagement = () => {
     </DropdownButton>
   );
 
+  // Filter options
+  const nameOptions = projects.map((p) => p.projectName).filter(Boolean);
+  const codeOptions = projects.map((p) => p.code).filter(Boolean);
+  const filters = [
+    { label: "Project Name", options: nameOptions },
+    { label: "Project Code", options: codeOptions },
+  ];
+
+  // Filtered projects based on selected filters
+  const filteredProjects = projects.filter((project) => {
+    const nameMatch =
+      filter["Project Name"].length === 0 ||
+      filter["Project Name"].includes(project.projectName);
+    const codeMatch =
+      filter["Project Code"].length === 0 ||
+      filter["Project Code"].includes(project.code);
+    return nameMatch && codeMatch;
+  });
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ "Project Name": [], "Project Code": [] });
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Project Management"
         detail="Manage all your construction projects in one place."
-        showFilter={true}
-        filterOptions={["Completed", "In-Progress", "Cancelled"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
         buttonText="Create Project"
         onButtonClick={() =>
-          navigate("/siteincharge-dashboard/project-management/addProject")
+              navigate("/siteincharge-dashboard/project-management/addProject")
         }
       />
+      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by name or code"
+        />
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       
       <div className="overflow-x-auto">
@@ -148,7 +178,7 @@ const SInchargeProjectManagement = () => {
         ) : (
           <SimpleTable
             columns={columns}
-            data={projects}
+            data={filteredProjects}
             cellComponents={{ id: CustomActionComponent }}
           />
         )}

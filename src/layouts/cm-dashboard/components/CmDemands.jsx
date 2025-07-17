@@ -4,11 +4,13 @@ import SimpleTable from "../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye } from "react-icons/fa";
-import { IconButton } from "@mui/material";
+import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
-import Loader from "../../../components/ui/Loader"; 
+import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+
 const CmDemands = () => {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -16,6 +18,28 @@ const CmDemands = () => {
   const [materialsMap, setMaterialsMap] = useState({});
   const [sectionsMap, setSectionsMap] = useState({});
   const navigate = useNavigate();
+
+  const statusColorMap = {
+    APPROVED: "#22c55e", // green
+    REJECTED: "#ef4444", // red
+    PENDING: "#f59e42", // orange
+    PARTIALLY_APPROVED: "#eab308", // yellow
+    PO_CREATED: "#8b5cf6", // purple
+    FULFILLED: "#0ea5e9", // blue
+    default: "#0252AD", // fallback blue
+  };
+
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
+    return (
+      <Chip
+        label={status.replace(/_/g, " ")}
+        size="small"
+        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+      />
+    );
+  };
 
   const fetchMaterialAndSections = async () => {
     try {
@@ -46,10 +70,38 @@ const CmDemands = () => {
     }
   };
 
+  const statusOptions = [
+    { label: "Request Sent", value: "REQUEST_SENT" },
+    { label: "Partially Approved", value: "PARTIALLY_APPROVED" },
+    { label: "Approved", value: "APPROVED" },
+    { label: "Rejected", value: "REJECTED" },
+    { label: "Fulfilled From Store", value: "FULFILLED_FROM_STORE" },
+    { label: "PO In Progress", value: "PO_IN_PROGRESS" },
+    { label: "PO Created", value: "PO_CREATED" },
+    { label: "Order Placed", value: "ORDER_PLACED" },
+    { label: "In Store", value: "IN_STORE" },
+    { label: "Completed", value: "COMPLETED" },
+  ];
+
+  const filters = [
+    { label: "Status", options: statusOptions.map(o => o.label) },
+  ];
+
+  const [filter, setFilter] = useState({ Status: [] });
+
   const fetchDemand = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/demands");
+      let url = "/demands";
+      if (filter.Status && filter.Status.length > 0) {
+        const backendStatus = filter.Status.map(
+          label => statusOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (backendStatus.length > 0) {
+          url += `?status=${encodeURIComponent(backendStatus.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
           no: demand.referenceNumber || `REF-${index + 1}`,
@@ -86,7 +138,13 @@ const CmDemands = () => {
     if (Object.keys(materialsMap).length && Object.keys(sectionsMap).length) {
       fetchDemand();
     }
-  }, [materialsMap, sectionsMap]);
+  }, [materialsMap, sectionsMap, filter]);
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+
+  const handleFilterClear = () => setFilter({ Status: [] });
 
   const columns = [
     { headerName: "No", field: "no" },
@@ -131,25 +189,27 @@ const CmDemands = () => {
       <TopBar
         title="Demands"
         detail="View and manage construction material demands."
-        showFilter={true}
-        filterOptions={["Approved", "Rejected", "Pending"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
         buttonText="Create Demand"
         onButtonClick={() =>
           navigate("/construction-manager-dashboard/demands/addDemand")
         }
       />
-
+      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by status"
+        />
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
-
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
           data={demands}
           loading={loading}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ action: CustomActionComponent, status: StatusChip }}
         />
       </div>
     </div>

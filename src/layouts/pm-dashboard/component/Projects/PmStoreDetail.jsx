@@ -71,19 +71,7 @@ const PmStoreDetail = () => {
     { headerName: "Remarks", field: "remarks" },
   ];
 
-  const stockIn = [
-    { id: "1", label: "PO ( Purchase Order )" },
-    { id: "2", label: "QTY ( Quantity )" },
-    { id: "3", label: "Note" },
-    { id: "4", label: "Product" },
-  ];
 
-  const stockOut = [
-    { id: "1", label: "Material" },
-    { id: "2", label: "QTY ( Quantity )" },
-    { id: "3", label: "Note" },
-    { id: "4", label: "CM ( Construction Manager )" },
-  ];
 
   const CustomActionComponent = () => {
     const [open, setOpen] = useState(false);
@@ -98,21 +86,10 @@ const PmStoreDetail = () => {
       setModalType("");
     };
 
-    const currentOptions = modalType === "stock-in" ? stockIn : stockOut;
 
     return (
       <>
-        <DropdownButton
-          className="bg-[#FF0000] font-semibold"
-          items={[
-            { label: "Stock In", onClick: () => handleOpen("stock-in") },
-            { label: "Stock Out", onClick: () => handleOpen("stock-out") },
-          ]}
-        >
-          <IconButton>
-            <BsThreeDotsVertical />
-          </IconButton>
-        </DropdownButton>
+      
 
         <Modal
           open={open}

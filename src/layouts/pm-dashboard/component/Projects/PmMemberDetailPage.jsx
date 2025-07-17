@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import manager from "../../../../assets/construction/manager.png";
 import { FaWhatsapp } from "react-icons/fa";
@@ -7,8 +7,14 @@ import { MdDelete, MdEdit } from "react-icons/md";
 import { FaBoxesStacked } from "react-icons/fa6";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import SimpleTable from "../../../../components/SimpleTable";
+import { useParams } from "react-router-dom";
+import apiClient from "../../../../api/apiClient";
+import toast from "react-hot-toast";
 
 const PmMemberDetailPage = () => {
+  const { id } = useParams();
+  const [memberData, setMemberData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const data = [
     {
       id: 1,
@@ -60,6 +66,29 @@ const PmMemberDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
 
+
+  const fetchMemberDetails = async () => {      
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/auth/users/${id}`);
+      if (response.ok) {
+        setMemberData(response.data.user);
+      } else {
+        toast.error("Failed to fetch user details.");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      toast.error("Something went wrong while fetching details.");
+    } finally {
+      setLoading(false);
+    }
+  };  
+
+  useEffect(() => {
+    if (id) {
+      fetchMemberDetails();
+    }
+  }, [id]);
   return (
     <div className="p-2">
       <TopBar title="Member" detail="lorem ipsum" showExport={true} />
@@ -69,10 +98,10 @@ const PmMemberDetailPage = () => {
         <div className="w-full md:w-[30%] border border-[#CDCDCD] rounded-xl p-4 mt-4">
           <div className="flex flex-col items-center gap-y-2">
             <img src={manager} className="w-[100px] h-[100px]" />
-            <h3>Manager Name Here</h3>
+            <h3>{memberData?.name || "-"}</h3>
             <div className="flex items-start mt-1">
               <FaWhatsapp className="w-5 h-5 mr-1 mt-[2px]" />
-              <span className="text-sm text-[#979797]">1234567890</span>
+              <span className="text-sm text-[#979797]">{memberData?.phone || "-"}</span>
             </div>
             <div className="h-[1px] w-full bg-[#CDCDCD] my-2"></div>
           </div>
@@ -83,24 +112,24 @@ const PmMemberDetailPage = () => {
             </h3>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Email</p>
-              <p>example@gmail.com</p>
+              <p>{memberData?.email || "-"}</p>
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Joining Date</p>
-              <p>12/04/2025</p>
+              <p>{memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString() : "-"}</p>
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Manager ID</p>
-              <p>9090</p>
+              <p>{memberData?.employeeId || "-"}</p>
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Language</p>
-              <p>English</p>
+              <p>{memberData?.language || "-"}</p>
             </div>
             <div className="flex justify-between items-center text-sm">
               <p className="font-semibold">Country</p>
               <div className="flex items-center gap-1">
-                <p>Pakistan</p>
+                <p>{memberData?.country || "-"}</p>
                 <img src={flag} className="w-6 h-6" />
               </div>
             </div>
@@ -121,21 +150,21 @@ const PmMemberDetailPage = () => {
             <AnalyticsCard
               label={"Total Projects "}
               icon={FaBoxesStacked}
-              count={10}
+                count={memberData?.createdUsers?.length || 0}
             />
           </div>
 
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <h3 className="text-xl font-semibold text-[#BF1017]">
               Projects History
             </h3>
             <div className="overflow-x-auto mt-2">
               <SimpleTable data={data} columns={columns} cellComponents={{}} />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
-    </div>
+    </div>  
   );
 };
 

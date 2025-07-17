@@ -32,6 +32,7 @@ import {
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -39,11 +40,32 @@ const UserManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState({ Role: [] });
 
+  // Role filter options
+  const roleOptions = [
+    { label: "admin", value: "ADMIN" },
+    { label: "site_incharge", value: "SITE_INCHARGE" },
+    { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
+    { label: "store_incharge", value: "STORE_INCHARGE" },
+    { label: "accountant", value: "ACCOUNTANT" },
+    { label: "project_management", value: "PROJECT_MANAGEMENT" },
+  ];
+
+  // Fetch users with optional role filter
   const getAllUsers = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/auth/users");
+      let url = "/auth/users";
+      if (filter.Role && filter.Role.length > 0) {
+        const roleBackend = filter.Role.map(
+          label => roleOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (roleBackend.length > 0) {
+          url += `?role=${encodeURIComponent(roleBackend.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.ok) {
         // Adjust mapping as needed based on API response structure
         const data =
@@ -65,7 +87,21 @@ const UserManagement = () => {
 
   React.useEffect(() => {
     getAllUsers();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
+
+  // CustomFilterDropdown config
+  const filters = [
+    { label: "Role", options: roleOptions.map(o => o.label) },
+  ];
+  const handleFilterChange = (selection) => {
+    setFilter(selection);
+  };
+  const handleFilterClear = () => setFilter({ Role: [] });
+  let selected = null;
+  if (filter.Role && filter.Role.length > 0) {
+    selected = { group: "Role", value: filter.Role.join(", ") };
+  }
 
   const handleActionClick = () => {
     setShowModal(true);
@@ -149,24 +185,21 @@ const UserManagement = () => {
         title="User Management"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
-        showFilter={true}
-        filterOptions={[
-          "Project Manager",
-          "Const Manager",
-          "Site Manager",
-          "Store-INCHARGE",
-          "Accountant",
-        ]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
         buttonText="Create New User"
         onButtonClick={() =>
           navigate("/admin-dashboard/user-management/addUser")
         }
       />
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      <h2 className="text-2xl font-semibold text-primary">
+      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by role"
+        />
+      </div>
+      <h2 className="text-2xl font-semibold text-primary mt-4">
         Total Users Overview
       </h2>
       <div className="border border-[#CDC9C9] mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

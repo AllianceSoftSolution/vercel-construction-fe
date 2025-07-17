@@ -24,7 +24,16 @@ const Stores = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
-  const [selectedFilter, setSelectedFilter] = useState("");
+  const [filter, setFilter] = useState({ Type: [] });
+
+  // Store type filter options
+  const typeOptions = [
+    { label: "Head Store", value: "HEAD_STORE" },
+    { label: "CM Store", value: "CM_STORE" },
+  ];
+  const filters = [
+    { label: "Type", options: typeOptions.map(o => o.label) },
+  ];
 
   const handleLinkClick = () => {
     setShowModal(true);
@@ -33,8 +42,16 @@ const Stores = () => {
   const fetchStore = async () => {
     try {
       setLoading(true);
-      const filterQuery = selectedFilter ? `?status=${encodeURIComponent(selectedFilter)}` : "";
-      const response = await apiClient.get(`/stores`);
+      let url = "/stores";
+      if (filter.Type && filter.Type.length > 0) {
+        const backendTypes = filter.Type.map(
+          label => typeOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (backendTypes.length > 0) {
+          url += `?type=${encodeURIComponent(backendTypes.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.status === 200) {
         const data = response.data.stores.map((store, index) => ({
           storeId: index + 1,
@@ -66,7 +83,13 @@ const Stores = () => {
 
   useEffect(() => {
     fetchStore();
-  }, [selectedFilter]);
+    // eslint-disable-next-line
+  }, [filter]);
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ Type: [] });
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -132,29 +155,27 @@ const Stores = () => {
     { headerName: "Action", field: "id" },
   ];
 
-  const filterOptions = ["CM STORE", "HEAD STORE"];
-
   return (
     <div className="h-full">
       <TopBar
         title="Stores"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Add New Store"
-        onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
+        // buttonText="Add New Store"
+        // onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
       />
       <div className="my-4 flex justify-end">
         <CustomFilterDropdown
-          options={filterOptions}
-          value={selectedFilter}
-          onChange={setSelectedFilter}
-          label="Select Store Status"
-          placeholder="Filter"
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by type"
           dropdownAlign="left"
         />
       </div>
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       {/* table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mt-4  ">
         {loading ? (
           <Loader />
         ) : (

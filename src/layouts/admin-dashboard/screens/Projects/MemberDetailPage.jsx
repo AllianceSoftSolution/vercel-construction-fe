@@ -156,13 +156,13 @@ const MemberDetailPage = () => {
               count={memberData?.createdUsers?.length || 0}
             />
           </div>
-
+{/* 
           <div>
             <h3 className="text-xl font-semibold text-[#BF1017] mt-4">
               Projects History
             </h3>
             <SimpleTable data={data} columns={columns} cellComponents={{}} />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

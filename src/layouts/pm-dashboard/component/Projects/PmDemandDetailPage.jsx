@@ -159,6 +159,23 @@ const PmDemandDetails = () => {
     );
   }
 
+
+  const fulfillDemand = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.post(`/demands/${id}/fulfill`);
+      if (response?.data?.demand) {
+        setDemandData(response.data.demand);
+      } else {
+        toast.error(response?.data?.message || "Failed to fulfill");
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "API error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Modal open={open} onClose={handleClose}>
@@ -241,13 +258,18 @@ const PmDemandDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <DemandQuantityCard
           storeName="Head Store"
-          totalQty={demandData.quantity || 0}
+          totalQty={demandData.headStoreQty === 0 ? 0 : demandData.headStoreQty || 0}
           material={demandData.material?.name || "N/A"}
+          headStoreId={demandData.headStoreId}
+          cmStoreId={demandData.cmStoreId}
           showButton
+          id={id}
+          onButtonClick={fulfillDemand}
+
         />
         <DemandQuantityCard
           storeName="CM Store"
-          totalQty={demandData.quantity || 0}
+          totalQty={demandData.cmStoreQty === 0 ? 0 : demandData.cmStoreQty || 0}
           material={demandData.material?.name || "N/A"}
         />
       </div>

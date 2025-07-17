@@ -244,7 +244,7 @@ const CmDemandDetailPage = () => {
           storeName="Head Store"
           totalQty={demandData.quantity || 0}
           material={demandData.material?.name || "N/A"}
-          showButton
+          // showButton
         />
         <DemandQuantityCard
           storeName="CM Store"
