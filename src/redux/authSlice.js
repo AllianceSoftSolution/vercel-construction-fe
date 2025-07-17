@@ -41,6 +41,7 @@ export const authSlice = createSlice({
 });
 
 export const selectUserFromLocalStorage = (state) => state.auth.user;
+export const selectAuthToken = (state) => state.auth.token;
 
 export const { login, setUser, logout, setBusinessName } = authSlice.actions;
 

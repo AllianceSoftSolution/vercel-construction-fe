@@ -11,12 +11,15 @@ import toast from "react-hot-toast";
 import ActionModal from "./users/modals/ActionModal";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+
 const AcProjectManagement = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [filter, setFilter] = useState({ "Project Name": [], "Project Code": [] });
 
   const fetchProjects = async () => {
     try {
@@ -77,8 +80,30 @@ const AcProjectManagement = () => {
     );
   };
 
-  if (pageLoading) {
+  const nameOptions = projects.map((p) => p.name).filter(Boolean);
+  const codeOptions = projects.map((p) => p.code).filter(Boolean);
+  const filters = [
+    { label: "Project Name", options: nameOptions },
+    { label: "Project Code", options: codeOptions },
+  ];
 
+  const filteredProjects = projects.filter((project) => {
+    const nameMatch =
+      filter["Project Name"].length === 0 ||
+      filter["Project Name"].includes(project.name);
+    const codeMatch =
+      filter["Project Code"].length === 0 ||
+      filter["Project Code"].includes(project.code);
+    return nameMatch && codeMatch;
+  });
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+
+  const handleFilterClear = () => setFilter({ "Project Name": [], "Project Code": [] });
+
+  if (pageLoading) {
     return (
       <div className="flex justify-center items-center h-full min-h-[400px]">
         <Loader />
@@ -91,17 +116,21 @@ const AcProjectManagement = () => {
       <TopBar
         title="Project Management"
         detail="View and manage all construction projects."
-        showFilter={true}
-        filterOptions={["Completed", "In-Progress", "Cancelled"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
       />
+      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by name or code"
+        />
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
-          data={projects}
+          data={filteredProjects}
           cellComponents={{ id: CustomActionComponent }}
         />
       </div>

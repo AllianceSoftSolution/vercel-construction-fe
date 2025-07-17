@@ -5,7 +5,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate } from "react-router-dom";
 import CustomSelect from "../../../../mui/CustomSelect";
-import { MenuItem } from "@mui/material";
+import { MenuItem, Checkbox, FormControlLabel } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import apiClient from "../../../../api/apiClient";
@@ -15,6 +15,7 @@ const AddUser = () => {
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isHead, setIsHead] = useState(false);
   const handleDropdownChange = (event) => {
     setSelectedOption(event.target.value);
   };
@@ -33,13 +34,15 @@ const AddUser = () => {
       email: "",
 
       role: "",
+      isHead: false,
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
         setLoading(true);
 
-        const response = await apiClient.post("/auth/register", values); // Send as JSON
+        const payload = { ...values, isHead: isHead ? true : false };
+        const response = await apiClient.post("/auth/register", payload); // Send as JSON
 
         if (response.ok) {
           resetForm();
@@ -103,7 +106,10 @@ const AddUser = () => {
               name="role"
               select
               value={formik.values.role}
-              onChange={formik.handleChange}
+              onChange={e => {
+                formik.handleChange(e);
+                setIsHead(false); // reset checkbox when role changes
+              }}
               onBlur={formik.handleBlur}
               error={formik.touched.role && Boolean(formik.errors.role)}
               helperText={formik.touched.role && formik.errors.role}
@@ -117,6 +123,18 @@ const AddUser = () => {
               <MenuItem value="STORE_INCHARGE">Store Incharge</MenuItem>
               <MenuItem value="ACCOUNTANT">Accountant</MenuItem>
             </CustomSelect>
+            {(formik.values.role === "STORE_INCHARGE" || formik.values.role === "ACCOUNTANT") && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isHead}
+                    onChange={e => setIsHead(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label="Is Head ?"
+              />
+            )}
           </div>
         </div>
       </div>{" "}

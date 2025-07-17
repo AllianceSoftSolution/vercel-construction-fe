@@ -12,6 +12,35 @@ import { RiAccountBox2Fill } from "react-icons/ri";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { Chip } from "@mui/material";
+
+const typeOptions = [
+  { label: "Head Store", value: "HEAD_STORE" },
+  { label: "CM Store", value: "CM_STORE" },
+];
+const filters = [
+  { label: "Type", options: typeOptions.map(o => o.label) },
+];
+
+// Store type color mapping
+const typeColorMap = {
+  "CM STORE": "#0ea5e9", // blue
+  "HEAD STORE": "#22c55e", // green
+  default: "#6b7280", // gray
+};
+
+const TypeChip = ({ value }) => {
+  const type = (value || "").toUpperCase();
+  const color = typeColorMap[type] || typeColorMap.default;
+  return (
+    <Chip
+      label={type.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
 
 const PmStores = () => {
   const navigate = useNavigate();
@@ -19,6 +48,7 @@ const PmStores = () => {
   const [store, setStore] = useState([]);
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
+  const [filter, setFilter] = useState({ Type: [] });
 
   const handleLinkClick = () => {
     setShowModal(true);
@@ -27,7 +57,16 @@ const PmStores = () => {
   const fetchStore = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/stores");
+      let url = "/stores";
+      if (filter.Type && filter.Type.length > 0) {
+        const backendTypes = filter.Type.map(
+          label => typeOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (backendTypes.length > 0) {
+          url += `?type=${encodeURIComponent(backendTypes.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.status === 200) {
         const data = response.data.stores.map((store, index) => ({
           storeId: index + 1,
@@ -48,7 +87,13 @@ const PmStores = () => {
 
   useEffect(() => {
     fetchStore();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ Type: [] });
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -83,22 +128,27 @@ const PmStores = () => {
       <TopBar
         title="Stores"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showFilter={true}
-        filterOptions={["ON-GOING", "Pending", "Not Started"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
       />
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      <div className="my-4 flex justify-end">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by type"
+          dropdownAlign="left"
+        />
+      </div>
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       {/* table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mt-4  ">
         {loading ? (
           <Loader/>
         ) : (
         <SimpleTable
           columns={columns}
           data={store}
-          cellComponents={{ id: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent, type: TypeChip }}
           />
         )}
       </div>

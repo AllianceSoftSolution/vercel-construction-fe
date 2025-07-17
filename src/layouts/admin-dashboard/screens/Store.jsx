@@ -9,10 +9,13 @@ import DropdownButton from "../../../comments/components/DropdownButton";
 import AddMemberModal from "./users/modals/AddMemberModal";
 import { IoPersonCircle } from "react-icons/io5";
 import { RiAccountBox2Fill } from "react-icons/ri";
-import apiClient from "../../../api/apiClient";
+import apiClient from "../../../api/apiClient"; 
 import toast from "react-hot-toast";
 import DeleteModal from "../../../mui/DeleteModal";
 import Loader from "../../../components/ui/Loader";
+import { Chip } from "@mui/material";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+
 
 const Stores = () => {
   const navigate = useNavigate();
@@ -21,6 +24,16 @@ const Stores = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
+  const [filter, setFilter] = useState({ Type: [] });
+
+  // Store type filter options
+  const typeOptions = [
+    { label: "Head Store", value: "HEAD_STORE" },
+    { label: "CM Store", value: "CM_STORE" },
+  ];
+  const filters = [
+    { label: "Type", options: typeOptions.map(o => o.label) },
+  ];
 
   const handleLinkClick = () => {
     setShowModal(true);
@@ -29,7 +42,16 @@ const Stores = () => {
   const fetchStore = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/stores");
+      let url = "/stores";
+      if (filter.Type && filter.Type.length > 0) {
+        const backendTypes = filter.Type.map(
+          label => typeOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (backendTypes.length > 0) {
+          url += `?type=${encodeURIComponent(backendTypes.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.status === 200) {
         const data = response.data.stores.map((store, index) => ({
           storeId: index + 1,
@@ -61,7 +83,13 @@ const Stores = () => {
 
   useEffect(() => {
     fetchStore();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ Type: [] });
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -100,6 +128,25 @@ const Stores = () => {
     );
   };
 
+  // Store type color mapping (updated for only CM STORE, HEAD STORE, default)
+  const typeColorMap = {
+    "CM STORE": "#0ea5e9", // blue
+    "HEAD STORE": "#22c55e", // green
+    default: "#6b7280", // gray
+  };
+
+  const TypeChip = ({ value }) => {
+    const type = (value || "").toUpperCase();
+    const color = typeColorMap[type] || typeColorMap.default;
+    return (
+      <Chip
+        label={type.replace(/_/g, " ")}
+        size="small"
+        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+      />
+    );
+  };
+
   const columns = [
     { headerName: "Store Id", field: "storeId" },
     { headerName: "Store Name", field: "name" },
@@ -113,24 +160,29 @@ const Stores = () => {
       <TopBar
         title="Stores"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showFilter={true}
-        filterOptions={["ON-GOING", "Pending", "Not Started"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
-        buttonText="Add New Store"
-        onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
+        // buttonText="Add New Store"
+        // onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
       />
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      <div className="my-4 flex justify-end">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by type"
+          dropdownAlign="left"
+        />
+      </div>
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       {/* table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mt-4  ">
         {loading ? (
           <Loader />
         ) : (
           <SimpleTable
             columns={columns}
             data={store}
-            cellComponents={{ id: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent, type: TypeChip }}
           />
         )}
       </div>

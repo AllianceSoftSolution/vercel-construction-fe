@@ -87,9 +87,9 @@ const Vendors = () => {
         buttonText="Add Vendors"
         onButtonClick={() => navigate("/admin-dashboard/vendors/addVendor")}
       />
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       {/* table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mt-4">
         {loading ? (
           <Loader />
         ) : (

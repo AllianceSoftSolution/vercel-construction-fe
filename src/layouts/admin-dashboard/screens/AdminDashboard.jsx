@@ -165,9 +165,9 @@ function AdminDashboard() {
         showExport={true}
       />
 
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
 
-      <h2 className="text-xl md:text-2xl font-semibold text-primary">
+      <h2 className="text-xl md:text-2xl font-semibold text-primary mt-4">
         Overview
       </h2>
 

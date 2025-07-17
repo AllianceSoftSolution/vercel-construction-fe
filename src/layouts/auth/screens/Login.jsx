@@ -11,12 +11,18 @@ import { useDispatch } from "react-redux";
 import { login } from "../../../redux/authSlice";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import usePushNotification from "../../../hooks/usePushNotification";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
+  const {
+    token: fcmToken,
+    permission,
+    error: pushError,
+  } = usePushNotification(); // Uses env VAPID key
 
   const handleLogin = async () => {
     const loadingToast = toast.loading("Logging in...");
@@ -37,6 +43,19 @@ const Login = () => {
           user,
         })
       );
+
+      // Register device token with backend if available
+      if (fcmToken && permission === "granted") {
+        try {
+          await apiClient.post("/auth/device-token", {
+            token: fcmToken,
+            platform: "web",
+          });
+        } catch (err) {
+          // Optionally show a warning toast
+          toast.error("Failed to register device for notifications");
+        }
+      }
 
       toast.success("Logged In Successfully", { id: loadingToast });
 

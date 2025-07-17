@@ -72,17 +72,16 @@ const SiSectionDetailPage = () => {
 
   // Transform construction managers data
   const transformConstructionManagersData = () => {
-    if (!sectionData?.constructionManagerAssignments) return [];
-    
-    return sectionData.constructionManagerAssignments.map((assignment, index) => ({
+    if (!sectionData?.associatedConstructionManagers) return [];
+    return sectionData.associatedConstructionManagers.map((assignment, index) => ({
       id: assignment.user?.id || index,
       cmId: (index + 1).toString().padStart(2, '0'),
       constructionManager: assignment.user?.name || "Unknown",
       email: assignment.user?.email || "No email",
-      phone: "Not available", // Phone not in API response
-      address: "Not available", // Address not in API response
-      status: "Active", // Status not in API response
-      date: formatDate(sectionData.createdAt),
+      phone: assignment.user?.phone || "Not available",
+      address: assignment.user?.address || "Not available",
+      status: assignment.isActive ? "Active" : "Inactive",
+      date: formatDate(assignment.createdAt),
       action: assignment.user?.id || index,
     }));
   };

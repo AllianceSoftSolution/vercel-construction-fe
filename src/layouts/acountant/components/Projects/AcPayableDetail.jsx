@@ -9,6 +9,7 @@ import { RiRecordMailLine } from "react-icons/ri";
 import apiClient from "../../../../api/apiClient";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import Loader from "../../../../components/ui/Loader";
 
 const paymentColumns = [
   { headerName: "Date", field: "date" },
@@ -93,7 +94,7 @@ export default function AcPayableDetails() {
     return (
       <Box className="p-4">
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading vendor account details...</div>
+          <Loader />
         </div>
       </Box>
     );

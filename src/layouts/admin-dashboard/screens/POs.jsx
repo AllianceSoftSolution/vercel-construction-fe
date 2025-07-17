@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import DropdownButton from "../../../comments/components/DropdownButton";
-import { IconButton } from "@mui/material";
+import { IconButton, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
@@ -12,33 +12,77 @@ import { FaUserEdit } from "react-icons/fa";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+
+// Status color mapping for purchase order status
+const statusColorMap = {
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  PENDING: "#f59e42", // orange
+  REJECTED: "#ef4444", // red
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
 
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const {id} = useParams();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [filter, setFilter] = useState({ Status: [], Project: [] });
   const navigate = useNavigate();
 
+  // Fetch all projects for filter
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await apiClient.get("/projects");
+        if (response.ok) {
+          setProjects(response.data.projects || []);
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    fetchProjects();
+  }, []);
 
-  const columns = [
-    { headerName: "Demand ID", field: "demandId" },
-    { headerName: "Project Name", field: "project" },
-    { headerName: "Demand", field: "demandName" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
-    { headerName: "Unit", field: "unit" },
-    { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Amount", field: "amount" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Assigned Vendors", field: "assingedVendors" },
-    { headerName: "Action", field: "id" },
-  ];
+  // Fetch POs with filters
   const fetchPurchaseOrders = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/purchase-orders");
+      let query = [];
+      if (filter.Status && filter.Status.length > 0) {
+        // Map frontend labels to backend values
+        const statusBackend = filter.Status.map(
+          label => statusOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (statusBackend.length > 0) {
+          query.push(`status=${encodeURIComponent(statusBackend.join(","))}`);
+        }
+      }
+      if (filter.Project && filter.Project.length > 0) {
+        const projectBackend = filter.Project.map(
+          label => projectOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (projectBackend.length > 0) {
+          query.push(`projectId=${encodeURIComponent(projectBackend.join(","))}`);
+        }
+      }
+      const url = `/purchase-orders${query.length ? `?${query.join("&")}` : ""}`;
+      const response = await apiClient.get(url);
       if (response.ok) {
         const data = response.data.data.map((po, index) => ({
           id: po.id,
@@ -68,7 +112,56 @@ const PurchaseOrder = () => {
 
   useEffect(() => {
     fetchPurchaseOrders();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
+
+  // Filter options
+  const statusOptions = [
+    { label: "Order Placed", value: "ORDER_PLACED" },
+    { label: "Created", value: "CREATED" },
+    { label: "Confirmed", value: "CONFIRMED" },
+    { label: "In Transit", value: "IN_TRANSIT" },
+    { label: "In Store", value: "IN_STORE" },
+    { label: "Completed", value: "COMPLETED" },
+    { label: "Cancelled", value: "CANCELLED" },
+  
+  ];
+  const projectOptions = projects.map((p) => ({ label: p.name, value: p.id }));
+
+  // CustomFilterDropdown expects filters: [{label, options: [...]}, ...]
+  const filters = [
+    { label: "Status", options: statusOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions.map(o => o.label) },
+  ];
+
+  // Multi-select filter change handler
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
+
+  // Pass the filter state directly as selected
+  let selected = null;
+  if (filter.Status && filter.Status.length > 0) {
+    selected = { group: "Status", value: filter.Status.join(", ") };
+  } else if (filter.Project && filter.Project.length > 0) {
+    selected = { group: "Project", value: filter.Project.join(", ") };
+  }
+
+  const columns = [
+    { headerName: "Demand ID", field: "demandId" },
+    { headerName: "Project Name", field: "project" },
+    { headerName: "Demand", field: "demandName" },
+    { headerName: "Materials", field: "material" },
+    { headerName: "Sections", field: "section" },
+    { headerName: "Qty", field: "qty" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "PO Qty", field: "poQty" },
+    { headerName: "Amount", field: "amount" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Assigned Vendors", field: "assingedVendors" },
+    { headerName: "Action", field: "id" },
+  ];
 
   const CustomActionComponent = ({ value : id }) => {
     return (
@@ -84,11 +177,11 @@ const PurchaseOrder = () => {
             label: "Edit",
             icon: <FaUserEdit />,
           },
-          {
-            label: "Change Vendor",
-            onClick: () => setVendorModalOpen(true),
-            icon: <RiFileEditFill />,
-          },
+          // {  
+          //   label: "Change Vendor",
+          //   onClick: () => setVendorModalOpen(true),
+          //   icon: <RiFileEditFill />,
+          // },
         ]}
       >
         <IconButton>
@@ -103,13 +196,17 @@ const PurchaseOrder = () => {
       <TopBar
         title="Purchase Orders"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showFilter={true}
-        filterOptions={["Completed", "Partial", "Pending"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
       />
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by status or project"
+        />
+      </div>
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       <div className="overflow-x-auto">
         {loading ? (
           <Loader />
@@ -117,7 +214,7 @@ const PurchaseOrder = () => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
-            cellComponents={{ id: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent, status: StatusChip }}
           />
         )}
       </div>

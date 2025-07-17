@@ -29,6 +29,7 @@ import {
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 const SInchargeUserManagement = () => {
   const navigate = useNavigate();
@@ -36,11 +37,35 @@ const SInchargeUserManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState({ Role: [] });
 
+  // Role filter options
+  const roleOptions = [
+    { label: "admin", value: "ADMIN" },
+    { label: "site_incharge", value: "SITE_INCHARGE" },
+    { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
+    { label: "store_incharge", value: "STORE_INCHARGE" },
+    { label: "accountant", value: "ACCOUNTANT" },
+    { label: "project_management", value: "PROJECT_MANAGEMENT" },
+  ];
+  const filters = [
+    { label: "Role", options: roleOptions.map(o => o.label) },
+  ];
+
+  // Fetch users with optional role filter
   const getAllUsers = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/auth/users");
+      let url = "/auth/users";
+      if (filter.Role && filter.Role.length > 0) {
+        const roleBackend = filter.Role.map(
+          label => roleOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (roleBackend.length > 0) {
+          url += `?role=${encodeURIComponent(roleBackend.join(","))}`;
+        }
+      }
+      const response = await apiClient.get(url);
       if (response.ok) {
         // Adjust mapping as needed based on API response structure
         const data =
@@ -62,7 +87,13 @@ const SInchargeUserManagement = () => {
 
   React.useEffect(() => {
     getAllUsers();
-  }, []);
+    // eslint-disable-next-line
+  }, [filter]);
+
+  const handleFilterChange = (selection) => {
+    setFilter(selection);
+  };
+  const handleFilterClear = () => setFilter({ Role: [] });
 
   const handleActionClick = () => {
     setShowModal(true);
@@ -76,7 +107,7 @@ const SInchargeUserManagement = () => {
     { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
-      field: "action",
+      field: "id",
     },
   ];
   const teamAnalytics = [
@@ -100,14 +131,14 @@ const SInchargeUserManagement = () => {
     },
   ];
 
-  const CustomActionComponent = ({ data }) => {
+  const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate("123"),
+            onClick: () => navigate(`/siteincharge-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
           { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
@@ -118,16 +149,13 @@ const SInchargeUserManagement = () => {
           },
           {
             label: "Ban",
-            // onClick: () => alert("Delete"),
             icon: <MdNoAccounts className="w-5 h-5" />,
           },
           {
             label: "Suspend Account",
-            // onClick: () => alert("Delete"),
             icon: <FaBan />,
           },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -141,22 +169,20 @@ const SInchargeUserManagement = () => {
         title="User Management"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         showExport={true}
-        showFilter={true}
-        filterOptions={[
-          "Project Manager",
-          "Const Manager",
-          "Site Manager",
-          "Store-INCHARGE",
-          "Accountant",
-        ]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
         buttonText="Create New User"
         onButtonClick={() =>
           navigate("/siteincharge-dashboard/user-management/addUser")
         }
       />
+      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+        <CustomFilterDropdown
+          filters={filters}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by role"
+        />
+      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <h2 className="text-2xl font-semibold text-primary">
         Total Users Overview
@@ -185,7 +211,7 @@ const SInchargeUserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ action: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent }}
             loading={loading}
           />
         )}
