@@ -4,7 +4,7 @@ import SimpleTable from "../../../components/SimpleTable";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
 import DropdownButton from "../../../comments/components/DropdownButton";
-import { Box, IconButton, Modal } from "@mui/material";
+import { Box, IconButton, Modal, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import CustomTextField from "../../../mui/CustomTextField";
 import Button from "../../../components/Button";
@@ -14,6 +14,7 @@ import { AccountBalance, Balance } from "@mui/icons-material";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 const style = {
   position: "absolute",
@@ -281,6 +282,35 @@ const ActionComforRegPOs = ({ value: id, rowData, ...props }) => {
   );
 };
 
+// Status color mapping for PO status
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  ORDER_PLACED: "#f59e42", // orange
+  IN_TRANSIT: "#0ea5e9", // blue
+  IN_STORE: "#8b5cf6", // purple
+  CANCELLED: "#ef4444", // red
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
+
 const Payables = () => {
   const [loading, setLoading] = useState(false);
   const [vendorAccounts, setVendorAccounts] = useState([]);
@@ -293,6 +323,44 @@ const Payables = () => {
     vendorsWithOverdue: 0,
     vendorsWithAdvance: 0
   });
+  const [filter, setFilter] = useState({
+    Status: [],
+  });
+
+  // Status options for filter
+  const statusOptions = [
+    { label: "Order Placed", value: "ORDER_PLACED" },
+    { label: "Created", value: "CREATED" },
+    { label: "Confirmed", value: "CONFIRMED" },
+    { label: "In Transit", value: "IN_TRANSIT" },
+    { label: "In Store", value: "IN_STORE" },
+    { label: "Completed", value: "COMPLETED" },
+    { label: "Cancelled", value: "CANCELLED" },
+    { label: "Pending", value: "PENDING" },
+    { label: "Rejected", value: "REJECTED" },
+    { label: "Approved", value: "APPROVED" },
+    { label: "Partially Approved", value: "PARTIALLY_APPROVED" },
+    { label: "PO Created", value: "PO_CREATED" },
+    { label: "Fulfilled", value: "FULFILLED" },
+    { label: "Partial", value: "PARTIAL" },
+  ];
+  const filters = [
+    { label: "Status", options: statusOptions.map(o => o.label) },
+  ];
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ Status: [] });
+
+  // Filter purchase orders by status
+  const filteredPurchaseOrders = filter.Status && filter.Status.length > 0
+    ? purchaseOrders.filter(po =>
+        filter.Status.includes(
+          statusOptions.find(opt => opt.value === po.status)?.label || po.status
+        )
+      )
+    : purchaseOrders;
 
   // Vendor Accounts columns
   const vendorColumns = [
@@ -412,12 +480,12 @@ const Payables = () => {
     <div className=" ">
       <TopBar
         title="Payables"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showFilter={true}
-        filterOptions={["Assigned", "Not-Assigned"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showFilter={true}
+        // filterOptions={["Assigned", "Not-Assigned"]}
+        // onFilterChange={(selected) =>
+        //   console.log("Selected Filters:", selected)
+        // }
       />
 
       <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
@@ -439,16 +507,27 @@ const Payables = () => {
         <h1 className="text-xl md:text-2xl font-bold mb-5">
           Purchase Orders
         </h1>
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={filters}
+            selected={filter}
+            onChange={handleFilterChange}
+            onClear={handleFilterClear}
+            placeholder="Filter by status"
+            dropdownAlign="left"
+          />
+        </div>
         <div className="overflow-x-auto">
           {loading ? (
             <Loader />
           ) : (
             <SimpleTable
-            columns={purchaseOrderColumns}
-            data={purchaseOrders}
-            cellComponents={{ 
-              id: ActionComforRegPOs
-            }}
+              columns={purchaseOrderColumns}
+              data={filteredPurchaseOrders}
+              cellComponents={{ 
+                id: ActionComforRegPOs,
+                status: StatusChip
+              }}
             />
           )}
         </div>

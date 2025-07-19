@@ -419,7 +419,7 @@ const SectionDetailPage = () => {
     <div className=" sm:p-6 w-full">
       <TopBar
         title="Section Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 ">
@@ -590,7 +590,7 @@ const SectionDetailPage = () => {
       <div className="mt-10">
         <TopBar
           title="Construction Managers"
-          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+          // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
           buttonText="Add CM"
           onButtonClick={() => setOpenAssignCMModal(true)}
         />

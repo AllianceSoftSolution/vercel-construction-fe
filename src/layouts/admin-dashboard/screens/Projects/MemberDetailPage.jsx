@@ -93,7 +93,10 @@ const MemberDetailPage = () => {
 
   return (
     <div className="p-4 w-full">
-      <TopBar title="Member Detail" detail="lorem ipsum" showExport={true} />
+      <TopBar title="Member Detail"
+      //  detail="lorem ipsum" 
+      //  showExport={true} 
+       />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
 
       <div className="flex flex-col lg:flex-row gap-6 mt-4">

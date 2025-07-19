@@ -179,18 +179,22 @@ const UserManagement = () => {
       </DropdownButton>
     );
   };
+
+  // Custom cell renderer for role to display lowercase and remove underscores
+  const RoleCell = ({ value }) => (value ? value.toLowerCase().replace(/_/g, ' ') : "");
+
   return (
     <div className=" h-full ">
       <TopBar
         title="User Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
         buttonText="Create New User"
         onButtonClick={() =>
           navigate("/admin-dashboard/user-management/addUser")
         }
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+      <div className="flex justify-end items-center gap-4 mt-8 ">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}
@@ -225,7 +229,7 @@ const UserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ id: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent, role: RoleCell }}
           />
         )}
       </div>

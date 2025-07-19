@@ -83,6 +83,7 @@ const SiDemandDetails = () => {
       const response = await apiClient.post(`/demands/${id}/approve`);
       if (response?.data?.demand) {
         setDemandData(response.data.demand);
+        toast.success("Demand approved successfully!");
       } else {
         toast.error(response?.data?.message || "Failed to approve");
       }

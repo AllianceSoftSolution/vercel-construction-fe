@@ -153,7 +153,7 @@ const Demands = () => {
     <div className=" h-full ">
       <TopBar
         title="Demands"
-        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown

@@ -101,24 +101,24 @@ const Stores = () => {
             onClick: () => navigate(`/admin-dashboard/store/${id}`),
             icon: <FaEye />,
           },
-          {
-            label: "Delete ",
-            onClick: () => {
-              setSelectedStoreId(id);
-              setShowDeleteModal(true);
-            },
-            icon: <FaTrash />,
-          },
-          {
-            label: "Assign Store Incharge",
-            onClick: () => handleLinkClick(),
-            icon: <IoPersonCircle />,
-          },
-          {
-            label: "Assign Accountant",
-            onClick: () => handleLinkClick(),
-            icon: <RiAccountBox2Fill />,
-          },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => {
+          //     setSelectedStoreId(id);
+          //     setShowDeleteModal(true);
+          //   },
+          //   icon: <FaTrash />,
+          // },
+          // {
+          //   label: "Assign Store Incharge",
+          //   onClick: () => handleLinkClick(),
+          //   icon: <IoPersonCircle />,
+          // },
+          // {
+          //   label: "Assign Accountant",
+          //   onClick: () => handleLinkClick(),
+          //   icon: <RiAccountBox2Fill />,
+          // },
         ]}
       >
         <IconButton>
@@ -130,8 +130,8 @@ const Stores = () => {
 
   // Store type color mapping (updated for only CM STORE, HEAD STORE, default)
   const typeColorMap = {
-    "CM STORE": "#0ea5e9", // blue
-    "HEAD STORE": "#22c55e", // green
+    "CM_STORE": "#0ea5e9", // blue
+    "HEAD_STORE": "#22c55e", // green
     default: "#6b7280", // gray
   };
 
@@ -159,7 +159,7 @@ const Stores = () => {
     <div className="h-full">
       <TopBar
         title="Stores"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // buttonText="Add New Store"
         // onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
       />

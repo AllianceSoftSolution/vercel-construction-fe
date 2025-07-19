@@ -36,19 +36,19 @@ const Materials = () => {
   }, []);
 
   const columns = [
-    { headerName: "ID", field: "id" },
+    // { headerName: "ID", field: "id" },
     { headerName: "Product Name", field: "name" },
     { headerName: "Description", field: "description" },
     { headerName: "Unit", field: "unit" },
-    { headerName: "Category", field: "category" },
+    // { headerName: "Category", field: "category" },
   ];
 
   return (
     <div className="h-full">
       <TopBar
         title="Materials"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
         buttonText="Add Product"
         onButtonClick={() => navigate("/admin-dashboard/materials/addProduct")}
       />

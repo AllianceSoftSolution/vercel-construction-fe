@@ -159,7 +159,7 @@ const PurchaseOrder = () => {
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Amount", field: "amount" },
     { headerName: "Status", field: "status" },
-    { headerName: "Assigned Vendors", field: "assingedVendors" },
+    // { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "id" },
   ];
 
@@ -195,7 +195,7 @@ const PurchaseOrder = () => {
     <div className="h-full ">
       <TopBar
         title="Purchase Orders"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
