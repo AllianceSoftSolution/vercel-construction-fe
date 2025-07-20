@@ -132,7 +132,7 @@ const CmStores = () => {
     <div className="h-full">
       <TopBar
         title="Stores"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="my-4 flex justify-end">
         <CustomFilterDropdown

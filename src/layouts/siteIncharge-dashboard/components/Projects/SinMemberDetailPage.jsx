@@ -15,6 +15,18 @@ const SinMemberDetailPage = () => {
   const { id } = useParams();
   const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Function to format role for display
+  const formatRole = (role) => {
+    if (!role) return "-";
+    
+    // Convert role to title case and replace underscores with spaces
+    return role
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
   const data = [  
     {
       id: 1,
@@ -112,7 +124,7 @@ const SinMemberDetailPage = () => {
             <InfoRow label="Email" value={memberData?.email || "-"} />
             <InfoRow label="Joining Date" value={memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString() : "-"} />
             <InfoRow label="Employee ID" value={memberData?.employeeId || "-"} />
-            <InfoRow label="Role" value={memberData?.role || "-"} />
+            <InfoRow label="Role" value={formatRole(memberData?.role)} />
             <InfoRow label="Status" value={memberData?.isActive ? "Active" : "Inactive"} />
             <InfoRow label="Created By" value={memberData?.creator?.name || "-"} />
           </div>

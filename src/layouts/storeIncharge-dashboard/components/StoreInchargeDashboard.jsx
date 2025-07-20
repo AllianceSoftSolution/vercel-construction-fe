@@ -110,8 +110,8 @@ function StoreInchargeDashboard() {
       {/* Header */}
       <TopBar
         title="Store-Incharge Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>

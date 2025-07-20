@@ -35,6 +35,35 @@ const StatusChip = ({ value }) => {
   );
 };
 
+// Date formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return "Invalid Date";
+    }
+    
+    // Format: DD/MM/YYYY
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Invalid Date";
+  }
+};
+
+// Date component for table
+const DateComponent = ({ value }) => {
+  return <span>{formatDate(value)}</span>;
+};
+
 const Demands = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -153,7 +182,6 @@ const Demands = () => {
     <div className=" h-full ">
       <TopBar
         title="Demands"
-        // detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -173,7 +201,11 @@ const Demands = () => {
           <SimpleTable
             columns={columns}
             data={demands}
-            cellComponents={{ demandId: CustomActionComponent, status: StatusChip }}
+            cellComponents={{ 
+              demandId: CustomActionComponent, 
+              status: StatusChip,
+              createdAt: DateComponent 
+            }}
           />
         )}
       </div>

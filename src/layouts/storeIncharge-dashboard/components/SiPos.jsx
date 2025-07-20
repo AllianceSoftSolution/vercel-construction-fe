@@ -155,7 +155,7 @@ const SiPos = () => {
     <div className="h-full">
       <TopBar
         title="Purchase Orders"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown

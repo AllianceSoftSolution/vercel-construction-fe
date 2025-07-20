@@ -188,7 +188,7 @@ const CmDemands = () => {
     <div className="w-full">
       <TopBar
         title="Demands"
-        detail="View and manage construction material demands."
+        // detail="View and manage construction material demands."
         buttonText="Create Demand"
         onButtonClick={() =>
           navigate("/construction-manager-dashboard/demands/addDemand")

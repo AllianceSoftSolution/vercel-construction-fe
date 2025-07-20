@@ -130,8 +130,8 @@ const Stores = () => {
 
   // Store type color mapping (updated for only CM STORE, HEAD STORE, default)
   const typeColorMap = {
-    "CM_STORE": "#0ea5e9", // blue
-    "HEAD_STORE": "#22c55e", // green
+    "CM_STORE": "#320d4a",
+    "HEAD_STORE": "#e8a113",
     default: "#6b7280", // gray
   };
 
@@ -151,7 +151,7 @@ const Stores = () => {
     { headerName: "Store Id", field: "storeId" },
     { headerName: "Store Name", field: "name" },
     { headerName: "Type", field: "type" },
-    { headerName: "Section Id", field: "sectionId" },
+    { headerName: "Section Name", field: "section.name" },
     { headerName: "Action", field: "id" },
   ];
 

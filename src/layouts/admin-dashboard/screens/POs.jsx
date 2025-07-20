@@ -97,6 +97,7 @@ const PurchaseOrder = () => {
           amount: po.totalAmount ? `$${po.totalAmount}` : "-",
           status: po.status || "-",
           assingedVendors: po.vendorId || "-",
+          proofOfBill: po.proofOfBill || "-",
         }));
         setPurchaseOrders(data);
       } else {
@@ -158,6 +159,7 @@ const PurchaseOrder = () => {
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Amount", field: "amount" },
+    { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "id" },
@@ -190,6 +192,37 @@ const PurchaseOrder = () => {
       </DropdownButton>
     );
   };
+
+  const ProofOfBillComponent = ({ value }) => {
+    if (!value || value === "-") {
+      return <span>-</span>;
+    }
+    
+    // Check if the value is a valid URL
+    const isValidUrl = (string) => {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    };
+
+    if (isValidUrl(value)) {
+      return (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-black hover:text-primary underline cursor-pointer"
+        >
+          View Proof
+        </a>
+      );
+    }
+    
+    return <span>{value}</span>;
+  };
   console.log(purchaseOrders);
   return (
     <div className="h-full ">
@@ -214,7 +247,7 @@ const PurchaseOrder = () => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
-            cellComponents={{ id: CustomActionComponent, status: StatusChip }}
+            cellComponents={{ id: CustomActionComponent, status: StatusChip, proofOfBill: ProofOfBillComponent }}
           />
         )}
       </div>

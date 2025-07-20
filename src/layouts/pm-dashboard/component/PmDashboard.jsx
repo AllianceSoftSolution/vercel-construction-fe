@@ -12,6 +12,33 @@ import { useState } from "react";
 import  apiClient  from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import { IconButton, Chip } from "@mui/material";
+
+// Status color mapping for demands and POs
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  CONFIRMED: "#7a0b4a",
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
 
 function PmDashboard() {
   const [demands, setDemands] = useState([]);
@@ -97,8 +124,8 @@ function PmDashboard() {
     <div className="h-full">
       <TopBar
         title="Project-Manager Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -140,7 +167,7 @@ function PmDashboard() {
         {loading ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+          <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
         )}
       </div>
     </div>

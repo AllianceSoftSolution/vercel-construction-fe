@@ -135,7 +135,7 @@ const SinPurchaseOrderDetailPage = () => {
     <div className="px-4 md:px-6 py-4">
       <TopBar
         title="Purchase Order Detail Page"
-        detail="View detailed information about the purchase order"
+        // detail="View detailed information about the purchase order"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">

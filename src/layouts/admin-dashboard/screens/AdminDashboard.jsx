@@ -36,6 +36,7 @@ const statusColorMap = {
   PARTIAL: "#eab308", // yellow
   PENDING: "#f59e42", // orange
   REJECTED: "#ef4444", // red
+  CONFIRMED: "#7a0b4a",
   default: "#0252AD", // fallback blue
 };
 
@@ -53,6 +54,7 @@ const StatusChip = ({ value }) => {
 
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [analyticsData, setAnalyticsData] = useState([
@@ -224,11 +226,35 @@ function AdminDashboard() {
     }
   };
 
+  // Initial data loading
+  const loadInitialData = async () => {
+    try {
+      setInitialLoading(true);
+      await Promise.all([
+        fetchAnalytics(),
+        fetchDemands(),
+        fetchPurchaseOrders()
+      ]);
+    } catch (error) {
+      console.error("Error loading initial data:", error);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchAnalytics();
-    fetchDemands();
-    fetchPurchaseOrders();
+    loadInitialData();
   }, []);
+
+  // Show initial loading spinner
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <div className=" md:px- w-full">
      
@@ -319,19 +345,11 @@ function AdminDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />
-        {loading ? (
-          <Loader />
-        ) : (
-          <SimpleTable columns={demandsColumns} data={demands} cellComponents={{ status: StatusChip }} />
-        )}
+        <SimpleTable columns={demandsColumns} data={demands} cellComponents={{ status: StatusChip }} />
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />
-        {loading ? (
-          <Loader />
-        ) : (
-          <SimpleTable columns={purchaseOrdersColumns} data={purchaseOrders} cellComponents={{ status: StatusChip }} />
-        )}
+        <SimpleTable columns={purchaseOrdersColumns} data={purchaseOrders} cellComponents={{ status: StatusChip }} />
       </div>
     </div>
   );

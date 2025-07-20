@@ -131,6 +131,24 @@ const SInchargeUserManagement = () => {
     },
   ];
 
+  // Custom cell renderer for role to display properly formatted
+  const RoleCell = ({ value }) => {
+    if (!value) return "";
+    
+    // Convert to title case and replace underscores with spaces
+    const formattedRole = value
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    return (
+      <span className="text-sm text-black">
+        {formattedRole}
+      </span>
+    );
+  };
+
   const CustomActionComponent = ({ value: id }) => {
     return (
       <DropdownButton
@@ -167,8 +185,8 @@ const SInchargeUserManagement = () => {
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="User Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
         buttonText="Create New User"
         onButtonClick={() =>
           navigate("/siteincharge-dashboard/user-management/addUser")
@@ -211,7 +229,7 @@ const SInchargeUserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ id: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent, role: RoleCell }}
             loading={loading}
           />
         )}

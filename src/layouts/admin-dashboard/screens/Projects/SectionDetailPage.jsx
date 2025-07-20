@@ -43,17 +43,29 @@ const SectionDetailPage = () => {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
+
+  // Generic function to format text for display (roles, types, etc.)
+  const formatText = (text) => {
+    if (!text) return "-";
+    
+    // Convert text to title case and replace underscores with spaces
+    return text
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
   
-  const CustomActionComponent = ({ data }) => (
+  const CustomActionComponent = ({ value: id }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "View Detail",
-          onClick: () =>
-            navigate("/project-manager-dashboard/user-management/123"),
-          icon: <FaUserEdit />,
-        },
+        // {
+        //   label: "View Detail",
+        
+        //     onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
+        //   icon: <FaUserEdit />,
+        // },
         {
           label: "Edit",
           onClick: () => alert("Edit"),
@@ -82,7 +94,7 @@ const SectionDetailPage = () => {
       address: "A1",
       status: "Pending",
       date: "2025-06-15",
-      action: "id-here",
+      id: "id-here",
     },
     {
       id: 2,
@@ -93,7 +105,7 @@ const SectionDetailPage = () => {
       address: "B2",
       status: "Approved",
       date: "2025-06-16",
-      action: "id-here",
+      id: "id-here",
     },
   ];
 
@@ -105,7 +117,7 @@ const SectionDetailPage = () => {
     // { headerName: "Address", field: "user.address" },
     { headerName: "Created By", field: "user.creator.name" },
     { headerName: "CM Store", field: "cmStore.name" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
 
   const fetchSectionDetail = async () => {
@@ -463,7 +475,7 @@ const SectionDetailPage = () => {
                   image={manager}
                   name={selectedPM.name}
                   phone={selectedPM.phone || "-"}
-                  role={selectedPM.role || "Project Manager"}
+                  role={formatText(selectedPM.role) || "Project Manager"}
                   email={selectedPM.email}
                   joiningDate={selectedPM.joiningDate || "-"}
                   id={selectedPM.id}
@@ -503,7 +515,7 @@ const SectionDetailPage = () => {
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">Type:</span>{" "}
-                    {sectionData.headStore.type}
+                    {formatText(sectionData.headStore.type)}
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">ID:</span>{" "}
@@ -553,11 +565,11 @@ const SectionDetailPage = () => {
                             : "-"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2"> 
                         <span className="font-semibold">Role:</span>
                         <span>
-                          {sectionData.headStore.storeInchargeAssignments[0]
-                            .user.role || "Store Incharge"}
+                          {formatText(sectionData.headStore.storeInchargeAssignments[0]
+                            .user.role) || "Store Incharge"}
                         </span>
                       </div>
                     </div>
@@ -604,7 +616,7 @@ const SectionDetailPage = () => {
             <SimpleTable
               data={sectionData?.associatedConstructionManagers || []}
               columns={columns}
-              cellComponents={{ action: CustomActionComponent }}
+              cellComponents={{ id: CustomActionComponent }}
             />
           )}
         </div>

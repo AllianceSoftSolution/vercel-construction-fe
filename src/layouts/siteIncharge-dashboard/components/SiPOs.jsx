@@ -75,13 +75,13 @@ const SiPOs = () => {
           demandId: po.demand?.referenceNumber || "-",
           project: po.demand?.section?.project?.name || "-",
           demandName: po.demand?.referenceNumber || "-",
-          material: po.materialId,
+          material: po.material?.name,
           section: po.demand?.section?.name || "-",
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
           status: po.status || "-",
-          assingedVendors: po.vendorId,
+          // assingedVendors: po.vendorId,
         }));
         setPurchaseOrders(data);
       } else {
@@ -114,7 +114,7 @@ const SiPOs = () => {
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Status", field: "status" },
-    { headerName: "Assigned Vendors", field: "assingedVendors" },
+    // { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "id" },
   ];
 
@@ -141,7 +141,7 @@ const SiPOs = () => {
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Purchase Orders"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown

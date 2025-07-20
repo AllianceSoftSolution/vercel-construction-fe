@@ -36,6 +36,18 @@ const SiSectionDetailPage = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [openAssignCMModal, setOpenAssignCMModal] = useState(false);
 
+  // Generic function to format text for display (roles, types, etc.)
+  const formatText = (text) => {
+    if (!text) return "-";
+    
+    // Convert text to title case and replace underscores with spaces
+    return text
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   // Format date function
   const formatDate = (dateString) => {
     if (!dateString) return "Not available";
@@ -212,7 +224,7 @@ const SiSectionDetailPage = () => {
       <div className="px-4 md:px-8 py-4">
         <TopBar
           title="Section Details"
-          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+          // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         />
         <div className="flex justify-center items-center h-full min-h-[400px]">
           <div className="text-center">
@@ -228,7 +240,7 @@ const SiSectionDetailPage = () => {
     <div className="px-4 md:px-8 py-4">
       <TopBar
         title="Section Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
       {loading ? (
@@ -270,7 +282,7 @@ const SiSectionDetailPage = () => {
                     image={manager}
                     name={sectionData.associatedConstructionManagers[0].user?.name || "Unknown"}
                     phone={sectionData.associatedConstructionManagers[0].user?.phone || "-"}
-                    role={sectionData.associatedConstructionManagers[0].user?.role || "Construction Manager"}
+                    role={formatText(sectionData.associatedConstructionManagers[0].user?.role) || "Construction Manager"}
                     email={sectionData.associatedConstructionManagers[0].user?.email || "-"}
                     joiningDate={sectionData.associatedConstructionManagers[0].user?.createdAt ? new Date(sectionData.associatedConstructionManagers[0].user.createdAt).toLocaleDateString() : "-"}
                     id={sectionData.associatedConstructionManagers[0].user?.id || "-"}
@@ -304,7 +316,7 @@ const SiSectionDetailPage = () => {
                       <span className="font-semibold">Name:</span> {sectionData.headStore.name}
                     </div>
                     <div className="mb-2">
-                      <span className="font-semibold">Type:</span> {sectionData.headStore.type}
+                      <span className="font-semibold">Type:</span> {formatText(sectionData.headStore.type)}
                     </div>
                     <div className="mb-2">
                       <span className="font-semibold">ID:</span> {sectionData.headStore.id}
@@ -335,7 +347,7 @@ const SiSectionDetailPage = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold">Role:</span>
-                          <span>{sectionData.headStore.storeInchargeAssignments[0].user.role || "Store Incharge"}</span>
+                          <span>{formatText(sectionData.headStore.storeInchargeAssignments[0].user.role) || "Store Incharge"}</span>
                         </div>
                       </div>
                     ) : (
@@ -378,7 +390,7 @@ const SiSectionDetailPage = () => {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">
-                      Type: {store.type?.replace(/_/g, ' ')}
+                      Type: {formatText(store.type)}
                     </p>
                     {store.storeInchargeAssignments && store.storeInchargeAssignments.length > 0 && (
                       <div className="text-sm">
@@ -402,7 +414,7 @@ const SiSectionDetailPage = () => {
           <div className="mt-10">
             <TopBar
               title="Construction Managers"
-              detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+              // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
               buttonText="Add CM"
               onButtonClick={() => setOpenAssignCMModal(true)}
             />

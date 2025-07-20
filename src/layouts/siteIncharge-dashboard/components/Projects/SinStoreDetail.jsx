@@ -111,8 +111,8 @@ const SinStoreDetail = () => {
     <>
       <TopBar
         title="Store Detail"
-        detail="lorem ipsum dolor sit amet"
-        showExport={true}
+        // detail="lorem ipsum dolor sit amet"
+        // showExport={true}
       />
       {loading ? (
         <Loader />

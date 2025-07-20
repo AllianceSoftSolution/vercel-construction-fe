@@ -160,16 +160,16 @@ const UserManagement = () => {
             onClick: () => alert("Delete"),
             icon: <FaTrash />,
           },
-          {
-            label: "Ban",
-            // onClick: () => alert("Delete"),
-            icon: <MdOutlineNoAccounts className="w-5 h-5" />,
-          },
-          {
-            label: "Suspend Account",
-            // onClick: () => alert("Delete"),
-            icon: <FaBan />,
-          },
+          // {
+          //   label: "Ban",
+          //   // onClick: () => alert("Delete"),
+          //   icon: <MdOutlineNoAccounts className="w-5 h-5" />,
+          // },
+          // {
+          //   label: "Suspend Account",
+          //   // onClick: () => alert("Delete"),
+          //   icon: <FaBan />,
+          // },
         ]}
         // onClick={handleActionClick}
       >
@@ -180,8 +180,23 @@ const UserManagement = () => {
     );
   };
 
-  // Custom cell renderer for role to display lowercase and remove underscores
-  const RoleCell = ({ value }) => (value ? value.toLowerCase().replace(/_/g, ' ') : "");
+  // Custom cell renderer for role to display properly formatted
+  const RoleCell = ({ value }) => {
+    if (!value) return "";
+    
+    // Convert to title case and replace underscores with spaces
+    const formattedRole = value
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    return (
+      <span className="text-sm text-black">
+        {formattedRole}
+      </span>
+    );
+  };
 
   return (
     <div className=" h-full ">
