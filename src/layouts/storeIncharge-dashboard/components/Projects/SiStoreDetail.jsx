@@ -464,7 +464,7 @@ const SiStoreDetail = () => {
     <>
       <TopBar
         title="Store Detail"
-        detail="lorem ipsum dolor sit amet"
+        // detail="lorem ipsum dolor sit amet"
         showExport={true}
         // buttonText="Add Store"
       />
@@ -522,7 +522,7 @@ const SiStoreDetail = () => {
       />
       {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable data={inventoryTableData} 
         columns={columns}
@@ -531,7 +531,7 @@ const SiStoreDetail = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
       </h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable
         data={transactionsTableData}

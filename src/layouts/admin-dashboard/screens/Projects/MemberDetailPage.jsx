@@ -16,7 +16,7 @@ const MemberDetailPage = () => {
   const { id } = useParams();
   const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(false);
-
+ 
   // Function to format role for display
   const formatRole = (role) => {
     if (!role) return "-";

@@ -257,30 +257,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     }
   };
 
-  const membersData = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Project Manager",
-      status: "Pending",
-      note: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Construction Manager",
-      status: "Approved",
-      note: "Fatima Khan",
-      date: "2025-06-14",
-    },
-  ];
+ 
 
   const columns = [
     { headerName: "ID", field: "id" },
@@ -303,7 +280,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
           onClick: () => navigate("/admin-dashboard/user-management/123"),
           icon: <FaEye />,
         },
-        { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+        // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
         { label: "Delete ", onClick: () => alert("Delete"), icon: <FaTrash /> },
       ]}
     >
@@ -337,7 +314,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
       <ProjectDescriptionCard
         title="Project Description"
         description={data?.description || "No description available."}
-        onEdit={() => console.log("edit description")}
+        // onEdit={() => console.log("edit description")}
       />
 
       <div className="flex items-center justify-between">

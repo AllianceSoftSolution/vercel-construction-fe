@@ -32,11 +32,11 @@ const SinPurchaseOrderDetailPage = () => {
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),

@@ -8,11 +8,12 @@ import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
 import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaUserEdit } from "react-icons/fa";
+import { FaUserEdit, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import DeleteModal from "../../../mui/DeleteModal";
 
 // Status color mapping for purchase order status
 const statusColorMap = {
@@ -20,6 +21,7 @@ const statusColorMap = {
   PARTIAL: "#eab308", // yellow
   PENDING: "#f59e42", // orange
   REJECTED: "#ef4444", // red
+  CONFIRMED: "#44085c", // purple 
   default: "#0252AD", // fallback blue
 };
 
@@ -42,6 +44,8 @@ const PurchaseOrder = () => {
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState({ Status: [], Project: [] });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedPOId, setSelectedPOId] = useState(null);
   const navigate = useNavigate();
 
   // Fetch all projects for filter
@@ -116,6 +120,21 @@ const PurchaseOrder = () => {
     // eslint-disable-next-line
   }, [filter]);
 
+  const deletePurchaseOrder = async () => {
+    try {
+      const response = await apiClient.delete(`/purchase-orders/${selectedPOId}`);
+      if (response.ok) {
+        fetchPurchaseOrders();
+        setShowDeleteModal(false);
+        toast.success("Purchase Order deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete purchase order");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
   // Filter options
   const statusOptions = [
     { label: "Order Placed", value: "ORDER_PLACED" },
@@ -152,7 +171,7 @@ const PurchaseOrder = () => {
   const columns = [
     { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
-    { headerName: "Demand", field: "demandName" },
+    // { headerName: "Demand", field: "demandName" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
@@ -175,15 +194,23 @@ const PurchaseOrder = () => {
             onClick: () => navigate(`/admin-dashboard/pOS/${id}`),
             icon: <IoIosEye />,
           },
-          {
-            label: "Edit",
-            icon: <FaUserEdit />,
-          },
+          // {
+          //   label: "Edit",
+          //   icon: <FaUserEdit />,
+          // },
           // {  
           //   label: "Change Vendor",
           //   onClick: () => setVendorModalOpen(true),
           //   icon: <RiFileEditFill />,
           // },
+          {
+            label: "Delete",
+            onClick: () => {
+              setSelectedPOId(id);
+              setShowDeleteModal(true);
+            },
+            icon: <FaTrash />,
+          },
         ]}
       >
         <IconButton>
@@ -257,6 +284,12 @@ const PurchaseOrder = () => {
         open={isVendorModalOpen}
         onClose={() => setVendorModalOpen(false)}
       />
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={deletePurchaseOrder}
+        />
+      )}
     </div>
   );
 };

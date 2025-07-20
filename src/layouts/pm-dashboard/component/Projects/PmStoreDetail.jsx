@@ -166,8 +166,8 @@ const PmStoreDetail = () => {
         <>
           <TopBar
         title="Store Detail"
-        detail="lorem ipsum dolor sit amet"
-        showExport={true}
+        // detail="lorem ipsum dolor sit amet"
+        // showExport={true}
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
@@ -226,7 +226,7 @@ const PmStoreDetail = () => {
 
       {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
 
       <SimpleTable
@@ -239,7 +239,7 @@ const PmStoreDetail = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
       </h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable
         data={storeData.transactions}

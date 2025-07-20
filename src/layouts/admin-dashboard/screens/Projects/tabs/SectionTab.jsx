@@ -52,7 +52,7 @@ const SectionTab = ({ data, onSectionDeleted }) => {
       {loading && <Loader />}
       <TopBar
         title="Project Sections"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         buttonText="Create Project Section"
         onButtonClick={() =>
           navigate(`/admin-dashboard/project-management/createProject?id=${id}`)
@@ -70,11 +70,11 @@ const SectionTab = ({ data, onSectionDeleted }) => {
                   `/admin-dashboard/project-management/sections/${sec.id}`
                 ),
             },
-            {
-              label: "Edit Project Section",
-              icon: <FaUserEdit />,
-              onClick: () => console.log(`Edit clicked for section ${sec.id}`),
-            },
+            // {
+            //   label: "Edit Project Section",
+            //   icon: <FaUserEdit />,
+            //   onClick: () => console.log(`Edit clicked for section ${sec.id}`),
+            // },
             {
               label: "Delete Project Section",
               icon: <FaTrash />,

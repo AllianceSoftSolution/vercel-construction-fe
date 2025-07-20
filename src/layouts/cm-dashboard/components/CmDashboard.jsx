@@ -20,6 +20,29 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import { Chip } from "@mui/material";
+
+// Status color mapping for demand status
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
 
 function CmDashboard() {
   const [demands, setDemands] = useState([]);
@@ -146,7 +169,7 @@ function CmDashboard() {
           const summary = response.data.data.summary;
           const charts = response.data.data.charts || {};
           setProjectStats([
-            { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 },
+            { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0 },
             { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
             { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
           ]);
@@ -163,23 +186,7 @@ function CmDashboard() {
     fetchAnalytics();
   }, []);
 
-  const actions = [
-    // {
-    //   label: "View Section Detail",
-    //   icon: <FaEye />,
-    //   onClick: () => navigate("/construction-manager-dashboard/sections/23232"),
-    // },
-    {
-      label: "Edit Project Section",
-      icon: <FaUserEdit />,
-      onClick: () => console.log("Edit clicked"),
-    },
-    {
-      label: "Delete Project Section",
-      icon: <FaTrash />,
-      onClick: () => console.log("Delete clicked"),
-    },
-  ];
+
   const columns = [
     { headerName: "Ref No", field: "refNo" },
     { headerName: "Projects", field: "project" },
@@ -198,16 +205,16 @@ function CmDashboard() {
       icon: <FaEye />,
       onClick: () => navigate(`/construction-manager-dashboard/sections/${sec.id}`),
     },
-    {
-      label: "Edit Project Section",
-      icon: <FaUserEdit />,
-      onClick: () => console.log(`Edit clicked for section ${sec.id}`),
-    },
-    {
-      label: "Delete Project Section",
-      icon: <FaTrash />,
-      onClick: () => console.log(`Delete clicked for section ${sec.id}`),
-    },
+    // {
+    //   label: "Edit Project Section",
+    //   icon: <FaUserEdit />,
+    //   onClick: () => console.log(`Edit clicked for section ${sec.id}`),
+    // },
+    // {
+    //   label: "Delete Project Section",
+    //   icon: <FaTrash />,
+    //   onClick: () => console.log(`Delete clicked for section ${sec.id}`),
+    // },
   ];
 
   if (pageLoading) {
@@ -324,7 +331,7 @@ function CmDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} loading={loading} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} loading={loading} cellComponents={{ status: StatusChip }} />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import DeleteModal from "../../../mui/DeleteModal";
 
 // Status color mapping
 const statusColorMap = {
@@ -69,6 +70,8 @@ const Demands = () => {
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
   const [filter, setFilter] = useState({ Status: [] });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDemandId, setSelectedDemandId] = useState(null);
 
   // Status options
   const statusOptions = [
@@ -138,6 +141,21 @@ const Demands = () => {
     // eslint-disable-next-line
   }, [filter]);
 
+  const deleteDemand = async () => {
+    try {
+      const response = await apiClient.delete(`/demands/${selectedDemandId}`);
+      if (response.ok) {
+        fetchDemands();
+        setShowDeleteModal(false);
+        toast.success("Demand deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete demand");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
@@ -159,14 +177,17 @@ const Demands = () => {
             },
             icon: <FaEye />,
           },
-          {
-            label: "Edit",
-            onClick: () => alert("Edit"),
-            icon: <FaUserEdit />,
-          },
+          // {
+          //   label: "Edit",
+          //   onClick: () => alert("Edit"),
+          //   icon: <FaUserEdit />,
+          // },
           {
             label: "Delete ",
-            onClick: () => alert("Delete"),
+            onClick: () => {
+              setSelectedDemandId(demandId);
+              setShowDeleteModal(true);
+            },
             icon: <FaTrash />,
           },
         ]}
@@ -209,6 +230,12 @@ const Demands = () => {
           />
         )}
       </div>
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={deleteDemand}
+        />
+      )}
     </div>
   );
 };

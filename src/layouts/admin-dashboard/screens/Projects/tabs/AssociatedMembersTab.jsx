@@ -9,47 +9,9 @@ import { useNavigate } from "react-router-dom";
 
 const AssociatedMembersTab = ({ data }) => {
   const navigate = useNavigate();
-  // const data = [
-  //   {
-  //     id: 1,
-  //     iD: "01",
-  //     name: "Ahmed Raza",
-  //     email: "c@gmail.com",
-  //     phone: 123456789,
-  //     date: "2025-06-15",
-  //     role: "Project Manager",
-  //     status: "Pending",
-  //     note: "empty..",
 
-  //     // action: "id-here",
-  //   },
-  //   {
-  //     id: 2,
-  //     iD: "02",
-  //     name: "Ahmed Raza",
-  //     email: "c@gmail.com",
-  //     phone: 123456789,
-  //     date: "2025-06-15",
-  //     role: "Construction Manager",
-  //     status: "Approved",
-  //     note: "empty..",
 
-  //     // action: "id-here",
-  //   },
-  //   {
-  //     id: 3,
-  //     iD: "03",
-  //     name: "Ahmed Raza",
-  //     email: "c@gmail.com",
-  //     phone: 123456789,
-  //     date: "2025-06-15",
-  //     role: "Site Manager",
-  //     status: "In Progress",
-  //     note: "empty..",
 
-  //     // action: "id-here",
-  //   },
-  // ];
   const columns = [
     { headerName: "ID", field: "id" },
     { headerName: "Name", field: "name" },
@@ -61,6 +23,24 @@ const AssociatedMembersTab = ({ data }) => {
     // { headerName: "Note", field: "note" },
     // { headerName: "Action", field: "action" },
   ];
+  // Custom cell renderer for role to display properly formatted
+  const RoleCell = ({ value }) => {
+    if (!value) return "";
+    
+    // Convert to title case and replace underscores with spaces
+    const formattedRole = value
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    return (
+      <span className="text-sm text-black">
+        {formattedRole}
+      </span>
+    );
+  };
+
   const CustomActionComponent = ({ data }) => {
     return (
       <DropdownButton
@@ -90,7 +70,7 @@ const AssociatedMembersTab = ({ data }) => {
       <SimpleTable
         data={data?.associatedMembers || []}
         columns={columns}
-        cellComponents={{ action: CustomActionComponent }}
+        cellComponents={{ action: CustomActionComponent, role: RoleCell }}
       />
     </div>
   );

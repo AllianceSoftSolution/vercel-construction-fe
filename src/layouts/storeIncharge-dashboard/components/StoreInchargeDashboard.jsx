@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import  apiClient  from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import { Chip } from "@mui/material";
 
 function StoreInchargeDashboard() {
   const [demands, setDemands] = useState([]);
@@ -62,6 +63,28 @@ function StoreInchargeDashboard() {
       toast.error("Error fetching analytics data");
       console.error(error);
     }
+  };
+
+  const statusColorMap = {
+    APPROVED: "#22c55e", // green
+    REJECTED: "#ef4444", // red
+    PENDING: "#f59e42", // orange
+    PARTIALLY_APPROVED: "#eab308", // yellow
+    PO_CREATED: "#8b5cf6", // purple
+    FULFILLED: "#0ea5e9", // blue
+    // default: "#0252AD", // fallback blue
+    COMPLETED: "#22c55e", // green
+    PARTIAL: "#eab308", // yellow
+    PENDING: "#f59e42", // orange
+    REJECTED: "#ef4444", // red
+    CONFIRMED: "#7a0b4a",
+    default: "#0252AD", // fallback blue
+  };
+
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
+    return <Chip label={status.replace(/_/g, " ")} sx={{ backgroundColor: color, color: "white" }} />;
   };
 
   const fetchDemands = async () => {
@@ -139,7 +162,7 @@ function StoreInchargeDashboard() {
       {/* table */}
       <div className="overflow-x-auto">
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
       </div>
       {/* <div>
         <h2 className="text-xl font-bold mb-4">Recent POs</h2>
