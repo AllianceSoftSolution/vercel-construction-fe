@@ -160,7 +160,9 @@ const DemandDetails = () => {
         materialId={demandData?.material?.id}
       />
 
-      <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
+      <TopBar title="Demand Details" 
+      // detail="lorem ipsum dolor sit amet" 
+      />
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
         <div className="flex flex-wrap justify-between items-center gap-y-4">

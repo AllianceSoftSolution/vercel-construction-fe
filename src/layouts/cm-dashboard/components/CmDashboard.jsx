@@ -17,6 +17,7 @@ import SimpleTable from "../../../components/SimpleTable";
 import SectionCard from "../../../components/ui/SectionCard";
 import Loader from "../../../components/ui/Loader";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 
@@ -26,6 +27,9 @@ function CmDashboard() {
   const [sections, setSections] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const navigate = useNavigate();
+  
+  // Get current user from Redux store
+  const currentUser = useSelector((state) => state.auth.user);
 
   // Analytics and chart data states
   const [projectStats, setProjectStats] = useState([
@@ -66,34 +70,64 @@ function CmDashboard() {
     fetchDemands();
   }, []);
 
-  // Fetch only sections assigned to the current CM
+  // Fetch sections and filter for current CM
   useEffect(() => {
     const fetchSections = async () => {
       try {
         setLoading(true);
-        // Try to get only assigned sections (adjust endpoint as needed)
-        let response = await apiClient.get("/sections?assignedToMe=true");
+        const response = await apiClient.get("/sections");
         if (response.ok) {
-          setSections(response.data.sections);
+          const allSections = response.data.sections;
+          
+          // Get current user ID from Redux store
+          const currentUserId = currentUser?.id;
+          
+          // Debug logs
+          console.log("Current User from Redux:", currentUser);
+          console.log("Current User ID from Redux:", currentUserId);
+          console.log("All sections:", allSections);
+          
+          // Filter sections where current CM is assigned to a CM_STORE
+          const assignedSections = allSections.filter(section => {
+            // Check if section has any stores
+            if (!section.stores || section.stores.length === 0) {
+              console.log(`Section ${section.name} has no stores`);
+              return false;
+            }
+            
+            // Look for CM_STORE assignments
+            const cmStoreAssignments = section.stores.filter(store => {
+              const isCMStore = store.type === "CM_STORE";
+              const isAssignedToCurrentUser = store.cmUserId === currentUserId;
+              const isActive = store.isActive === true;
+              
+              // Debug log for each store
+              console.log(`Section: ${section.name}, Store: ${store.name}, Type: ${store.type}, CM User ID: ${store.cmUserId}, Current User ID: ${currentUserId}, Is Assigned: ${isAssignedToCurrentUser}, Is Active: ${isActive}`);
+              
+              return isCMStore && isAssignedToCurrentUser && isActive;
+            });
+            
+            const hasAssignment = cmStoreAssignments.length > 0;
+            console.log(`Section ${section.name} has ${cmStoreAssignments.length} CM store assignment(s) to current user:`, hasAssignment);
+            
+            if (hasAssignment) {
+              console.log(`CM Store assignments for ${section.name}:`, cmStoreAssignments);
+            }
+            
+            return hasAssignment;
+          });
+          
+          console.log("Final filtered assigned sections:", assignedSections);
+          console.log(`Total sections assigned to CM ${currentUser?.name}: ${assignedSections.length}`);
+          
+          setSections(assignedSections);
         } else {
-          // Fallback: fetch all and filter by current user
-          response = await apiClient.get("/sections");
-          if (response.ok) {
-            // Assume userId is stored in localStorage (adjust as needed)
-            const userId = localStorage.getItem("userId");
-            setSections(
-              response.data.sections.filter(
-                (section) =>
-                  section.assignedCMId === userId ||
-                  (section.assignedCMs && section.assignedCMs.some((cm) => cm.id === userId))
-              )
-            );
-          } else {
-            setSections([]);
-          }
+          toast.error("Failed to fetch sections");
+          setSections([]);
         }
       } catch (error) {
         toast.error("Error fetching sections");
+        console.error(error);
         setSections([]);
       } finally {
         setLoading(false);
@@ -101,7 +135,7 @@ function CmDashboard() {
       }
     };
     fetchSections();
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     // Fetch analytics and chart data
@@ -176,16 +210,6 @@ function CmDashboard() {
     },
   ];
 
-  // Get current CM user ID (adjust as needed)
-  const currentUserId = localStorage.getItem("userId");
-
-  // Only show sections assigned to this CM
-  const assignedSections = sections.filter(section =>
-    section.stores && section.stores.some(
-      store => store.type === "CM_STORE" && store.cmUserId === currentUserId
-    )
-  );
-
   if (pageLoading) {
     return (
       <div className="flex justify-center items-center h-full min-h-[400px]">
@@ -199,8 +223,8 @@ function CmDashboard() {
     
       <TopBar
         title="Construction Manager"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
@@ -233,21 +257,68 @@ function CmDashboard() {
           series={[{ dataKey: "progress", label: "Progress" }]}
         />
       </div>
+      
       {/* Section Cards */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
-        {assignedSections.length === 0 ? (
-          <div className="text-gray-400 text-center col-span-2">No sections available.</div>
+      <div className="w-full mt-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-primary">Your Assigned Sections</h2>
+          <div className="text-sm text-gray-600">
+            Showing {sections.length} section{sections.length !== 1 ? 's' : ''} assigned to you
+          </div>
+        </div>
+        
+        {sections.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-gray-400 text-lg mb-2">No sections assigned to you</div>
+            <div className="text-gray-500 text-sm">
+              Contact your administrator to get assigned to project sections
+            </div>
+          </div>
         ) : (
-          assignedSections.map((sec, index) => (
-            <SectionCard
-              key={sec.id}
-              sectionNo={index + 1}
-              sectionName={sec.name}
-              code={sec.code}
-              description={sec.description}
-              dropdownActions={sectionActions(sec)}
-            />
-          ))
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
+            {sections.map((sec, index) => {
+              // Find CM store assignments for this section
+              const cmStores = sec.stores?.filter(store => 
+                store.type === "CM_STORE" && 
+                store.cmUserId === currentUser?.id &&
+                store.isActive === true
+              ) || [];
+              
+              return (
+                <div key={sec.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                  <SectionCard
+                    sectionNo={index + 1}
+                    sectionName={sec.name}
+                    code={sec.code}
+                    description={sec.description}
+                    dropdownActions={sectionActions(sec)}
+                  />
+                  
+                  {/* Show CM Store Assignment Details */}
+                  {cmStores.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="text-sm text-gray-600 mb-2">
+                        <strong>Your CM Stores:</strong>
+                      </div>
+                      {cmStores.map((store, storeIndex) => (
+                        <div key={store.id} className="text-xs text-gray-500 bg-gray-50 p-2 rounded mb-1">
+                          <div>• {store.name}</div>
+                          <div className="text-gray-400">Store ID: {store.id}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Project Info */}
+                  {sec.project && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      <strong>Project:</strong> {sec.project.name} ({sec.project.code})
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 

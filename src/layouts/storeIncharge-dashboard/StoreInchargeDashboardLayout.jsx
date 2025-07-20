@@ -5,7 +5,7 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
-import { FaBars, FaSearch, FaToolbox } from "react-icons/fa";
+import { FaBars, FaSearch, FaToolbox, FaEye, FaEyeSlash } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import LogOutModal from "../../mui/LogOutModal";
@@ -17,6 +17,7 @@ import usePushNotification from "../../hooks/usePushNotification";
 import apiClient from "../../api/apiClient";
 import toast from "react-hot-toast";
 import NotificationsModal from "../../components/ui/modals/NotificationsModal";
+import Button from "../../components/Button";
 import {
   getNotifications,
   addNotification,
@@ -25,10 +26,66 @@ import {
   syncNotificationsFromIndexedDB,
 } from "../../utils/notificationStorage";
 
+const ProfileModal = ({ open, onClose, anchorEl, showChangePasswordModal, setShowChangePasswordModal }) => {
+  const handleChangePassword = () => {
+    setShowChangePasswordModal(true);
+    onClose(); // Close the profile modal when opening change password modal
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50" onClick={onClose}>
+      <div 
+        className="absolute top-16 right-4 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col items-center">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Profile</h2>
+          
+          {/* Profile Image */}
+          <div className="mb-3">
+            <img
+              src={Profile}
+              alt="Profile"
+              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+            />
+          </div>
+          
+          {/* User Info */}
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">John Doe</h3>
+            <p className="text-gray-600 text-sm">STOREINCHARGE</p>
+            <p className="text-gray-500 text-xs mt-1">john.doe@example.com</p>
+          </div>
+          
+          {/* Change Password Button */}
+          <div className="w-full">
+            <Button
+              buttonText="Change Password"
+              onClick={handleChangePassword}
+              className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition-colors duration-200 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const StoreInchargeDashboardLayout = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -77,6 +134,32 @@ const StoreInchargeDashboardLayout = ({ role }) => {
   const handleMarkRead = (notif) => {
     markAsRead(notif.id);
     setNotifications(getNotifications());
+  };
+
+  // Handle password change
+  const handlePasswordSubmit = async () => {
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await apiClient.post('/auth/change-password', passwordData);
+      
+      if (response.ok) {
+        toast.success('Password changed successfully!');
+        setShowChangePasswordModal(false);
+        setPasswordData({ currentPassword: '', newPassword: '' });
+      } else {
+        toast.error(response.data?.message || 'Failed to change password');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error(error.response?.data?.message || 'Error changing password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Infinite scroll handler (not needed for localStorage, but placeholder)
@@ -241,7 +324,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
                   </span>
                 )}
               </div>
-              <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              {/* <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" /> */}
             </div>
 
             <div className="flex flex-col items-end">
@@ -255,7 +338,11 @@ const StoreInchargeDashboardLayout = ({ role }) => {
               <img
                 src={Profile}
                 alt="Profile Icon"
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileModal(!showProfileModal);
+                }}
               />
             </div>
           </div>
@@ -269,7 +356,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
             </button>
           </div>
         </div>
-
+{/* 
         {isMenuOpen && (
           <div className="lg:hidden flex flex-col gap-3 px-4 pb-4 border-b bg-white">
             <div className="relative">
@@ -291,7 +378,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <p className="font-semibold text-black">John Doe</p>
-                <p className="text-[#7A7A7A] text-sm">SITEINCHARGE</p>
+                <p className="text-[#7A7A7A] text-sm">STOREINCHARGE</p>
               </div>
               <img
                 src={Profile}
@@ -300,7 +387,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
               />
             </div>
           </div>
-        )}
+        )} */}
 
         <div className="flex-1 w-full overflow-y-auto p-4 md:p-8">
           <div className="p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">
@@ -335,6 +422,90 @@ const StoreInchargeDashboardLayout = ({ role }) => {
         onScroll={handleNotifScroll}
         onMarkRead={handleMarkRead}
       />
+      <ProfileModal
+        open={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        showChangePasswordModal={showChangePasswordModal}
+        setShowChangePasswordModal={setShowChangePasswordModal}
+      />
+      
+      {/* Change Password Modal */}
+      {showChangePasswordModal && (
+        <div className="fixed inset-0 z-60 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-[90%]">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Change Password</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Enter current password"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    disabled={loading}
+                  >
+                    {showCurrentPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  New Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Enter new password"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    disabled={loading}
+                  >
+                    {showNewPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowChangePasswordModal(false);
+                  setPasswordData({ currentPassword: '', newPassword: '' });
+                }}
+                className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <Button
+                buttonText={loading ? "Changing..." : "Change Password"}
+                onClick={handlePasswordSubmit}
+                className="flex-1 bg-primary text-white py-2 rounded-md hover:bg-primary/90 transition-colors duration-200"
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

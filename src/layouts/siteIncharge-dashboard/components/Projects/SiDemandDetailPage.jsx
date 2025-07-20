@@ -83,6 +83,7 @@ const SiDemandDetails = () => {
       const response = await apiClient.post(`/demands/${id}/approve`);
       if (response?.data?.demand) {
         setDemandData(response.data.demand);
+        toast.success("Demand approved successfully!");
       } else {
         toast.error(response?.data?.message || "Failed to approve");
       }
@@ -125,8 +126,8 @@ const SiDemandDetails = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          { label: "Rejected", onClick: () => handleActionClick("Rejected") },
-          { label: "Approved", onClick: () => handleActionClick("Approved") },
+          { label: "Reject", onClick: () => handleActionClick("Rejected") },
+          { label: "Approve", onClick: () => handleActionClick("Approved") },
         ]}
       >
         <IconButton>
@@ -192,7 +193,9 @@ const SiDemandDetails = () => {
         demandQuantity={demandData?.quantity}
       />
 
-      <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
+      <TopBar title="Demand Details"
+      //  detail="lorem ipsum dolor sit amet" 
+       />
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
         <div className="flex flex-wrap justify-between items-center gap-y-4">
@@ -205,7 +208,8 @@ const SiDemandDetails = () => {
                   : status === "REJECTED"
                   ? "bg-red-600"
                   : status === "PO_CREATED"
-                  ? "bg-purple-700"
+                  ? "bg-purple-700" : status === "PARTIALLY_APPROVED"
+                  ? "bg-yellow-500"
                   : "bg-[#0252AD]"
               }`}
             >

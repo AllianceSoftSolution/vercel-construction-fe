@@ -143,13 +143,13 @@ const ProjectManagement = () => {
     <div className="h-full">
       <TopBar
         title="Project Management"
-        detail="Manage all your construction projects in one place."
+        // detail="Manage all your construction projects in one place."
         buttonText="Create Project"
         onButtonClick={() =>
           navigate("/admin-dashboard/project-management/addProject")
         }
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+      <div className="flex justify-end items-center gap-4 mt-8 ">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}

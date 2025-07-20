@@ -109,10 +109,9 @@ const Login = () => {
               Welcome Back
             </h2>
             <p className="text-[14px] lg:text-[15px] text-center max-w-[500px]">
-              Construction Management System The system will automate the
-              process of managing all Businesses, bookings, and
-              check-ins/check-outs across multiple booking channels such as
-              businesses needs.
+              Construction Management System streamlines project planning, resource allocation, 
+              material tracking, and team coordination to enhance efficiency and productivity 
+              across all construction operations.
             </p>
           </div>
 
@@ -168,7 +167,7 @@ const Login = () => {
       <footer className="w-full bg-primary p-4 flex flex-col lg:flex-row justify-center items-center gap-y-4">
         <div className="flex flex-col lg:flex-row justify-between items-center w-full max-w-[1100px] px-4">
           <div className="flex text-black font-light gap-x-4 text-[13px] text-center flex-wrap justify-center lg:justify-start">
-            <p>© 2025 Design and Develope by Construction</p>
+            <p>© 2025 Designed and developed by alliance software solutions</p>
             <p>Terms of Service</p>
             <p>Privacy and Cookies Policy</p>
           </div>

@@ -16,7 +16,7 @@ const AddProduct = () => {
     name: Yup.string().required("Product name is required"),
     description: Yup.string().required("Description is required"),
     unit: Yup.string().required("Unit is required"),
-    category: Yup.string().required("Category is required"),
+    // category: Yup.string().required("Category is required"),
   });
 
   const formik = useFormik({
@@ -24,7 +24,7 @@ const AddProduct = () => {
       name: "",
       description: "",
       unit: "",
-      category: "",
+      // category: "",
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -100,7 +100,7 @@ const AddProduct = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.unit && formik.errors.unit}
           />
-          <CustomTextField
+          {/* <CustomTextField
             label="Category"
             fullWidth
             name="category"
@@ -110,7 +110,7 @@ const AddProduct = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             error={formik.touched.category && formik.errors.category}
-          />
+          /> */}
         </div>
       </div>
 

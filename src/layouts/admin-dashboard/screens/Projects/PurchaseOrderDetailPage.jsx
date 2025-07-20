@@ -90,7 +90,7 @@ const PurchaseOrderDetailPage = () => {
         <>
       <TopBar
         title="Purchase Order Detail Page"
-        detail="lorem ipsum dolor sit amet"
+        // detail="lorem ipsum dolor sit amet"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">

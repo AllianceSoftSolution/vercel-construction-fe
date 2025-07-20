@@ -87,7 +87,7 @@ const CmProjectManagement = () => {
     <div className="h-full">
       <TopBar
         title="Project Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
         showFilter={true}
         filterOptions={["Completed", "In-Progress", "Cancelled"]}

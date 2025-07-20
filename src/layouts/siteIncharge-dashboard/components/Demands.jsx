@@ -144,7 +144,7 @@ const Demands = () => {
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Demands"
-        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown

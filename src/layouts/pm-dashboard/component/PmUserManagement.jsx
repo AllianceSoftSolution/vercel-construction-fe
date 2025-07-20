@@ -166,8 +166,8 @@ const PmUserManagement = () => {
         <>
           <TopBar
             title="User Management"
-            detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-            showExport={true}
+            // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            // showExport={true}
             buttonText="Create New User"
             onButtonClick={() =>
               navigate("/project-manager-dashboard/user-management/addUser")

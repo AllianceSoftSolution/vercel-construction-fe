@@ -4,7 +4,7 @@ import SimpleTable from "../../../components/SimpleTable";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
 import DropdownButton from "../../../comments/components/DropdownButton";
-import { Box, IconButton, Modal } from "@mui/material";
+import { Box, IconButton, Modal, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import CustomTextField from "../../../mui/CustomTextField";
 import Button from "../../../components/Button";
@@ -14,6 +14,7 @@ import { AccountBalance, Balance } from "@mui/icons-material";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 const style = {
   position: "absolute",
@@ -26,15 +27,13 @@ const style = {
   borderRadius: "16px",
 };
 
-const AddPriceModal = ({ open, onClose, poData }) => {
+const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
   const [formData, setFormData] = useState({
     unitPrice: '',
     notes: ''
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  console.log("AddPriceModal poData:", poData); // Debug log
   
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -48,19 +47,30 @@ const AddPriceModal = ({ open, onClose, poData }) => {
   };
 
   const handleSubmit = async () => {
+    // Validation
+    if (!formData.unitPrice || parseFloat(formData.unitPrice) <= 0) {
+      toast.error('Please enter a valid unit price');
+      return;
+    }
+
+    if (!formData.notes || formData.notes.trim() === '') {
+      toast.error('Please enter notes');
+      return;
+    }
+
+
     try {
       setLoading(true);
       
       // Create form data for file upload
       const submitData = new FormData();
-      submitData.append('poId', poData?.id); // Get PO ID from the purchase order data
       submitData.append('unitPrice', formData.unitPrice);
-      submitData.append('notes', formData.notes);
+      submitData.append('notes', formData.notes.trim());
       if (file) {
-        submitData.append('document', file);
+        submitData.append('proofOfBill', file);
       }
 
-      const response = await apiClient.post('/purchase-orders/add-price', submitData, {
+      const response = await apiClient.patch(`/purchase-orders/${poId}/amount`, submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -68,18 +78,17 @@ const AddPriceModal = ({ open, onClose, poData }) => {
 
       if (response.ok) {
         toast.success('Price added successfully!');
-        onClose();
-        // Reset form
-        setFormData({ unitPrice: '', notes: '' });
-        setFile(null);
-        // Refresh the purchase orders list
-        window.location.reload();
+        handleClose();
+        // Call onSuccess callback to refresh data
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         toast.error(response.data?.message || 'Failed to add price');
       }
     } catch (error) {
       console.error('Error adding price:', error);
-      toast.error('Error adding price');
+      toast.error(error.response?.data?.message || 'Error adding price');
     } finally {
       setLoading(false);
     }
@@ -97,129 +106,54 @@ const AddPriceModal = ({ open, onClose, poData }) => {
         <h1 className="text-3xl font-semibold mb-4">Add Price Details</h1>
         <div className="flex flex-col gap-5">
           <CustomTextField 
-            label="PO ID" 
-            placeholder="PO ID" 
-            value={poData?.referenceNumber || ""} 
-            disabled 
-          />
-          <CustomTextField 
-            label="Material" 
-            placeholder="Material" 
-            value={poData?.material?.name || ""} 
-            disabled 
-          />
-          <CustomTextField 
             label="Unit Price" 
             placeholder="Enter Unit Price" 
             value={formData.unitPrice}
             onChange={(e) => handleInputChange('unitPrice', e.target.value)}
             type="number"
+            disabled={loading}
+            required
           />
+          
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Upload Document</label>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Upload Document <span className="text-gray-500">(Optional)</span>
+            </label>
             <input 
               type="file" 
               className="border border-gray-300 rounded p-2 w-full" 
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               onChange={handleFileChange}
+              disabled={loading}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG
+            </p>
           </div>
+          
           <CustomTextField 
             label="Notes" 
-            placeholder="Enter Notes" 
+            placeholder="Enter detailed notes about the pricing" 
             multiline
             rows={3}
             value={formData.notes}
             onChange={(e) => handleInputChange('notes', e.target.value)}
+            disabled={loading}
+            required
           />
         </div>
         <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={handleClose}
-            className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
+            className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium transition-colors duration-200"
             disabled={loading}
           >
             Cancel
           </button>
           <Button 
-            buttonText={loading ? "Submitting..." : "Add Price"} 
+            buttonText={loading ? "Adding Price..." : "Add Price"} 
             onClick={handleSubmit}
-            disabled={loading || !formData.unitPrice}
-          />
-        </div>
-      </Box>
-    </Modal>
-  );
-};
-
-const TransactionModal = ({ open, onClose, onSave, loading = false }) => {
-  const [formData, setFormData] = useState({
-    totalBalance: '',
-    receivedBalance: '',
-    file: null
-  });
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleFileChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      file: e.target.files[0]
-    }));
-  };
-
-  const handleSubmit = () => {
-    if (onSave) {
-      onSave(formData);
-    }
-  };
-
-  return (
-    <Modal open={open} onClose={onClose}>
-      <Box sx={style} className="bg-white p-5">
-        <h1 className="text-3xl font-semibold mb-4">Transaction Details</h1>
-        <div className="flex flex-col gap-5">
-          <CustomTextField
-            label="Total Balance"
-            placeholder="Enter Total Balance"
-            value={formData.totalBalance}
-            onChange={(e) => handleInputChange('totalBalance', e.target.value)}
-            disabled={loading}
-          />
-          <CustomTextField
-            label="Received Balance"
-            placeholder="Enter Received Balance"
-            value={formData.receivedBalance}
-            onChange={(e) => handleInputChange('receivedBalance', e.target.value)}
-            disabled={loading}
-          />
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Upload File</label>
-            <input 
-              type="file" 
-              className="border border-gray-300 rounded p-2 w-full" 
-              onChange={handleFileChange}
-              disabled={loading}
-            />
-          </div>
-        </div>
-        <div className="flex justify-end gap-3 mt-6">
-          <button
-            className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
-            onClick={onClose}
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <Button 
-            buttonText={loading ? "Submitting..." : "Submit"} 
-            onClick={handleSubmit}
-            disabled={loading}
+            disabled={loading || !formData.unitPrice || !formData.notes.trim()}
           />
         </div>
       </Box>
@@ -228,7 +162,6 @@ const TransactionModal = ({ open, onClose, onSave, loading = false }) => {
 };
 
 const CustomActionComponent = ({ value:id }) => {
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   
   const onNavigation = () => {
@@ -236,48 +169,15 @@ const CustomActionComponent = ({ value:id }) => {
   };
   
   return (
-    <>
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          { label: "Transaction to Add", onClick: () => setOpen(true) },
-          { label: "Details", onClick: onNavigation },
-        ]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-      <TransactionModal open={open} onClose={() => setOpen(false)} />
-    </>
-  );
-};
-
-const ActionComforRegPOs = ({ value: id, rowData, ...props }) => {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  
-  // Get the full data from rowData (which now contains the full row)
-  const fullData = rowData?.fullData || rowData;
-  
-  console.log("ActionComforRegPOs rowData:", rowData); // Debug rowData
-  console.log("ActionComforRegPOs fullData:", fullData); // Debug fullData
-  
-  return (
-    <>
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          { label: "Add Price", onClick: () => setOpen(true) },
-
-        ]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-      <AddPriceModal open={open} onClose={() => setOpen(false)} poData={fullData} />
-    </>
+    <DropdownButton
+      items={[
+        { label: "Details", onClick: onNavigation },
+      ]}
+    >
+      <IconButton>
+        <BsThreeDotsVertical />
+      </IconButton>
+    </DropdownButton>
   );
 };
 
@@ -293,6 +193,44 @@ const Payables = () => {
     vendorsWithOverdue: 0,
     vendorsWithAdvance: 0
   });
+  const [filter, setFilter] = useState({
+    Status: [],
+  });
+
+  // Status options for filter
+  const statusOptions = [
+    { label: "Order Placed", value: "ORDER_PLACED" },
+    { label: "Created", value: "CREATED" },
+    { label: "Confirmed", value: "CONFIRMED" },
+    { label: "In Transit", value: "IN_TRANSIT" },
+    { label: "In Store", value: "IN_STORE" },
+    { label: "Completed", value: "COMPLETED" },
+    { label: "Cancelled", value: "CANCELLED" },
+    { label: "Pending", value: "PENDING" },
+    { label: "Rejected", value: "REJECTED" },
+    { label: "Approved", value: "APPROVED" },
+    { label: "Partially Approved", value: "PARTIALLY_APPROVED" },
+    { label: "PO Created", value: "PO_CREATED" },
+    { label: "Fulfilled", value: "FULFILLED" },
+    { label: "Partial", value: "PARTIAL" },
+  ];
+  const filters = [
+    { label: "Status", options: statusOptions.map(o => o.label) },
+  ];
+
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+  };
+  const handleFilterClear = () => setFilter({ Status: [] });
+
+  // Filter purchase orders by status
+  const filteredPurchaseOrders = filter.Status && filter.Status.length > 0
+    ? purchaseOrders.filter(po =>
+        filter.Status.includes(
+          statusOptions.find(opt => opt.value === po.status)?.label || po.status
+        )
+      )
+    : purchaseOrders;
 
   // Vendor Accounts columns
   const vendorColumns = [
@@ -351,9 +289,41 @@ const Payables = () => {
     }
   };
 
-  useEffect(() => {
-    fetchVendorAccount();
-  }, []);
+  const fetchNewPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/purchase-orders?hasAmount=false");
+      if (response.ok) {
+        const data = response.data.data.map((po, index) => {
+          // Create rowData with all PO data and display fields
+          const rowData = {
+            // Display fields for table
+            id: po.id,
+            no: index + 1,
+            poReference: po.referenceNumber || po.id || "-",
+            project: po.demand?.section?.project?.name || "-",
+            material: po.material?.name || "-", // Material name for display
+            quantity: po.quantity || "-",
+            unit: po.demand?.unit || "-",
+            amount: po.totalAmount ? `$${po.totalAmount.toLocaleString()}` : "-",
+            status: po.status || "-",
+            // Complete PO data for modal
+            poData: po // Store complete PO data separately
+          };
+          return rowData;
+        });
+        console.log("Mapped purchase orders data:", data); // Debug log
+        setPurchaseOrders(data);
+      } else {
+        toast.error("Failed to fetch purchase orders");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+      toast.error("Error fetching purchase orders");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Update analytics with real data from API
   const payablesData = [
@@ -374,50 +344,86 @@ const Payables = () => {
     },
   ];
 
-  const fetchNewPurchaseOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await apiClient.get("/purchase-orders?hasAmount=false");
-      if (response.ok) {
-        const data = response.data.data.map((po, index) => ({
-          id: po.id,
-          no: index + 1,
-          poReference: po.referenceNumber || po.id || "-",
-          project: po.demand?.section?.project?.name || "-",
-          material: po.material?.name || "-",
-          quantity: po.quantity || "-",
-          unit: po.demand?.unit || "-",
-          amount: po.totalAmount ? `$${po.totalAmount.toLocaleString()}` : "-",
-          status: po.status || "-",
-          // Store full PO data for modal
-          fullData: po
-        }));
-        setPurchaseOrders(data);
-      } else {
-        toast.error("Failed to fetch purchase orders");
-      }
-    } catch (error) {
-      console.error("Error fetching purchase orders:", error);
-      toast.error("Error fetching purchase orders");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchVendorAccount();
+  }, []);
 
   useEffect(() => {
     fetchNewPurchaseOrders();
   }, []);
 
+  // ActionComforRegPOs component with access to fetchNewPurchaseOrders
+  const ActionComforRegPOs = ({ value: id}) => {
+    const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
+    
+
+
+    const handleSuccess = () => {
+      // Refresh the purchase orders list
+      fetchNewPurchaseOrders();
+    };
+    
+    return (
+      <>
+        <DropdownButton
+          items={[
+            { label: "Add Price", onClick: () => setOpen(true) },
+          ]}
+        >
+          <IconButton>
+            <BsThreeDotsVertical />
+          </IconButton>
+        </DropdownButton>
+        <AddPriceModal 
+          open={open} 
+          onClose={() => setOpen(false)} 
+          poId={id} 
+          onSuccess={handleSuccess}
+        />
+      </>
+    );
+  };
+
+  // Status color mapping for PO status
+  const statusColorMap = {
+    APPROVED: "#22c55e", // green
+    REJECTED: "#ef4444", // red
+    PENDING: "#f59e42", // orange
+    PARTIALLY_APPROVED: "#eab308", // yellow
+    PO_CREATED: "#8b5cf6", // purple
+    FULFILLED: "#0ea5e9", // blue
+    COMPLETED: "#22c55e", // green
+    PARTIAL: "#eab308", // yellow
+    ORDER_PLACED: "#f59e42", // orange
+    IN_TRANSIT: "#0ea5e9", // blue
+    IN_STORE: "#8b5cf6", // purple
+    CANCELLED: "#ef4444", // red
+    default: "#0252AD", // fallback blue
+  };
+
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
+    return (
+      <Chip
+        label={status.replace(/_/g, " ")}
+        size="small"
+        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+      />
+    );
+  };
+
   return (
     <div className=" ">
       <TopBar
         title="Payables"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showFilter={true}
-        filterOptions={["Assigned", "Not-Assigned"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showFilter={true}
+        // filterOptions={["Assigned", "Not-Assigned"]}
+        // onFilterChange={(selected) =>
+        //   console.log("Selected Filters:", selected)
+        // }
       />
 
       <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
@@ -439,16 +445,27 @@ const Payables = () => {
         <h1 className="text-xl md:text-2xl font-bold mb-5">
           Purchase Orders
         </h1>
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={filters}
+            selected={filter}
+            onChange={handleFilterChange}
+            onClear={handleFilterClear}
+            placeholder="Filter by status"
+            dropdownAlign="left"
+          />
+        </div>
         <div className="overflow-x-auto">
           {loading ? (
             <Loader />
           ) : (
             <SimpleTable
-            columns={purchaseOrderColumns}
-            data={purchaseOrders}
-            cellComponents={{ 
-              id: ActionComforRegPOs
-            }}
+              columns={purchaseOrderColumns}
+              data={filteredPurchaseOrders}
+              cellComponents={{ 
+                id: ActionComforRegPOs,
+                status: StatusChip
+              }}
             />
           )}
         </div>

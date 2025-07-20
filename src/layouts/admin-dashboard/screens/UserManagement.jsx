@@ -160,16 +160,16 @@ const UserManagement = () => {
             onClick: () => alert("Delete"),
             icon: <FaTrash />,
           },
-          {
-            label: "Ban",
-            // onClick: () => alert("Delete"),
-            icon: <MdOutlineNoAccounts className="w-5 h-5" />,
-          },
-          {
-            label: "Suspend Account",
-            // onClick: () => alert("Delete"),
-            icon: <FaBan />,
-          },
+          // {
+          //   label: "Ban",
+          //   // onClick: () => alert("Delete"),
+          //   icon: <MdOutlineNoAccounts className="w-5 h-5" />,
+          // },
+          // {
+          //   label: "Suspend Account",
+          //   // onClick: () => alert("Delete"),
+          //   icon: <FaBan />,
+          // },
         ]}
         // onClick={handleActionClick}
       >
@@ -179,18 +179,37 @@ const UserManagement = () => {
       </DropdownButton>
     );
   };
+
+  // Custom cell renderer for role to display properly formatted
+  const RoleCell = ({ value }) => {
+    if (!value) return "";
+    
+    // Convert to title case and replace underscores with spaces
+    const formattedRole = value
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    return (
+      <span className="text-sm text-black">
+        {formattedRole}
+      </span>
+    );
+  };
+
   return (
     <div className=" h-full ">
       <TopBar
         title="User Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
         buttonText="Create New User"
         onButtonClick={() =>
           navigate("/admin-dashboard/user-management/addUser")
         }
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+      <div className="flex justify-end items-center gap-4 mt-8 ">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}
@@ -225,7 +244,7 @@ const UserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ id: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent, role: RoleCell }}
           />
         )}
       </div>

@@ -136,8 +136,8 @@ const CmUserManagement = () => {
     <div className="h-full">
       <TopBar
         title="User Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        //   detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
         showFilter={true}
         filterOptions={[
           "Project Manager",

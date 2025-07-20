@@ -152,7 +152,7 @@ const SInchargeProjectManagement = () => {
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Project Management"
-        detail="Manage all your construction projects in one place."
+        // detail="Manage all your construction projects in one place."
         buttonText="Create Project"
         onButtonClick={() =>
               navigate("/siteincharge-dashboard/project-management/addProject")
