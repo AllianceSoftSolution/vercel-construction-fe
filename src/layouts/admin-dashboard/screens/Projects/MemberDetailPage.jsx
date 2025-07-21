@@ -111,10 +111,10 @@ const MemberDetailPage = () => {
         <div className="w-full lg:w-[70%] flex flex-col gap-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold text-[#BF1017]">Overview</h3>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
               <MdEdit className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-            </div>
+            </div> */}
           </div>
 
           <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
