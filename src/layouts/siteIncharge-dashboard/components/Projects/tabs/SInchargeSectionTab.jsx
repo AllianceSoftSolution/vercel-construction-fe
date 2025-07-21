@@ -84,7 +84,7 @@ const SInchargeSectionTab = ({ data, onSectionDeleted, loading }) => {
     <div className="px-4 py-4 md:px-6 w-full">
       <TopBar
         title="Project Sections"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />

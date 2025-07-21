@@ -8,12 +8,35 @@ import SimpleTable from "../../../../components/SimpleTable";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import { Chip } from "@mui/material";
 
 const VendorDetailPage = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [vendorData, setVendorData] = useState(null);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
+
+
+  const statusColorMap = {
+    COMPLETED: "#22c55e", // green
+    PARTIAL: "#eab308", // yellow
+    PENDING: "#f59e42", // orange
+    REJECTED: "#ef4444", // red
+    CONFIRMED: "#44085c", // purple 
+    default: "#0252AD", // fallback blue
+  };
+
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
+    return (
+      <Chip
+        label={status.replace(/_/g, " ")}
+        size="small"
+        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+      />
+    );
+  };
 
   const fetchVendorDetails = async () => {
     try {
@@ -133,10 +156,10 @@ const VendorDetailPage = () => {
         <div className="md:col-span-2 flex flex-col bg-white p-4 rounded-xl border-[0.5px] border-[#CDCDCD]">
           <div className="flex justify-between items-start flex-wrap">
             <h3 className="text-xl font-semibold text-[#BF1017]">Overview</h3>
-            <div className="flex gap-x-2 mt-2 md:mt-0">
+            {/* <div className="flex gap-x-2 mt-2 md:mt-0">
               <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
               <MdEdit className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-            </div>
+            </div> */}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
@@ -156,7 +179,7 @@ const VendorDetailPage = () => {
         </h3>
         <div className="overflow-x-auto">
           {purchaseOrders.length > 0 ? (
-            <SimpleTable data={transformedPurchaseOrders} columns={columns} cellComponents={{}} />
+            <SimpleTable data={transformedPurchaseOrders} columns={columns} cellComponents={{status: StatusChip}} />
           ) : (
             <div className="text-center py-8 text-gray-500">
               No purchase orders found for this vendor.

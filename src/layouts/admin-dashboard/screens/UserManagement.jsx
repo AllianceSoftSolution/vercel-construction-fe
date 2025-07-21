@@ -143,7 +143,32 @@ const UserManagement = () => {
     },
   ];
 
-  const CustomActionComponent = ({ value : id  }) => {
+  // Function to handle account activation/deactivation
+  const handleAccountToggle = async (userId, isActive) => {
+    try {
+      const endpoint = isActive ? `/auth/users/${userId}/deactivate` : `/auth/users/${userId}/activate`;
+      const response = await apiClient.patch(endpoint);
+      
+      if (response.ok) {
+        const action = isActive ? "deactivated" : "activated";
+        toast.success(`Account ${action} successfully`);
+        // Refresh the users list to get updated data
+        getAllUsers();
+      } else {
+        const action = isActive ? "deactivate" : "activate";
+        toast.error(`Failed to ${action} account`);
+      }
+    } catch (error) {
+      console.error("Error toggling account status:", error);
+      const action = isActive ? "deactivate" : "activate";
+      toast.error(`Error trying to ${action} account`);
+    }
+  };
+
+  const CustomActionComponent = ({ value: id }) => {
+    // Find the user data to check their active status
+    const user = users.find(u => u.id === id);
+    const isActive = user?.isActive;
     
     return (
       <DropdownButton
@@ -154,24 +179,12 @@ const UserManagement = () => {
             onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
           {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
+            label: isActive ? "Deactivate Account" : "Activate Account",
+            onClick: () => handleAccountToggle(id, isActive),
+            icon: isActive ? <FaBan /> : <MdOutlineNoAccounts />,
           },
-          // {
-          //   label: "Ban",
-          //   // onClick: () => alert("Delete"),
-          //   icon: <MdOutlineNoAccounts className="w-5 h-5" />,
-          // },
-          // {
-          //   label: "Suspend Account",
-          //   // onClick: () => alert("Delete"),
-          //   icon: <FaBan />,
-          // },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />

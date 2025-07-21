@@ -48,7 +48,7 @@ const SectionTab = ({ data }) => {
     <div>
       <TopBar
         title="Project Sections"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <div className="flex justify-between gap-x-2">

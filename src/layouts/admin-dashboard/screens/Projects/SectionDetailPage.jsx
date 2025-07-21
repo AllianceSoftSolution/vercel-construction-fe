@@ -66,11 +66,11 @@ const SectionDetailPage = () => {
         //     onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
         //   icon: <FaUserEdit />,
         // },
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),
@@ -84,33 +84,10 @@ const SectionDetailPage = () => {
     </DropdownButton>
   );
 
-  const data = [
-    {
-      id: 1,
-      cmId: "1",
-      constructionManager: "Hassan",
-      email: "h@gmail.com",
-      phone: +123455666,
-      address: "A1",
-      status: "Pending",
-      date: "2025-06-15",
-      id: "id-here",
-    },
-    {
-      id: 2,
-      cmId: "2",
-      constructionManager: "Ali",
-      email: "ali@gmail.com",
-      phone: +123455667,
-      address: "B2",
-      status: "Approved",
-      date: "2025-06-16",
-      id: "id-here",
-    },
-  ];
+ 
 
   const columns = [
-    { headerName: "CM ID", field: "id" },
+    // { headerName: "CM ID", field: "id" },
     { headerName: "Name", field: "user.name" },
     { headerName: "Email", field: "user.email" },
     // { headerName: "Phone Number", field: "user.phone" },

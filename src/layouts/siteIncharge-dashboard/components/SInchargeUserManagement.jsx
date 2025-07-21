@@ -159,20 +159,20 @@ const SInchargeUserManagement = () => {
             onClick: () => navigate(`/siteincharge-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
-          {
-            label: "Ban",
-            icon: <MdNoAccounts className="w-5 h-5" />,
-          },
-          {
-            label: "Suspend Account",
-            icon: <FaBan />,
-          },
+          // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaTrash />,
+          // },
+          // {
+          //   label: "Ban",
+          //   icon: <MdNoAccounts className="w-5 h-5" />,
+          // },
+          // {
+          //   label: "Suspend Account",
+          //   icon: <FaBan />,
+          // },
         ]}
       >
         <IconButton>

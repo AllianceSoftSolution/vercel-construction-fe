@@ -64,16 +64,16 @@ const CmPos = () => {
   ];
 
   const columns = [
-    { headerName: "Demand ID", field: "demandId" },
+    // { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
     { headerName: "Demand ", field: "demandName" },
-    { headerName: "Materials", field: "material" },
+    { headerName: "Materials", field: "material.name" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Status", field: "status" },
-    { headerName: "Assigned Vendors", field: "assingedVendors" },
+    // { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "id" },
   ];
 
@@ -90,7 +90,7 @@ const CmPos = () => {
           // {
           //   label: "Edit",
           //   icon: <FaUserEdit />,
-          // },
+            // },
           // {
           //   label: "Change Vendor",
           //   onClick: () => setVendorModalOpen(true),
@@ -159,7 +159,7 @@ const CmPos = () => {
           demandId: po.demand?.referenceNumber || "-",
           project: po.demand?.section?.project?.name || "-",
           demandName: po.demand?.referenceNumber || "-",
-          material: po.materialId,
+          material: po.material || { name: "-" },
           section: po.demand?.section?.name || "-",
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",

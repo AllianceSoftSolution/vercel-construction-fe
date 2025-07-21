@@ -29,11 +29,11 @@ const PurchaseOrderDetailPage = () => {
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),
@@ -105,12 +105,12 @@ const PurchaseOrderDetailPage = () => {
               <p className="text-[#444444] font-semibold text-lg md:text-xl">
                 {purchaseOrderData?.referenceNumber || "Order Name Here"}
               </p>
-              <div className="flex flex-wrap gap-2 items-center">
+              {/* <div className="flex flex-wrap gap-2 items-center">
                 <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-sm">
                   {purchaseOrderData?.status || "Partial"}
                 </div>
                 <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-              </div>
+              </div> */}
             </div>
 
             <div className="border-t border-[#CDCDCD]"></div>

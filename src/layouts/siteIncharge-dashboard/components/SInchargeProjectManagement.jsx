@@ -102,20 +102,20 @@ const SInchargeProjectManagement = () => {
           onClick: () =>
             navigate(`/siteincharge-dashboard/project-management/${projectId}`),
         },
-        {
-          label: "Edit",
-          icon: <FaUserEdit />,
-          onClick: () =>
-            navigate(`/siteincharge-dashboard/project-management/edit/${projectId}`),
-        },
-        {
-          label: "Delete",
-          icon: <FaTrash />,
-          onClick: () => {
-            setSelectedProjectId(projectId);
-            setShowDeleteModal(true);
-          },
-        },
+        // {
+        //   label: "Edit",
+        //   icon: <FaUserEdit />,
+        //   onClick: () =>
+        //     navigate(`/siteincharge-dashboard/project-management/edit/${projectId}`),
+        // },
+        // {
+        //   label: "Delete",
+        //   icon: <FaTrash />,
+        //   onClick: () => {
+        //     setSelectedProjectId(projectId);
+        //     setShowDeleteModal(true);
+        //   },
+        // },
       ]}
     >
       <IconButton>
@@ -153,10 +153,10 @@ const SInchargeProjectManagement = () => {
       <TopBar
         title="Project Management"
         // detail="Manage all your construction projects in one place."
-        buttonText="Create Project"
-        onButtonClick={() =>
-              navigate("/siteincharge-dashboard/project-management/addProject")
-        }
+        // buttonText="Create Project"
+        // onButtonClick={() =>
+        //       navigate("/siteincharge-dashboard/project-management/addProject")
+        // }
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown

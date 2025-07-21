@@ -49,11 +49,11 @@ const PmSectionDetailPage = () => {
           onClick: () => navigate("/admin-dashboard/user-Management/123"),
           icon: <FaUserEdit />,
         },
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),
@@ -112,7 +112,7 @@ const PmSectionDetailPage = () => {
         <>
           <TopBar
             title="Section Details"
-            detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
           />
 
           {/* Project Info Box */}
@@ -191,7 +191,7 @@ const PmSectionDetailPage = () => {
           <div className="mt-10">
             <TopBar
               title="Construction Managers"
-              detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+              // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
               buttonText="Add CM"
               onButtonClick={handleOpen}
             />

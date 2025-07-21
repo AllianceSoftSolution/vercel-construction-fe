@@ -93,12 +93,12 @@ const ProjectManagement = () => {
           onClick: () =>
             navigate(`/admin-dashboard/project-management/${projectId}`),
         },
-        {
-          label: "Edit",
-          icon: <FaUserEdit />,
-          onClick: () =>
-            navigate(`/admin-dashboard/project-management/edit/${projectId}`),
-        },
+        // {
+        //   label: "Edit",
+        //   icon: <FaUserEdit />,
+        //   onClick: () =>
+        //     navigate(`/admin-dashboard/project-management/edit/${projectId}`),
+        // },
         {
           label: "Delete",
           icon: <FaTrash />,

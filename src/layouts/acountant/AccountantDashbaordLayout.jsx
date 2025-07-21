@@ -319,7 +319,7 @@ const AccountantDashboardLayout = ({ role }) => {
                   </span>
                 )}
               </div>
-              <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" />
+              {/* <IoMdSettings className="w-9 h-9 rounded-full border border-gray-300 text-gray-400 p-1.5" /> */}
             </div>
 
             <div className="flex flex-col items-end">
@@ -352,7 +352,7 @@ const AccountantDashboardLayout = ({ role }) => {
           </div>
         </div>
 
-        {isMenuOpen && (
+        {/* {isMenuOpen && (
           <div className="lg:hidden flex flex-col gap-3 px-4 pb-4 border-b bg-white">
             <div className="relative">
               <input
@@ -382,7 +382,7 @@ const AccountantDashboardLayout = ({ role }) => {
               />
             </div>
           </div>
-        )}
+        )} */}
 
         <div className="flex-1 w-full overflow-y-auto p-4 md:p-8">
           <div className="p-4 flex flex-col overflow-y-auto overflow-x-hidden h-full">

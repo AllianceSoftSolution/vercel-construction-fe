@@ -98,7 +98,7 @@ const SinStore = () => {
         items={[
           {
             label: "View",
-            onClick: () => navigate(`/admin-dashboard/store/${id}`),
+            onClick: () => navigate(`/siteincharge-dashboard/store/${id}`),
             icon: <FaEye />,
           },
           // {

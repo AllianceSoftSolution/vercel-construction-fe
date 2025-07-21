@@ -48,17 +48,6 @@ const StoreDetail = () => {
     { headerName: "Status", field: "status" },
   ];
 
-  const data1 = [
-    {
-      id: 1,
-      date: "12-12-25",
-      material: "Cement",
-      type: "issued",
-      qty: "20bags",
-      handledBy: "John Doe",
-      remarks: "For base pour",
-    },
-  ];
 
   const columns1 = [
     { headerName: "Material", field: "material" },
@@ -138,7 +127,7 @@ const StoreDetail = () => {
 
     return (
       <>
-        <DropdownButton
+        {/* <DropdownButton
           className="bg-[#FF0000] font-semibold"
           items={[
             { label: "Stock In", onClick: () => handleOpen("stock-in") },
@@ -148,9 +137,9 @@ const StoreDetail = () => {
           <IconButton>
             <BsThreeDotsVertical />
           </IconButton>
-        </DropdownButton>
+        </DropdownButton> */}
 
-        <Modal
+        {/* <Modal
           open={open}
           onClose={handleClose}
           aria-labelledby="modal-modal-title"
@@ -249,7 +238,7 @@ const StoreDetail = () => {
               </div>
             </div>
           </Box>
-        </Modal>
+        </Modal> */}
       </>
     );
   };
@@ -316,12 +305,12 @@ const StoreDetail = () => {
           <p className="text-[#444444] font-semibold text-lg md:text-xl">
             {storeData?.name || "Order Name Here"}
           </p>
-          <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
+          {/* <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
             <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
               IN-STORE
             </div>
             <CustomActionComponent />
-          </div>
+          </div> */}
         </div>
 
         <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
@@ -365,7 +354,7 @@ const StoreDetail = () => {
       />
       {/* Inventory Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable
        data={storeData?.inventory || []} 
@@ -375,7 +364,7 @@ const StoreDetail = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
       </h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       <SimpleTable
         data={storeData?.transactions || []}

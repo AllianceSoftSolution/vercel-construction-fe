@@ -8,13 +8,16 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import DeleteModal from "../../../mui/DeleteModal";
 
 const Vendors = () => {
   const navigate = useNavigate();
   const [vendors, setvendors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedVendorId, setSelectedVendorId] = useState(null);
 
-  const fetchVendor = async () => {
+  const fetchVendor = async () => { 
     try {
       setLoading(true);
       const response = await apiClient.get("/vendors");
@@ -40,6 +43,21 @@ const Vendors = () => {
     fetchVendor();
   }, []);
 
+  const deleteVendor = async () => {
+    try {
+      const response = await apiClient.delete(`/vendors/${selectedVendorId}`);
+      if (response.ok) {
+        fetchVendor();
+        setShowDeleteModal(false);
+        toast.success("Vendor deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete vendor");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
   const columns = [
     { headerName: "Vendor Id", field: "vendorId" },
     { headerName: "Vendor Name", field: "name" },
@@ -60,8 +78,11 @@ const Vendors = () => {
             // icon: <FaUserEdit />,
           },
           {
-            label: "Delete ",
-            // onClick: () => alert("Delete"),
+            label: "Delete",
+            onClick: () => {
+              setSelectedVendorId(id);
+              setShowDeleteModal(true);
+            },
             // icon: <FaTrash />,
           },
         ]}
@@ -96,6 +117,12 @@ const Vendors = () => {
           />
         )}
       </div>
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={deleteVendor}
+        />
+      )}
     </div>
   );
 };

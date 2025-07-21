@@ -20,7 +20,13 @@ const AssociatedMembersTab = ({ data, loading }) => {
   // Format role function
   const formatRole = (role) => {
     if (!role) return "Unknown";
-    return role.replace(/_/g, ' ');
+    
+    // Convert to title case and replace underscores with spaces
+    return role
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   // Get assignments summary
@@ -62,33 +68,33 @@ const AssociatedMembersTab = ({ data, loading }) => {
     { headerName: "Role", field: "role" },
     { headerName: "Status", field: "status" },
     { headerName: "Note", field: "note" },
-    { headerName: "Action", field: "action" },
+    // { headerName: "Action", field: "action" },
   ];
 
-  const CustomActionComponent = ({ value: memberId }) => {
-    return (
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          {
-            label: "View Member Detail",
-            onClick: () =>
-              navigate(`/siteincharge-dashboard/user-management/${memberId}`),
-            icon: <FaEye />,
-          },
-          {
-            label: "Delete Assign Member",
-            onClick: () => alert("Delete functionality not implemented"),
-            icon: <FaTrash />,
-          },
-        ]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
+  // const CustomActionComponent = ({ value: memberId }) => {
+  //   return (
+  //     <DropdownButton
+  //       className="bg-[#FF0000] font-semibold"
+  //       items={[
+  //         {
+  //           label: "View Member Detail",
+  //           onClick: () =>
+  //             navigate(`/siteincharge-dashboard/user-management/${memberId}`),
+  //           icon: <FaEye />,
+  //         },
+  //         {
+  //           label: "Delete Assign Member",
+  //           onClick: () => alert("Delete functionality not implemented"),
+  //           icon: <FaTrash />,
+  //         },
+  //       ]}
+  //     >
+  //       <IconButton>
+  //         <BsThreeDotsVertical />
+  //       </IconButton>
+  //     </DropdownButton>
+  //   );
+  // };
 
   const membersData = transformMembersData();
 
@@ -103,7 +109,7 @@ const AssociatedMembersTab = ({ data, loading }) => {
         <SimpleTable
           data={membersData}
           columns={columns}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{}}
         />
       )}
     </div>

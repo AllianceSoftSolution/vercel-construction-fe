@@ -105,7 +105,7 @@ const SiPOs = () => {
   const handleFilterClear = () => setFilter({ Status: [] });
 
   const columns = [
-    { headerName: "Demand ID", field: "demandId" },
+    // { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
     { headerName: "Demand ", field: "demandName" },
     { headerName: "Materials", field: "material" },

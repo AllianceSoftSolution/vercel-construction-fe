@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
-import Loader from "../../../components/ui/Loader";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IconButton, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
@@ -12,14 +11,18 @@ import { IoPersonCircle } from "react-icons/io5";
 import { RiAccountBox2Fill } from "react-icons/ri";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
-const SiStore = () => {
+const SiStores = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [stores, setStores] = useState([]);
+  const [store, setStore] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
+  const { id } = useParams();
+  const handleLinkClick = () => {
+    setShowModal(true);
+  };
 
   const typeOptions = [
     { label: "Head Store", value: "HEAD_STORE" },
@@ -31,8 +34,8 @@ const SiStore = () => {
   const [filter, setFilter] = useState({ Type: [] });
 
   const typeColorMap = {
-    "CM STORE": "#0ea5e9", // blue
-    "HEAD STORE": "#22c55e", // green
+    "CM_STORE": "#320d4a",
+    "HEAD_STORE": "#e8a113",
     default: "#6b7280", // gray
   };
 
@@ -48,47 +51,41 @@ const SiStore = () => {
     );
   };
 
-  React.useEffect(() => {
-    const fetchStores = async () => {
+  const fetchStore = async () => {
+    try {
       setLoading(true);
-      try {
-        let url = "/stores";
-        if (filter.Type && filter.Type.length > 0) {
-          const backendTypes = filter.Type.map(
-            label => typeOptions.find(o => o.label === label)?.value
-          ).filter(Boolean);
-          if (backendTypes.length > 0) {
-            url += `?type=${encodeURIComponent(backendTypes.join(","))}`;
-          }
+      let url = "/stores";
+      if (filter.Type && filter.Type.length > 0) {
+        const backendTypes = filter.Type.map(
+          label => typeOptions.find(o => o.label === label)?.value
+        ).filter(Boolean);
+        if (backendTypes.length > 0) {
+          url += `?type=${encodeURIComponent(backendTypes.join(","))}`;
         }
-        const res = await apiClient.get(url);
-        if (res.ok) {
-          setStores(res.data.stores || []);
-        } else {
-          toast.error("Failed to fetch stores");
-        }
-      } catch (err) {
-        toast.error("Error fetching stores");
-      } finally {
-        setLoading(false);
-        setPageLoading(false);
       }
-    };
-    fetchStores();
-    // eslint-disable-next-line
-  }, [filter]);
-
-  const handleLinkClick = () => {
-    setShowModal(true);
+      const response = await apiClient.get(url);
+      if (response.status === 200) {
+        const data = response.data.stores.map((store, index) => ({
+          storeId: index + 1,
+          action: store.id,
+          ...store,
+        }));
+        setStore(data);
+      } else {
+        toast.error("Failed to fetch stores");
+      }
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+      toast.error("Error fetching stores");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (pageLoading) {
-    return (
-      <div className="flex justify-center items-center h-full min-h-[400px]">
-        <Loader />
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchStore();
+    // eslint-disable-next-line
+  }, [filter]);
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -97,12 +94,11 @@ const SiStore = () => {
         items={[
           {
             label: "View",
-            onClick: () => navigate(`/store-incharge-dashboard/store/${id}`),
+            onClick: () =>
+              navigate(`/store-incharge-dashboard/store/${id}`),
             icon: <FaEye />,
           },
-      
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -119,32 +115,19 @@ const SiStore = () => {
 
   const columns = [
     { headerName: "Store Id", field: "storeId" },
-    { headerName: "Store Name", field: "storeName" },
-    { headerName: "Project", field: "project" },
-    { headerName: "Store Head", field: "storeHead" },
-    { headerName: "Store Incharge", field: "storeIncharge" },
-    { headerName: "Manager", field: "manager" },
-    { headerName: "Accountant", field: "accountant" },
+    { headerName: "Store Name", field: "name" },
     { headerName: "Type", field: "type" },
-    { headerName: "Status", field: "status" },
+    { headerName: "Section Id", field: "sectionId" },
     { headerName: "Action", field: "id" },
   ];
 
-  // Map API data to table data
-  const tableData = stores.map((store) => ({
-    id: store.id,
-    storeId: store.code || store.id,
-    storeName: store.name,
-    project: store.section?.name?.split(" of ")[1] || "-",
-    storeHead: store.storeHeadAssignments?.[0]?.user?.name || "-",
-    storeIncharge: store.storeInchargeAssignments?.[0]?.user?.name || "-",
-    manager: store.managerAssignments?.[0]?.user?.name || "-",
-    accountant: store.accountantAssignments?.[0]?.user?.name || "-",
-    type: store.type || "-",
-    status: store.status || (store.isActive ? "Active" : "Inactive"),
-    action: store, // pass full store for action component
-  }));
-
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="h-full">
       <TopBar
@@ -166,8 +149,7 @@ const SiStore = () => {
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
-          data={tableData}
-          loading={loading}
+          data={store}
           cellComponents={{ id: CustomActionComponent, type: TypeChip }}
         />
       </div>
@@ -176,4 +158,4 @@ const SiStore = () => {
   );
 };
 
-export default SiStore;
+export default SiStores;
