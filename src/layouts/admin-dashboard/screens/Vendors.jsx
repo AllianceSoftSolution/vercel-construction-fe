@@ -9,6 +9,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import DeleteModal from "../../../mui/DeleteModal";
+import { FaEye, FaTrash } from "react-icons/fa";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const Vendors = () => {
           {
             label: "View Detail",
             onClick: () => navigate(`/admin-dashboard/vendors/${id}`),
-            // icon: <FaUserEdit />,
+            icon: <FaEye />,
           },
           {
             label: "Delete",
@@ -83,7 +84,7 @@ const Vendors = () => {
               setSelectedVendorId(id);
               setShowDeleteModal(true);
             },
-            // icon: <FaTrash />,
+            icon: <FaTrash />,
           },
         ]}
         // onClick={handleActionClick}

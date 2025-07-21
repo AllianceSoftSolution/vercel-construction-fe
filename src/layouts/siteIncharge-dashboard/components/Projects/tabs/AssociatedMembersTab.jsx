@@ -66,7 +66,7 @@ const AssociatedMembersTab = ({ data, loading }) => {
     { headerName: "Phone Number", field: "phone" },
     { headerName: "Date", field: "date" },
     { headerName: "Role", field: "role" },
-    { headerName: "Status", field: "status" },
+    // { headerName: "Status", field: "status" },
     { headerName: "Note", field: "note" },
     // { headerName: "Action", field: "action" },
   ];

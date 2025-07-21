@@ -52,6 +52,17 @@ const StatusChip = ({ value }) => {
   );
 };
 
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  return date.toLocaleDateString("en-CA"); // YYYY-MM-DD
+};
+
+const DateCell = ({ value }) => (
+  <span className="whitespace-nowrap">{formatDate(value)}</span>
+);
+
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -345,7 +356,7 @@ function AdminDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />
-        <SimpleTable columns={demandsColumns} data={demands} cellComponents={{ status: StatusChip }} />
+        <SimpleTable columns={demandsColumns} data={demands} cellComponents={{ status: StatusChip, createdAt: DateCell }} />
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />

@@ -78,7 +78,7 @@ const ProjectInformationTab = ({ data, loading }) => {
       {loading ? (
         <div className="text-center py-8">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="mt-2 text-gray-600">Loading project information...</p>
+          <p className="mt-2 text-gray-600">Loading ...</p>
         </div>
       ) : (
         <>
@@ -94,7 +94,7 @@ const ProjectInformationTab = ({ data, loading }) => {
             paidAmount="500"   // This would come from API if available
             remainingAmount="500" // This would come from API if available
             date={formatDate(data?.createdAt)}
-            projectLocation="Location not available in API" // This would come from API if available
+            projectLocation="Location not available " // This would come from API if available
             projectStatus={getProjectStatus()}
           />
           
