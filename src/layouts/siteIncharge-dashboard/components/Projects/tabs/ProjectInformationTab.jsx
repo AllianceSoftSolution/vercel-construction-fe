@@ -10,6 +10,7 @@ import Button from "../../../../../components/Button";
 import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
 import { useSearchParams } from "react-router-dom";
+import { formatDateDMY } from '../../../../../utils';
 
 const style = {
   position: "absolute",
@@ -50,8 +51,7 @@ const ProjectInformationTab = ({ data, loading }) => {
   // Format date function
   const formatDate = (dateString) => {
     if (!dateString) return "Not set";
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+    return formatDateDMY(dateString);
   };
 
   // Get project status
@@ -90,9 +90,9 @@ const ProjectInformationTab = ({ data, loading }) => {
             projectName={data?.name || "Project Name Not Available"}
             projectCode={data?.code || "N/A"}
             section={getTotalSections()}
-            totalAmount="1000" // This would come from API if available
-            paidAmount="500"   // This would come from API if available
-            remainingAmount="500" // This would come from API if available
+            totalAmount={data?.totalAmount || "0"}
+            paidAmount={data?.paidAmount || "0"}
+            remainingAmount={data?.remainingAmount || "0"}
             date={formatDate(data?.createdAt)}
             projectLocation="Location not available " // This would come from API if available
             projectStatus={getProjectStatus()}
@@ -106,7 +106,7 @@ const ProjectInformationTab = ({ data, loading }) => {
 
         
         </>
-      )}
+      )}      
     </>
   );
 };

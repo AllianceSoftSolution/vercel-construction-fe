@@ -10,15 +10,24 @@ import { useNavigate } from "react-router-dom";
 const AssociatedMembersTab = ({ data }) => {
   const navigate = useNavigate();
 
-
+  // Transform the data for the table
+  const associatedMembersTableData = (data?.associatedMembers || []).map(member => ({
+    name: member.name,
+    email: member.email,
+    role: member.role,
+    sections: member.assignments
+      ? member.assignments.map(a => a.section?.name).filter(Boolean).join(', ')
+      : ''
+  }));
 
   const columns = [
-    { headerName: "ID", field: "id" },
+    // { headerName: "ID", field: "id" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     // { headerName: "Phone Number", field: "phone" },
     // { headerName: "Date", field: "date" },
     { headerName: "Role", field: "role" },
+    { headerName: "Sections", field: "sections" },
     // { headerName: "Status", field: "status" },
     // { headerName: "Note", field: "note" },
     // { headerName: "Action", field: "action" },
@@ -68,7 +77,7 @@ const AssociatedMembersTab = ({ data }) => {
   return (
     <div>
       <SimpleTable
-        data={data?.associatedMembers || []}
+        data={associatedMembersTableData}
         columns={columns}
         cellComponents={{ action: CustomActionComponent, role: RoleCell }}
       />

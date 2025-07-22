@@ -32,35 +32,35 @@ const CmSectionDetailPage = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const CustomActionComponent = ({ data }) => {
-    return (
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          {
-            label: "View Store",
-            onClick: () =>
-              navigate("/construction-manager-dashboard/user-management/123"),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Edit",
-            onClick: () => alert("Edit"),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
-        ]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
+  // const CustomActionComponent = ({ data }) => {
+  //   return (
+  //     <DropdownButton
+  //       className="bg-[#FF0000] font-semibold"
+  //       items={[
+  //         {
+  //           label: "View Store",
+  //           onClick: () =>
+  //             navigate("/construction-manager-dashboard/user-management/123"),
+  //           icon: <FaUserEdit />,
+  //         },
+  //         {
+  //           label: "Edit",
+  //           onClick: () => alert("Edit"),
+  //           icon: <FaUserEdit />,
+  //         },
+  //         {
+  //           label: "Delete ",
+  //           onClick: () => alert("Delete"),
+  //           icon: <FaTrash />,
+  //         },
+  //       ]}
+  //     >
+  //       <IconButton>
+  //         <BsThreeDotsVertical />
+  //       </IconButton>
+  //     </DropdownButton>
+  //   );
+  // };
 
   const data = [
     {
@@ -217,7 +217,7 @@ const CmSectionDetailPage = () => {
           <SimpleTable
             data={data}
             columns={columns}
-            cellComponents={{ action: CustomActionComponent }}
+            cellComponents={{ }}
           />
         </div>
       </div>

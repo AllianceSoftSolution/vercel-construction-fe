@@ -26,7 +26,7 @@ import {
   edit_client,
   select_clients_array,
 } from "../../../redux/admin_client";
-import { formatDate } from "../../../modules/helpers";
+import { formatDateDMY } from '../../../../utils';
 import apiClient from "../../../api/apiClient";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -109,7 +109,7 @@ const ClientTabs = ({
       tags: client.personalInfo?.tags, // Map the 'email' field to 'primaryContact'
       paymentMethods: "N/A", // Static value (you can modify as needed)
       last_updated: client.personalInfo.activity.updatedAt
-        ? `${formatDate(client.personalInfo.activity.updatedAt)}`
+        ? `${formatDateDMY(client.personalInfo.activity.updatedAt)}`
         : "No activity",
       actions: client._id,
 
@@ -317,7 +317,7 @@ const ClientTabs = ({
           : `No Proposals`,
       paymentMethods: "N/A", // Static value (you can modify as needed)
       last_updated: client.personalInfo.activity.updatedAt
-        ? `${formatDate(client.personalInfo.activity.updatedAt)}`
+        ? `${formatDateDMY(client.personalInfo.activity.updatedAt)}`
         : "No activity",
       actions: client._id,
 

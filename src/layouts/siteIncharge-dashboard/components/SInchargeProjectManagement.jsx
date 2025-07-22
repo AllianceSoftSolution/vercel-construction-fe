@@ -12,6 +12,7 @@ import apiClient from "../../../api/apiClient";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import DeleteModal from "../../../mui/DeleteModal";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { formatDateDMY } from '../../../utils';
 
 const SInchargeProjectManagement = () => {
   const navigate = useNavigate();
@@ -37,17 +38,13 @@ const SInchargeProjectManagement = () => {
       const response = await apiClient.get("/projects");
       if (response.ok) {
         const data = response.data.projects.map((project, index) => ({
-          ...project,
           no: index + 1,
           projectName: project.name,
           code: project.code,
-          location: project.location || "-",
-          section: project.sections?.length || 0,
-          amount: project.budget || 0,
-          status: project.status || "Active",
-          date: formatDateToDDMMYYYY(project.createdAt),
-          startDate: formatDateToDDMMYYYY(project.startDate),
-          endDate: formatDateToDDMMYYYY(project.endDate),
+          description: project.description || "-",
+          startDate: formatDateDMY(project.startDate),
+          endDate: formatDateDMY(project.endDate),
+          id: project.id,
         }));
         setProjects(data);
       } else {
@@ -84,11 +81,9 @@ const SInchargeProjectManagement = () => {
     { headerName: "No", field: "no" },
     { headerName: "Project Name", field: "projectName" },
     { headerName: "Code", field: "code" },
-    // { headerName: "Location", field: "location" },
-    // { headerName: "Sections", field: "section" },
-    // { headerName: "Construction Amount", field: "amount" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Description", field: "description" },
+    { headerName: "Start Date", field: "startDate" },
+    { headerName: "End Date", field: "endDate" },
     { headerName: "Action", field: "id" },
   ];
 

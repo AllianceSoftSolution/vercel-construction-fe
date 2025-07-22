@@ -38,6 +38,7 @@ const AssignMemberModal = ({
   const [assignLoading, setAssignLoading] = useState(false);
   const [sectionsLoading, setSectionsLoading] = useState(false);
   const [createUserLoading, setCreateUserLoading] = useState(false);
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -214,14 +215,25 @@ const AssignMemberModal = ({
           <Loader text="Assigning sections..." />
         </div>
       ) : (
-        <AssignSectionStep
-          sections={sections}
-          selectedSections={selectedSections}
-          setSelectedSections={setSelectedSections}
-          onCancel={onClose}
-          onSubmit={handleAssignSections}
-          loading={assignLoading}
-        />
+        <>
+          <AssignSectionStep
+            sections={sections}
+            selectedSections={selectedSections}
+            setSelectedSections={setSelectedSections}
+            onCancel={onClose}
+            onSubmit={handleAssignSections}
+            loading={assignLoading}
+          />
+          <div className="w-full mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Note (optional)</label>
+            <textarea
+              className="w-full border border-gray-300 rounded p-2 min-h-[60px]"
+              placeholder="Enter a note (optional)"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+            />
+          </div>
+        </>
       )}
     </div>
   );
@@ -232,6 +244,7 @@ const AssignMemberModal = ({
     const result = await onAssign({
       userId: selectedUser.id,
       sectionIds: selectedSections,
+      note: note,
     });
     setAssignLoading(false);
     if (result === true) {

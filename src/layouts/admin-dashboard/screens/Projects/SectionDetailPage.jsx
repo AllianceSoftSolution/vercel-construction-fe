@@ -427,9 +427,9 @@ const SectionDetailPage = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
           <InfoItem label="Project Status" value="project status" />
-          <InfoItem label="Total Amount" value="1200$" />
-          <InfoItem label="Paid Amount" value="1500$" />
-          <InfoItem label="Remaining Amount" value="1600$" />
+          <InfoItem label="Total Amount" value={sectionData?.totalAmount || "0"} />
+          <InfoItem label="Paid Amount" value={sectionData?.paidAmount || "0"} />
+          <InfoItem label="Remaining Amount" value={sectionData?.remainingAmount || "0"} />
         </div>
       </div>
 

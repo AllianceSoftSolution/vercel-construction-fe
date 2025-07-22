@@ -17,22 +17,27 @@ import { Chip } from "@mui/material";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 
-const SinStore = () => {
+const SiStore = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [store, setStore] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
-  const [filter, setFilter] = useState({ Type: [] });
+  const [filter, setFilter] = useState({ Type: [], Project: [], Section: [] });
 
   // Store type filter options
   const typeOptions = [
     { label: "Head Store", value: "HEAD_STORE" },
     { label: "CM Store", value: "CM_STORE" },
   ];
+  // Project and Section filter options
+  const projectOptions = Array.from(new Set(store.map(s => s.section?.project?.name).filter(Boolean))).map(name => ({ label: name, value: name }));
+  const sectionOptions = Array.from(new Set(store.map(s => s.section?.name).filter(Boolean))).map(name => ({ label: name, value: name }));
   const filters = [
     { label: "Type", options: typeOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions.map(o => o.label) },
+    { label: "Section", options: sectionOptions.map(o => o.label) },
   ];
 
   const handleLinkClick = () => {
@@ -58,7 +63,15 @@ const SinStore = () => {
           action: store.id,
           ...store,
         }));
-        setStore(data);
+        // Apply frontend filters for project and section
+        let filtered = data;
+        if (filter.Project && filter.Project.length > 0) {
+          filtered = filtered.filter(s => filter.Project.includes(s.section?.project?.name));
+        }
+        if (filter.Section && filter.Section.length > 0) {
+          filtered = filtered.filter(s => filter.Section.includes(s.section?.name));
+        }
+        setStore(filtered);
       } else {
         toast.error("Failed to fetch stores");
       }
@@ -89,7 +102,7 @@ const SinStore = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Type: [] });
+  const handleFilterClear = () => setFilter({ Type: [], Project: [], Section: [] });
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -150,6 +163,7 @@ const SinStore = () => {
   const columns = [
     { headerName: "Store Id", field: "storeId" },
     { headerName: "Store Name", field: "name" },
+    { headerName: "Project Name", field: "section.project.name" },
     { headerName: "Type", field: "type" },
     { headerName: "Section Name", field: "section.name" },
     { headerName: "Action", field: "id" },
@@ -186,7 +200,7 @@ const SinStore = () => {
           />
         )}
       </div>
-      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+      {/* {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
       {showDeleteModal && (
         <DeleteModal
           onClose={() => setShowDeleteModal(false)}
@@ -196,9 +210,9 @@ const SinStore = () => {
             setSelectedStoreId(null);
           }}
         />
-      )}
+      )} */}
     </div>
   );
 };
 
-export default SinStore;
+export default SiStore;

@@ -117,10 +117,10 @@ const PurchaseOrderDetailPage = () => {
 
             {/* Info Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-              <Info
+              {/* <Info
                 label="Demand ID"
                 value={purchaseOrderData?.demand?.referenceNumber || "-"}
-              />
+              /> */}
               <Info
                 label="Demand Name"
                 value={purchaseOrderData?.demand?.referenceNumber || "-"}
@@ -133,7 +133,7 @@ const PurchaseOrderDetailPage = () => {
                 label="Section"
                 value={purchaseOrderData?.demand?.section?.name || "-"}
               />
-              <Info label="Material" value={purchaseOrderData?.materialId || "-"} />
+              <Info label="Material" value={purchaseOrderData?.material?.name || "-"} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -146,13 +146,13 @@ const PurchaseOrderDetailPage = () => {
                 label="PO Quantity"
                 value={purchaseOrderData?.quantity || "-"}
               />
-              <Info
+              {/* <Info
                 label="Assigned Vendor"
                 value={purchaseOrderData?.vendorId || "-"}
-              />
+              /> */}
               <Info
-                label="Vendor Phone No"
-                value={purchaseOrderData?.vendor?.phone || "-"}
+                label="Vendor Name"
+                value={purchaseOrderData?.vendor?.name || "-"}
               />
             </div>
           </>
@@ -160,11 +160,11 @@ const PurchaseOrderDetailPage = () => {
       </div>
 
       {/* Tables */}
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <h4 className="text-[#444444] font-semibold text-lg md:text-xl">
           Store Sync Status
         </h4>
-        {/* <p className="text-[#979797] text-sm">lorem ipsum dolor sit amet</p> */}
+        <p className="text-[#979797] text-sm">lorem ipsum dolor sit amet</p>
         <div className="relative">
           {loading ? (
             <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
@@ -178,7 +178,7 @@ const PurchaseOrderDetailPage = () => {
             />
           )}
             </div>
-          </div>
+          </div> */}
         </>
       )}
     </div>

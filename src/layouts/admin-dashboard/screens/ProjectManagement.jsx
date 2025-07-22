@@ -13,6 +13,7 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import DeleteModal from "../../../mui/DeleteModal";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { formatDateDMY } from '../../../utils';
 
 const ProjectManagement = () => {
   const navigate = useNavigate();
@@ -23,15 +24,6 @@ const ProjectManagement = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [filter, setFilter] = useState({ "Project Name": [], "Project Code": [] });
 
-  function formatDateToDDMMYYYY(dateInput) {
-    const date = new Date(dateInput);
-    if (isNaN(date)) return "";
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  }
-
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -40,8 +32,8 @@ const ProjectManagement = () => {
         const data = response.data.projects.map((project, index) => ({
           ...project,
           no: index + 1,
-          startDate: formatDateToDDMMYYYY(project.startDate),
-          endDate: formatDateToDDMMYYYY(project.endDate),
+          startDate: formatDateDMY(project.startDate),
+          endDate: formatDateDMY(project.endDate),
         }));
         setProjects(data);
       } else {
@@ -93,12 +85,14 @@ const ProjectManagement = () => {
           onClick: () =>
             navigate(`/admin-dashboard/project-management/${projectId}`),
         },
-        // {
-        //   label: "Edit",
-        //   icon: <FaUserEdit />,
-        //   onClick: () =>
-        //     navigate(`/admin-dashboard/project-management/edit/${projectId}`),
-        // },
+        {
+          label: "Edit",
+          icon: <FaUserEdit />,
+          onClick: () =>
+            navigate(`/admin-dashboard/project-management/addProject`, {
+              state: { project: projects.find(p => p.id === projectId) }
+            }),
+        },
         {
           label: "Delete",
           icon: <FaTrash />,

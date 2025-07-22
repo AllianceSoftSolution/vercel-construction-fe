@@ -181,7 +181,7 @@ const StoreInchargeDashboardLayout = ({ role }) => {
       path: "/store-incharge-dashboard",
     },
     {
-      label: "POs",
+      label: "Purchase Orders",
       icon: FaToolbox,
       path: "/store-incharge-dashboard/pos",
     },

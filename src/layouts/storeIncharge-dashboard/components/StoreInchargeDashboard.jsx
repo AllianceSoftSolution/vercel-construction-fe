@@ -18,8 +18,10 @@ import { useState } from "react";
 import  apiClient  from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 function StoreInchargeDashboard() {
+  const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -50,7 +52,7 @@ function StoreInchargeDashboard() {
       if (response.ok && response.data?.data?.summary) {
         const summary = response.data.data.summary;
         setProjectStats([
-          { label: "Total Stores", icon: IoStorefrontSharp, count: summary.totalStores || 0, percentage: 0 },
+          { label: "Total Stores", icon: IoStorefrontSharp, count: summary.totalStores || 0, percentage: 0 , onClick: () => navigate("/store-incharge-dashboard/store")},
           { label: "Total Materials", icon: FaToolbox, count: summary.totalMaterials || 0, percentage: 0 },
           { label: "Total Stock", icon: FaBoxesStacked, count: summary.totalStock || 0, percentage: 0 },
           { label: "Total Reserved", icon: FaHandHoldingHeart, count: summary.totalReserved || 0, percentage: 0 },
@@ -152,12 +154,13 @@ function StoreInchargeDashboard() {
                 icon={item.icon}
                 count={item.count}
                 percentage={item.percentage}
+                onClick={item.onClick}
               />
             </div>
           );
         })}
       </div>
-      <BasicBarChart />
+      {/* <BasicBarChart /> */}
 
       {/* table */}
       <div className="overflow-x-auto">

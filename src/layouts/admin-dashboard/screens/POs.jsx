@@ -98,7 +98,7 @@ const PurchaseOrder = () => {
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
-          amount: po.totalAmount ? `$${po.totalAmount}` : "-",
+          amount: po.totalAmount ? `${po.totalAmount}PKR` : "-",
           status: po.status || "-",
           assingedVendors: po.vendorId || "-",
           proofOfBill: po.proofOfBill || "-",
@@ -189,11 +189,11 @@ const PurchaseOrder = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          {
-            label: "View",
-            onClick: () => navigate(`/admin-dashboard/pOS/${id}`),
-            icon: <IoIosEye />,
-          },
+          // {
+          //   label: "View",
+          //   onClick: () => navigate(`/admin-dashboard/pOS/${id}`),
+          //   icon: <IoIosEye />,
+          // },
           // {
           //   label: "Edit",
           //   icon: <FaUserEdit />,

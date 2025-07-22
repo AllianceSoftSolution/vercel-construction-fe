@@ -13,6 +13,8 @@ import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { IconButton, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { formatDateDMY } from '../../../utils';
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -25,6 +27,7 @@ const statusColorMap = {
   COMPLETED: "#22c55e", // green
   PARTIAL: "#eab308", // yellow
   CONFIRMED: "#7a0b4a",
+  REQUEST_SENT: "#707782", // gray
   default: "#0252AD", // fallback blue
 };
 
@@ -41,6 +44,7 @@ const StatusChip = ({ value }) => {
 };
 
 function SinteInchargeDashbaord() {
+  const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loadingDemands, setLoadingDemands] = useState(false);
@@ -48,10 +52,10 @@ function SinteInchargeDashbaord() {
 
   // Analytics and chart data states
   const [dashboardStats, setDashboardStats] = useState([
-    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
-    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
-    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
-    { label: "Assigned Sections", icon: IoStorefrontSharp, count: 0, percentage: 0 },
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management")},
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/demands")},
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/pOS")},
+    { label: "Assigned Sections", icon: IoStorefrontSharp, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management/sections")},
   ]);
   const [demandBreakdown, setDemandBreakdown] = useState([]);
   const [poDistributionByVendor, setPoDistributionByVendor] = useState([]);
@@ -94,7 +98,7 @@ function SinteInchargeDashbaord() {
           qty: demand.quantity,
           status: demand.status,
           cmName: demand.creator?.name || "-",
-          date: new Date(demand.createdAt).toLocaleDateString(),
+          date: formatDateDMY(demand.createdAt),
         }));
         setDemands(data);
       } else {
@@ -124,7 +128,7 @@ function SinteInchargeDashbaord() {
           qty: po.quantity,
           status: po.status,
           cmName: po.demand?.creator?.name || "-",
-          date: new Date(po.createdAt).toLocaleDateString(),
+          date: formatDateDMY(po.createdAt),
         }));
         setPurchaseOrders(data);
       } else {
@@ -187,10 +191,11 @@ function SinteInchargeDashbaord() {
             className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 lg:last:after:hidden"
           >
             <AnalyticsCard
-              label={item.label}
+              label={item.label}  
               icon={item.icon}
               count={item.count}
               percentage={item.percentage}
+              onClick={item.onClick}
             />
           </div>
         ))}
@@ -210,9 +215,9 @@ function SinteInchargeDashbaord() {
         />
       </div>
 
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <BasicBarChart />
-      </div>
+      </div> */}
 
       <div className="overflow-x-auto mt-8">  
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>

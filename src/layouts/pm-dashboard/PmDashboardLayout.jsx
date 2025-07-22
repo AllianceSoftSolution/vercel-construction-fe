@@ -205,7 +205,7 @@ const PmDashboardLayout = ({ role }) => {
       path: "/project-manager-dashboard/demands",
     },
     {
-      label: "POs",
+      label: "Purchase Orders",
       icon: FaToolbox,
       path: "/project-manager-dashboard/pos",
     },

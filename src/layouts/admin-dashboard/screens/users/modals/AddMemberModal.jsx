@@ -3,7 +3,7 @@ import TopBar from "@/components/ui/TopBar";
 import CustomTextField from "@/mui/CustomTextField";
 
 const AddMemberModal = ({ onClose, onAddUserClick, loading = false }) => {
-  const [form, setForm] = useState({ name: "", email: "" });
+  const [form, setForm] = useState({ name: "", email: "", note: "" });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,6 +47,16 @@ const AddMemberModal = ({ onClose, onAddUserClick, loading = false }) => {
             placeholder="Enter Member Email"
             type="email"
             value={form.email}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          <CustomTextField
+            label="Note (optional)"
+            fullWidth
+            name="note"
+            placeholder="Enter a note (optional)"
+            type="text"
+            value={form.note}
             onChange={handleChange}
             disabled={loading}
           />
