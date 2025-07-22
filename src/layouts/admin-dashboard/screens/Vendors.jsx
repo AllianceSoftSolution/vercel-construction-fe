@@ -9,7 +9,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import DeleteModal from "../../../mui/DeleteModal";
-import { FaEye, FaTrash } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const Vendors = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchVendor = async () => { 
     try {
@@ -46,6 +47,7 @@ const Vendors = () => {
 
   const deleteVendor = async () => {
     try {
+      setDeleting(true);
       const response = await apiClient.delete(`/vendors/${selectedVendorId}`);
       if (response.ok) {
         fetchVendor();
@@ -54,8 +56,10 @@ const Vendors = () => {
       } else {
         toast.error(response.data?.message || "Failed to delete vendor");
       }
+      setDeleting(false);
     } catch (error) {
       toast.error("Something went wrong");
+      setDeleting(false);
     }
   };
 
@@ -77,6 +81,11 @@ const Vendors = () => {
             label: "View Detail",
             onClick: () => navigate(`/admin-dashboard/vendors/${id}`),
             icon: <FaEye />,
+          },
+          {
+            label: "Edit",
+            onClick: () => navigate(`/admin-dashboard/vendors/addVendor`, { state: { vendor: vendors.find(v => v.id === id) } }),
+            icon: <FaUserEdit />,
           },
           {
             label: "Delete",
@@ -122,6 +131,7 @@ const Vendors = () => {
         <DeleteModal
           onClose={() => setShowDeleteModal(false)}
           onConfirm={deleteVendor}
+          loading={deleting}
         />
       )}
     </div>

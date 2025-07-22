@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import CustomTextField from "../../../../mui/CustomTextField";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
@@ -10,6 +10,8 @@ import apiClient from "../../../../api/apiClient";
 
 const AddProduct = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editingMaterial = location.state?.material;
   const [loading, setLoading] = useState(false);
 
   const validationSchema = Yup.object({
@@ -21,21 +23,27 @@ const AddProduct = () => {
 
   const formik = useFormik({
     initialValues: {
-      name: "",
-      description: "",
-      unit: "",
+      name: editingMaterial?.name || "",
+      description: editingMaterial?.description || "",
+      unit: editingMaterial?.unit || "",
       // category: "",
     },
+    enableReinitialize: true,
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
         setLoading(true);
-        const response = await apiClient.post("/materials", values);
+        let response;
+        if (editingMaterial) {
+          response = await apiClient.put(`/materials/${editingMaterial.id}`, values);
+        } else {
+          response = await apiClient.post("/materials", values);
+        }
         if (response.status === 200 || response.status === 201) {
           resetForm();
           navigate(-1);
         } else {
-          toast.error("Product creation failed!");
+          toast.error(editingMaterial ? "Product update failed!" : "Product creation failed!");
         }
       } catch (error) {
         console.error(error);
@@ -58,8 +66,8 @@ const AddProduct = () => {
             onClick={() => navigate(-1)}
           />
         }
-        title="New Material"
-        detail="Add New Product Information"
+        title={editingMaterial ? "Edit Material" : "New Material"}
+        detail={editingMaterial ? "Edit Product Information" : "Add New Product Information"}
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -127,7 +135,7 @@ const AddProduct = () => {
           onClick={formik.handleSubmit}
           disabled={loading}
         >
-          {loading ? "Saving..." : "Save"}
+          {loading ? (editingMaterial ? "Updating..." : "Saving...") : (editingMaterial ? "Update" : "Save")}
         </button>
       </div>
     </div>
