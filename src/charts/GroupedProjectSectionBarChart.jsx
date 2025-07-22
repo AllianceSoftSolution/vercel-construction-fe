@@ -8,6 +8,7 @@ import {
   Legend,
   ResponsiveContainer,
   LabelList,
+  Line,
 } from "recharts";
 import chroma from "chroma-js";
 
@@ -77,7 +78,6 @@ const GroupedProjectSectionBarChart = ({ apiData, height = 400 }) => {
           <XAxis dataKey="project" interval={0} angle={-15} textAnchor="end" height={60} />
           <YAxis />
           <Tooltip content={<CustomTooltip />} />
-          <Legend verticalAlign="top" height={36} />
           {/* Show total per project above each group */}
           <Bar dataKey="total" fill="#8884d8" opacity={0} isAnimationActive={false} >
             <LabelList dataKey="total" position="top" formatter={(v) => v && v.toLocaleString()} />
@@ -93,6 +93,8 @@ const GroupedProjectSectionBarChart = ({ apiData, height = 400 }) => {
               radius={[6, 6, 0, 0]}
             />
           ))}
+          {/* Add a line for total per project */}
+          <Line type="monotone" dataKey="total" stroke="#000" strokeWidth={2} dot={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

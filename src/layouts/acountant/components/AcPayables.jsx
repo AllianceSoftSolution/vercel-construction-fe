@@ -236,8 +236,8 @@ const AccPayables = () => {
   const vendorColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "Vendor Name", field: "vendorName" },
-    { headerName: "Total Balance", field: "totalBalance" },
-    { headerName: "Remaining Balance", field: "remainingBalance" },
+    { headerName: "Total Amount", field: "totalBalance" },
+    { headerName: "Remaining Amount", field: "remainingBalance" },
     { headerName: "Paid Amount", field: "paidAmount" },
     { headerName: "Action", field: "id" },
   ];
