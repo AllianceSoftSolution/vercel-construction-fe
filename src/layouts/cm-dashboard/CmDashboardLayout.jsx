@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Close } from "@mui/icons-material";
-import { useMediaQuery, useTheme } from "@mui/material";
+import { useMediaQuery, useTheme, Avatar } from "@mui/material";
 import { MdSpaceDashboard } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
@@ -33,7 +33,15 @@ import {
   syncNotificationsFromIndexedDB,
 } from "../../utils/notificationStorage";
 
-const ProfileModal = ({ open, onClose, anchorEl, showChangePasswordModal, setShowChangePasswordModal }) => {
+const ProfileModal = ({
+  open,
+  onClose,
+  anchorEl,
+  showChangePasswordModal,
+  setShowChangePasswordModal,
+  username,
+  userType,
+}) => {
   const handleChangePassword = () => {
     setShowChangePasswordModal(true);
     onClose(); // Close the profile modal when opening change password modal
@@ -43,7 +51,7 @@ const ProfileModal = ({ open, onClose, anchorEl, showChangePasswordModal, setSho
 
   return (
     <div className="fixed inset-0 z-50" onClick={onClose}>
-      <div 
+      <div
         className="absolute top-16 right-4 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50"
         onClick={(e) => e.stopPropagation()}
       >
@@ -52,17 +60,15 @@ const ProfileModal = ({ open, onClose, anchorEl, showChangePasswordModal, setSho
           
           {/* Profile Image */}
           <div className="mb-3">
-            <img
-              src={Profile}
-              alt="Profile"
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-            />
+            <Avatar sx={{ width: 64, height: 64, bgcolor: '#bdbdbd' }}>
+              {username ? username[0] : ''}
+            </Avatar>
           </div>
           
           {/* User Info */}
           <div className="text-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">John Doe</h3>
-            <p className="text-gray-600 text-sm">CM</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">{username || "-"}</h3>
+            <p className="text-gray-600 text-sm">{userType || "-"}</p>
             <p className="text-gray-500 text-xs mt-1">john.doe@example.com</p>
           </div>
           
@@ -102,6 +108,8 @@ const CmDashboardLayout = ({ role }) => {
   const [notifications, setNotifications] = useState([]);
   const [notifModalOpen, setNotifModalOpen] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
+  const username = useSelector((state) => state.auth.username);
+  const userType = useSelector((state) => state.auth.userType);
 
   // Load notifications from localStorage and IndexedDB on mount
   useEffect(() => {
@@ -337,21 +345,21 @@ const CmDashboardLayout = ({ role }) => {
 
             <div className="flex flex-col items-end">
               <p className="font-semibold text-black whitespace-nowrap">
-                John Doe
+                {username || "-"}
               </p>
-              <p className="text-[#7A7A7A] text-sm">CM</p>
+              <p className="text-[#7A7A7A] text-sm">{userType || "-"}</p>
             </div>
 
             <div className="flex items-center">
-              <img
-                src={Profile}
-                alt="Profile Icon"
-                className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              <Avatar
+                sx={{ width: 48, height: 48, cursor: 'pointer', bgcolor: '#bdbdbd' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowProfileModal(!showProfileModal);
                 }}
-              />
+              >
+                {username ? username[0] : ''}
+              </Avatar>
             </div>
           </div>
 
@@ -435,6 +443,8 @@ const CmDashboardLayout = ({ role }) => {
         onClose={() => setShowProfileModal(false)}
         showChangePasswordModal={showChangePasswordModal}
         setShowChangePasswordModal={setShowChangePasswordModal}
+        username={username}
+        userType={userType}
       />
       
       {/* Change Password Modal */}

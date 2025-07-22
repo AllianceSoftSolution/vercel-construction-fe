@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Close } from "@mui/icons-material";
-import { useMediaQuery, useTheme, Box, Modal, IconButton } from "@mui/material";
+import {
+  useMediaQuery,
+  useTheme,
+  Box,
+  Modal,
+  IconButton,
+  Avatar,
+} from "@mui/material";
 import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoPeopleSharp, IoStorefrontSharp } from "react-icons/io5";
@@ -46,7 +53,15 @@ const style = {
   borderRadius: "16px",
 };
 
-const ProfileModal = ({ open, onClose, anchorEl, showChangePasswordModal, setShowChangePasswordModal }) => {
+const ProfileModal = ({
+  open,
+  onClose,
+  anchorEl,
+  showChangePasswordModal,
+  setShowChangePasswordModal,
+  username,
+  userType,
+}) => {
   const handleChangePassword = () => {
     setShowChangePasswordModal(true);
     onClose(); // Close the profile modal when opening change password modal
@@ -56,29 +71,29 @@ const ProfileModal = ({ open, onClose, anchorEl, showChangePasswordModal, setSho
 
   return (
     <div className="fixed inset-0 z-50" onClick={onClose}>
-      <div 
+      <div
         className="absolute top-16 right-4 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col items-center">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Profile</h2>
-          
+
           {/* Profile Image */}
           <div className="mb-3">
-            <img
-              src={Profile}
-              alt="Profile"
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-            />
+            <Avatar sx={{ width: 64, height: 64, bgcolor: "#bdbdbd" }}>
+              {username ? username[0] : ""}
+            </Avatar>
           </div>
-          
+
           {/* User Info */}
           <div className="text-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">John Doe</h3>
-            <p className="text-gray-600 text-sm">ADMIN</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              {username || "-"}
+            </h3>
+            <p className="text-gray-600 text-sm">{userType || "-"}</p>
             <p className="text-gray-500 text-xs mt-1">john.doe@example.com</p>
           </div>
-          
+
           {/* Change Password Button */}
           <div className="w-full">
             <Button
@@ -100,8 +115,8 @@ const AdminDashboardLayout = ({ role }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: ''
+    currentPassword: "",
+    newPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -115,6 +130,8 @@ const AdminDashboardLayout = ({ role }) => {
   const [notifications, setNotifications] = useState([]);
   const [notifModalOpen, setNotifModalOpen] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
+  const username = useSelector((state) => state.auth.username);
+  const userType = useSelector((state) => state.auth.userType);
 
   // Load notifications from localStorage and IndexedDB on mount
   useEffect(() => {
@@ -158,24 +175,27 @@ const AdminDashboardLayout = ({ role }) => {
   // Handle password change
   const handlePasswordSubmit = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword) {
-      toast.error('Please fill in all fields');
+      toast.error("Please fill in all fields");
       return;
     }
 
     try {
       setLoading(true);
-      const response = await apiClient.post('/auth/change-password', passwordData);
-      
+      const response = await apiClient.post(
+        "/auth/change-password",
+        passwordData
+      );
+
       if (response.ok) {
-        toast.success('Password changed successfully!');
+        toast.success("Password changed successfully!");
         setShowChangePasswordModal(false);
-        setPasswordData({ currentPassword: '', newPassword: '' });
+        setPasswordData({ currentPassword: "", newPassword: "" });
       } else {
-        toast.error(response.data?.message || 'Failed to change password');
+        toast.error(response.data?.message || "Failed to change password");
       }
     } catch (error) {
-      console.error('Error changing password:', error);
-      toast.error(error.response?.data?.message || 'Error changing password');
+      console.error("Error changing password:", error);
+      toast.error(error.response?.data?.message || "Error changing password");
     } finally {
       setLoading(false);
     }
@@ -330,7 +350,6 @@ const AdminDashboardLayout = ({ role }) => {
           </div>
 
           <div className="hidden lg:flex items-center gap-5">
-          
             <div className="flex gap-3">
               <div style={{ position: "relative" }}>
                 <IoMdNotifications
@@ -362,21 +381,26 @@ const AdminDashboardLayout = ({ role }) => {
 
             <div className="flex flex-col items-end">
               <p className="font-semibold text-black whitespace-nowrap">
-                John Doe
+                {username || "-"}
               </p>
-              <p className="text-[#7A7A7A] text-sm">ADMIN</p>
+              <p className="text-[#7A7A7A] text-sm">{userType || "-"}</p>
             </div>
 
             <div className="flex items-center">
-              <img
-                src={Profile}
-                alt="Profile Icon"
-                className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              <Avatar
+                sx={{
+                  width: 48,
+                  height: 48,
+                  cursor: "pointer",
+                  bgcolor: "#bdbdbd",
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowProfileModal(!showProfileModal);
                 }}
-              />
+              >
+                {username ? username[0] : ""}
+              </Avatar>
             </div>
           </div>
 
@@ -449,14 +473,18 @@ const AdminDashboardLayout = ({ role }) => {
         onClose={() => setShowProfileModal(false)}
         showChangePasswordModal={showChangePasswordModal}
         setShowChangePasswordModal={setShowChangePasswordModal}
+        username={username}
+        userType={userType}
       />
-      
+
       {/* Change Password Modal */}
       {showChangePasswordModal && (
         <div className="fixed inset-0 z-60 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-96 max-w-[90%]">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Change Password</h3>
-            
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              Change Password
+            </h3>
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -466,7 +494,12 @@ const AdminDashboardLayout = ({ role }) => {
                   <input
                     type={showCurrentPassword ? "text" : "password"}
                     value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        currentPassword: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Enter current password"
                     disabled={loading}
@@ -477,20 +510,29 @@ const AdminDashboardLayout = ({ role }) => {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                     disabled={loading}
                   >
-                    {showCurrentPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                    {showCurrentPassword ? (
+                      <FaEyeSlash size={16} />
+                    ) : (
+                      <FaEye size={16} />
+                    )}
                   </button>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   New Password
                 </label>
-                    <div className="relative">
+                <div className="relative">
                   <input
                     type={showNewPassword ? "text" : "password"}
                     value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        newPassword: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Enter new password"
                     disabled={loading}
@@ -501,17 +543,21 @@ const AdminDashboardLayout = ({ role }) => {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                     disabled={loading}
                   >
-                    {showNewPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                    {showNewPassword ? (
+                      <FaEyeSlash size={16} />
+                    ) : (
+                      <FaEye size={16} />
+                    )}
                   </button>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowChangePasswordModal(false);
-                  setPasswordData({ currentPassword: '', newPassword: '' });
+                  setPasswordData({ currentPassword: "", newPassword: "" });
                 }}
                 className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200"
                 disabled={loading}
