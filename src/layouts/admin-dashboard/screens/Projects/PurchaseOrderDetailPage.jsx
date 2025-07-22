@@ -89,7 +89,7 @@ const PurchaseOrderDetailPage = () => {
       ) : (
         <>
       <TopBar
-        title="Purchase Order Detail Page"
+        title="Purchase Order Detail "
         // detail="lorem ipsum dolor sit amet"
       />
 
@@ -164,7 +164,7 @@ const PurchaseOrderDetailPage = () => {
         <h4 className="text-[#444444] font-semibold text-lg md:text-xl">
           Store Sync Status
         </h4>
-        <p className="text-[#979797] text-sm">lorem ipsum dolor sit amet</p>
+        {/* <p className="text-[#979797] text-sm">lorem ipsum dolor sit amet</p> */}
         <div className="relative">
           {loading ? (
             <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">

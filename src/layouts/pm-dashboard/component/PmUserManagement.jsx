@@ -50,6 +50,17 @@ const PmUserManagement = () => {
     { label: "project_management", value: "PROJECT_MANAGEMENT" },
   ];
 
+  // Add this mapping at the top, after roleOptions
+  const roleLabelMap = {
+    ADMIN: "Admin",
+    SITE_INCHARGE: "Site Incharge",
+    CONSTRUCTION_MANAGER: "Construction Manager",
+    STORE_INCHARGE: "Store Incharge",
+    ACCOUNTANT: "Accountant",
+    PROJECT_MANAGEMENT: "Project Management",
+    PROJECT_MANAGER: "Project Manager", // If this role exists in your backend
+  };
+
   // Fetch users with optional role filter
   const getAllUsers = async () => {
     try {
@@ -147,6 +158,9 @@ const PmUserManagement = () => {
     );
   };
 
+  // Add RoleCell component after CustomActionComponent
+  const RoleCell = ({ value }) => roleLabelMap[value] || value;
+
   // CustomFilterDropdown config
   const filters = [
     { label: "Role", options: roleOptions.map(o => o.label) },
@@ -167,7 +181,7 @@ const PmUserManagement = () => {
           <TopBar
             title="User Management"
             // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-            // showExport={true}
+              // showExport={true}
             buttonText="Create New User"
             onButtonClick={() =>
               navigate("/project-manager-dashboard/user-management/addUser")
@@ -206,7 +220,7 @@ const PmUserManagement = () => {
             <SimpleTable
               columns={columns}
               data={users}
-                cellComponents={{ id: CustomActionComponent }}
+              cellComponents={{ id: CustomActionComponent, role: RoleCell }}
               loading={loading}
             />
           </div>

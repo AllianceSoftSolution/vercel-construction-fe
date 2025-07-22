@@ -53,8 +53,8 @@ const PmProjectDetailPage = () => {
           {/* TopBar Component */}
           <TopBar
             title="Project Details"
-            detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-            showExport={true}
+            // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            // showExport={true}
           />
 
           {/* Tab Navigation Box */}

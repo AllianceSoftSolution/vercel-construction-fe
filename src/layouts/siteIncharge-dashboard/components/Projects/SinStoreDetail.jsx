@@ -99,7 +99,7 @@ const SinStoreDetail = () => {
     <>
       <TopBar
         title="Store Detail"
-        // detail="lorem ipsum dolor sit amet"
+          // detail="lorem ipsum dolor sit amet"
         // showExport={true}
       />
       {loading ? (
@@ -133,16 +133,16 @@ const SinStoreDetail = () => {
         
 
           {/* Inventory Table */}
-          <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
-          <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+          <h4 className="mt-8 text-[#444444] font-semibold text-xl ">Inventory</h4>
+          {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
           <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
           <SimpleTable data={storeData?.inventory || []} columns={columns} cellComponents={{}} />
 
           {/* Stock Movement Table */}
-          <h4 className="mt-8 text-[#444444] font-semibold text-xl">
+          <h4 className="mt-8 text-[#444444] font-semibold text-xl ">
             Stock Movement History
           </h4>
-          <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
+          {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
           <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
           <SimpleTable data={storeData?.transactions || []} columns={columns1} cellComponents={{}} />
         </>
