@@ -148,7 +148,9 @@ const CmDemandDetailPage = () => {
         demandQuantity={demandData?.quantity}
       />
 
-      <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
+      <TopBar title="Demand Details"
+      //  detail="lorem ipsum dolor sit amet" 
+       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex justify-between">
@@ -239,7 +241,7 @@ const CmDemandDetailPage = () => {
           </ul>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
         <DemandQuantityCard
           storeName="Head Store"
           totalQty={demandData.quantity || 0}
@@ -251,9 +253,9 @@ const CmDemandDetailPage = () => {
           totalQty={50}
           material="Cement"
         />
-      </div>
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
-      <SimpleTable data={data} columns={columns} cellComponents={{}} />
+      </div> */}
+      {/* <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
+      <SimpleTable data={data} columns={columns} cellComponents={{}} /> */}
     </>
   );
 };

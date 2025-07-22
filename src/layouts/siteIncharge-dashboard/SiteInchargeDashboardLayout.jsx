@@ -205,7 +205,7 @@ const SiteInchargeDashboardLayout = ({ role }) => {
       path: "/siteincharge-dashboard/demands",
     },
     {
-      label: "POs",
+      label: "Purchase Orders",
       icon: FaToolbox,
       path: "/siteincharge-dashboard/pos",
     },

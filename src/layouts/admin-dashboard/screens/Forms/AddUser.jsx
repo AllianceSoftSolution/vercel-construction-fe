@@ -25,16 +25,15 @@ const AddUser = () => {
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-
     role: Yup.string().required("Role is required"),
   });
   const formik = useFormik({
     initialValues: {
       name: "",
       email: "",
-
       role: "",
       isHead: false,
+      note: "",
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -99,6 +98,16 @@ const AddUser = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
+          />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Enter Note (Optional)</span>}
+            fullWidth
+            name="note"
+            placeholder="Enter Note"
+            type="text"
+            value={formik.values.note}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
           />{" "}
           <div className="w-full">
             <CustomSelect

@@ -28,6 +28,7 @@ const PmAddUser = () => {
       name: "",
       email: "",
       role: "",
+      note: "",
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -92,6 +93,16 @@ const PmAddUser = () => {
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
           />{" "}
+          <CustomTextField
+            label={<span className="flex items-center gap-1">Note (Optional)</span>}
+            fullWidth
+            name="note"
+            placeholder="Enter a note (optional)"
+            type="text"
+            value={formik.values.note}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+          />
           <div className="w-full">
             <CustomSelect
               label="Select Role"

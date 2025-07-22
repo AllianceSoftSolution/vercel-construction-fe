@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
 import apiClient from "../../../../api/apiClient";
+import { formatDateDMY } from '../../../../utils';
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Project name is required"),
@@ -18,29 +19,41 @@ const validationSchema = Yup.object({
     .required("End date is required"),
 });
 
+function toDateInputValue(dateString) {
+  return formatDateDMY(dateString);
+}
+
 const AddProject = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editingProject = location.state?.project;
   const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: {
-      name: "",
-      description: "",
-      startDate: "",
-      endDate: "",
+      name: editingProject?.name || "",
+      description: editingProject?.description || "",
+      startDate: editingProject?.startDate || "",
+      endDate: editingProject?.endDate || "",
     },
+    enableReinitialize: true,
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
         setLoading(true);
-
-        const response = await apiClient.post("/projects", values); // Send as JSON
-
+        let response;
+        if (editingProject) {
+          // Edit mode: PUT
+          response = await apiClient.put(`/projects/${editingProject.id}`, values);
+        } else {
+          // Add mode: POST
+          response = await apiClient.post("/projects", values);
+        }
         if (response.ok) {
           resetForm();
-          navigate(-1);
+          navigate("/admin-dashboard/project-management");
         } else {
-          toast.error("Project creation failed!");
+          toast.error(editingProject ? "Project update failed!" : "Project creation failed!");
         }
       } catch (error) {
         console.error(error);
@@ -54,14 +67,37 @@ const AddProject = () => {
     },
   });
 
+  useEffect(() => {
+    if (editingProject) {
+      // Fetch project data for editing
+      setLoading(true);
+      apiClient.get(`/projects/${editingProject.id}`)
+        .then(response => {
+          if (response.ok && response.data?.project) {
+            const project = response.data.project;
+            formik.setValues({
+              name: project.name || "",
+              description: project.description || "",
+              startDate: toDateInputValue(project.startDate),
+              endDate: toDateInputValue(project.endDate),
+            });
+          } else {
+            toast.error("Failed to fetch project data");
+          }
+        })
+        .catch(() => toast.error("Failed to fetch project data"))
+        .finally(() => setLoading(false));
+    }
+  }, [editingProject, formik.setValues]);
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title="New Project"
-        detail="Add New Project Information in Epos Software"
+        title={editingProject ? "Edit Project" : "New Project"}
+        detail={editingProject ? "Edit Project Information in Epos Software" : "Add New Project Information in Epos Software"}
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -143,7 +179,7 @@ const AddProject = () => {
           disabled={loading}
           className="bg-primary  px-10 py-2 rounded-lg font-medium text-white "
         >
-          {loading ? "Saving..." : "Save Project"}
+          {loading ? (editingProject ? "Updating..." : "Saving...") : (editingProject ? "Update Project" : "Save Project")}
         </button>
       </div>
     </div>

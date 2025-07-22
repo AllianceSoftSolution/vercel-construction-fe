@@ -193,7 +193,7 @@ const CmDashboardLayout = ({ role }) => {
       path: "/construction-manager-dashboard/demands",
     },
     {
-      label: "POs",
+      label: "Purchase Orders",
       icon: FaToolbox,
       path: "/construction-manager-dashboard/pos",
     },

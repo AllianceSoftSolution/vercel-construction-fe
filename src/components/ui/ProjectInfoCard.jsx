@@ -80,11 +80,19 @@ const ProjectInfoCard = ({
   );
 };
 
-const Info = ({ label, value }) => (
-  <div className="flex flex-col sm:flex-row gap-2">
-    <p className="text-[#444444] font-semibold">{label}:</p>
-    <p className="text-[#979797] break-words">{value}</p>
-  </div>
-);
+const Info = ({ label, value }) => {
+  // For amount fields, append 'PKR' if not already present and value is not empty
+  const isAmountField = ["Total Amount", "Paid Amount", "Remaining Amount"].includes(label);
+  let displayValue = value;
+  if (isAmountField && value && typeof value === 'string' && !value.toUpperCase().includes('PKR')) {
+    displayValue = `${value} PKR`;
+  }
+  return (
+    <div className="flex flex-col sm:flex-row gap-2">
+      <p className="text-[#444444] font-semibold">{label}:</p>
+      <p className="text-[#979797] break-words">{displayValue}</p>
+    </div>
+  );
+};
 
 export default ProjectInfoCard;

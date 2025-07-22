@@ -11,6 +11,8 @@ import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
 import { useSearchParams } from "react-router-dom";
 import Loader from "../../../../../components/ui/Loader";
+import { formatDateDMY } from '../../../../../utils';
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -148,16 +150,10 @@ const ProjectInformationTab = ({ data }) => {
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
         section={data?.sections.length || "0"}
-        totalAmount={data?.totalAmount ? `$${data.totalAmount}` : "$0"}
-        remainingAmount={
-          data?.remainingAmount ? `$${data.remainingAmount}` : "$0"
-        }
-        paidAmount={data?.paidAmount ? `$${data.paidAmount}` : "$0"}
-        date={
-          data?.startDate
-            ? new Date(data.startDate).toLocaleDateString()
-            : "N/A"
-        }
+        totalAmount={data?.totalAmount || "0"}
+        remainingAmount={data?.remainingAmount || "0"}
+        paidAmount={data?.paidAmount || "0"}
+        date={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
         projectLocation={data?.location || "Not specified"}
         projectStatus={data?.status || "N/A"}
       />

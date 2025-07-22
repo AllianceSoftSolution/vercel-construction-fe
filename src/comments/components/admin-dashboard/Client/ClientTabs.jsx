@@ -26,7 +26,7 @@ import {
   edit_client,
   select_clients_array,
 } from "../../../redux/admin_client";
-import { formatDate } from "../../../modules/helpers";
+import { formatDateDMY } from '../../../../utils';
 import apiClient from "../../../api/apiClient";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -107,7 +107,7 @@ const ClientTabs = ({
       status: client.status, // Map the 'status' field
       primaryContact: client.contactEmail, // Map the 'email' field to 'primaryContact'
       paymentMethods: "Bank Transfer, Credit Card", // Static value (you can modify as needed)
-      activity: `Last login: ${Date.now() || "Unknown"}`, // Dynamic last login (or "Unknown" if missing)
+      activity: `Last login: ${formatDateDMY(Date.now())}`, // Dynamic last login (or "Unknown" if missing)
       actions: client.id,
     }));
 
@@ -293,7 +293,7 @@ const ClientTabs = ({
       status: client.personalInfo?.status, // Map the 'status' field
       primaryContact: client.personalInfo.primaryContact?.email, // Map the 'email' field to 'primaryContact'
       paymentMethods: "N/A", // Static value (you can modify as needed)
-      activity: `Last Updated: ${formatDate(client.updatedAt)}`, // Dynamic last login (or "Unknown" if missing)
+      activity: `Last Updated: ${formatDateDMY(client.updatedAt)}`, // Dynamic last login (or "Unknown" if missing)
       actions: client._id,
     }));
 

@@ -15,6 +15,7 @@ import AssignMemberModal from "../../../../../components/AssignMemberModal";
 import apiClient from "../../../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../../../components/ui/Loader";
+import { formatDateDMY } from '../../../../../utils';
 
 const style = {
   position: "absolute",
@@ -294,19 +295,16 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     <>
       <ProjectInfoCard
         title="Project Information"
+        status={data?.status || "IN-PROGRESS"}
+        onDelete={() => console.log("delete")}
+        onEdit={() => console.log("edit")}
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
         section={data?.sections.length || "0"}
-        totalAmount={data?.totalAmount ? `$${data.totalAmount}` : "$0"}
-        remainingAmount={
-          data?.remainingAmount ? `$${data.remainingAmount}` : "$0"
-        }
-        paidAmount={data?.paidAmount ? `$${data.paidAmount}` : "$0"}
-        date={
-          data?.startDate
-            ? new Date(data.startDate).toLocaleDateString()
-            : "N/A"
-        }
+        totalAmount={data?.totalAmount || "0"}
+        remainingAmount={data?.remainingAmount || "0"}
+        paidAmount={data?.paidAmount || "0"}
+        date={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
         projectLocation={data?.location || "Not specified"}
         projectStatus={data?.status || "N/A"}
       />

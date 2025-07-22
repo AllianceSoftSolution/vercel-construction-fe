@@ -111,6 +111,7 @@ const UserManagement = () => {
     { headerName: "ID", field: "employeeId" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
+    {headerName:"Note", field:"note"},
     // { headerName: "Phone Number", field: "phone" },
     { headerName: "Role", field: "role" },
     // { headerName: "Status", field: "status" },

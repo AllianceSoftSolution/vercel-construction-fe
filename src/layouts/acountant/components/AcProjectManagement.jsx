@@ -12,6 +12,7 @@ import ActionModal from "./users/modals/ActionModal";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { formatDateDMY } from '../../../utils';
 
 const AcProjectManagement = () => {
   const navigate = useNavigate();
@@ -28,8 +29,8 @@ const AcProjectManagement = () => {
       if (response.ok) {
         const data = response.data.projects.map((project, index) => ({
           no: index + 1,
-          startDate: new Date(project.startDate).toLocaleDateString(),
-          endDate: new Date(project.endDate).toLocaleDateString(),
+          startDate: formatDateDMY(project.startDate),
+          endDate: formatDateDMY(project.endDate),
           action: project.id,
           ...project,
         }));
@@ -115,7 +116,7 @@ const AcProjectManagement = () => {
     <div className="h-full">
       <TopBar
         title="Project Management"
-        detail="View and manage all construction projects."
+        // detail="View and manage all construction projects."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown

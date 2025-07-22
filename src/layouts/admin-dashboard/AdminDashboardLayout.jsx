@@ -215,7 +215,7 @@ const AdminDashboardLayout = ({ role }) => {
       path: "/admin-dashboard/demands",
     },
     {
-      label: "POs",
+      label: "Purchase Orders ",
       icon: FaToolbox,
       path: "/admin-dashboard/pos",
     },

@@ -15,6 +15,8 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import GroupedProjectSectionBarChart from "../../../charts/GroupedProjectSectionBarChart";
+import { icon } from "@fortawesome/fontawesome-svg-core";
 
 const style = {
   position: "absolute",
@@ -171,7 +173,8 @@ const CustomActionComponent = ({ value:id }) => {
   return (
     <DropdownButton
       items={[
-        { label: "Details", onClick: onNavigation },
+        { label: "Details", onClick: onNavigation},
+
       ]}
     >
       <IconButton>
@@ -196,6 +199,7 @@ const Payables = () => {
   const [filter, setFilter] = useState({
     Status: [],
   });
+  const [paymentsByProjectSection, setPaymentsByProjectSection] = useState([]);
 
   // Status options for filter
   const statusOptions = [
@@ -270,9 +274,9 @@ const Payables = () => {
             id: account.vendorId, // Use vendorId for navigation to detail page
             no: index + 1,
             vendorName: account.vendor?.name || "-",
-            totalBalance: account.totalCredited ? `$${account.totalCredited.toLocaleString()}` : "-",
-            remainingBalance: account.remainingAmount ? `$${account.remainingAmount.toLocaleString()}` : "-",
-            paidAmount: account.paidAmount ? `$${account.paidAmount.toLocaleString()}` : "-",
+            totalBalance: account.totalCredited ? `${account.totalCredited.toLocaleString()} PKR` : "-",
+            remainingBalance: account.remainingAmount ? `${account.remainingAmount.toLocaleString()} PKR` : "-",
+            paidAmount: account.paidAmount ? `${account.paidAmount.toLocaleString()} PKR` : "-",
           };
         });
         
@@ -305,7 +309,7 @@ const Payables = () => {
             material: po.material?.name || "-", // Material name for display
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
-            amount: po.totalAmount ? `$${po.totalAmount.toLocaleString()}` : "-",
+            amount: po.totalAmount ? `${po.totalAmount.toLocaleString()} PKR` : "-",
             status: po.status || "-",
             // Complete PO data for modal
             poData: po // Store complete PO data separately
@@ -322,6 +326,20 @@ const Payables = () => {
       toast.error("Error fetching purchase orders");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch payments by project/section for grouped bar chart
+  const fetchPaymentsByProjectSection = async () => {
+    try {
+      const response = await apiClient.get("/analytics/payments-by-project-section");
+      if (response.ok) {
+        setPaymentsByProjectSection(response.data.data || []);
+      } else {
+        toast.error("Failed to fetch payments by project/section");
+      }
+    } catch (error) {
+      toast.error("Error fetching payments by project/section");
     }
   };
 
@@ -350,6 +368,10 @@ const Payables = () => {
 
   useEffect(() => {
     fetchNewPurchaseOrders();
+  }, []);
+
+  useEffect(() => {
+    fetchPaymentsByProjectSection();
   }, []);
 
   // ActionComforRegPOs component with access to fetchNewPurchaseOrders
@@ -439,6 +461,11 @@ const Payables = () => {
             />
           </div>
         ))}
+      </div>
+
+      {/* Payments by Project & Section Chart */}
+      <div className="mt-10">
+        <GroupedProjectSectionBarChart apiData={paymentsByProjectSection} />
       </div>
 
       <div className="mt-10">

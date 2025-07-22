@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
 import { IconButton, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -65,6 +66,7 @@ const DateCell = ({ value }) => (
 
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [initialLoading, setInitialLoading] = useState(true);
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -147,7 +149,7 @@ function AdminDashboard() {
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
-          amount: po.totalAmount ? `$${po.totalAmount}` : "-",
+          amount: po.totalAmount ? `${po.totalAmount} PKR` : "-",
           status: po.status || "-",
           // assingedVendors: po.vendorId || "-",
         }));
@@ -177,42 +179,63 @@ function AdminDashboard() {
             icon: FaBoxesStacked,
             count: summary.totalProjects || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/project-management");
+            }
           },
           {
             label: "Total Demands",
             icon: FaHandHoldingHeart,
             count: summary.totalDemands || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/demands");
+            }
           },
           {
             label: "Total POs Created",
             icon: NewReleasesOutlined,
             count: summary.totalPOsCreated || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/pOS");
+            }
           },
           {
             label: "Total Amount Paid",
             icon: NewspaperOutlined,
             count: summary.totalAmountPaid || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/payables");
+            }
           },
           {
             label: "Pending Amount",
             icon: CachedSharp,
             count: summary.totalAmountPending || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/payables");
+            }
           },
           {
             label: "Amount Spent",
             icon: NewspaperOutlined,
             count: summary.totalAmountSpent || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/payables");
+            }
           },
           {
             label: "Total Vendors",
             icon: PeopleSharp,
             count: summary.totalVendors || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/vendors");
+            }
           },
         ]);
         // Set chart data
@@ -293,6 +316,7 @@ function AdminDashboard() {
               icon={item.icon}
               count={item.count}
               percentage={item.percentage}
+              onClick={item.onClick}
             />
           </div>
         ))}
@@ -317,34 +341,25 @@ function AdminDashboard() {
       </div>
 
       {/* User Role Bar Chart */}
-      {/* <div className="mt-6">
+      <div className="mt-6">
         <BasicBarChart
+          title="User Role"
           xAxis={usersByRole.map((u) => u.role)}
           series={[
             {
               data: usersByRole.map((u) => u.count),
-              label: "project manager",
-              color: "#1D4ED8"
-            },  {
-              data: usersByRole.map((u) => u.count),
-              label: "Admin",
-              color: "#1D4ED8"
-            },  {
-              data: usersByRole.map((u) => u.count),
-              label: "Store Incharge",
-              color: "#1D4ED8"
-            },  {
-              data: usersByRole.map((u) => u.count),
-              label: "Accountant",
+              label: "User Count",
               color: "#1D4ED8"
             }
           ]}
         />
-      </div> */}
+      </div>
 
      
       <div className="mt-6">
+        {/* <h3 className="text-lg font-semibold mb-2">Financial Progress Per Project</h3> */}
         <BasicBarChart
+          title="Financial Progress Per Project"
           xAxis={financialProgress.map((p) => p.projectName)}
           series={[
             { data: financialProgress.map((p) => p.total), label: "Total Amount", color: "#1D4ED8" },

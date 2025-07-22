@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
+import { formatDateDMY } from '../../../utils';
 
 // Status color mapping
 const statusColorMap = {
@@ -37,28 +38,7 @@ const StatusChip = ({ value }) => {
 };
 
 // Date formatting function
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-  
-  try {
-    const date = new Date(dateString);
-    
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return "Invalid Date";
-    }
-    
-    // Format: DD/MM/YYYY
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${day}/${month}/${year}`;
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return "Invalid Date";
-  }
-};
+const formatDate = (dateString) => formatDateDMY(dateString);
 
 // Date component for table
 const DateComponent = ({ value }) => {
@@ -91,7 +71,7 @@ const Demands = () => {
   ];
 
   const columns = [
-    { headerName: "Id", field: "id" },
+    { headerName: "Id", field: "referenceNumber" },
     { headerName: "Material", field: "material.name" },
     { headerName: "Unit", field: "unit" },
     { headerName: "Qty", field: "quantity" },

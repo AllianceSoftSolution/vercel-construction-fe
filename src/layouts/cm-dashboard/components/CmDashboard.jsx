@@ -21,6 +21,7 @@ import { useSelector } from "react-redux";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { Chip } from "@mui/material";
+import { formatDateDMY } from "../../../utils";
 
 // Status color mapping for demand status
 const statusColorMap = {
@@ -56,9 +57,9 @@ function CmDashboard() {
 
   // Analytics and chart data states
   const [projectStats, setProjectStats] = useState([
-    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
-    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
-    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/project-management")},
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/demands")},
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/pOS")},
   ]);
   const [demandBreakdown, setDemandBreakdown] = useState([]);
   const [fulfillmentProgress, setFulfillmentProgress] = useState([]);
@@ -77,7 +78,7 @@ function CmDashboard() {
             qty: demand.quantity || "N/A",
             status: demand.status || "N/A",
             cmName: demand.creator?.name || "N/A",
-            date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "N/A",
+            date: demand.createdAt ? formatDateDMY(demand.createdAt) : "N/A",
           }));
           setDemands(data);
         } else {
@@ -169,9 +170,9 @@ function CmDashboard() {
           const summary = response.data.data.summary;
           const charts = response.data.data.charts || {};
           setProjectStats([
-            { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0 },
-            { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
-            { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
+            { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/project-management/sections") },
+            { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/demands")},
+            { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/pOS")},
           ]);
           setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
           setFulfillmentProgress(charts.fulfillmentProgress || []);
@@ -250,6 +251,7 @@ function CmDashboard() {
                 icon={item.icon}
                 count={item.count}
                 percentage={item.percentage}
+                onClick={item.onClick}
               />
             </div>
           );
@@ -298,7 +300,7 @@ function CmDashboard() {
                     sectionName={sec.name}
                     code={sec.code}
                     description={sec.description}
-                    dropdownActions={sectionActions(sec)}
+                    // dropdownActions={sectionActions(sec)}
                   />
                   
                   {/* Show CM Store Assignment Details */}

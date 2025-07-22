@@ -15,6 +15,7 @@ import DropdownButton from "../../../../comments/components/DropdownButton";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
+import { formatDateDMY } from '../../../../utils';
 
 const style = {
   position: "absolute",
@@ -32,9 +33,8 @@ const paymentColumns = [
   { headerName: "Description", field: "description" },
   { headerName: "Type", field: "type" },
   { headerName: "Amount", field: "amount" },
-  { headerName: "Balance", field: "balance" },
-  { headerName: "Reference", field: "reference" },
-  { headerName: "Action", field: "action" },
+  // { headerName: "Balance", field: "balance" },
+  { headerName: "Proof", field: "proof" },
 ];
 
 export default function PayableDetails() {
@@ -194,7 +194,7 @@ export default function PayableDetails() {
           </div>
           <div className="flex justify-end gap-3 mt-6">
             <button
-              className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-3 rounded-xl text-lg font-medium"
+              className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-6 py-2 rounded-xl text-lg font-medium"
               onClick={handleClose}
               disabled={modalLoading}
             >
@@ -226,14 +226,11 @@ export default function PayableDetails() {
         // Map transactions to table format
         const transactionData = responseData.transactions?.map((transaction) => ({
           id: transaction.id,
-          date: new Date(transaction.createdAt).toLocaleDateString(),
+          date: formatDateDMY(transaction.createdAt),
           description: transaction.note || transaction.type,
           type: transaction.type,
-          amount: transaction.amount ? `$${parseFloat(transaction.amount).toLocaleString()}` : "-",
-          balance: responseData.balance ? `$${parseFloat(responseData.balance).toLocaleString()}` : "-",
-          reference: transaction.purchaseOrderId || transaction.vendorPaymentId || "-",
-          action: transaction.id, // Add action field for the dropdown
-          proofOfPayment: transaction.proofOfPayment, // Store the file URL
+          amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()} PKR` : "-",
+          proof: transaction.proofOfPayment,
         })) || [];
         
         setTransactions(transactionData);
@@ -256,13 +253,9 @@ export default function PayableDetails() {
     }
   }, [id]);
 
-  // Filtered transactions based on selected type
-  const filteredTransactions = transactions.filter((txn) => {
-    if (!filter.Type || filter.Type.length === 0) return true;
-    // Map frontend label to backend value
-    const backendTypes = filter.Type.map(label => typeOptions.find(o => o.label === label)?.value);
-    return backendTypes.includes(txn.type);
-  });
+  // Filtered transactions for credit and debit
+  const creditTransactions = transactions.filter(txn => txn.type === 'CREDIT');
+  const debitTransactions = transactions.filter(txn => txn.type === 'DEBIT');
 
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
@@ -290,6 +283,21 @@ export default function PayableDetails() {
     },
   ];
 
+  // Custom cell renderer for Proof link
+  const ProofCell = ({ value }) => {
+    if (!value) return <span>-</span>;
+    return (
+      <a
+        href={value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-black underline hover:text-primary"
+      >
+        View Proof
+      </a>
+    );
+  };
+
   if (!vendorAccount && !loading) {
     return (
       <Box className="p-4">
@@ -314,7 +322,7 @@ export default function PayableDetails() {
     <>
       <TopBar
         title={`Payables Detail - ${vendorAccount?.vendor?.name || 'Vendor'}`}
-        detail={`Vendor account details for ${vendorAccount?.vendor?.name || 'Vendor'} - Last updated: ${vendorAccount?.lastUpdated ? new Date(vendorAccount.lastUpdated).toLocaleDateString() : 'N/A'}`}
+        detail={`Vendor account details for ${vendorAccount?.vendor?.name || 'Vendor'} - Last updated: ${vendorAccount?.lastUpdated ? formatDateDMY(vendorAccount.lastUpdated) : 'N/A'}`}
       />
       
       <div className="border rounded-xl p-4 mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -333,28 +341,26 @@ export default function PayableDetails() {
         ))}
       </div>
       
-      <div className="mt-10">
-        <TopBar
-          title="Transaction History"
-          detail="Complete list of all transactions for this vendor account."
-          buttonText="Add Transaction"
-          onButtonClick={() => setOpen(true)}
-        />
-        <div className="flex justify-end items-center gap-4 mt-2 mb-6">
-          <CustomFilterDropdown
-            filters={filters}
-            selected={filter}
-            onChange={handleFilterChange}
-            onClear={handleFilterClear}
-            placeholder="Filter by type"
-          />
+      <div className="mt-10 flex flex-col gap-8">
+        <div>
+          <TopBar title="Credit Transactions" detail="All credit transactions for this vendor account." />
+          <div className="mt-4 overflow-x-auto relative">
+            <SimpleTable
+              data={creditTransactions}
+              columns={paymentColumns}
+              cellComponents={{ proof: ProofCell }}
+            />
+          </div>
         </div>
-        <div className="mt-4 overflow-x-auto relative">
-          <SimpleTable
-            data={filteredTransactions}
-            columns={paymentColumns}
-            cellComponents={{ action: CustomActionComponent }}
-          />
+        <div>
+          <TopBar title="Debit Transactions" detail="All debit transactions for this vendor account." buttonText="Add Payment" onButtonClick={() => setOpen(true)}/>
+          <div className="mt-4 overflow-x-auto relative">
+            <SimpleTable
+              data={debitTransactions}
+              columns={paymentColumns}
+              cellComponents={{ proof: ProofCell }}
+            />
+          </div>
         </div>
       </div>
 

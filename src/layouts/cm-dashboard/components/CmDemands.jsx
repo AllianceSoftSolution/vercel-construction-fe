@@ -3,73 +3,57 @@ import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "@/comments/components/DropdownButton";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { date } from "zod";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import DeleteModal from "../../../mui/DeleteModal";
+import { formatDateDMY } from '../../../utils';
 
-const CmDemands = () => {
-  const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [demands, setDemands] = useState([]);
-  const [materialsMap, setMaterialsMap] = useState({});
-  const [sectionsMap, setSectionsMap] = useState({});
+// Status color mapping
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
+
+// Date formatting function
+const formatDate = (dateString) => formatDateDMY(dateString);
+
+// Date component for table
+const DateComponent = ({ value }) => {
+  return <span>{formatDate(value)}</span>;
+};
+
+const Demands = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [demands, setDemands] = useState([]);
+  const [filter, setFilter] = useState({ Status: [] });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDemandId, setSelectedDemandId] = useState(null);
 
-  const statusColorMap = {
-    APPROVED: "#22c55e", // green
-    REJECTED: "#ef4444", // red
-    PENDING: "#f59e42", // orange
-    PARTIALLY_APPROVED: "#eab308", // yellow
-    PO_CREATED: "#8b5cf6", // purple
-    FULFILLED: "#0ea5e9", // blue
-    default: "#0252AD", // fallback blue
-  };
-
-  const StatusChip = ({ value }) => {
-    const status = (value || "PENDING").toUpperCase();
-    const color = statusColorMap[status] || statusColorMap.default;
-    return (
-      <Chip
-        label={status.replace(/_/g, " ")}
-        size="small"
-        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
-      />
-    );
-  };
-
-  const fetchMaterialAndSections = async () => {
-    try {
-      const [materialsRes, sectionsRes] = await Promise.all([
-        apiClient.get("/materials"),
-        apiClient.get("/sections"),
-      ]);
-
-      const materialMap = {};
-      if (materialsRes.ok) {
-        materialsRes.data.materials.forEach((m) => {
-          materialMap[m._id] = m.name;
-        });
-      }
-
-      const sectionMap = {};
-      if (sectionsRes.ok) {
-        sectionsRes.data.sections.forEach((s) => {
-          sectionMap[s._id] = s.name;
-        });
-      }
-
-      setMaterialsMap(materialMap);
-      setSectionsMap(sectionMap);
-    } catch (error) {
-      toast.error("Failed to fetch materials or sections");
-      console.error(error);
-    }
-  };
-
+  // Status options
   const statusOptions = [
     { label: "Request Sent", value: "REQUEST_SENT" },
     { label: "Partially Approved", value: "PARTIALLY_APPROVED" },
@@ -82,14 +66,26 @@ const CmDemands = () => {
     { label: "In Store", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
   ];
-
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
   ];
 
-  const [filter, setFilter] = useState({ Status: [] });
+  const columns = [
+    { headerName: "Id", field: "referenceNumber" },
+    { headerName: "Material", field: "material.name" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "Qty", field: "quantity" },
+    { headerName: "Date", field: "createdAt" },
+    { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Created By", field: "creator.name" },
+    { headerName: "Project", field: "section.projectName" },
+    { headerName: "Section", field: "section.name" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Action", field: "demandId" },
+  ];
 
-  const fetchDemand = async () => {
+  // Fetch demands with status filter
+  const fetchDemands = async () => {
     try {
       setLoading(true);
       let url = "/demands";
@@ -104,95 +100,89 @@ const CmDemands = () => {
       const response = await apiClient.get(url);
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
-          no: demand.referenceNumber || `REF-${index + 1}`,
-          activity: demand.activity || "N/A",
-          materialId: demand.material?.name || "N/A",
-          quantity: demand.quantity || "N/A",
-          unit: demand.unit || "N/A",
-          sectionId: demand.section?.name || "N/A",
-          notes: demand.notes || "N/A",
-          status: demand.status || "N/A",
-          action: demand.id,
+          ...demand,
+          demandId: demand.id,
+          id: index + 1,
         }));
         setDemands(data);
       } else {
-        toast.error("Failed to fetch demands");
+        toast.error("Failed to fetch Demands");
       }
     } catch (error) {
+      console.error("Error fetching demands:", error);
       toast.error("Error fetching demands");
-      console.error(error);
-    } finally {
+    } finally {   
       setLoading(false);
-      setPageLoading(false);
     }
   };
 
   useEffect(() => {
-    const init = async () => {
-      await fetchMaterialAndSections();
-    };
-    init();
-  }, []);
+    fetchDemands();
+    // eslint-disable-next-line
+  }, [filter]);
 
-  useEffect(() => {
-    if (Object.keys(materialsMap).length && Object.keys(sectionsMap).length) {
-      fetchDemand();
+  const deleteDemand = async () => {
+    try {
+      const response = await apiClient.delete(`/demands/${selectedDemandId}`);
+      if (response.ok) {
+        fetchDemands();
+        setShowDeleteModal(false);
+        toast.success("Demand deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete demand");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
     }
-  }, [materialsMap, sectionsMap, filter]);
+  };
 
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-
   const handleFilterClear = () => setFilter({ Status: [] });
 
-  const columns = [
-    { headerName: "No", field: "no" },
-    { headerName: "Activity", field: "activity" },
-    { headerName: "Material", field: "materialId" },
-    { headerName: "Quantity", field: "quantity" },
-    { headerName: "Unit", field: "unit" },
-    { headerName: "Section", field: "sectionId" },
-    { headerName: "Notes", field: "notes" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Action", field: "action" },
-  ];
-
-  const CustomActionComponent = ({ value }) => (
-    <DropdownButton
-      className="bg-[#FF0000] font-semibold"
-      items={[
-        {
-          label: "View Detail",
-          onClick: () =>
-            navigate(`/construction-manager-dashboard/demands/${value}`),
-          icon: <FaEye />,
-        },
-      ]}
-    >
-      <IconButton>
-        <BsThreeDotsVertical />
-      </IconButton>
-    </DropdownButton>
-  );
-
-  if (pageLoading) {
+  const CustomActionComponent = ({ value: demandId }) => {
     return (
-      <div className="flex justify-center items-center h-full min-h-[400px]">
-        <Loader />
-      </div>
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "View Detail",
+            onClick: () => {
+              if (demandId) {
+                navigate(`/construction-manager-dashboard/demands/${demandId}`);
+              } else {
+                console.error("Demand ID is undefined.");
+              }
+            },
+            icon: <FaEye />,
+          },
+          // {
+          //   label: "Edit",
+          //   onClick: () => alert("Edit"),
+          //   icon: <FaUserEdit />,
+          // },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => {
+          //     setSelectedDemandId(demandId);
+          //     setShowDeleteModal(true);
+          //   },
+          //   icon: <FaTrash />,
+          // },
+        ]}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
     );
-  }
+  };
 
   return (
-    <div className="w-full">
+    <div className=" h-full ">
       <TopBar
         title="Demands"
-        // detail="View and manage construction material demands."
-        buttonText="Create Demand"
-        onButtonClick={() =>
-          navigate("/construction-manager-dashboard/demands/addDemand")
-        }
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -203,17 +193,26 @@ const CmDemands = () => {
           placeholder="Filter by status"
         />
       </div>
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
-      <div className="overflow-x-auto">
-        <SimpleTable
-          columns={columns}
-          data={demands}
-          loading={loading}
-          cellComponents={{ action: CustomActionComponent, status: StatusChip }}
-        />
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
+      {/* table */}
+      <div className="overflow-x-auto mt-4">
+        {loading ? (
+          <Loader />
+        ) : (
+          <SimpleTable
+            columns={columns}
+            data={demands}
+            cellComponents={{ 
+              demandId: CustomActionComponent, 
+              status: StatusChip,
+              createdAt: DateComponent 
+            }}
+          />
+        )}
       </div>
+    
     </div>
   );
 };
 
-export default CmDemands;
+export default Demands;

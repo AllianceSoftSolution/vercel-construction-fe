@@ -104,6 +104,7 @@ const SInchargeUserManagement = () => {
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Role", field: "role" },
+    { headerName: "Note", field: "note" },
     { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
