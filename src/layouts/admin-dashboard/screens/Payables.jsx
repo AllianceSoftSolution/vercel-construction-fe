@@ -167,7 +167,8 @@ const CustomActionComponent = ({ value:id }) => {
   const navigate = useNavigate();
   
   const onNavigation = () => {
-    navigate(`/admin-dashboard/payables/details/${id}`);
+    navigate(`/admin-dashboardapply
+      /payables/details/${id}`);
   };
   
   return (
@@ -240,8 +241,8 @@ const Payables = () => {
   const vendorColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "Vendor Name", field: "vendorName" },
-    { headerName: "Total Balance", field: "totalBalance" },
-    { headerName: "Remaining Balance", field: "remainingBalance" },
+    { headerName: "Total Amount", field: "totalBalance" },
+    { headerName: "Remaining Amount", field: "remainingBalance" },
     { headerName: "Paid Amount", field: "paidAmount" },
     { headerName: "Action", field: "id" },
   ];

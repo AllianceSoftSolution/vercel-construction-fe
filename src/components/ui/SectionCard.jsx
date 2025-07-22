@@ -37,7 +37,7 @@ const SectionCard = ({
         <h3 className="text-lg sm:text-xl font-semibold text-[#444444]">
           {title}
         </h3>
-        {/* <CustomActionComponent /> */}
+        <CustomActionComponent />
       </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full"></div>
       <div className="flex justify-between flex-wrap text-sm sm:text-base">

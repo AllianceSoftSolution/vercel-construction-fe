@@ -68,7 +68,7 @@ const AddUser = () => {
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
         title="New User"
-        detail="Add New User Information in Epos Software"
+        detail="Add New User Information in RADC"
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -145,6 +145,8 @@ const AddUser = () => {
               />
             )}
           </div>
+          <span className="text-sm text-gray-500">User will get the Password through Email and login to the system.</span>
+
         </div>
       </div>{" "}
       <div className="flex gap-4 w-full justify-center mt-8">

@@ -158,6 +158,7 @@ const DemandDetails = () => {
         sectionId={demandData?.sectionId}
         materialName={demandData?.material?.name}
         materialId={demandData?.material?.id}
+        demandQuantity={demandData?.quantity}
       />
 
       <TopBar title="Demand Details" 
@@ -232,6 +233,23 @@ const DemandDetails = () => {
             <p className="text-[#444444] font-semibold">PO Quantity:</p>
             <p className="text-[#979797]">{demandData?.poQuantity || "-"}</p>
           </div>
+          {/* Exceeding Demand Quantity Alert and Checkbox */}
+          {Number(demandData?.poQuantity) > Number(demandData?.quantity) && (
+            <div className="flex flex-col col-span-2">
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="checkbox"
+                  id="exceed-po-checkbox"
+                  className="accent-red-600 w-4 h-4"
+                  // Controlled by local state
+                />
+                <label htmlFor="exceed-po-checkbox" className="text-[#444444] font-semibold">
+                  Are you sure to create PO greater than demand?
+                </label>
+              </div>
+              <span className="text-red-600 font-semibold mt-1">You are exceeding demand Qty.</span>
+            </div>
+          )}
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Approved By:</p>
             <p className="text-[#979797]">{demandData?.approvedBy || "-"}</p>
