@@ -14,8 +14,8 @@ const ProjectInfoCard = ({
   paidAmount,
   remainingAmount,
   date,
-  projectLocation,
-  projectStatus,
+  // projectLocation,
+  // projectStatus,
   showIcons = true,
   showStatusDropdown = false,
 }) => {
@@ -72,10 +72,10 @@ const ProjectInfoCard = ({
         <Info label="Date" value={date} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
         <Info label="Project Location" value={projectLocation} />
         <Info label="Project Status" value={projectStatus} />
-      </div>
+      </div> */}
     </div>
   );
 };

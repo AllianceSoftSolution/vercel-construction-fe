@@ -184,44 +184,56 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                 label="Quantity"
                 name="quantity"
                 value={entry.quantity}
-                onChange={e => handleEntryChange(idx, "quantity", e.target.value)}
+                onChange={e => {
+                  handleEntryChange(idx, "quantity", e.target.value);
+                  if (
+                    Number(e.target.value) > Number(demandQuantity) &&
+                    (!entry._exceededToastShown)
+                  ) {
+                    toast.error("You are exceeding demand Qty.");
+                    handleEntryChange(idx, "_exceededToastShown", true);
+                  } else if (Number(e.target.value) <= Number(demandQuantity) && entry._exceededToastShown) {
+                    handleEntryChange(idx, "_exceededToastShown", false);
+                  }
+                }}
                 error={!!errors[idx]?.quantity}
                 helperText={errors[idx]?.quantity}
               />
               {Number(entry.quantity) > Number(demandQuantity) && (
-                <Box mt={2} p={2} bgcolor="#fff3cd" borderRadius={1} border="1px solid #ffeaa7">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={confirmations[idx]}
-                        onChange={(e) => handleConfirmationChange(idx, e.target.checked)}
-                        color="primary"
-                      />
-                    }
-                    label="Are you sure you want to create this PO with quantity greater than demand?"
+                <>
+                  <Box mt={2}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={confirmations[idx]}
+                          onChange={(e) => handleConfirmationChange(idx, e.target.checked)}
+                          color="primary"
+                        />
+                      }
+                      label="Are you sure you want to create this PO with quantity greater than demand?"
+                    />
+                    {errors[idx]?.confirmation && (
+                      <Typography color="error" variant="caption" display="block" mt={1}>
+                        {errors[idx].confirmation}
+                      </Typography>
+                    )}
+                  </Box>
+                  <CustomTextField
+                    fullWidth
+                    margin="normal"
+                    label="Notes"
+                    name="notes"
+                    value={entry.notes}
+                    onChange={e => handleEntryChange(idx, "notes", e.target.value)}
+                    error={!!errors[idx]?.notes}
+                    helperText={errors[idx]?.notes || "Required if PO quantity exceeds demand."}
+                    required
                   />
-                  {errors[idx]?.confirmation && (
-                    <Typography color="error" variant="caption" display="block" mt={1}>
-                      {errors[idx].confirmation}
-                    </Typography>
-                  )}
-                </Box>
+                </>
               )}
-              <CustomTextField
-                fullWidth
-                margin="normal"
-                label="Notes"
-                name="notes"
-                value={entry.notes}
-                onChange={e => handleEntryChange(idx, "notes", e.target.value)}
-                error={!!errors[idx]?.notes}
-                helperText={
-                  Number(entry.quantity) > Number(demandQuantity)
-                    ? (errors[idx]?.notes || "Required if PO quantity exceeds demand.")
-                    : (errors[idx]?.notes || "Optional if PO quantity is less than or equal to demand.")
-                }
-                required={Number(entry.quantity) > Number(demandQuantity)}
-              />
+              {Number(entry.quantity) <= Number(demandQuantity) && (
+                null
+              )}
             </Box>
           ))}
           <Button buttonText={"Add PO"} onClick={addPoEntry} disabled={loading} />

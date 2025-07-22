@@ -22,7 +22,7 @@ const style = {
 };
 const ProjectInformationTab = ({ data }) => {
   const columns = [
-    { headerName: "ID", field: "iD" },
+    // { headerName: "ID", field: "iD" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Phone Number", field: "phone" },
@@ -103,8 +103,8 @@ const ProjectInformationTab = ({ data }) => {
         remainingAmount={data?.remainingAmount || "0"}
         paidAmount={data?.paidAmount || "0"}
         date={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
-        projectLocation={data?.location || "Not specified"}
-        projectStatus={data?.status || "N/A"}
+        // projectLocation={data?.location || "Not specified"}
+        // projectStatus={data?.status || "N/A"}
       />
       <ProjectDescriptionCard
         title="Project Description"

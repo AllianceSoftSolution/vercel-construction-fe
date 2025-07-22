@@ -52,10 +52,10 @@ function SinteInchargeDashbaord() {
 
   // Analytics and chart data states
   const [dashboardStats, setDashboardStats] = useState([
-    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management")},
-    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/demands")},
-    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/pOS")},
-    { label: "Assigned Sections", icon: IoStorefrontSharp, count: 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management/sections")},
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Assigned Sections", icon: IoStorefrontSharp, count: 0, percentage: 0 },
   ]);
   const [demandBreakdown, setDemandBreakdown] = useState([]);
   const [poDistributionByVendor, setPoDistributionByVendor] = useState([]);
@@ -150,9 +150,9 @@ function SinteInchargeDashbaord() {
         const summary = response.data.data.summary;
         const charts = response.data.data.charts || {};
         setDashboardStats([
-          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 },
-          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
-          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
+          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management") },
+          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/demands")},
+          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/pOS")},
           { label: "Assigned Sections", icon: IoStorefrontSharp, count: summary.assignedSections || 0, percentage: 0 },
         ]);
         setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));

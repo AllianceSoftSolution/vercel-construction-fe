@@ -17,6 +17,7 @@ const Materials = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchMaterial = async () => {
     try {
@@ -50,7 +51,7 @@ const Materials = () => {
   const handleDelete = async () => {
     if (!selectedMaterialId) return;
     try {
-      setLoading(true);
+      setDeleting(true);
       const response = await apiClient.delete(`/materials/${selectedMaterialId}`);
       if (response.ok) {
         toast.success('Material deleted successfully');
@@ -63,7 +64,7 @@ const Materials = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Error deleting material');
     } finally {
-      setLoading(false);
+      setDeleting(false);
     }
   };
 
@@ -130,7 +131,7 @@ const Materials = () => {
         <DeleteModal
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
-          loading={loading}
+          loading={deleting}
         />
       )}
     </div>

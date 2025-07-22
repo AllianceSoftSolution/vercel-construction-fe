@@ -49,9 +49,9 @@ function PmDashboard() {
 
   // Analytics and chart data states
   const [analyticsData, setAnalyticsData] = useState([
-    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 , onClick: () => navigate("/pm-dashboard/project-management")},
-    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/pm-dashboard/demands")},
-    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/pm-dashboard/purchase-orders")},
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/project-management")},
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/demands")},
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/pOS")},
   ]);
   const [demandBreakdown, setDemandBreakdown] = useState([]);
   const [amountByVendor, setAmountByVendor] = useState([]);

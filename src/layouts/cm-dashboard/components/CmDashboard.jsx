@@ -170,7 +170,7 @@ function CmDashboard() {
           const summary = response.data.data.summary;
           const charts = response.data.data.charts || {};
           setProjectStats([
-            { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/project-management/sections") },
+            { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0  },
             { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/demands")},
             { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 , onClick: () => navigate("/construction-manager-dashboard/pOS")},
           ]);
@@ -201,11 +201,11 @@ function CmDashboard() {
 
   // Helper for section actions
   const sectionActions = (sec) => [
-    {
-      label: "View Section Detail",
-      icon: <FaEye />,
-      onClick: () => navigate(`/construction-manager-dashboard/sections/${sec.id}`),
-    },
+    // {
+    //   label: "View Section Detail",
+    //   icon: <FaEye />,
+    //   onClick: () => navigate(`/construction-manager-dashboard/sections/${sec.id}`),
+    // },
     // {
     //   label: "Edit Project Section",
     //   icon: <FaUserEdit />,
@@ -300,7 +300,7 @@ function CmDashboard() {
                     sectionName={sec.name}
                     code={sec.code}
                     description={sec.description}
-                    // dropdownActions={sectionActions(sec)}
+                    dropdownActions={sectionActions(sec)}
                   />
                   
                   {/* Show CM Store Assignment Details */}
