@@ -167,8 +167,7 @@ const CustomActionComponent = ({ value:id }) => {
   const navigate = useNavigate();
   
   const onNavigation = () => {
-    navigate(`/admin-dashboardapply
-      /payables/details/${id}`);
+    navigate(`/admin-dashboard/payables/details/${id}`);
   };
   
   return (

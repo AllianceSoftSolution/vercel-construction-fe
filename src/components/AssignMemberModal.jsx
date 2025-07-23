@@ -130,59 +130,64 @@ const AssignMemberModal = ({
   };
 
   // Step 1: User selection (AssignProjectManagerModal UI)
-  const renderUserSelection = () => (
-    <div className="rounded-xl bg-[#f3f3f5] p-6">
-      <div className="max-w-4xl mx-auto space-y-4">
-        <button
-          onClick={() => setStep(2)}
-          className="flex items-center w-full gap-3 rounded-xl px-4 py-4 bg-white"
-        >
-          <div className="bg-[#fc8908] text-white px-2  rounded-sm text-center">
-            +
-          </div>
-          Create a new Member
-        </button>
-        <div className="relative">
-          <Input
-            placeholder={`Search ${role}`}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onBlur={fetchUsersList}
-            className="bg-white w-full rounded-xl px-4 py-3 h-auto text-base placeholder:text-[#8897ad] pr-12 "
-          />
-          <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#8897ad]" />
-        </div>
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 min-h-[48px] flex flex-col items-center justify-center">
-          {loading ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader text="Loading users..." />
+  const renderUserSelection = () => {
+    // Filter users by search string in real time
+    const filteredUsers = users.filter((member) =>
+      member.name.toLowerCase().includes(search.toLowerCase())
+    );
+    return (
+      <div className="rounded-xl bg-[#f3f3f5] p-6">
+        <div className="max-w-4xl mx-auto space-y-4">
+          <button
+            onClick={() => setStep(2)}
+            className="flex items-center w-full gap-3 rounded-xl px-4 py-4 bg-white"
+          >
+            <div className="bg-[#fc8908] text-white px-2  rounded-sm text-center">
+              +
             </div>
-          ) : users.length === 0 ? (
-            <span className="text-gray-400 text-sm">No users found.</span>
-          ) : (
-            users.map((member, index) => (
-              <div
-                key={member.id}
-                onClick={() => handleUserSelect(member)}
-                className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm transition-all border-2 border-transparent cursor-pointer hover:border-2 hover:border-[#fc8908] w-full"
-              >
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-[#f7f7f8] flex-shrink-0">
-                  <img
-                    src={member.avatar || "/placeholder.svg"}
-                    alt="Member avatar"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="text-[#043b6a] font-medium text-base">
-                  {member.name}
-                </span>
+            Create a new Member
+          </button>
+          <div className="relative">
+            <Input
+              placeholder={`Search ${role}`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-white w-full rounded-xl px-4 py-3 h-auto text-base placeholder:text-[#8897ad] pr-12 "
+            />
+            <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#8897ad]" />
+          </div>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 min-h-[48px] flex flex-col items-center justify-center">
+            {loading ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader text="Loading users..." />
               </div>
-            ))
-          )}
+            ) : filteredUsers.length === 0 ? (
+              <span className="text-gray-400 text-sm">No users found.</span>
+            ) : (
+              filteredUsers.map((member, index) => (
+                <div
+                  key={member.id}
+                  onClick={() => handleUserSelect(member)}
+                  className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm transition-all border-2 border-transparent cursor-pointer hover:border-2 hover:border-[#fc8908] w-full"
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-[#f7f7f8] flex-shrink-0">
+                    <img
+                      src={member.avatar || "/placeholder.svg"}
+                      alt="Member avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-[#043b6a] font-medium text-base">
+                    {member.name}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Step 2: User creation (AddMemberModal UI, but as a step)
   const renderUserCreation = () => (

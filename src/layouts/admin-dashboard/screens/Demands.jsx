@@ -157,19 +157,8 @@ const Demands = () => {
             },
             icon: <FaEye />,
           },
-          // {
-          //   label: "Edit",
-          //   onClick: () => alert("Edit"),
-          //   icon: <FaUserEdit />,
-          // },
-          {
-            label: "Delete ",
-            onClick: () => {
-              setSelectedDemandId(demandId);
-              setShowDeleteModal(true);
-            },
-            icon: <FaTrash />,
-          },
+         
+        
         ]}
       >
         <IconButton>

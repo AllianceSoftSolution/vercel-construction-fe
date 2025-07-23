@@ -5,6 +5,7 @@ export default function ReasonModal({
   onBackClick,
   onSaveClick,
   textAreaPlaceholder = "Enter your reason here...",
+  loading = false,
 }) {
   const [remarks, setRemarks] = useState("");
 
@@ -27,14 +28,19 @@ export default function ReasonModal({
           <button
             onClick={onBackClick}
             className="bg-[#dddddd] text-[#000000] border-[#dddddd] hover:bg-[#b0b0b0] hover:border-[#b0b0b0] px-8 py-3 rounded-xl text-lg font-medium"
+            disabled={loading}
           >
             Back
           </button>
           <button
             onClick={() => onSaveClick(remarks)}
-            className="bg-[#fc8908] hover:bg-[#e07a07] text-white px-8 py-3 rounded-xl text-lg font-medium"
+            className="bg-[#fc8908] hover:bg-[#e07a07] text-white px-8 py-3 rounded-xl text-lg font-medium flex items-center justify-center min-w-[100px]"
+            disabled={loading}
           >
-            Save
+            {loading ? (
+              <span className="loader mr-2"></span>
+            ) : null}
+            {loading ? "Saving..." : "Save"}
           </button>
         </div>
       </div>

@@ -11,6 +11,9 @@ import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
+import toast from "react-hot-toast";
+import { HiCheckCircle } from "react-icons/hi";
+import { TiTick } from "react-icons/ti";
 
 const style = {
   position: "absolute",
@@ -31,6 +34,7 @@ const DemandDetails = () => {
   const [demandData, setDemandData] = useState({});
   const [statusLogs, setStatusLogs] = useState([]);
   const { id } = useParams();
+  const [modalLoading, setModalLoading] = useState(false);
 
   const handleActionClick = (newStatus) => {
     if (newStatus === "Approved") {
@@ -43,13 +47,30 @@ const DemandDetails = () => {
   };
 
   const handleReasonSubmit = async (reasonText) => {
-    if (pendingStatus === "Approved") {
-      await approveDemand(reasonText);
-    } else if (pendingStatus === "Rejected") {
-      await rejectDemand(reasonText);
+    setModalLoading(true);
+    try {
+      if (pendingStatus === "Approved") {
+        await approveDemand(reasonText);
+        toast.success("Demand approved successfully!", {
+          icon: <TiTick style={{ color: '#22c55e', fontSize: 24 }} />,
+        });
+        setOpen(false);
+        setPendingStatus(null);
+        setTimeout(() => window.location.reload(), 700);
+      } else if (pendingStatus === "Rejected") {
+        await rejectDemand(reasonText);
+        toast.error("Demand rejected !", {
+          icon: <HiCheckCircle style={{ color: '#22c55e', fontSize: 24 }} />,
+        });
+        setOpen(false);
+        setPendingStatus(null);
+        setTimeout(() => window.location.reload(), 700);
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error?.message || "Something went wrong");
+    } finally {
+      setModalLoading(false);
     }
-    setPendingStatus(null);
-    setOpen(false);
   };
 
   const handleClose = () => {
@@ -102,36 +123,32 @@ const DemandDetails = () => {
   };
 
   const rejectDemand = async (remarks) => {
-    setLoading(true);
+    // setLoading(true); // Remove page loader for modal loader
     try {
       const response = await apiClient.post(`/demands/${id}/reject`, {
         remarks,
       });
-
       if (response?.data?.demand) {
         setDemandData(response.data.demand);
+         
       } else {
-        console.error("Failed to reject", response?.data?.message);
+        throw new Error(response?.data?.message || "Failed to reject");
       }
     } catch (error) {
-      console.error("API error:", error.message);
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
   const approveDemand = async () => {
-    setLoading(true);
+    // setLoading(true); // Remove page loader for modal loader
     try {
       const response = await apiClient.post(`/demands/${id}/approve`);
       if (response?.data?.demand) {
         setDemandData(response.data.demand);
       } else {
-        console.error("Failed to approve", response?.data?.message);
+        throw new Error(response?.data?.message || "Failed to approve");
       }
     } catch (error) {
-      console.error("API error:", error.message);
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -147,6 +164,7 @@ const DemandDetails = () => {
             textAreaPlaceholder="Enter your remarks here..."
             onBackClick={handleClose}
             onSaveClick={handleReasonSubmit}
+            loading={modalLoading}
           />
         </Box>
       </Modal>
