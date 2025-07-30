@@ -178,6 +178,38 @@ const SectionDetailPage = () => {
     );
   };
 
+  // Custom cell renderer for status with chips
+  const StatusComponent = ({ value, row }) => {
+    // If row is undefined, we'll work with just the value
+    const getStatusInfo = (status) => {
+      // Map status strings to display info
+      switch (status) {
+        case "WITHIN_LIMIT":
+          return { text: "Within Limit", color: "bg-green-100 text-green-800" };
+        case "DEMAND_EXCEEDED":
+          return { text: "Demand Exceeded", color: "bg-orange-100 text-orange-800" };
+        case "PO_EXCEEDED":
+          return { text: "PO Exceeded", color: "bg-yellow-100 text-yellow-800" };
+        case "BOTH_EXCEEDED":
+          return { text: "Both Exceeded", color: "bg-red-100 text-red-800" };
+        case "PENDING":
+          return { text: "Pending", color: "bg-gray-100 text-gray-800" };
+        case "INACTIVE":
+          return { text: "Inactive", color: "bg-gray-100 text-gray-600" };
+        default:
+          return { text: status || "Unknown", color: "bg-gray-100 text-gray-800" };
+      }
+    };
+
+    const statusInfo = getStatusInfo(value);
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+        {statusInfo.text}
+      </span>
+    );
+  };
+
 
   const fetchSectionDetail = async () => {
     try {
@@ -779,7 +811,8 @@ const SectionDetailPage = () => {
                 columns={capColumns}
                 cellComponents={{ 
                   id: CapActionComponent,
-                  capQuantity: CapQuantityComponent 
+                  capQuantity: CapQuantityComponent,
+                  status: StatusComponent
                 }}
               />
             )}

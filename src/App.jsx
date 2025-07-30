@@ -11,7 +11,7 @@ import AdminDashboard from "./layouts/admin-dashboard/screens/AdminDashboard";
 import AuthLayout from "./layouts/auth/AuthLayout";
 import Login from "./layouts/auth/screens/Login";
 import Signup from "./layouts/auth/screens/Signup";
-import ForgetPassword from "./layouts/auth/screens/ForgetPassword";
+import ResetPassword from "./layouts/auth/screens/ResetPassword";
 import LandingPageLayout from "./layouts/landing-pages/LandingPageLayout";
 import PageNotFound from "@/components/NotFound";
 // admin dashboard
@@ -116,6 +116,8 @@ import CreateSectionProject from "./layouts/admin-dashboard/screens/Forms/Create
 import CreateSection from "./layouts/siteIncharge-dashboard/components/Forms/CreateSection";
 import SiPos from "./layouts/storeIncharge-dashboard/components/SiPos";
 import DemandDetails from "./layouts/admin-dashboard/screens/Projects/DemandDetails";
+import ResetOtp from "./layouts/auth/screens/ResetOtp";
+import NewPassword from "./layouts/auth/screens/NewPassword";
 
 const theme = createTheme({
   typography: {
@@ -132,8 +134,9 @@ const commonRoutes = [
       { path: "login", element: <Login /> },
       { path: "login/admin-dashboard", element: <AdminDashboard /> },
       { path: "signup", element: <Signup /> },
-      { path: "forget-password", element: <ForgetPassword /> },
-      // { path: "reset-password/:token", element: <ResetPassword /> },
+      { path: "reset-password", element: <ResetPassword /> },
+      { path: "verify-otp", element: <ResetOtp /> },
+      { path: "new-password/:token", element: <NewPassword /> },
     ],
   },
   { path: "*", element: <PageNotFound /> },

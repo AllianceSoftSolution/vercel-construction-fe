@@ -104,7 +104,7 @@ const SiteProjectDetailPage = () => {
             loading={loading}
           />
         )}
-        {tabIndex === 3 && <CAPTab data={projectData} loading={loading} />}
+          {tabIndex === 3 && <CAPTab data={projectData} loading={loading} projectId={id} />}
       </Box>
     </div>
   );

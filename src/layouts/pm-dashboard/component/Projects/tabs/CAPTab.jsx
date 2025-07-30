@@ -41,6 +41,66 @@ const CAPTab = ({ data, projectId }) => {
     },
   ];
 
+  // Custom cell renderer for CAP quantity to show color coding
+  const CapQuantityComponent = ({ value, row }) => {
+    if (!row) {
+      return <span>{value}</span>;
+    }
+    
+    const capQuantity = row.totalCapQuantity || 0;
+    const demandQuantity = row.totalDemandQuantity || 0;
+    const poQuantity = row.totalPurchaseOrderQuantity || 0;
+    
+    // Check if demand quantity exceeds cap quantity
+    const isDemandExceeded = demandQuantity > capQuantity;
+    // Check if PO quantity exceeds cap quantity
+    const isPOExceeded = poQuantity > capQuantity;
+    
+    let textColor = 'text-green-600 font-semibold'; // Default green
+    
+    if (isDemandExceeded || isPOExceeded) {
+      textColor = 'text-red-600 font-semibold'; // Red if either exceeds
+    }
+    
+    return (
+      <span className={textColor}>
+        {value}
+      </span>
+    );
+  };
+
+  // Custom cell renderer for status with chips
+  const StatusComponent = ({ value, row }) => {
+    // If row is undefined, we'll work with just the value
+    const getStatusInfo = (status) => {
+      // Map status strings to display info
+      switch (status) {
+        case "WITHIN_LIMIT":
+          return { text: "Within Limit", color: "bg-green-100 text-green-800" };
+        case "DEMAND_EXCEEDED":
+          return { text: "Demand Exceeded", color: "bg-orange-100 text-orange-800" };
+        case "PO_EXCEEDED":
+          return { text: "PO Exceeded", color: "bg-yellow-100 text-yellow-800" };
+        case "BOTH_EXCEEDED":
+          return { text: "Both Exceeded", color: "bg-red-100 text-red-800" };
+        case "PENDING":
+          return { text: "Pending", color: "bg-gray-100 text-gray-800" };
+        case "INACTIVE":
+          return { text: "Inactive", color: "bg-gray-100 text-gray-600" };
+        default:
+          return { text: status || "Unknown", color: "bg-gray-100 text-gray-800" };
+      }
+    };
+
+    const statusInfo = getStatusInfo(value);
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+        {statusInfo.text}
+      </span>
+    );
+  };
+
   // Fetch CAP data when component mounts or data changes
   const fetchCAPData = async () => {
     try {
@@ -64,6 +124,7 @@ const CAPTab = ({ data, projectId }) => {
   useEffect(() => {
     // If data has materialCapAnalytics, use that, otherwise fetch from API
     if (data?.materialCapAnalytics) {
+      console.log("Material CAP Analytics from props:", data.materialCapAnalytics);
       setCapData(data.materialCapAnalytics);
     } else if (projectId) {
       // Fetch CAP data from API if not provided in props
@@ -89,11 +150,18 @@ const CAPTab = ({ data, projectId }) => {
         <div className="flex justify-center items-center h-full min-h-[200px]">
           <Loader />
         </div>
+      ) : capData.length === 0 ? (
+        <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+          <p className="text-gray-500">No CAP data available</p>
+        </div>
       ) : (
         <SimpleTable
           data={transformedData}
           columns={columns}
-          cellComponents={{}}
+          cellComponents={{
+            totalCapQuantity: CapQuantityComponent,
+            status: StatusComponent
+          }}
         />
       )}
     </div>

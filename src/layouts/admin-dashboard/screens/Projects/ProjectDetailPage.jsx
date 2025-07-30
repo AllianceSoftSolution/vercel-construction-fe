@@ -111,7 +111,7 @@ const ProjectDetailPage = () => {
                 onSectionDeleted={handleSectionDeleted}
               />
             )}
-            {tabIndex === 3 && <CAPTab />}
+            {tabIndex === 3 && <CAPTab data={projectData} projectId={id} />}
           </>
         )}
       </Box>
