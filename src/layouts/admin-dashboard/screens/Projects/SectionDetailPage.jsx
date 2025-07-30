@@ -16,6 +16,7 @@ import AssignProjectManagerModal from "../../../../components/AssignProjectManag
 import toast from "react-hot-toast";
 import apiClient from "../../../../api/apiClient";
 import AssignMemberModal from "../../../../components/AssignMemberModal";
+import AssignCAPModal from "../../../../components/AssignCAPModal";
 
 const style = {
   position: "absolute",
@@ -36,10 +37,12 @@ const SectionDetailPage = () => {
   const [openAssignCMModal, setOpenAssignCMModal] = useState(false);
   const [openAssignStoreInchargeModal, setOpenAssignStoreInchargeModal] =
     useState(false);
+  const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
   const [selectedPM, setSelectedPM] = useState(null);
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
   const { id } = useParams();
   const [sectionData, setSectionData] = useState({});
+  const [capData, setCapData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
@@ -84,6 +87,47 @@ const SectionDetailPage = () => {
     </DropdownButton>
   );
 
+  const CapActionComponent = ({ value: capId }) => {
+    const handleDeleteCap = async () => {
+      try {
+        setModalLoading(true);
+        const response = await apiClient.patch(`/material-caps/section/${id}`, {
+          capId: capId,
+          action: "delete"
+        });
+        
+        if (response.ok) {
+          toast.success("CAP deleted successfully!");
+          fetchCAPData(); // Refresh the CAP table
+        } else {
+          toast.error("Failed to delete CAP");
+        }
+      } catch (error) {
+        console.error("Error deleting CAP:", error);
+        toast.error("Error deleting CAP");
+      } finally {
+        setModalLoading(false);
+      }
+    };
+
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "Delete",
+            onClick: handleDeleteCap,
+            icon: <FaTrash />,
+          },
+        ]}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
+
  
 
   const columns = [
@@ -96,6 +140,44 @@ const SectionDetailPage = () => {
     { headerName: "CM Store", field: "cmStore.name" },
     { headerName: "Action", field: "id" },
   ];
+
+  const capColumns = [
+    { headerName: "Material Name", field: "materialName" },
+    { headerName: "CAP Quantity", field: "capQuantity" },
+    { headerName: "Unit", field: "capUnit" },
+    { headerName: "Demand Quantity", field: "totalDemandQuantity" },
+    { headerName: "PO Quantity", field: "totalPurchaseOrderQuantity" },
+    { headerName: "Status", field: "status" },
+    // { headerName: "Action", field: "materialId" },
+  ];
+
+  const CapQuantityComponent = ({ value, row }) => {
+    if (!row) {
+      return <span>{value}</span>;
+    }
+    
+    const capQuantity = row.capQuantity || 0;
+    const demandQuantity = row.totalDemandQuantity || 0;
+    const poQuantity = row.totalPurchaseOrderQuantity || 0;
+    
+    // Check if demand quantity exceeds cap quantity
+    const isDemandExceeded = demandQuantity > capQuantity;
+    // Check if PO quantity exceeds cap quantity
+    const isPOExceeded = poQuantity > capQuantity;
+    
+    let textColor = 'text-green-600 font-semibold'; // Default green
+    
+    if (isDemandExceeded || isPOExceeded) {
+      textColor = 'text-red-600 font-semibold'; // Red if either exceeds
+    }
+    
+    return (
+      <span className={textColor}>
+        {value}
+      </span>
+    );
+  };
+
 
   const fetchSectionDetail = async () => {
     try {
@@ -122,9 +204,49 @@ const SectionDetailPage = () => {
     }
   };
 
+  
+
+
   useEffect(() => {
-    if (id) fetchSectionDetail();
+    if (id) {
+      fetchSectionDetail();
+    }
   }, [id]);
+
+  
+  // Fetch CAP data for this section
+  const fetchCAPData = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/material-caps/section/${id}`);
+      if (response.ok) {
+        const caps = response.data.caps || [];
+        // Transform data to include formatted dates
+        const transformedCaps = caps.map(cap => ({
+          ...cap,
+          createdAt: new Date(cap.createdAt).toLocaleDateString()
+        }));
+        setCapData(transformedCaps);
+      } else {
+        toast.error("Failed to fetch CAP data");
+      }
+    } catch (error) {
+      console.error("Error fetching CAP data:", error);
+      toast.error("Error fetching CAP data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (sectionData?.materialCapAnalytics) {
+      console.log("Material CAP Analytics:", sectionData.materialCapAnalytics);
+      setCapData(sectionData.materialCapAnalytics);
+    } else if (id) {
+      // Fetch CAP data if not available in sectionData
+      fetchCAPData();
+    }
+  }, [sectionData, id]);
 
   if (pageLoading) {
     return (
@@ -165,10 +287,10 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Add this helper to get available CMs from sectionData
+  
   const availableCMs = sectionData?.availableConstructionManagers || [];
 
-  // Handler for assigning a Construction Manager
+  
   const handleAssignCM = async (user) => {
     try {
       setModalLoading(true);
@@ -192,7 +314,7 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Handler for adding a new Construction Manager
+  
   const handleAddCM = async (data) => {
     try {
       setModalLoading(true);
@@ -217,7 +339,7 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Project Manager assignment logic
+  
   const fetchPMUsers = async () => {
     try {
       const response = await apiClient.get(`/assignments/users-by-role`, {
@@ -276,7 +398,7 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Construction Manager assignment logic
+  
   const fetchCMUsers = async () => {
     try {
       const response = await apiClient.get(`/assignments/users-by-role`, {
@@ -337,7 +459,7 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Store Incharge assignment logic
+  
   const fetchStoreInchargeUsers = async () => {
     try {
       setModalLoading(true);
@@ -404,6 +526,49 @@ const SectionDetailPage = () => {
     }
   };
 
+  
+  const handleCAPSubmit = async (capItems) => {
+    try {
+      setModalLoading(true);
+      
+      
+      const transformedItems = capItems.map((item) => ({
+        materialId: item.materialId,
+        quantity: parseInt(item.qty) || 0,
+        unit: item.unit,
+      }));
+
+      console.log("Original CAP items:", capItems);
+      console.log("Transformed items:", transformedItems);
+
+      // Call the new API endpoint
+      console.log("Sending CAP data:", { caps: transformedItems });
+      const response = await apiClient.post(`/material-caps/section/${id}`, {
+        caps: transformedItems
+      });
+      
+      console.log("API Response:", response);
+      
+      if (response.ok) {
+        toast.success("CAP items added successfully!");
+        setOpenAssignCAPModal(false);
+        // Refresh section data to get updated materialCapAnalytics
+        fetchSectionDetail();
+      } else {
+        console.error("API Error:", response.data);
+        toast.error(response.data?.message || "Failed to add CAP items");
+      }
+    } catch (error) {
+      console.error("Error adding CAP items:", error);
+      toast.error("Failed to add CAP items");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+
+
+  
   return (
     <div className=" sm:p-6 w-full">
       <TopBar
@@ -597,6 +762,29 @@ const SectionDetailPage = () => {
             />
           )}
         </div>
+        <div className="mt-10">
+          <TopBar
+            title="Material CAP"
+            buttonText="Add Material Cap"
+            onButtonClick={() => setOpenAssignCAPModal(true)}
+          />
+          <div className="overflow-x-auto mt-4 relative">
+            {loading ? (
+              <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                <Loader />
+              </div>
+            ) : (
+              <SimpleTable
+                data={capData}
+                columns={capColumns}
+                cellComponents={{ 
+                  id: CapActionComponent,
+                  capQuantity: CapQuantityComponent 
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       <AssignMemberModal
@@ -636,6 +824,15 @@ const SectionDetailPage = () => {
         createUser={createStoreInchargeUser}
         onAssign={handleAssignStoreInchargeGeneric}
         loading={modalLoading}
+      />
+
+      <AssignCAPModal
+        open={openAssignCAPModal}
+        onClose={() => setOpenAssignCAPModal(false)}
+        onSubmit={handleCAPSubmit}
+        loading={modalLoading}
+        sectionId={id}
+        onCapDeleted={fetchCAPData}
       />
     </div>
   );

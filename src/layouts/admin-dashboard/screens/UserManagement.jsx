@@ -39,6 +39,10 @@ const UserManagement = () => {
   const { id } = useParams();
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
+  const [userAnalytics, setUserAnalytics] = useState({
+    totalUsers: 0,
+    roleBreakdown: {}
+  });
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState({ Role: [] });
 
@@ -74,6 +78,14 @@ const UserManagement = () => {
             iD: user.id || index + 1,
           })) || [];
         setUsers(data);
+        
+        // Set analytics data from API response
+        if (response.data.userAnalytics) {
+          setUserAnalytics({
+            totalUsers: response.data.userAnalytics.totalUsers || 0,
+            roleBreakdown: response.data.userAnalytics.roleBreakdown || {}
+          });
+        }
       } else {
         toast.error("Failed to fetch users");
       }
@@ -111,11 +123,8 @@ const UserManagement = () => {
     { headerName: "ID", field: "employeeId" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
-    {headerName:"Note", field:"note"},
-    // { headerName: "Phone Number", field: "phone" },
     { headerName: "Role", field: "role" },
-    // { headerName: "Status", field: "status" },
-    // { headerName: "Note", field: "note" },
+    { headerName: "Status", field: "isActive" },
     { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
@@ -123,24 +132,43 @@ const UserManagement = () => {
     },
   ];
 
+  // Generate analytics cards based on role breakdown data
   const managerAnalytics = [
     {
-      label: "Site Manager",
+      label: "Site Incharge",
       icon: FaPeopleLine,
-      count: 10,
-      percentage: 10,
+      count: userAnalytics.roleBreakdown.SITE_INCHARGE || 0,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.SITE_INCHARGE || 0) / userAnalytics.totalUsers * 100) : 0,
     },
     {
       label: "Project Manager",
       icon: Person,
-      count: 10,
-      percentage: 10,
+      count: userAnalytics.roleBreakdown.PROJECT_MANAGER || 0,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.PROJECT_MANAGER || 0) / userAnalytics.totalUsers * 100) : 0,
     },
     {
       label: "Construction Manager",
       icon: Person3,
-      count: 10,
-      percentage: 10,
+      count: userAnalytics.roleBreakdown.CONSTRUCTION_MANAGER || 0,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.CONSTRUCTION_MANAGER || 0) / userAnalytics.totalUsers * 100) : 0,
+    },
+    {
+      label: "Store Incharge",
+      icon: IoStorefrontSharp,
+      count: userAnalytics.roleBreakdown.STORE_INCHARGE || 0,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.STORE_INCHARGE || 0) / userAnalytics.totalUsers * 100) : 0,
+    },
+    {
+      label: "Accountant",
+      icon: Person2,
+      count: userAnalytics.roleBreakdown.ACCOUNTANT || 0,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.ACCOUNTANT || 0) / userAnalytics.totalUsers * 100) : 0,
+    },
+    {
+      label: "Admin",
+      icon: Person2Outlined,
+      count: userAnalytics.roleBreakdown.ADMIN || 0,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.ADMIN || 0) / userAnalytics.totalUsers * 100) : 0,
     },
   ];
 
@@ -212,6 +240,17 @@ const UserManagement = () => {
     );
   };
 
+  // Custom cell renderer for status to display Active/Inactive
+  const StatusCell = ({ value }) => {
+    return (
+      <span className={`text-sm px-2 py-1 rounded-full ${
+        value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+      }`}>
+        {value ? 'Active' : 'Inactive'}
+      </span>
+    );
+  };
+
   return (
     <div className=" h-full ">
       <TopBar
@@ -232,24 +271,35 @@ const UserManagement = () => {
           placeholder="Filter by role"
         />
       </div>
-      <h2 className="text-2xl font-semibold text-primary mt-4">
-        Total Users Overview
-      </h2>
-      <div className="border border-[#CDC9C9] mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {managerAnalytics.map((item, index) => (
-          <div
-            key={index}
-            className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] lg:last:after:hidden"
-          >
-            <AnalyticsCard
-              label={item.label}
-              icon={item.icon}
-              count={item.count}
-              percentage={item.percentage}
-            />
-          </div>
-        ))}
+      <div className="flex justify-between items-center mt-4">
+        <h2 className="text-2xl font-semibold text-primary">
+          Total Users Overview
+        </h2>
+        <div className="text-lg font-medium text-gray-600">
+          Total: {userAnalytics.totalUsers} Users
+        </div>
       </div>
+      {loading ? (
+        <div className="border border-[#CDC9C9] mt-4 rounded-2xl p-2 flex items-center justify-center min-h-[200px]">
+          <Loader />
+        </div>
+      ) : (
+        <div className="border border-[#CDC9C9] mt-4 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {managerAnalytics.map((item, index) => (
+            <div
+              key={index}
+              className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-[#E0E0E0] last:after:hidden "
+            >
+              <AnalyticsCard
+                label={item.label}
+                icon={item.icon}
+                count={item.count}
+                percentage={item.percentage}
+              />
+            </div>
+          ))}
+        </div>
+      )}
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Users</h2>
         {loading ? (
@@ -258,7 +308,7 @@ const UserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ id: CustomActionComponent, role: RoleCell }}
+            cellComponents={{ id: CustomActionComponent, role: RoleCell, isActive: StatusCell }}
           />
         )}
       </div>
@@ -315,3 +365,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

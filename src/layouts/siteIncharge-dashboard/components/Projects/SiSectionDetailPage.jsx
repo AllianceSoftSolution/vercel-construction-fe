@@ -14,8 +14,10 @@ import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
 import AssignMemberModal from "../../../../components/AssignMemberModal";
+import AssignCAPModal from "../../../../components/AssignCAPModal";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+// import Loader from "../../../../components/Loader";
 
 const style = {
   position: "absolute",
@@ -35,6 +37,9 @@ const SiSectionDetailPage = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
   const [openAssignCMModal, setOpenAssignCMModal] = useState(false);
+  const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
+  const [capData, setCapData] = useState([]);
+  const [capDataType, setCapDataType] = useState("analytics"); // "analytics" or "raw"
 
   // Generic function to format text for display (roles, types, etc.)
   const formatText = (text) => {
@@ -116,9 +121,98 @@ const SiSectionDetailPage = () => {
     }
   };
 
+  // CAP submission handler
+  const handleCAPSubmit = async (capItems) => {
+    try {
+      setModalLoading(true);
+      
+      // Transform the data to match the API structure
+      const transformedItems = capItems.map((item) => ({
+        materialId: item.materialId,
+        quantity: parseInt(item.qty) || 0,
+        unit: item.unit,
+      }));
+
+      console.log("Original CAP items:", capItems);
+      console.log("Transformed items:", transformedItems);
+
+      // Call the new API endpoint
+      console.log("Sending CAP data:", { caps: transformedItems });
+      const response = await apiClient.post(`/material-caps/section/${id}`, {
+        caps: transformedItems
+      });
+      
+      console.log("API Response:", response);
+      
+      if (response.ok) {
+        toast.success("CAP items added successfully!");
+        setOpenAssignCAPModal(false);
+        // Refresh section data to get updated materialCapAnalytics
+        fetchSectionDetail();
+      } else {
+        console.error("API Error:", response.data);
+        toast.error(response.data?.message || "Failed to add CAP items");
+      }
+    } catch (error) {
+      console.error("Error adding CAP items:", error);
+      toast.error("Failed to add CAP items");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (id) fetchSectionDetail();
   }, [id]);
+
+  // Fetch CAP data for this section
+  const fetchCAPData = async () => {
+    try {
+      setLoading(true);
+      console.log("Fetching CAP data for section:", id);
+      const response = await apiClient.get(`/material-caps/section/${id}`);
+      console.log("CAP API Response:", response);
+      
+      if (response.ok) {
+        const caps = response.data.caps || [];
+        console.log("Raw CAP data:", caps);
+        
+        // Transform data to include formatted dates
+        const transformedCaps = caps.map(cap => ({
+          ...cap,
+          createdAt: new Date(cap.createdAt).toLocaleDateString()
+        }));
+        console.log("Transformed CAP data:", transformedCaps);
+        setCapData(transformedCaps);
+      } else {
+        console.error("CAP API Error:", response.data);
+        toast.error("Failed to fetch CAP data");
+      }
+    } catch (error) {
+      console.error("Error fetching CAP data:", error);
+      toast.error("Error fetching CAP data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update CAP data when section data changes
+  useEffect(() => {
+    if (sectionData?.materialCapAnalytics) {
+      console.log("Material CAP Analytics:", sectionData.materialCapAnalytics);
+      setCapData(sectionData.materialCapAnalytics);
+      setCapDataType("analytics");
+    } else if (id) {
+      // Fetch CAP data if not available in sectionData
+      fetchCAPData();
+      setCapDataType("raw");
+    }
+  }, [sectionData, id]);
+
+  // Debug: Log capData whenever it changes
+  useEffect(() => {
+    console.log("CAP Data updated:", capData);
+  }, [capData]);
 
   // Construction Manager assignment logic
   const fetchCMUsers = async () => {
@@ -210,6 +304,55 @@ const SiSectionDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
 
+  const capColumns = [
+    { headerName: "Material Name", field: "materialName" },
+    { headerName: "CAP Quantity", field: "capQuantity" },
+    { headerName: "Unit", field: "capUnit" },
+    { headerName: "Demand Quantity", field: "totalDemandQuantity" },
+    { headerName: "PO Quantity", field: "totalPurchaseOrderQuantity" },
+    { headerName: "Status", field: "status" },
+    // { headerName: "Action", field: "materialId" },
+  ];
+
+  // For raw CAP data (different field structure)
+  const rawCapColumns = [
+    { headerName: "Material Name", field: "material.name" },
+    { headerName: "Quantity", field: "quantity" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "Section", field: "section.name" },
+    { headerName: "Project", field: "project.name" },
+    { headerName: "Created At", field: "createdAt" },
+  ];
+
+  const CapQuantityComponent = ({ value, row }) => {
+    if (!row) {
+      return <span>{value}</span>;
+    }
+    
+    const capQuantity = row.capQuantity || 0;
+    const demandQuantity = row.totalDemandQuantity || 0;
+    const poQuantity = row.totalPurchaseOrderQuantity || 0;
+    
+    // Check if demand quantity exceeds cap quantity
+    const isDemandExceeded = demandQuantity > capQuantity;
+    // Check if PO quantity exceeds cap quantity
+    const isPOExceeded = poQuantity > capQuantity;
+    
+    let textColor = 'text-green-600 font-semibold'; // Default green
+    
+    if (isDemandExceeded || isPOExceeded) {
+      textColor = 'text-red-600 font-semibold'; // Red if either exceeds
+    }
+    
+    return (
+      <span className={textColor}>
+        {value}
+      </span>
+    );
+  };
+
+  // Remove hardcoded data - we'll use capData from API
+
   const [showModal, setShowModal] = useState(false);
   const [hasMemberInfo, setHasMemberInfo] = useState(false);
   const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
@@ -217,6 +360,8 @@ const SiSectionDetailPage = () => {
 
   const constructionManagersData = transformConstructionManagersData();
   const storeIncharges = getStoreInchargeAssignments();
+
+
 
   // Show page loader until initial data is loaded
   if (pageLoading) {
@@ -434,6 +579,30 @@ const SiSectionDetailPage = () => {
             </div>
           </div>
 
+          <div>
+          <TopBar
+            title="CAP"
+            buttonText="Add Material Cap"
+            onButtonClick={() => setOpenAssignCAPModal(true)}
+          />
+          <div className="overflow-x-auto mt-4 relative">
+            {loading ? (
+              <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                {/* <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div> */}
+              </div>
+            ) : (
+              <SimpleTable
+                data={capData}
+                columns={capDataType === "analytics" ? capColumns : rawCapColumns}
+                cellComponents={{ 
+                  id: CustomActionComponent,
+                  capQuantity: capDataType === "analytics" ? CapQuantityComponent : undefined
+                }}
+              />
+            )}
+          </div>
+        </div>
+
           {/* AssignMemberModal for Construction Manager */}
           <AssignMemberModal
             role="Construction Manager"
@@ -443,6 +612,16 @@ const SiSectionDetailPage = () => {
             createUser={createCMUser}
             onAssign={handleAssignCMGeneric}
             loading={modalLoading}
+          />
+
+          {/* AssignCAPModal for CAP items */}
+          <AssignCAPModal
+            open={openAssignCAPModal}
+            onClose={() => setOpenAssignCAPModal(false)}
+            onSubmit={handleCAPSubmit}
+            loading={modalLoading}
+            sectionId={id}
+            onCapDeleted={fetchCAPData}
           />
         </>
       ) : (

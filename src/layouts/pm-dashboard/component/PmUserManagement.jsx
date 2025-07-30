@@ -37,7 +37,10 @@ const PmUserManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [managerStats, setManagerStats] = useState([]);
+  const [userAnalytics, setUserAnalytics] = useState({
+    totalUsers: 0,
+    roleBreakdown: {}
+  });
   const [filter, setFilter] = useState({ Role: [] });
 
   // Role filter options (label: UI, value: backend)
@@ -47,7 +50,7 @@ const PmUserManagement = () => {
     { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
     { label: "store_incharge", value: "STORE_INCHARGE" },
     { label: "accountant", value: "ACCOUNTANT" },
-    { label: "project_management", value: "PROJECT_MANAGEMENT" },
+    { label: "project_management", value: "PROJECT_MANAGER" },
   ];
 
   // Add this mapping at the top, after roleOptions
@@ -79,34 +82,13 @@ const PmUserManagement = () => {
         const usersData = response.data.users || [];
         setUsers(usersData);
         
-        // Calculate analytics based on actual user data
-        const roleCounts = usersData.reduce((acc, user) => {
-          const role = user.role;
-          acc[role] = (acc[role] || 0) + 1;
-          return acc;
-        }, {});
-        
-        // Update analytics with real counts
-        setManagerStats([
-          {
-            label: "Site Manager",
-            icon: FaPeopleLine,
-            count: roleCounts.SITE_INCHARGE || 0,
-            percentage: usersData.length > 0 ? Math.round((roleCounts.SITE_INCHARGE || 0) / usersData.length * 100) : 0,
-          },
-          {
-            label: "Project Manager",
-            icon: Person,
-            count: roleCounts.PROJECT_MANAGER || 0,
-            percentage: usersData.length > 0 ? Math.round((roleCounts.PROJECT_MANAGER || 0) / usersData.length * 100) : 0,
-          },
-          {
-            label: "Construction Manager",
-            icon: Person3,
-            count: roleCounts.CONSTRUCTION_MANAGER || 0,
-            percentage: usersData.length > 0 ? Math.round((roleCounts.CONSTRUCTION_MANAGER || 0) / usersData.length * 100) : 0,
-          },
-        ]);
+        // Update analytics with actual data from API
+        if (response.data.userAnalytics) {
+          setUserAnalytics({
+            totalUsers: response.data.userAnalytics.totalUsers || 0,
+            roleBreakdown: response.data.userAnalytics.roleBreakdown || {}
+          });
+        }
       } else {
         toast.error("Failed to fetch users");
       }
@@ -140,6 +122,34 @@ const PmUserManagement = () => {
     },
   ];
 
+  // Generate analytics cards based on actual role breakdown
+  const generateManagerStats = () => {
+    const roleIcons = {
+      SITE_INCHARGE: FaPeopleLine,
+      PROJECT_MANAGER: Person,
+      CONSTRUCTION_MANAGER: Person3,
+      STORE_INCHARGE: IoStorefrontSharp,
+      ACCOUNTANT: Person,
+      ADMIN: Person
+    };
+
+    const roleLabels = {
+      SITE_INCHARGE: "Site Manager",
+      PROJECT_MANAGER: "Project Manager", 
+      CONSTRUCTION_MANAGER: "Construction Manager",
+      STORE_INCHARGE: "Store Manager",
+      ACCOUNTANT: "Accountant",
+      ADMIN: "Admin"
+    };
+
+    return Object.entries(userAnalytics.roleBreakdown).map(([role, count]) => ({
+      label: roleLabels[role] || role,
+      icon: roleIcons[role] || Person,
+      count: count,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((count / userAnalytics.totalUsers) * 100) : 0,
+    }));
+  };
+
   const CustomActionComponent = ({ value : id  }) => {
     return (
       <DropdownButton
@@ -170,6 +180,8 @@ const PmUserManagement = () => {
     setFilter(selection);
   };
   const handleFilterClear = () => setFilter({ Role: [] });
+
+  const managerStats = generateManagerStats();
 
   return (
     <div className="h-full">

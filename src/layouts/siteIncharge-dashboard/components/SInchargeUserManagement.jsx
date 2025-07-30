@@ -38,6 +38,10 @@ const SInchargeUserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState({ Role: [] });
+  const [userAnalytics, setUserAnalytics] = useState({
+    totalUsers: 0,
+    roleBreakdown: {}
+  });
 
   // Role filter options
   const roleOptions = [
@@ -46,7 +50,7 @@ const SInchargeUserManagement = () => {
     { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
     { label: "store_incharge", value: "STORE_INCHARGE" },
     { label: "accountant", value: "ACCOUNTANT" },
-    { label: "project_management", value: "PROJECT_MANAGEMENT" },
+    { label: "project_management", value: "PROJECT_MANAGER" },
   ];
   const filters = [
     { label: "Role", options: roleOptions.map(o => o.label) },
@@ -74,6 +78,14 @@ const SInchargeUserManagement = () => {
             iD: user.id || index + 1,
           })) || [];
         setUsers(data);
+        
+        // Update analytics with actual data from API
+        if (response.data.userAnalytics) {
+          setUserAnalytics({
+            totalUsers: response.data.userAnalytics.totalUsers || 0,
+            roleBreakdown: response.data.userAnalytics.roleBreakdown || {}
+          });
+        }
       } else {
         toast.error("Failed to fetch users");
       }
@@ -111,26 +123,34 @@ const SInchargeUserManagement = () => {
       field: "id",
     },
   ];
-  const teamAnalytics = [
-    {
-      label: "Site Manager",
-      icon: FaPeopleLine,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Project Manager",
-      icon: Person,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Construction Manager",
-      icon: Person3,
-      count: 10,
-      percentage: 10,
-    },
-  ];
+
+  // Generate analytics cards based on actual role breakdown
+  const generateTeamAnalytics = () => {
+    const roleIcons = {
+      SITE_INCHARGE: FaPeopleLine,
+      PROJECT_MANAGER: Person,
+      CONSTRUCTION_MANAGER: Person3,
+      STORE_INCHARGE: IoStorefrontSharp,
+      ACCOUNTANT: Person,
+      ADMIN: Person
+    };
+
+    const roleLabels = {
+      SITE_INCHARGE: "Site Manager",
+      PROJECT_MANAGER: "Project Manager", 
+      CONSTRUCTION_MANAGER: "Construction Manager",
+      STORE_INCHARGE: "Store Manager",
+      ACCOUNTANT: "Accountant",
+      ADMIN: "Admin"
+    };
+
+    return Object.entries(userAnalytics.roleBreakdown).map(([role, count]) => ({
+      label: roleLabels[role] || role,
+      icon: roleIcons[role] || Person,
+      count: count,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((count / userAnalytics.totalUsers) * 100) : 0,
+    }));
+  };
 
   // Custom cell renderer for role to display properly formatted
   const RoleCell = ({ value }) => {
@@ -182,6 +202,9 @@ const SInchargeUserManagement = () => {
       </DropdownButton>
     );
   };
+
+  const teamAnalytics = generateTeamAnalytics();
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar

@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
+import AssignCAPModal from "../../../../components/AssignCAPModal";
+import toast from "react-hot-toast";
+import apiClient from "../../../../api/apiClient";
+import Loader from "../../../../components/ui/Loader";
 
 const style = {
   position: "absolute",
@@ -23,88 +27,185 @@ const style = {
   boxShadow: 24,
 };
 
+const capColumns = [
+  { headerName: "Material Name", field: "materialName" },
+  { headerName: "CAP Quantity", field: "capQuantity" },
+  { headerName: "Unit", field: "capUnit" },
+  { headerName: "Demand Quantity", field: "totalDemandQuantity" },
+  { headerName: "PO Quantity", field: "totalPurchaseOrderQuantity" },
+  { headerName: "Status", field: "status" },
+  // { headerName: "Action", field: "id" },
+];
+
 const CmSectionDetailPage = () => {
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
-  const [hasMemberInfo, sethasMemberInfo] = useState(false);
-  const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const { id } = useParams();
+  const [sectionData, setSectionData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [capData, setCapData] = useState([]);
 
-  // const CustomActionComponent = ({ data }) => {
-  //   return (
-  //     <DropdownButton
-  //       className="bg-[#FF0000] font-semibold"
-  //       items={[
-  //         {
-  //           label: "View Store",
-  //           onClick: () =>
-  //             navigate("/construction-manager-dashboard/user-management/123"),
-  //           icon: <FaUserEdit />,
-  //         },
-  //         {
-  //           label: "Edit",
-  //           onClick: () => alert("Edit"),
-  //           icon: <FaUserEdit />,
-  //         },
-  //         {
-  //           label: "Delete ",
-  //           onClick: () => alert("Delete"),
-  //           icon: <FaTrash />,
-  //         },
-  //       ]}
-  //     >
-  //       <IconButton>
-  //         <BsThreeDotsVertical />
-  //       </IconButton>
-  //     </DropdownButton>
-  //   );
-  // };
+  // Generic function to format text for display (roles, types, etc.)
+  const formatText = (text) => {
+    if (!text) return "-";
+    
+    // Convert text to title case and replace underscores with spaces
+    return text
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
-  const data = [
-    {
-      id: 1,
-      cmId: "1",
-      constructionManager: "Hassan",
-      email: "h@gmail.com",
-      phone: +123455666,
-      address: "A1",
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    // ... more rows
-  ];
+  const CapQuantityComponent = ({ value, row }) => {
+    if (!row) {
+      return <span>{value}</span>;
+    }
+    
+    const capQuantity = row.capQuantity || 0;
+    const demandQuantity = row.totalDemandQuantity || 0;
+    const poQuantity = row.totalPurchaseOrderQuantity || 0;
+    
+    // Check if demand quantity exceeds cap quantity
+    const isDemandExceeded = demandQuantity > capQuantity;
+    // Check if PO quantity exceeds cap quantity
+    const isPOExceeded = poQuantity > capQuantity;
+    
+    let textColor = 'text-green-600 font-semibold'; // Default green
+    
+    if (isDemandExceeded || isPOExceeded) {
+      textColor = 'text-red-600 font-semibold'; // Red if either exceeds
+    }
+    
+    return (
+      <span className={textColor}>
+        {value}
+      </span>
+    );
+  };
 
-  const columns = [
-    { headerName: "CM ID", field: "cmId" },
-    { headerName: "Construction Manager", field: "constructionManager" },
-    { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
-    { headerName: "Address", field: "address" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
+  const CapActionComponent = ({ value: capId }) => {
+    const handleDeleteCap = async () => {
+      try {
+        setModalLoading(true);
+        const response = await apiClient.patch(`/material-caps/section/${id}`, {
+          capId: capId,
+          action: "delete"
+        });
+        
+        if (response.ok) {
+          toast.success("CAP deleted successfully!");
+          fetchCAPData(); // Refresh the CAP table
+        } else {
+          toast.error("Failed to delete CAP");
+        }
+      } catch (error) {
+        console.error("Error deleting CAP:", error);
+        toast.error("Error deleting CAP");
+      } finally {
+        setModalLoading(false);
+      }
+    };
+
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "Delete",
+            onClick: handleDeleteCap,
+            icon: <FaTrash />,
+          },
+        ]}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
+
+  // Fetch CAP data for this section
+  const fetchCAPData = async (setLoadingState = true) => {
+    try {
+      if (setLoadingState) setLoading(true);
+      const response = await apiClient.get(`/material-caps/section/${id}`);
+      if (response.ok) {
+        const caps = response.data.caps || [];
+        console.log("Raw CAP data from API:", caps); // Debug log
+        
+        // Transform data to include formatted dates
+        const transformedCaps = caps.map(cap => ({
+          ...cap,
+          createdAt: new Date(cap.createdAt).toLocaleDateString()
+        }));
+        console.log("Transformed CAP data:", transformedCaps); // Debug log
+        setCapData(transformedCaps);
+      } else {
+        toast.error("Failed to fetch CAP data");
+      }
+    } catch (error) {
+      console.error("Error fetching CAP data:", error);
+      toast.error("Error fetching CAP data");
+    } finally {
+      if (setLoadingState) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Simulate fetch section by id (replace with real API call if needed)
+    const fetchSection = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get(`/sections/${id}`);
+        if (response.ok) {
+          setSectionData(response.data.section);
+          
+          // Check if sectionData has materialCapAnalytics
+          if (response.data.section?.materialCapAnalytics) {
+            console.log("Material CAP Analytics:", response.data.section.materialCapAnalytics);
+            setCapData(response.data.section.materialCapAnalytics);
+          } else {
+            // Fetch CAP data separately if not available in sectionData
+            fetchCAPData(false);
+          }
+        } else {
+          toast.error("Failed to fetch section details.");
+        }
+      } catch (error) {
+        toast.error("Error fetching section details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) {
+      fetchSection();
+    }
+  }, [id]);
+
+  // Info fields fallback
+  const info = [
+    ["Project Name", sectionData?.project?.name || "-"],
+    ["Project Code", sectionData?.project?.code || "-"],
+    ["Section", sectionData?.name || "-"],
+    // ["Amount", sectionData?.amount || "-"],
+    // ["Date", sectionData?.createdAt ? new Date(sectionData.createdAt).toLocaleDateString() : "-"],
+    // ["Project Location", sectionData?.project?.location || "-"],
+    // ["Project Status", sectionData?.project?.status || "-"],
   ];
 
   return (
     <div className="mt-4 px-4 w-full">
       <TopBar
         title="Section Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
       {/* Project Info */}
       <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 flex flex-col gap-4">
         <div className="flex flex-wrap justify-between gap-4">
-          {[
-            ["Project Name", "project name"],
-            ["Project Code", "project Code"],
-            ["Section", "section"],
-            ["Amount", "amount"],
-            ["Date", "date"],
-          ].map(([label, value], index) => (
+          {info.map(([label, value], index) => (
             <div key={index} className="flex items-center gap-2 w-full sm:w-[45%]">
               <p className="text-[#444444] font-semibold text-sm sm:text-base">
                 {label}:
@@ -113,114 +214,85 @@ const CmSectionDetailPage = () => {
             </div>
           ))}
         </div>
-
-        <div className="flex flex-wrap gap-4">
-          <div className="flex gap-2 items-center w-full sm:w-[45%]">
-            <p className="text-[#444444] font-semibold text-sm sm:text-base">
-              Project Location:
-            </p>
-            <p className="text-[#979797] text-sm sm:text-base">project Location</p>
-          </div>
-          <div className="flex gap-2 items-center w-full sm:w-[45%]">
-            <p className="text-[#444444] font-semibold text-sm sm:text-base">
-              Project Status:
-            </p>
-            <p className="text-[#979797] text-sm sm:text-base">project Status</p>
-          </div>
-        </div>
       </div>
 
-      {/* Members Overview */}
-      <div className="mt-10">
-        <h4 className="text-[#12141D] font-semibold text-lg sm:text-xl mb-4">
-          Members Overview
-        </h4>
-        <div className="flex w-full lg:flex-row flex-col gap-4">
-          {hasMemberInfo ? (
-            <MemberInfoCard
-              title="General information - Store Head"
-              image={manager}
-              name="Manager name here"
-              phone="+92 300 000 090"
-              role="Store Head"
-              email="example@gmail.com"
-              joiningDate="January 8, 2001"
-              id="9090"
-              address="addresshere"
-              country="United State"
-              linkedStores={["Store A", "Store B", "Store C"]}
-            />
-          ) : (
-            <MemebersOverviewCard
-              title="General Information"
-              subTitle="Project Manager"
-              linkText="Assign Project Manager"
-              imageSrc={Search}
-              imageAlt="Search Illustration"
-              onManagerClick={(id) => sethasMemberInfo(id)}
-            />
-          )}
-          {hasStoreHeadInfo ? (
-            <MemberInfoCard
-              title="General information - Store Head"
-              image={manager}
-              name="Manager name here"
-              phone="+92 300 000 090"
-              role="Store Head"
-              email="example@gmail.com"
-              joiningDate="January 8, 2001"
-              id="9090"
-              address="addresshere"
-              country="United State"
-              linkedStores={["Store A", "Store B", "Store C"]}
-            />
-          ) : (
-            <MemebersOverviewCard
-              title="General Information"
-              subTitle="Store Head"
-              linkText="Assign Store Head"
-              imageSrc={Search}
-              imageAlt="Search Illustration"
-              onManagerClick={(id) => setHasStoreHeadInfo(id)}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Table */}
+      {/* CAP Table and Modal */}
       <div className="mt-10">
         <TopBar
-          title="Construction Managers"
-          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-          buttonText="Add CM"
-          onButtonClick={handleOpen}
+          title="Material CAP"
+          // buttonText="Add Material Cap"
+          // onButtonClick={() => setOpenAssignCAPModal(true)}
         />
-        {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
-
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <AssignProjectManagerModal
-              onCreateClick={(bool) => {
-                setShowModal(bool);
-                setOpen(false);
-              }}
-            />
-          </Box>
-        </Modal>
-
-        <div className="overflow-x-auto mt-4">
-          <SimpleTable
-            data={data}
-            columns={columns}
-            cellComponents={{ }}
-          />
+        <div className="overflow-x-auto mt-4 relative">
+          {loading ? (
+            <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+              <Loader />
+            </div>
+          ) : (
+            <>
+              {console.log("capData being passed to table:", capData)}
+              {capData.length === 0 ? (
+                <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                  <p className="text-gray-500">No CAP data available</p>
+                </div>
+              ) : (
+                <SimpleTable
+                  data={capData}
+                  columns={capColumns}
+                  cellComponents={{ 
+                    capQuantity: CapQuantityComponent,
+                    id: CapActionComponent 
+                  }}
+                />
+              )}
+            </>
+          )}
         </div>
+       
       </div>
+
+      <AssignCAPModal
+        open={openAssignCAPModal}
+        onClose={() => setOpenAssignCAPModal(false)}
+        onSubmit={async (capItems) => {
+          try {
+            setModalLoading(true);
+            
+            const transformedItems = capItems.map((item) => ({
+              materialId: item.materialId,
+              quantity: parseInt(item.qty) || 0,
+              unit: item.unit,
+            }));
+
+            const response = await apiClient.post(`/material-caps/section/${id}`, {
+              caps: transformedItems
+            });
+            
+            if (response.ok) {
+              toast.success("CAP items added successfully!");
+              setOpenAssignCAPModal(false);
+              // Refresh section data to get updated materialCapAnalytics
+              const sectionResponse = await apiClient.get(`/sections/${id}`);
+              if (sectionResponse.ok) {
+                setSectionData(sectionResponse.data.section);
+                if (sectionResponse.data.section?.materialCapAnalytics) {
+                  setCapData(sectionResponse.data.section.materialCapAnalytics);
+                }
+              }
+            } else {
+              toast.error(response.data?.message || "Failed to add CAP items");
+            }
+          } catch (error) {
+            console.error("Error adding CAP items:", error);
+            toast.error("Failed to add CAP items");
+          } finally {
+            setModalLoading(false);
+          }
+        }}
+        loading={modalLoading}
+        sectionId={id}
+        onCapDeleted={fetchCAPData}
+      />
     </div>
   );
 };

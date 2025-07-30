@@ -7,6 +7,7 @@ import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
 import SectionTab from "./tabs/SInchargeSectionTab";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import CAPTab from "./tabs/CAPTab"
 
 const SiteProjectDetailPage = () => {
   const navigate = useNavigate();
@@ -89,6 +90,7 @@ const SiteProjectDetailPage = () => {
           <Tab label="Project Information" />
           <Tab label="Associated Members" />
           <Tab label="Sections" />
+          <Tab label="CAP" />
         </Tabs>
       </Box>
 
@@ -102,6 +104,7 @@ const SiteProjectDetailPage = () => {
             loading={loading}
           />
         )}
+        {tabIndex === 3 && <CAPTab data={projectData} loading={loading} />}
       </Box>
     </div>
   );

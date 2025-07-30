@@ -14,6 +14,7 @@ import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
 import manager from "../../../../../src/assets/construction/manager.png";
 import Search from "../../../../../src/assets/construction/Search.png";
 import AssignProjectManagerModal from "../../../../components/AssignProjectManagerModal";
+import AssignCAPModal from "../../../../components/AssignCAPModal";
 import toast from "react-hot-toast";
 import apiClient from "../../../../api/apiClient";
 
@@ -27,6 +28,43 @@ const style = {
   boxShadow: 24,
 };
 
+const capColumns = [
+  { headerName: "Material Name", field: "materialName" },
+  { headerName: "CAP Quantity", field: "capQuantity" },
+  { headerName: "Unit", field: "capUnit" },
+  { headerName: "Demand Quantity", field: "totalDemandQuantity" },
+  { headerName: "PO Quantity", field: "totalPurchaseOrderQuantity" },
+  { headerName: "Status", field: "status" },
+  // { headerName: "Action", field: "materialId" },
+];
+
+const CapQuantityComponent = ({ value, row }) => {
+  if (!row) {
+    return <span>{value}</span>;
+  }
+  
+  const capQuantity = row.capQuantity || 0;
+  const demandQuantity = row.totalDemandQuantity || 0;
+  const poQuantity = row.totalPurchaseOrderQuantity || 0;
+  
+  // Check if demand quantity exceeds cap quantity
+  const isDemandExceeded = demandQuantity > capQuantity;
+  // Check if PO quantity exceeds cap quantity
+  const isPOExceeded = poQuantity > capQuantity;
+  
+  let textColor = 'text-green-600 font-semibold'; // Default green
+  
+  if (isDemandExceeded || isPOExceeded) {
+    textColor = 'text-red-600 font-semibold'; // Red if either exceeds
+  }
+  
+  return (
+    <span className={textColor}>
+      {value}
+    </span>
+  );
+};
+
 const PmSectionDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -36,9 +74,76 @@ const PmSectionDetailPage = () => {
   const [selectedPM, setSelectedPM] = useState(null);
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [capData, setCapData] = useState([]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  // CAP submission handler
+  const handleCAPSubmit = async (capItems) => {
+    try {
+      setModalLoading(true);
+      
+      // Transform the data to match the API structure
+      const transformedItems = capItems.map((item) => ({
+        materialId: item.materialId,
+        quantity: parseInt(item.qty) || 0,
+        unit: item.unit,
+      }));
+
+      console.log("Original CAP items:", capItems);
+      console.log("Transformed items:", transformedItems);
+
+      // Call the new API endpoint
+      console.log("Sending CAP data:", { caps: transformedItems });
+      const response = await apiClient.post(`/material-caps/section/${id}`, {
+        caps: transformedItems
+      });
+      
+      console.log("API Response:", response);
+      
+      if (response.ok) {
+        toast.success("CAP items added successfully!");
+        setOpenAssignCAPModal(false);
+        // Refresh section data to get updated materialCapAnalytics
+        fetchSectionDetail();
+      } else {
+        console.error("API Error:", response.data);
+        toast.error(response.data?.message || "Failed to add CAP items");
+      }
+    } catch (error) {
+      console.error("Error adding CAP items:", error);
+      toast.error("Failed to add CAP items");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Fetch CAP data for the section
+  const fetchCAPData = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/material-caps/section/${id}`);
+      if (response.ok) {
+        const caps = response.data.caps || [];
+        // Transform data to include formatted dates
+        const transformedCaps = caps.map(cap => ({
+          ...cap,
+          createdAt: new Date(cap.createdAt).toLocaleDateString()
+        }));
+        setCapData(transformedCaps);
+      } else {
+        toast.error("Failed to fetch CAP data");
+      }
+    } catch (error) {
+      console.error("Error fetching CAP data:", error);
+      toast.error("Error fetching CAP data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const CustomActionComponent = ({ data }) => (
     <DropdownButton
@@ -47,17 +152,12 @@ const PmSectionDetailPage = () => {
         {
           label: "View Detail",
           onClick: () => navigate("/admin-dashboard/user-Management/123"),
-          icon: <FaUserEdit />,
+          icon: <FaUserEdit />, 
         },
-        // {
-        //   label: "Edit",
-        //   onClick: () => alert("Edit"),
-        //   icon: <FaUserEdit />,
-        // },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),
-          icon: <FaTrash />,
+          icon: <FaTrash />, 
         },
       ]}
     >
@@ -99,8 +199,21 @@ const PmSectionDetailPage = () => {
   };
 
   React.useEffect(() => {
-    if (id) fetchSectionDetail();
+    if (id) {
+      fetchSectionDetail();
+    }
   }, [id]);
+
+  // Update CAP data when section data changes
+  React.useEffect(() => {
+    if (sectionData?.materialCapAnalytics) {
+      console.log("Material CAP Analytics:", sectionData.materialCapAnalytics);
+      setCapData(sectionData.materialCapAnalytics);
+    } else if (id) {
+      // Fetch CAP data if not available in sectionData
+      fetchCAPData();
+    }
+  }, [sectionData, id]);
 
   return (
     <div className="p-2 sm:p-4">
@@ -217,6 +330,33 @@ const PmSectionDetailPage = () => {
                 cellComponents={{ action: CustomActionComponent }}
               />
             </div>
+          </div>
+
+          {/* CAP Table and Modal */}
+          <div className="mt-10">
+            <TopBar
+              title="CAP"
+              buttonText="Add Material Cap"
+              onButtonClick={() => setOpenAssignCAPModal(true)}
+            />
+            <div className="overflow-x-auto mt-4 relative">
+              <SimpleTable
+                data={capData}
+                columns={capColumns}
+                cellComponents={{ 
+                  id: CustomActionComponent,
+                  capQuantity: CapQuantityComponent 
+                }}
+              />
+            </div>
+            <AssignCAPModal
+              open={openAssignCAPModal}
+              onClose={() => setOpenAssignCAPModal(false)}
+              onSubmit={handleCAPSubmit}
+              loading={modalLoading}
+              sectionId={id}
+              onCapDeleted={fetchCAPData}
+            />
           </div>
         </>
       )}

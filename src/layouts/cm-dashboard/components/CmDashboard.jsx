@@ -201,11 +201,11 @@ function CmDashboard() {
 
   // Helper for section actions
   const sectionActions = (sec) => [
-    // {
-    //   label: "View Section Detail",
-    //   icon: <FaEye />,
-    //   onClick: () => navigate(`/construction-manager-dashboard/sections/${sec.id}`),
-    // },
+    {
+      label: "View Section Detail",
+      icon: <FaEye />,
+      onClick: () => navigate(`/construction-manager-dashboard/sections/${sec.id}`),
+    },
     // {
     //   label: "Edit Project Section",
     //   icon: <FaUserEdit />,

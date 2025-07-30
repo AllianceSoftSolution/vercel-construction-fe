@@ -10,10 +10,11 @@ const ProjectInfoCard = ({
   projectName,
   projectCode,
   section,
-  totalAmount,
-  paidAmount,
-  remainingAmount,
-  date,
+  // totalAmount,
+  // paidAmount,
+  // remainingAmount,
+  startDate,
+  endDate,
   // projectLocation,
   // projectStatus,
   showIcons = true,
@@ -66,10 +67,8 @@ const ProjectInfoCard = ({
         <Info label="Project Name" value={projectName} />
         <Info label="Project Code" value={projectCode} />
         <Info label="Section" value={section} />
-        <Info label="Total Amount" value={totalAmount} />
-        <Info label="Paid Amount" value={paidAmount} />
-        <Info label="Remaining Amount" value={remainingAmount} />
-        <Info label="Date" value={date} />
+        <Info label="Start Date" value={startDate} />
+        <Info label="End Date" value={endDate} />
       </div>
 
       {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
@@ -81,16 +80,10 @@ const ProjectInfoCard = ({
 };
 
 const Info = ({ label, value }) => {
-  // For amount fields, append 'PKR' if not already present and value is not empty
-  const isAmountField = ["Total Amount", "Paid Amount", "Remaining Amount"].includes(label);
-  let displayValue = value;
-  if (isAmountField && value && typeof value === 'string' && !value.toUpperCase().includes('PKR')) {
-    displayValue = `${value} PKR`;
-  }
   return (
     <div className="flex flex-col sm:flex-row gap-2">
       <p className="text-[#444444] font-semibold">{label}:</p>
-      <p className="text-[#979797] break-words">{displayValue}</p>
+      <p className="text-[#979797] break-words">{value}</p>
     </div>
   );
 };
