@@ -11,6 +11,7 @@ import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
+import toast from "react-hot-toast";
 
 const style = {
   position: "absolute",
@@ -25,7 +26,7 @@ const style = {
 const SiDemandDetails = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
-  // const [status, setStatus] = useState("Pending");
+  const [status, setStatus] = useState("Pending");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [demandData, setDemandData] = useState({});
@@ -43,13 +44,23 @@ const SiDemandDetails = () => {
   };
 
   const handleReasonSubmit = async (reasonText) => {
-    if (pendingStatus === "Approved") {
-      await approveDemand(reasonText);
-    } else if (pendingStatus === "Rejected") {
-      await rejectDemand(reasonText);
+    try {
+      if (pendingStatus === "Approved") {
+        await approveDemand();
+        toast.success("Demand approved successfully!");
+      } else if (pendingStatus === "Rejected") {
+        await rejectDemand(reasonText);
+        toast.success("Demand rejected successfully!");
+      }
+      setPendingStatus(null);
+      setOpen(false);
+      // Refresh data after successful action
+      await fetchDetails();
+    } catch (error) {
+      console.error("Error in handleReasonSubmit:", error);
+      toast.error(error.message || "An error occurred. Please try again.");
+      throw error; // Re-throw to let the modal know about the error
     }
-    setPendingStatus(null);
-    setOpen(false);
   };
 
   const handleClose = () => {
@@ -102,36 +113,36 @@ const SiDemandDetails = () => {
   };
 
   const rejectDemand = async (remarks) => {
-    setLoading(true);
     try {
+      console.log("Sending reject request with remarks:", remarks);
       const response = await apiClient.post(`/demands/${id}/reject`, {
         remarks,
       });
-
-      if (response?.data?.demand) {
-        setDemandData(response.data.demand);
+      console.log("Reject response:", response);
+      
+      if (response?.data?.data?.demand) {
+        setDemandData(response.data.data.demand);
+        return response.data.data.demand;
       } else {
-        console.error("Failed to reject", response?.data?.message);
+        throw new Error(response?.data?.message || "Failed to reject demand");
       }
     } catch (error) {
-      console.error("API error:", error.message);
-    } finally {
-      setLoading(false);
+      console.error("Reject API error:", error);
+      throw new Error(error.response?.data?.message || error.message || "Failed to reject demand");
     }
   };
   const approveDemand = async () => {
-    setLoading(true);
     try {
       const response = await apiClient.post(`/demands/${id}/approve`);
-      if (response?.data?.demand) {
-        setDemandData(response.data.demand);
+      if (response?.data?.data?.demand) {
+        setDemandData(response.data.data.demand);
+        return response.data.data.demand;
       } else {
-        console.error("Failed to approve", response?.data?.message);
+        throw new Error(response?.data?.message || "Failed to approve demand");
       }
     } catch (error) {
-      console.error("API error:", error.message);
-    } finally {
-      setLoading(false);
+      console.error("Approve API error:", error);
+      throw new Error(error.response?.data?.message || error.message || "Failed to approve demand");
     }
   };
 
@@ -144,7 +155,7 @@ const SiDemandDetails = () => {
           <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <ReasonModal
-            textAreaPlaceholder="Enter your remarks here..."
+            //  textAreaPlaceholder="Enter your remarks here..."
             onBackClick={handleClose}
             onSaveClick={handleReasonSubmit}
           />

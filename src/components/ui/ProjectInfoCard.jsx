@@ -9,8 +9,8 @@ const ProjectInfoCard = ({
 
   projectName,
   projectCode,
-  section,
-  // totalAmount,
+  sections,
+  totalAmountSpent,
   // paidAmount,
   // remainingAmount,
   startDate,
@@ -66,9 +66,10 @@ const ProjectInfoCard = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
         <Info label="Project Name" value={projectName} />
         <Info label="Project Code" value={projectCode} />
-        <Info label="Section" value={section} />
+        <Info label="No of Sections" value={sections} />
         <Info label="Start Date" value={startDate} />
         <Info label="End Date" value={endDate} />
+        <Info label="Expenditure" value={totalAmountSpent} />
       </div>
 
       {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">

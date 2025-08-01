@@ -290,88 +290,94 @@ const StoreDetail = () => {
 
   return (
     <>
-    {loading ? (
+      {loading ? (
         <Loader />
       ) : (
         <>
-      <TopBar
-        title="Store Detail"
-        // detail="lorem ipsum dolor sit amet"
-        // showExport={true}
-        // buttonText="Add Store"
-      />
-      <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
-          <p className="text-[#444444] font-semibold text-lg md:text-xl">
-            {storeData?.name || "Order Name Here"}
-          </p>
-          {/* <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
+          <TopBar
+            title="Store Detail"
+          // detail="lorem ipsum dolor sit amet"
+          // showExport={true}
+          // buttonText="Add Store"
+          />
+          <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
+            <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
+              <p className="text-[#444444] font-semibold text-lg md:text-xl">
+                {storeData?.name || "Order Name Here"}
+              </p>
+              {/* <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
             <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
               IN-STORE
             </div>
             <CustomActionComponent />
           </div> */}
-        </div>
+            </div>
 
-        <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
+            <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
 
-        <div className="flex justify-between gap-x-4 flex-wrap">
-          <InfoRow label="Store ID:" value={storeData?.id || "-"} />
-          <InfoRow label="Store Name:" value={storeData?.name || "-"} />
-          <InfoRow
-            label="Project:"
-            value={storeData?.section?.name?.split(" of ")[1] || "-"}
+            <div className="flex justify-between gap-x-4 flex-wrap">
+              <InfoRow label="Store ID:" value={storeData?.id || "-"} />
+              <InfoRow label="Store Name:" value={storeData?.name || "-"} />
+              <InfoRow
+                label="Project:"
+                value={storeData?.section?.name?.split(" of ")[1] || "-"}
+              />
+              <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
+              <InfoRow
+                label="Material:"
+                value={storeData?.inventory?.[0]?.material || "N/A"}
+              />{" "}
+              <InfoRow
+                label="Store Incharge:"
+                value={storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"}
+              />
+            </div>
+          </div>
+          {/* Head Store Table */}
+          <div className="mt-10">
+          <TopBar
+            title="Head Store Assignments"
+            // buttonText="Add Head Store"
           />
-          <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
-          <InfoRow
-            label="Material:"
-            value={storeData?.inventory?.[0]?.material || "N/A"}
+          <SimpleTable
+            data={(storeData?.storeInchargeAssignments || []).map(a => ({
+              id: a.id,
+              userName: a.user?.name || "-",
+              email: a.user?.email || "-",
+              role: a.user?.role || "-",
+              createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
+            }))}
+            columns={[
+              { headerName: "Assignment ID", field: "id" },
+              { headerName: "Store Incharge Name", field: "userName" },
+              { headerName: "Email", field: "email" },
+              { headerName: "Role", field: "role" },
+              { headerName: "Assigned At", field: "createdAt" },
+            ]}
+            cellComponents={{}}
+          />
+          </div>
+        
+          {/* Inventory Table */}
+          <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
+          {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
+          <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
+          <SimpleTable
+            data={storeData?.inventory || []}
+            columns={columns}
+            cellComponents={{}} />{" "}
+          {/* Stock Movement Table */}
+          <h4 className="mt-8 text-[#444444] font-semibold text-xl">
+            Stock Movement History
+          </h4>
+          {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
+          <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
+          <SimpleTable
+            data={storeData?.transactions || []}
+            columns={columns1}
+            cellComponents={{}}
           />{" "}
-          <InfoRow
-            label="Store Incharge:"
-            value={storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"}
-          />
-        </div>
-      </div>
-      {/* Head Store Table */}
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Head Store Assignments</h4>
-      <SimpleTable
-        data={(storeData?.storeInchargeAssignments || []).map(a => ({
-          id: a.id,
-          userName: a.user?.name || "-",
-          email: a.user?.email || "-",
-          role: a.user?.role || "-",
-          createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
-        }))}
-        columns={[
-          { headerName: "Assignment ID", field: "id" },
-          { headerName: "Store Incharge Name", field: "userName" },
-          { headerName: "Email", field: "email" },
-          { headerName: "Role", field: "role" },
-          { headerName: "Assigned At", field: "createdAt" },
-        ]}
-        cellComponents={{}}
-      />
-      {/* Inventory Table */}
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
-      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
-      <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable
-       data={storeData?.inventory || []} 
-      columns={columns} 
-      cellComponents={{}} />{" "}
-      {/* Stock Movement Table */}
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">
-        Stock Movement History
-      </h4>
-      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
-      <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable
-        data={storeData?.transactions || []}
-        columns={columns1}
-        cellComponents={{}}
-      />{" "}
-      </>
+        </>
       )}
     </>
   );

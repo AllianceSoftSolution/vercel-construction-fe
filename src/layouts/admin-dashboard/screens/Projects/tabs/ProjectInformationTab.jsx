@@ -300,8 +300,8 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
         onEdit={() => console.log("edit")}
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
-        section={data?.sections.length || "0"}
-        // totalAmount={data?.totalAmount || "0"}
+        sections={data?.sections.length || "0"}
+        totalAmountSpent={data?.totalAmountSpent || "0"}
         // remainingAmount={data?.remainingAmount || "0"}
         // paidAmount={data?.paidAmount || "0"}
         startDate={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}

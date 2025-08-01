@@ -28,7 +28,7 @@ const style = {
 const DemandDetails = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
-  // const [status, setStatus] = useState("Pending");
+  const [status, setStatus] = useState("");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [demandData, setDemandData] = useState({});
@@ -50,25 +50,35 @@ const DemandDetails = () => {
     setModalLoading(true);
     try {
       if (pendingStatus === "Approved") {
+        // Remarks optional for approval
         await approveDemand(reasonText);
-        toast.success("Demand approved successfully!", {
-          icon: <TiTick style={{ color: '#22c55e', fontSize: 24 }} />,
-        });
+        toast.success("Demand approved!");
         setOpen(false);
         setPendingStatus(null);
-        setTimeout(() => window.location.reload(), 700);
+        setModalLoading(false);
+        // // Small delay to ensure modal closes, then reload
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 100);
       } else if (pendingStatus === "Rejected") {
+        // Remarks required for rejection
+        if (!reasonText || reasonText.trim() === "") {
+          toast.error("Remarks are required for rejection!");
+          setModalLoading(false);
+          return;
+        }
         await rejectDemand(reasonText);
-        toast.error("Demand rejected !", {
-          icon: <HiCheckCircle style={{ color: '#22c55e', fontSize: 24 }} />,
-        });
+        toast.success("Demand rejected!");
         setOpen(false);
         setPendingStatus(null);
-        setTimeout(() => window.location.reload(), 700);
+        setModalLoading(false);
+        // // Small delay to ensure modal closes, then reload
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 100);
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || error?.message || "Something went wrong");
-    } finally {
       setModalLoading(false);
     }
   };
@@ -128,9 +138,8 @@ const DemandDetails = () => {
       const response = await apiClient.post(`/demands/${id}/reject`, {
         remarks,
       });
-      if (response?.data?.demand) {
-        setDemandData(response.data.demand);
-         
+      if (response?.data?.data?.demand) {
+        setDemandData(response.data.data.demand);
       } else {
         throw new Error(response?.data?.message || "Failed to reject");
       }
@@ -138,12 +147,14 @@ const DemandDetails = () => {
       throw error;
     }
   };
-  const approveDemand = async () => {
+  
+  const approveDemand = async (remarks) => {
     // setLoading(true); // Remove page loader for modal loader
     try {
-      const response = await apiClient.post(`/demands/${id}/approve`);
-      if (response?.data?.demand) {
-        setDemandData(response.data.demand);
+      const requestBody = remarks ? { remarks } : {};
+      const response = await apiClient.post(`/demands/${id}/approve`, requestBody);
+      if (response?.data?.data?.demand) {
+        setDemandData(response.data.data.demand);
       } else {
         throw new Error(response?.data?.message || "Failed to approve");
       }
@@ -158,10 +169,14 @@ const DemandDetails = () => {
         <Loader />
       ) : (
         <>
-          <Modal open={open} onClose={handleClose}>
+        <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <ReasonModal
-            textAreaPlaceholder="Enter your remarks here..."
+            textAreaPlaceholder={
+              pendingStatus === "Approved" 
+                ? "Enter your remarks here... (Optional)" 
+                : "Enter your remarks here... (Required)"
+            }
             onBackClick={handleClose}
             onSaveClick={handleReasonSubmit}
             loading={modalLoading}

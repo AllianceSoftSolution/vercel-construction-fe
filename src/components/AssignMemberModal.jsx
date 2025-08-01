@@ -228,6 +228,7 @@ const AssignMemberModal = ({
             onCancel={onClose}
             onSubmit={handleAssignSections}
             loading={assignLoading}
+            role={role}
           />
        
         </>
@@ -269,6 +270,7 @@ function AssignSectionStep({
   onCancel,
   onSubmit,
   loading,
+  role,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const filteredSections = sections.filter((section) =>
@@ -280,32 +282,58 @@ function AssignSectionStep({
     );
   };
   const handleSelectAll = () => {
-    if (
-      filteredSections.every(
-        (s) => selectedSections.includes(s.id) || s.assignedToOther
-      )
-    ) {
-      // Only unselect those that are not assignedToOther
-      setSelectedSections((prev) =>
-        prev.filter(
-          (id) =>
-            !filteredSections.some((s) => s.id === id && !s.assignedToOther)
+    if (role === "Accountant") {
+      // For Accountants: include all sections regardless of assignment status
+      if (
+        filteredSections.every(
+          (s) => selectedSections.includes(s.id)
         )
-      );
+      ) {
+        // Unselect all
+        setSelectedSections((prev) =>
+          prev.filter(
+            (id) => !filteredSections.some((s) => s.id === id)
+          )
+        );
+      } else {
+        setSelectedSections((prev) => [
+          ...prev,
+          ...filteredSections
+            .filter((s) => !prev.includes(s.id))
+            .map((s) => s.id),
+        ]);
+      }
     } else {
-      setSelectedSections((prev) => [
-        ...prev,
-        ...filteredSections
-          .filter((s) => !prev.includes(s.id) && !s.assignedToOther)
-          .map((s) => s.id),
-      ]);
+      // For other roles (Site Incharge, etc.): exclude sections assigned to others
+      if (
+        filteredSections.every(
+          (s) => selectedSections.includes(s.id) || s.assignedToOther
+        )
+      ) {
+        // Only unselect those that are not assignedToOther
+        setSelectedSections((prev) =>
+          prev.filter(
+            (id) =>
+              !filteredSections.some((s) => s.id === id && !s.assignedToOther)
+          )
+        );
+      } else {
+        setSelectedSections((prev) => [
+          ...prev,
+          ...filteredSections
+            .filter((s) => !prev.includes(s.id) && !s.assignedToOther)
+            .map((s) => s.id),
+        ]);
+      }
     }
   };
   const isAllSelected =
     filteredSections.length > 0 &&
-    filteredSections.every(
-      (s) => selectedSections.includes(s.id) || s.assignedToOther
-    );
+    (role === "Accountant"
+      ? filteredSections.every((s) => selectedSections.includes(s.id))
+      : filteredSections.every(
+          (s) => selectedSections.includes(s.id) || s.assignedToOther
+        ));
   return (
     <div className="max-w-3xl w-full mx-auto bg-white rounded-2xl shadow-md p-6 space-y-6">
       <div className="relative">
@@ -334,21 +362,30 @@ function AssignSectionStep({
             key={section.id}
             className="flex justify-between items-center rounded-xl border border-gray-100 bg-white px-4 py-3 hover:shadow-sm transition cursor-pointer hover:border-[#fc8908]"
           >
-            <span
-              className={`text-sm font-medium ${
-                section.assignedToOther ? "text-gray-400" : "text-[#043b6a]"
-              }`}
-            >
-              {section.name}
-            </span>
-            <input
-              type="checkbox"
-              checked={
-                selectedSections.includes(section.id) || section.assignedToOther
-              }
-              onChange={() => handleCheckboxChange(section.id)}
-              disabled={section.assignedToOther}
-            />
+            <div className="flex flex-col flex-1">
+              <span
+                className={`text-sm font-medium ${
+                  section.assignedToOther ? "text-gray-400" : "text-[#043b6a]"
+                }`}
+              >
+                {section.name}
+              </span>
+              {section.assignedToOther && role === "Accountant" && (
+                <span className="text-xs text-orange-500 mt-1">
+                  Section assigned to other accountant
+                </span>
+              )}
+            </div>
+                         <input
+               type="checkbox"
+               checked={
+                 role === "Accountant" 
+                   ? selectedSections.includes(section.id)
+                   : selectedSections.includes(section.id) || section.assignedToOther
+               }
+               onChange={() => handleCheckboxChange(section.id)}
+               disabled={section.assignedToOther && role !== "Accountant"}
+             />
           </div>
         ))}
       </div>

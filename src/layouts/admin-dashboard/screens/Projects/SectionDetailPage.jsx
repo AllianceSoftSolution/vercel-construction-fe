@@ -4,7 +4,7 @@ import SimpleTable from "../../../../components/SimpleTable";
 import Loader from "../../../../components/ui/Loader";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaTrash, FaUserEdit } from "react-icons/fa";
+import { FaStore, FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { useNavigate, useParams } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
@@ -79,6 +79,13 @@ const SectionDetailPage = () => {
           onClick: () => alert("Delete"),
           icon: <FaTrash />,
         },
+        // {
+        //   label:"Go to Store",
+        //   onClick:()=>{
+        //       navigate(`/admin-dashboard/store/${id}`)
+        //   },
+        //   icon:<FaStore/>
+        // }
       ]}
     >
       <IconButton>
@@ -119,6 +126,7 @@ const SectionDetailPage = () => {
             onClick: handleDeleteCap,
             icon: <FaTrash />,
           },
+       
         ]}
       >
         <IconButton>

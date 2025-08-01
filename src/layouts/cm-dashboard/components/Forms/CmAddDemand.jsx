@@ -128,9 +128,21 @@ const CmAddDemand = () => {
               label="Material"
               name="materialId"
               value={formik.values.materialId}
-              onChange={(e) =>
-                formik.setFieldValue("materialId", e.target.value)
-              }
+              onChange={(e) => {
+                const selectedMaterialId = e.target.value;
+                formik.setFieldValue("materialId", selectedMaterialId);
+                
+                // Auto-fill unit when material is selected
+                if (selectedMaterialId) {
+                  const selectedMaterial = materials.find(material => material.id === selectedMaterialId);
+                  if (selectedMaterial) {
+                    formik.setFieldValue("unit", selectedMaterial.unit);
+                  }
+                } else {
+                  // Clear unit if no material is selected
+                  formik.setFieldValue("unit", "");
+                }
+              }}
               onBlur={formik.handleBlur}
               error={
                 formik.touched.materialId && Boolean(formik.errors.materialId)
@@ -163,7 +175,7 @@ const CmAddDemand = () => {
           <CustomTextField
             label="Unit"
             name="unit"
-            placeholder="Enter Unit"
+            placeholder="Unit will be auto-filled from material"
             type="text"
             fullWidth
             value={formik.values.unit}
@@ -171,6 +183,7 @@ const CmAddDemand = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.unit && Boolean(formik.errors.unit)}
             helperText={formik.touched.unit && formik.errors.unit}
+            disabled={!formik.values.materialId || (formik.values.materialId && formik.values.unit)}
           />
 
           <div className="w-full">

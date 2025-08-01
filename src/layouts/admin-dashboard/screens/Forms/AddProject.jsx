@@ -20,7 +20,14 @@ const validationSchema = Yup.object({
 });
 
 function toDateInputValue(dateString) {
-  return formatDateDMY(dateString);
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  // Convert to YYYY-MM-DD format for HTML date input
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 const AddProject = () => {
@@ -33,8 +40,8 @@ const AddProject = () => {
     initialValues: {
       name: editingProject?.name || "",
       description: editingProject?.description || "",
-      startDate: editingProject?.startDate || "",
-      endDate: editingProject?.endDate || "",
+      startDate: editingProject?.startDate ? toDateInputValue(editingProject.startDate) : "",
+      endDate: editingProject?.endDate ? toDateInputValue(editingProject.endDate) : "",
     },
     enableReinitialize: true,
     validationSchema,
@@ -67,28 +74,8 @@ const AddProject = () => {
     },
   });
 
-  useEffect(() => {
-    if (editingProject) {
-      // Fetch project data for editing
-      setLoading(true);
-      apiClient.get(`/projects/${editingProject.id}`)
-        .then(response => {
-          if (response.ok && response.data?.project) {
-            const project = response.data.project;
-            formik.setValues({
-              name: project.name || "",
-              description: project.description || "",
-              startDate: toDateInputValue(project.startDate),
-              endDate: toDateInputValue(project.endDate),
-            });
-          } else {
-            toast.error("Failed to fetch project data");
-          }
-        })
-        .catch(() => toast.error("Failed to fetch project data"))
-        .finally(() => setLoading(false));
-    }
-  }, [editingProject, formik.setValues]);
+  // Remove the useEffect since we already have the project data from navigation state
+  // The formik initialValues will handle populating the form with the passed data
 
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">

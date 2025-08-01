@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const TopBar = ({
   title = "",
-  detail = "",
+  // detail = "",
   buttonText = "",
   onButtonClick,
   showExport = false,
@@ -53,7 +53,7 @@ const TopBar = ({
           <span className="text-2xl font-bold text-[#444444]">{title}</span>
         </div>
         <div className="flex items-start">
-          <p className="text-base  text-[#979797]">{detail}</p>
+          {/* <p className="text-base  text-[#979797]">{detail}</p> */}
         </div>
       </div>
 

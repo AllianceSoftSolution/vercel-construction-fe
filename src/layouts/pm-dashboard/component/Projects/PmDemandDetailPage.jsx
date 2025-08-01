@@ -11,6 +11,7 @@ import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
+import toast from "react-hot-toast";
 
 const style = {
   position: "absolute",
@@ -25,7 +26,7 @@ const style = {
 const PmDemandDetails = () => {
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
-  // const [status, setStatus] = useState("Pending");
+  const [status, setStatus] = useState("Pending");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [demandData, setDemandData] = useState({});
@@ -43,13 +44,23 @@ const PmDemandDetails = () => {
   };
 
   const handleReasonSubmit = async (reasonText) => {
-    if (pendingStatus === "Approved") {
-      await approveDemand(reasonText);
-    } else if (pendingStatus === "Rejected") {
-      await rejectDemand(reasonText);
+    try {
+      if (pendingStatus === "Approved") {
+        await approveDemand();
+        toast.success("Demand approved successfully!");
+      } else if (pendingStatus === "Rejected") {
+        await rejectDemand(reasonText);
+        toast.success("Demand rejected successfully!");
+      }
+      setPendingStatus(null);
+      setOpen(false);
+      // Refresh data after successful action
+      await fetchDetails();
+    } catch (error) {
+      console.error("Error in handleReasonSubmit:", error);
+      toast.error(error.message || "An error occurred. Please try again.");
+      throw error; // Re-throw to let the modal know about the error
     }
-    setPendingStatus(null);
-    setOpen(false);
   };
 
   const handleClose = () => {
@@ -102,36 +113,36 @@ const PmDemandDetails = () => {
   };
 
   const rejectDemand = async (remarks) => {
-    setLoading(true);
     try {
+      console.log("Sending reject request with remarks:", remarks);
       const response = await apiClient.post(`/demands/${id}/reject`, {
         remarks,
       });
-
-      if (response?.data?.demand) {
-        setDemandData(response.data.demand);
+      console.log("Reject response:", response);
+      
+      if (response?.data?.data?.demand) {
+        setDemandData(response.data.data.demand);
+        return response.data.data.demand;
       } else {
-        console.error("Failed to reject", response?.data?.message);
+        throw new Error(response?.data?.message || "Failed to reject demand");
       }
     } catch (error) {
-      console.error("API error:", error.message);
-    } finally {
-      setLoading(false);
+      console.error("Reject API error:", error);
+      throw new Error(error.response?.data?.message || error.message || "Failed to reject demand");
     }
   };
   const approveDemand = async () => {
-    setLoading(true);
     try {
       const response = await apiClient.post(`/demands/${id}/approve`);
-      if (response?.data?.demand) {
-        setDemandData(response.data.demand);
+      if (response?.data?.data?.demand) {
+        setDemandData(response.data.data.demand);
+        return response.data.data.demand;
       } else {
-        console.error("Failed to approve", response?.data?.message);
+        throw new Error(response?.data?.message || "Failed to approve demand");
       }
     } catch (error) {
-      console.error("API error:", error.message);
-    } finally {
-      setLoading(false);
+      console.error("Approve API error:", error);
+      throw new Error(error.response?.data?.message || error.message || "Failed to approve demand");
     }
   };
 
@@ -144,7 +155,7 @@ const PmDemandDetails = () => {
           <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <ReasonModal
-            textAreaPlaceholder="Enter your remarks here..."
+            //  textAreaPlaceholder="Enter your remarks here..."
             onBackClick={handleClose}
             onSaveClick={handleReasonSubmit}
           />
@@ -158,6 +169,7 @@ const PmDemandDetails = () => {
         sectionId={demandData?.sectionId}
         materialName={demandData?.material?.name}
         materialId={demandData?.material?.id}
+        demandQuantity={demandData?.quantity}
       />
 
       <TopBar title="Demand Details" 
@@ -232,6 +244,21 @@ const PmDemandDetails = () => {
             <p className="text-[#444444] font-semibold">PO Quantity:</p>
             <p className="text-[#979797]">{demandData?.poQuantity || "-"}</p>
           </div>
+          {Number(demandData?.poQuantity) > Number(demandData?.quantity) && (
+            <div className="flex flex-col col-span-2">
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="checkbox"
+                  id="exceed-po-checkbox"
+                  className="accent-red-600 w-4 h-4"
+                />
+                <label htmlFor="exceed-po-checkbox" className="text-[#444444] font-semibold">
+                  Are you sure to create PO greater than demand?
+                </label>
+              </div>
+              <span className="text-red-600 font-semibold mt-1">You are exceeding demand Qty.</span>
+            </div>
+          )}
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Approved By:</p>
             <p className="text-[#979797]">{demandData?.approvedBy || "-"}</p>
