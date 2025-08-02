@@ -48,6 +48,7 @@ const SiteProjectDetailPage = () => {
     <div className="px-4 md:px-6 py-4 w-full">
       <TopBar
         title="Project Details"
+        showIcon={true}
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
       />

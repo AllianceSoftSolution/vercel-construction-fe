@@ -74,18 +74,18 @@ const SectionDetailPage = () => {
         //   onClick: () => alert("Edit"),
         //   icon: <FaUserEdit />,
         // },
-        {
-          label: "Delete ",
-          onClick: () => alert("Delete"),
-          icon: <FaTrash />,
-        },
         // {
-        //   label:"Go to Store",
-        //   onClick:()=>{
-        //       navigate(`/admin-dashboard/store/${id}`)
-        //   },
-        //   icon:<FaStore/>
-        // }
+        //   label: "Delete ",
+        //   onClick: () => alert("Delete"),
+        //   icon: <FaTrash />,
+        // },
+        {
+          label:"Go to Store",
+          onClick:()=>{
+              navigate(`/admin-dashboard/store/${id}`)
+          },
+          icon:<FaStore/>
+        }
       ]}
     >
       <IconButton>
@@ -613,6 +613,7 @@ const SectionDetailPage = () => {
     <div className=" sm:p-6 w-full">
       <TopBar
         title="Section Details"
+        showIcon={true}
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 

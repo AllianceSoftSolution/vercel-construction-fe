@@ -116,7 +116,7 @@ const SInchargeUserManagement = () => {
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Role", field: "role" },
-    { headerName: "Note", field: "note" },
+    // { headerName: "Note", field: "note" },
     { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
@@ -136,10 +136,10 @@ const SInchargeUserManagement = () => {
     };
 
     const roleLabels = {
-      SITE_INCHARGE: "Site Manager",
+      SITE_INCHARGE: "Site Incharge",
       PROJECT_MANAGER: "Project Manager", 
       CONSTRUCTION_MANAGER: "Construction Manager",
-      STORE_INCHARGE: "Store Manager",
+      STORE_INCHARGE: "Store Incharge",
       ACCOUNTANT: "Accountant",
       ADMIN: "Admin"
     };

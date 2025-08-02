@@ -17,6 +17,7 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import GroupedProjectSectionBarChart from "../../../charts/GroupedProjectSectionBarChart";
 import { icon } from "@fortawesome/fontawesome-svg-core";
+import { FaEye } from "react-icons/fa";
 
 const style = {
   position: "absolute",
@@ -173,7 +174,7 @@ const CustomActionComponent = ({ value:id }) => {
   return (
     <DropdownButton
       items={[
-        { label: "Details", onClick: onNavigation},
+        { label: "Details", onClick: onNavigation , icon: <FaEye/>},
 
       ]}
     >

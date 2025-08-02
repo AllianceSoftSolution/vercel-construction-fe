@@ -62,7 +62,7 @@ const CmMemberDetailPage = () => {
 
   return (
     <div className="px-4 py-4 w-full">
-      <TopBar title="Site Manager" detail="lorem ipsum" showExport={true} />
+      <TopBar title="Site Manager" showIcon={true} />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2" />
 
       <div className="flex flex-col lg:flex-row gap-4 mt-4 w-full">

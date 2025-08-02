@@ -166,6 +166,7 @@ const PmStoreDetail = () => {
         <>
           <TopBar
         title="Store Detail"
+        showIcon={true}
         // detail="lorem ipsum dolor sit amet"
         // showExport={true}
       />

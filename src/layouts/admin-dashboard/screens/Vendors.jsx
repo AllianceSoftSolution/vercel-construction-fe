@@ -45,20 +45,27 @@ const Vendors = () => {
     fetchVendor();
   }, []);
 
-  const deleteVendor = async () => {
+  const handleDelete = async () => {
+    if (!selectedVendorId) {
+      return;
+    }
+    
     try {
       setDeleting(true);
       const response = await apiClient.delete(`/vendors/${selectedVendorId}`);
       if (response.ok) {
-        fetchVendor();
-        setShowDeleteModal(false);
+        console.log("Vendor deleted successfully");
         toast.success("Vendor deleted successfully");
+        setShowDeleteModal(false);
+        setSelectedVendorId(null);
+        fetchVendor();
       } else {
-        toast.error(response.data?.message || "Failed to delete vendor");
+        throw new Error(response.originalError.message);
       }
-      setDeleting(false);
     } catch (error) {
-      toast.error("Something went wrong");
+      console.error("Error deleting Vendor item!", error.message);
+      toast.error("Error deleting Vendor item!");
+    } finally {
       setDeleting(false);
     }
   };
@@ -128,12 +135,12 @@ const Vendors = () => {
         )}
       </div>
       {showDeleteModal && (
-        <DeleteModal
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={deleteVendor}
-          loading={deleting}
-        />
-      )}
+         <DeleteModal
+           onClose={() => setShowDeleteModal(false)}
+           onConfirm={handleDelete}
+           loading={deleting}
+         />
+       )}
     </div>
   );
 };

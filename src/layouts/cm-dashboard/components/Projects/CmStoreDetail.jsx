@@ -204,8 +204,9 @@ const CmStoreDetail = () => {
     <div className="px-4 py-6">
       <TopBar
         title="Store Detail"
-        detail="lorem ipsum dolor sit amet"
-        showExport={true}
+        showIcon={true}
+        // detail="lorem ipsum dolor sit amet"
+        // showExport={true}
       />
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col gap-4 p-4">

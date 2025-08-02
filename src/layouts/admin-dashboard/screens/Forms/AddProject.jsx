@@ -42,6 +42,7 @@ const AddProject = () => {
       description: editingProject?.description || "",
       startDate: editingProject?.startDate ? toDateInputValue(editingProject.startDate) : "",
       endDate: editingProject?.endDate ? toDateInputValue(editingProject.endDate) : "",
+      code: editingProject?.code || "",
     },
     enableReinitialize: true,
     validationSchema,
@@ -109,6 +110,20 @@ const AddProject = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.name && Boolean(formik.errors.name)}
             helperText={formik.touched.name && formik.errors.name}
+          />
+           <CustomTextField
+            label={
+              <span className="flex items-center gap-1">Project Code</span>
+            }
+            fullWidth
+            name="code"
+            placeholder="Enter Project Code"
+            type="text"
+            value={formik.values.code}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.code && Boolean(formik.errors.code)}
+            helperText={formik.touched.code && formik.errors.code}
           />
           <CustomTextField
             label={<span className="flex items-center gap-1">Description</span>}

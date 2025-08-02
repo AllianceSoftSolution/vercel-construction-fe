@@ -111,7 +111,8 @@ const SiSectionDetailPage = () => {
     <div className="mt-4">
       <TopBar
         title="Section Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        showIcon={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex justify-between gap-x-4 flex-wrap">

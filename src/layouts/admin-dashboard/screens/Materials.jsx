@@ -49,20 +49,25 @@ const Materials = () => {
   };
 
   const handleDelete = async () => {
-    if (!selectedMaterialId) return;
+    if (!selectedMaterialId) {
+      return;
+    }
+    
     try {
       setDeleting(true);
       const response = await apiClient.delete(`/materials/${selectedMaterialId}`);
       if (response.ok) {
-        toast.success('Material deleted successfully');
+        console.log("Material deleted successfully");
+        toast.success("Material deleted successfully");
         setShowDeleteModal(false);
         setSelectedMaterialId(null);
         fetchMaterial();
       } else {
-        toast.error(response.data?.message || 'Failed to delete material');
+        throw new Error(response.originalError.message);
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Error deleting material');
+      console.error("Error deleting Material item!", error.message);
+      toast.error("Error deleting Material item!");
     } finally {
       setDeleting(false);
     }
@@ -110,7 +115,7 @@ const Materials = () => {
         title="Materials"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
-        buttonText="Add Product"
+        buttonText="Add Material"
         onButtonClick={() => navigate("/admin-dashboard/materials/addProduct")}
       />
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
@@ -127,13 +132,13 @@ const Materials = () => {
           />
         )}
       </div>
-      {showDeleteModal && (
-        <DeleteModal
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDelete}
-          loading={deleting}
-        />
-      )}
+             {showDeleteModal && (
+         <DeleteModal
+           onClose={() => setShowDeleteModal(false)}
+           onConfirm={handleDelete}
+           loading={deleting}
+         />
+       )}
     </div>
   );
 };

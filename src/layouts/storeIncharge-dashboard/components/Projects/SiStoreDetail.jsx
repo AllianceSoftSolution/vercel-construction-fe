@@ -36,12 +36,28 @@ const SiStoreDetail = () => {
   const [loading, setLoading] = useState(false);
  
 
+  // Helper function to format date to dd-mm-yyyy
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // Helper function to format role display
+  const formatRole = (role) => {
+    if (!role) return '-';
+    return role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+  };
+
   // Preprocess inventory and transactions for flat fields
   const inventoryTableData = (storeData?.inventory || []).map(item => ({
     ...item,
     materialName: item.material?.name || '-',
     unit: item.material?.unit || '-',
-    updatedAtFormatted: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : '-',
+    updatedAtFormatted: formatDate(item.updatedAt),
   }));
 
   const transactionsTableData = (storeData?.transactions || []).map(item => {
@@ -49,7 +65,7 @@ const SiStoreDetail = () => {
     return {
       ...item,
       materialName: inv?.material?.name || item.materialId || '-',
-      transactionDateFormatted: item.transactionDate ? new Date(item.transactionDate).toLocaleString() : '-',
+      transactionDateFormatted: formatDate(item.transactionDate),
     };
   });
 
@@ -464,6 +480,7 @@ const SiStoreDetail = () => {
     <>
       <TopBar
         title="Store Detail"
+        showIcon={true}
         // detail="lorem ipsum dolor sit amet"
         // showExport={true}
         // buttonText="Add Store"
@@ -484,11 +501,11 @@ const SiStoreDetail = () => {
         <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
 
         <div className="flex justify-between gap-x-4 flex-wrap">
-          <InfoRow label="Store ID:" value={storeData?.id || "-"} />
+          {/* <InfoRow label="Store ID:" value={storeData?.id || "-"} /> */}
           <InfoRow label="Store Name:" value={storeData?.name || "-"} />
           <InfoRow
             label="Project:"
-            value={storeData?.section?.name?.split(" of ")[1] || "-"}
+            value={storeData?.section?.project?.name || "-"}
           />
           <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
           <InfoRow
@@ -508,11 +525,11 @@ const SiStoreDetail = () => {
           id: a.id,
           userName: a.user?.name || "-",
           email: a.user?.email || "-",
-          role: a.user?.role || "-",
-          createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
+          role: formatRole(a.user?.role),
+          createdAt: formatDate(a.createdAt),
         }))}
         columns={[
-          { headerName: "Assignment ID", field: "id" },
+          // { headerName: "Assignment ID", field: "id" },
           { headerName: "Store Incharge Name", field: "userName" },
           { headerName: "Email", field: "email" },
           { headerName: "Role", field: "role" },

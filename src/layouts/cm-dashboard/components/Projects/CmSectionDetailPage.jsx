@@ -231,6 +231,7 @@ const CmSectionDetailPage = () => {
     <div className="mt-4 px-4 w-full">
       <TopBar
         title="Section Details"
+        showIcon={true}
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 

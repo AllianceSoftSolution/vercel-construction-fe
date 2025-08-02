@@ -135,6 +135,7 @@ const SinPurchaseOrderDetailPage = () => {
     <div className="px-4 md:px-6 py-4">
       <TopBar
         title="Purchase Order Detail  "
+        showIcon={true}
         // detail="View detailed information about the purchase order"
       />
 
