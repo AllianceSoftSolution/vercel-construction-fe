@@ -89,6 +89,16 @@ function StoreInchargeDashboard() {
     return <Chip label={status.replace(/_/g, " ")} sx={{ backgroundColor: color, color: "white" }} />;
   };
 
+  // Helper function to format date to dd-mm-yyyy
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const fetchDemands = async () => {
     try {
       setLoading(true);
@@ -102,7 +112,7 @@ function StoreInchargeDashboard() {
           qty: demand.quantity || "-",
           status: demand.status || "-",
           cmName: demand.creator?.name || "-",
-          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "-",
+          date: formatDate(demand.createdAt),
         }));
         setDemands(data);
       } else {

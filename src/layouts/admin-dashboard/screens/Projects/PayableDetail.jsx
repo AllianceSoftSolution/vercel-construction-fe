@@ -322,7 +322,8 @@ export default function PayableDetails() {
     <>
       <TopBar
         title={`Payables Detail - ${vendorAccount?.vendor?.name || 'Vendor'}`}
-        detail={`Vendor account details for ${vendorAccount?.vendor?.name || 'Vendor'} - Last updated: ${vendorAccount?.lastUpdated ? formatDateDMY(vendorAccount.lastUpdated) : 'N/A'}`}
+        showIcon={true}
+        // detail={`Vendor account details for ${vendorAccount?.vendor?.name || 'Vendor'} - Last updated: ${vendorAccount?.lastUpdated ? formatDateDMY(vendorAccount.lastUpdated) : 'N/A'}`}
       />
       
       <div className="border rounded-xl p-4 mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

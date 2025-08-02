@@ -26,7 +26,7 @@ const statusColorMap = {
   FULFILLED: "#0ea5e9", // blue
   COMPLETED: "#22c55e", // green
   PARTIAL: "#eab308", // yellow
-  CONFIRMED: "#7a0b4a",
+  CONFIRMED: "#44085c", // purple 
   REQUEST_SENT: "#707782", // gray
   default: "#0252AD", // fallback blue
 };
@@ -41,6 +41,37 @@ const StatusChip = ({ value }) => {
       sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
     />
   );
+};
+
+const ProofOfBillComponent = ({ value }) => {
+  if (!value || value === "-") {
+    return <span>-</span>;
+  }
+  
+  // Check if the value is a valid URL
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  if (isValidUrl(value)) {
+    return (
+      <a
+        href={value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-black hover:text-primary underline cursor-pointer"
+      >
+        View Proof
+      </a>
+    );
+  }
+  
+  return <span>{value}</span>;
 };
 
 function SinteInchargeDashbaord() {
@@ -73,14 +104,16 @@ function SinteInchargeDashbaord() {
   ];
 
   const columns2 = [
-    { headerName: "Ref No", field: "refNo" },
-    { headerName: "Projects", field: "project" },
+    { headerName: "Demand ID", field: "demandId" },
+    { headerName: "Project Name", field: "project" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "PO Qty", field: "poQty" },
+    { headerName: "Amount", field: "amount" },
+    { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Status", field: "status" },
-    { headerName: "CM Name", field: "cmName" },
-    { headerName: "Date", field: "date" },
   ];
 
 
@@ -121,14 +154,18 @@ function SinteInchargeDashbaord() {
         // Map the API response to match the columns
         const data = response.data.data.map((po) => ({
           id: po.id,
-          refNo: po.referenceNumber,
-          project: po.demand?.section?.project?.name || po.section?.project?.name || "-",
+          demandId: po.demand?.referenceNumber || "-",
+          project: po.demand?.section?.project?.name || "-",
+          demandName: po.demand?.referenceNumber || "-",
           material: po.material?.name || "-",
-          section: po.section?.name || "-",
-          qty: po.quantity,
-          status: po.status,
-          cmName: po.demand?.creator?.name || "-",
-          date: formatDateDMY(po.createdAt),
+          section: po.demand?.section?.name || "-",
+          qty: po.demand?.quantity || "-",
+          unit: po.demand?.unit || "-",
+          poQty: po.quantity || "-",
+          amount: po.totalAmount ? `${po.totalAmount}PKR` : "-",
+          status: po.status || "-",
+          assingedVendors: po.vendorId || "-",
+          proofOfBill: po.proofOfBill || "-",
         }));
         setPurchaseOrders(data);
       } else {
@@ -233,7 +270,14 @@ function SinteInchargeDashbaord() {
         {loadingPurchaseOrders ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns2} data={purchaseOrders} cellComponents={{ status: StatusChip }} />
+          <SimpleTable 
+            columns={columns2} 
+            data={purchaseOrders} 
+            cellComponents={{ 
+              status: StatusChip, 
+              proofOfBill: ProofOfBillComponent 
+            }} 
+          />
         )}
       </div>
     </div>

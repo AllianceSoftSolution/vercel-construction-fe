@@ -15,56 +15,8 @@ const PmMemberDetailPage = () => {
   const { id } = useParams();
   const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      no: "1",
-      projectName: "Bridge Construction",
-      code: 9909,
-      location: "London",
-      section: "A1",
-      amount: 120000,
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      no: "2",
-      projectName: "Highway Expansion",
-      code: 9909,
-      location: "New York",
-      section: "B2",
-      amount: 2500000,
-      status: "Approved",
-      date: "2025-06-14",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      no: "3",
-      projectName: "Metro Rail",
-      code: 9909,
-      location: "Paris",
-      section: "C3",
-      amount: 3000000,
-      status: "In Progress",
-      date: "2025-06-13",
-      action: "id-here",
-    },
-  ];
+  
 
-  const columns = [
-    { headerName: "No", field: "no" },
-    { headerName: "Project Name", field: "projectName" },
-    { headerName: "Code", field: "code" },
-    { headerName: "Location", field: "location" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Construction Amount", field: "amount" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
-  ];
 
 
   const fetchMemberDetails = async () => {      
@@ -92,6 +44,7 @@ const PmMemberDetailPage = () => {
   return (
     <div className="p-2">
       <TopBar title="Member Detail"
+      showIcon={true}
        // detail="lorem ipsum"
         //  showExport={true} 
         />

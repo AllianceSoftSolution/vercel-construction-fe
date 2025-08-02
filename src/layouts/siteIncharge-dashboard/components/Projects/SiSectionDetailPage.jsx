@@ -293,15 +293,16 @@ const SiSectionDetailPage = () => {
     </DropdownButton>
   );
 
+ 
   const columns = [
-    { headerName: "CM ID", field: "cmId" },
-    { headerName: "Construction Manager", field: "constructionManager" },
-    { headerName: "Email", field: "email" },
-    { headerName: "Phone Number", field: "phone" },
-    { headerName: "Address", field: "address" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
+    // { headerName: "CM ID", field: "id" },
+    { headerName: "Name", field: "user.name" },
+    { headerName: "Email", field: "user.email" },
+    // { headerName: "Phone Number", field: "user.phone" },
+    // { headerName: "Address", field: "user.address" },
+    { headerName: "Created By", field: "user.creator.name" },
+    { headerName: "CM Store", field: "cmStore.name" },
+    { headerName: "Action", field: "id" },
   ];
 
   const capColumns = [
@@ -417,6 +418,7 @@ const SiSectionDetailPage = () => {
     <div className="px-4 md:px-8 py-4">
       <TopBar
         title="Section Details"
+        showIcon={true}
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
@@ -603,9 +605,9 @@ const SiSectionDetailPage = () => {
                 </div>
               ) : (
                 <SimpleTable
-                  data={constructionManagersData}
-                  columns={columns}
-                  cellComponents={{ action: CustomActionComponent }}
+                data={sectionData?.associatedConstructionManagers || []}
+                columns={columns}
+                  cellComponents={{ id: CustomActionComponent }}
                 />
               )}
             </div>

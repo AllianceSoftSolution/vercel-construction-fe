@@ -19,6 +19,7 @@ const SiProjectDetailPage = () => {
     <div>
       <TopBar
         title="Project Details"
+        showIcon={true}
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
         // buttonText="Create Project"

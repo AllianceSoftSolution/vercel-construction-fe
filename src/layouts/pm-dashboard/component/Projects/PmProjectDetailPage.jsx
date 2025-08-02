@@ -54,6 +54,7 @@ const PmProjectDetailPage = () => {
           {/* TopBar Component */}
           <TopBar
             title="Project Details"
+            showIcon={true}
             // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
             // showExport={true}
           />

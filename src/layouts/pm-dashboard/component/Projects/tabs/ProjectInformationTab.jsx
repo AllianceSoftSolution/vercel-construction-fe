@@ -102,7 +102,8 @@ const ProjectInformationTab = ({ data }) => {
         totalAmount={data?.totalAmount || "0"}
         remainingAmount={data?.remainingAmount || "0"}
         paidAmount={data?.paidAmount || "0"}
-        date={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
+        startDate={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
+        endDate={data?.endDate ? formatDateDMY(data.endDate) : "N/A"}
         // projectLocation={data?.location || "Not specified"}
         // projectStatus={data?.status || "N/A"}
       />

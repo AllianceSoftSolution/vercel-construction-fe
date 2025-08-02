@@ -257,6 +257,7 @@ const PmSectionDetailPage = () => {
         <>
           <TopBar
             title="Section Details"
+            showIcon={true}
             // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
           />
 

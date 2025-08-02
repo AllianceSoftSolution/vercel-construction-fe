@@ -125,7 +125,7 @@ const VendorDetailPage = () => {
 
   return (
     <div className="px-4 py-2">
-      <TopBar title="Vendor" />
+        <TopBar title="Vendor" showIcon={true} />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">

@@ -46,6 +46,7 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState({ Role: [] });
 
+
   // Role filter options
   const roleOptions = [
     { label: "admin", value: "ADMIN" },
@@ -117,6 +118,21 @@ const UserManagement = () => {
 
   const handleActionClick = () => {
     setShowModal(true);
+  };
+
+  // Handle opening role edit modal
+  const handleOpenRoleEdit = (user) => {
+    // Navigate to AddUser form with user data as query params
+    const userData = encodeURIComponent(JSON.stringify({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      note: user.note,
+      isHead: user.isHead || false,
+      isEdit: true
+    }));
+    navigate(`/admin-dashboard/user-management/addUser?userData=${userData}`);
   };
 
   const columns = [
@@ -207,6 +223,11 @@ const UserManagement = () => {
             label: "View Detail",
             onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
             icon: <FaEye />,
+          },
+          {
+            label: "Change User Role",
+            onClick: () => handleOpenRoleEdit(user),
+            icon: <FaUserEdit />,
           },
           {
             label: isActive ? "Deactivate Account" : "Activate Account",
@@ -359,10 +380,10 @@ const UserManagement = () => {
             />
           </div>
         </div>
-      )}
-    </div>
-  );
-};
+                    )}
+      </div>
+    );
+  };
 
 export default UserManagement;
 

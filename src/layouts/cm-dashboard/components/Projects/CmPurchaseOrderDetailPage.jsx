@@ -84,7 +84,7 @@ const CmPurchaseOrderDetail = () => {
 
   return (
     <div className="p-4">
-        <TopBar title="Purchase Order Detail Page" />
+        <TopBar title="Purchase Order Detail Page" showIcon={true} />
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
           <p className="text-[#444444] font-semibold text-xl">{purchaseOrderData?.referenceNumber || "Order Name Here"}</p>

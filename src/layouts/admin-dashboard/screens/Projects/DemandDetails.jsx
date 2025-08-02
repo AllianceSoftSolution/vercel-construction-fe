@@ -195,6 +195,7 @@ const DemandDetails = () => {
       />
 
       <TopBar title="Demand Details" 
+      showIcon={true}
       // detail="lorem ipsum dolor sit amet" 
       />
 

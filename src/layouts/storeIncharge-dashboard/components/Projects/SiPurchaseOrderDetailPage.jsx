@@ -84,6 +84,7 @@ const SiPurchaseOrderDetailPage = () => {
     <div className="">
       <TopBar
         title="Purchase Order Detail Page"
+        showIcon={true}
         // detail="lorem ipsum dolor sit amet"
       />
 

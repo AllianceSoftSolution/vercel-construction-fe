@@ -59,6 +59,7 @@ const MemberDetailPage = () => {
   return (
     <div className="p-4 w-full">
       <TopBar title="Member Detail"
+      showIcon={true}
       //  detail="lorem ipsum" 
       //  showExport={true} 
        />

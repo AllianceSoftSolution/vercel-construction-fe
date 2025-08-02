@@ -61,7 +61,7 @@ const MemberDetailPage = () => {
   ];
   return (
     <div>
-      <TopBar title="Vendor" />
+      <TopBar title="Vendor" showIcon={true} />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
       <div className="flex ">
         <div className="h-fit w-[30%] border-[0.5px] border-[#CDCDCD] rounded-xl p-2 mt-16 ">

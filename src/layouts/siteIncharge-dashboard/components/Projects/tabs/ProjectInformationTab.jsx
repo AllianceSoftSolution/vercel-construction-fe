@@ -93,7 +93,8 @@ const ProjectInformationTab = ({ data, loading }) => {
             totalAmount={data?.totalAmount || "0"}
             paidAmount={data?.paidAmount || "0"}
             remainingAmount={data?.remainingAmount || "0"}
-            date={formatDate(data?.createdAt)}
+            startDate={formatDate(data?.startDate)}
+            endDate={formatDate(data?.endDate)}
             projectLocation="Location not available " // This would come from API if available
             projectStatus={getProjectStatus()}
           />

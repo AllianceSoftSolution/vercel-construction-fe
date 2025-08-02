@@ -19,8 +19,9 @@ const CmProjectDetailPage = () => {
     <div className="w-full px-4 sm:px-6 md:px-8 py-6">
       <TopBar
         title="Project Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        showIcon={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <Box
