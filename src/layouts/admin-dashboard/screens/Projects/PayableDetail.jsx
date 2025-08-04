@@ -32,7 +32,7 @@ const paymentColumns = [
   { headerName: "Date", field: "date" },
   { headerName: "Description", field: "description" },
   { headerName: "Type", field: "type" },
-  { headerName: "Amount", field: "amount" },
+  { headerName: "Amount (PKR)", field: "amount" },
   // { headerName: "Balance", field: "balance" },
   { headerName: "Proof", field: "proof" },
 ];
@@ -229,7 +229,7 @@ export default function PayableDetails() {
           date: formatDateDMY(transaction.createdAt),
           description: transaction.note || transaction.type,
           type: transaction.type,
-          amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()} PKR` : "-",
+          amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()}` : "-",
           proof: transaction.proofOfPayment,
         })) || [];
         

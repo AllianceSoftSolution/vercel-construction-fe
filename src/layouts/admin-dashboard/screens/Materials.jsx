@@ -17,7 +17,6 @@ const Materials = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState(null);
-  const [deleting, setDeleting] = useState(false);
 
   const fetchMaterial = async () => {
     try {
@@ -48,28 +47,19 @@ const Materials = () => {
     navigate("/admin-dashboard/materials/addProduct", { state: { material } });
   };
 
-  const handleDelete = async () => {
-    if (!selectedMaterialId) {
-      return;
-    }
-    
+  const deleteMaterial = async () => {
     try {
-      setDeleting(true);
       const response = await apiClient.delete(`/materials/${selectedMaterialId}`);
       if (response.ok) {
-        console.log("Material deleted successfully");
-        toast.success("Material deleted successfully");
+        fetchMaterial();
         setShowDeleteModal(false);
         setSelectedMaterialId(null);
-        fetchMaterial();
+        toast.success("Material deleted successfully");
       } else {
-        throw new Error(response.originalError.message);
+        toast.error(response.data?.message || "Failed to delete material");
       }
     } catch (error) {
-      console.error("Error deleting Material item!", error.message);
-      toast.error("Error deleting Material item!");
-    } finally {
-      setDeleting(false);
+      toast.error("Something went wrong");
     }
   };
 
@@ -135,8 +125,7 @@ const Materials = () => {
              {showDeleteModal && (
          <DeleteModal
            onClose={() => setShowDeleteModal(false)}
-           onConfirm={handleDelete}
-           loading={deleting}
+           onConfirm={deleteMaterial}
          />
        )}
     </div>

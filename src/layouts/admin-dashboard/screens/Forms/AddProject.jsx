@@ -12,6 +12,7 @@ import { formatDateDMY } from '../../../../utils';
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Project name is required"),
+  code: Yup.string().required("Project code is required"), // Made required again
   description: Yup.string().required("Description is required"),
   startDate: Yup.date().required("Start date is required"),
   endDate: Yup.date()
@@ -36,6 +37,13 @@ const AddProject = () => {
   const editingProject = location.state?.project;
   const [loading, setLoading] = useState(false);
 
+  // Debug: Log the editing project data
+  useEffect(() => {
+    if (editingProject) {
+      console.log("Editing project data:", editingProject);
+    }
+  }, [editingProject]);
+
   const formik = useFormik({
     initialValues: {
       name: editingProject?.name || "",
@@ -44,27 +52,74 @@ const AddProject = () => {
       endDate: editingProject?.endDate ? toDateInputValue(editingProject.endDate) : "",
       code: editingProject?.code || "",
     },
-    enableReinitialize: true,
+    enableReinitialize: true, // Enable reinitialize to handle editing
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
+      console.log("Form submission started!");
+      console.log("Form values received:", values);
+      
       try {
         setLoading(true);
         let response;
+        
+        // Prepare the data to send - ensure proper date formatting
+        const projectData = {
+          name: values.name.trim(),
+          code: values.code, // Don't trim the code field
+          description: values.description.trim(),
+          startDate: values.startDate,
+          endDate: values.endDate,
+        };
+
+        // Debug: Log the data being sent
+        console.log("Form values:", values);
+        console.log("Code field value:", values.code);
+        console.log("Sending project data:", projectData);
+        console.log("Is editing mode:", !!editingProject);
+        console.log("Project ID:", editingProject?.id);
+
         if (editingProject) {
           // Edit mode: PUT
-          response = await apiClient.put(`/projects/${editingProject.id}`, values);
+          console.log("Making PUT request to:", `/projects/${editingProject.id}`);
+          console.log("Request payload:", JSON.stringify(projectData, null, 2));
+          response = await apiClient.put(`/projects/${editingProject.id}`, projectData);
         } else {
           // Add mode: POST
-          response = await apiClient.post("/projects", values);
+          console.log("Making POST request to:", "/projects");
+          console.log("Request payload:", JSON.stringify(projectData, null, 2));
+          response = await apiClient.post("/projects", projectData);
         }
+        
+        // Debug: Log the response
+        console.log("API Response:", response);
+        console.log("Response status:", response.status);
+        console.log("Response data:", response.data);
+        console.log("Response ok:", response.ok);
+        
         if (response.ok) {
+          toast.success(editingProject ? "Project updated successfully!" : "Project created successfully!");
           resetForm();
           navigate("/admin-dashboard/project-management");
         } else {
-          toast.error(editingProject ? "Project update failed!" : "Project creation failed!");
+          console.error("API Error Response:", response.data);
+          console.error("Response status:", response.status);
+          console.error("Response statusText:", response.statusText);
+          
+          // More specific error messages
+          if (response.status === 400) {
+            toast.error("Invalid data provided. Please check your input.");
+          } else if (response.status === 404) {
+            toast.error("Project not found.");
+          } else if (response.status === 500) {
+            toast.error("Server error. Please try again later.");
+          } else {
+            toast.error(response.data?.message || (editingProject ? "Project update failed!" : "Project creation failed!"));
+          }
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error details:", error);
+        console.error("Error response:", error?.response);
+        console.error("Error message:", error?.message);
         toast.error(
           error?.response?.data?.message ||
             "Operation failed. Please try again."
@@ -74,9 +129,6 @@ const AddProject = () => {
       }
     },
   });
-
-  // Remove the useEffect since we already have the project data from navigation state
-  // The formik initialValues will handle populating the form with the passed data
 
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">

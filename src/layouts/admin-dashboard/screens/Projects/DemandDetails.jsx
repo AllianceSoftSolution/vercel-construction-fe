@@ -246,6 +246,8 @@ const DemandDetails = () => {
             <p className="text-[#444444] font-semibold">Section Name:</p>
             <p className="text-[#979797]">{demandData?.section?.name || "-"}</p>
           </div>
+          </div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Material:</p>
             <p className="text-[#979797]">

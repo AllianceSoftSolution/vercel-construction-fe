@@ -90,10 +90,27 @@ const SiDemandDetails = () => {
     fetchDetails();
   }, [id]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const DateCellComponent = ({ value }) => {
+    return <div>{formatDate(value)}</div>;
+  };
+
   const columns = [
     { headerName: "Name", field: "userName" },
     { headerName: "Status", field: "status" },
     { headerName: "Remarks", field: "remarks" },
+    { headerName: "Date", field: "createdAt" },
   ];
 
   const CustomActionComponent = () => {
@@ -224,6 +241,8 @@ const SiDemandDetails = () => {
             <p className="text-[#444444] font-semibold">Section Name:</p>
             <p className="text-[#979797]">{demandData?.section?.name || "-"}</p>
           </div>
+          </div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Material:</p>
             <p className="text-[#979797]">
@@ -319,9 +338,9 @@ const SiDemandDetails = () => {
 
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
       <SimpleTable
-        data={demandData?.approvals}
+        data={demandData?.approvals || []}
         columns={columns}
-        cellComponents={{}}
+        cellComponents={{ createdAt: DateCellComponent }}
       />
       </>
       
