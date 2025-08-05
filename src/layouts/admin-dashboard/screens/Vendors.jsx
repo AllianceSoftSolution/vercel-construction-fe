@@ -94,14 +94,14 @@ const Vendors = () => {
             onClick: () => navigate(`/admin-dashboard/vendors/addVendor`, { state: { vendor: vendors.find(v => v.id === id) } }),
             icon: <FaUserEdit />,
           },
-          {
-            label: "Delete",
-            onClick: () => {
-              setSelectedVendorId(id);
-              setShowDeleteModal(true);
-            },
-            icon: <FaTrash />,
-          },
+          // {
+          //   label: "Delete",
+          //   onClick: () => {
+          //     setSelectedVendorId(id);
+          //     setShowDeleteModal(true);
+          //   },
+          //   icon: <FaTrash />,
+          // },
         ]}
         // onClick={handleActionClick}
       >

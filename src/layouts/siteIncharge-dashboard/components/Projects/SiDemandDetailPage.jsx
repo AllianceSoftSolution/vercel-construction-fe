@@ -109,6 +109,7 @@ const SiDemandDetails = () => {
   const columns = [
     { headerName: "Name", field: "userName" },
     { headerName: "Status", field: "status" },
+    { headerName: "Role", field: "userRole" },
     { headerName: "Remarks", field: "remarks" },
     { headerName: "Date", field: "createdAt" },
   ];

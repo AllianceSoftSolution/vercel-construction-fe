@@ -73,14 +73,14 @@ const Materials = () => {
             onClick: () => handleEdit(id),
             icon: <FaUserEdit />,
           },
-          {
-            label: "Delete ",
-            onClick: () => {
-              setSelectedMaterialId(id);
-              setShowDeleteModal(true);
-            },
-            icon: <FaTrash />,
-          },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => {
+          //     setSelectedMaterialId(id);
+          //     setShowDeleteModal(true);
+          //   },
+          //   icon: <FaTrash />,
+          // },
         ]}
       >
         <IconButton>
