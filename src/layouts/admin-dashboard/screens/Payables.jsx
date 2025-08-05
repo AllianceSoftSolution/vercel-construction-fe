@@ -241,9 +241,9 @@ const Payables = () => {
   const vendorColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "Vendor Name", field: "vendorName" },
-    { headerName: "Total Amount", field: "totalBalance" },
-    { headerName: "Remaining Amount", field: "remainingBalance" },
-    { headerName: "Paid Amount", field: "paidAmount" },
+    { headerName: "Total Amount (PKR)", field: "totalBalance" },
+    { headerName: "Remaining Amount (PKR)", field: "remainingBalance" },
+    { headerName: "Paid Amount (PKR)", field: "paidAmount" },
     { headerName: "Action", field: "id" },
   ];
 
@@ -255,7 +255,7 @@ const Payables = () => {
     { headerName: "Material", field: "material" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    { headerName: "Amount", field: "amount" },
+    { headerName: "Amount (PKR)", field: "amount" },
     { headerName: "Status", field: "status" },
     { headerName: "Action", field: "id" },
   ];
@@ -275,9 +275,13 @@ const Payables = () => {
             id: account.vendorId, // Use vendorId for navigation to detail page
             no: index + 1,
             vendorName: account.vendor?.name || "-",
-            totalBalance: account.totalCredited ? `${account.totalCredited.toLocaleString()} PKR` : "-",
-            remainingBalance: account.remainingAmount ? `${account.remainingAmount.toLocaleString()} PKR` : "-",
-            paidAmount: account.paidAmount ? `${account.paidAmount.toLocaleString()} PKR` : "-",
+            totalBalance: account.totalCredited ? `${account.totalCredited.toLocaleString()}` : "-",
+            remainingBalance: account.remainingAmount ? `${account.remainingAmount.toLocaleString()}` : "-",
+            paidAmount: account.paidAmount ? `${account.paidAmount.toLocaleString()}` : "-",
+            // Store original numeric values for color coding
+            totalBalanceValue: account.totalCredited || 0,
+            remainingBalanceValue: account.remainingAmount || 0,
+            paidAmountValue: account.paidAmount || 0,
           };
         });
         
@@ -310,7 +314,7 @@ const Payables = () => {
             material: po.material?.name || "-", // Material name for display
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
-            amount: po.totalAmount ? `${po.totalAmount.toLocaleString()} PKR` : "-",
+            amount: po.totalAmount ? `${po.totalAmount.toLocaleString()}` : "-",
             status: po.status || "-",
             // Complete PO data for modal
             poData: po // Store complete PO data separately
@@ -437,6 +441,25 @@ const Payables = () => {
     );
   };
 
+  // Color-coded amount component for vendor accounts
+  const ColorCodedAmount = ({ value, field }) => {
+    if (!value || value === "-") return <span>{value}</span>;
+    
+    // Remove commas and convert to number
+    const numericValue = parseFloat(value.replace(/,/g, ''));
+    
+    if (isNaN(numericValue)) return <span>{value}</span>;
+    
+    const color = numericValue >= 0 ? "#ef4444" : "#22c55e"; // red for positive, green for negative
+    const fontWeight = "font-semibold";
+    
+    return (
+      <span style={{ color, fontWeight }} className={fontWeight}>
+        {value}
+      </span>
+    );
+  };
+  
   return (
     <div className=" ">
       <TopBar
@@ -508,7 +531,12 @@ const Payables = () => {
             <SimpleTable
               columns={vendorColumns}
               data={vendorAccounts}
-              cellComponents={{ id: CustomActionComponent }}
+              cellComponents={{ 
+                id: CustomActionComponent,
+                totalBalance: ColorCodedAmount,
+                remainingBalance: ColorCodedAmount,
+                paidAmount: ColorCodedAmount
+              }}
             />
           )}
         </div>

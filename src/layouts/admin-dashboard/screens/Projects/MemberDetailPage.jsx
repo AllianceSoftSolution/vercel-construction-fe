@@ -87,7 +87,7 @@ const MemberDetailPage = () => {
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Joining Date</p>
-              <p>{memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString() : "-"}</p>
+              <p>{memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString('en-GB') : "-"}</p>
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Employee ID</p>

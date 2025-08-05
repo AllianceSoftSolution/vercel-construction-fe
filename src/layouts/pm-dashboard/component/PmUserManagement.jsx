@@ -195,10 +195,10 @@ const PmUserManagement = () => {
             title="User Management"
             // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
               // showExport={true}
-            buttonText="Create New User"
-            onButtonClick={() =>
-              navigate("/project-manager-dashboard/user-management/addUser")
-            }
+            // buttonText="Create New User"
+            // onButtonClick={() =>
+            //   navigate("/project-manager-dashboard/user-management/addUser")
+            // }
           />
           <div className="flex justify-end items-center gap-4 mt-2 mb-6">
             <CustomFilterDropdown

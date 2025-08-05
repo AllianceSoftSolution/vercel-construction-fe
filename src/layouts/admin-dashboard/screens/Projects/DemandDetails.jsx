@@ -110,10 +110,71 @@ const DemandDetails = () => {
     fetchDetails();
   }, [id]);
 
+  // Function to format date for display
+  const formatDate = (dateInput) => {
+    console.log('formatDate called with:', dateInput, 'Type:', typeof dateInput);
+    
+    // Handle object with value property (from SimpleTable)
+    let dateString = dateInput;
+    if (dateInput && typeof dateInput === 'object' && dateInput.value) {
+      dateString = dateInput.value;
+    }
+    
+    if (!dateString) {
+      console.log('Date string is empty/null');
+      return "-";
+    }
+    
+    try {
+      // Handle different date formats
+      let date;
+      
+      // If it's already a Date object
+      if (dateString instanceof Date) {
+        date = dateString;
+      } else {
+        // Convert string to Date
+        date = new Date(dateString);
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date:', dateString);
+        return "-";
+      }
+      
+      // Format the date
+      const formattedDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      console.log('Formatted date:', formattedDate);
+      return formattedDate;
+    } catch (error) {
+      console.error('Error formatting date:', error, 'Input:', dateInput);
+      return "-";
+    }
+  };
+
+  // Debug function to log the data structure
+  useEffect(() => {
+    if (demandData?.approvals && demandData.approvals.length > 0) {
+      console.log('Approvals data:', demandData.approvals);
+      console.log('First approval timestamp:', demandData.approvals[0]?.timestamp);
+    }
+  }, [demandData]);
+
   const columns = [
     { headerName: "Name", field: "userName" },
     { headerName: "Status", field: "status" },
+    { headerName: "Role", field: "userRole" },
     { headerName: "Remarks", field: "remarks" },
+    { headerName: "Date", field: "timestamp" },
   ];
 
   const CustomActionComponent = () => {
@@ -246,6 +307,8 @@ const DemandDetails = () => {
             <p className="text-[#444444] font-semibold">Section Name:</p>
             <p className="text-[#979797]">{demandData?.section?.name || "-"}</p>
           </div>
+          </div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Material:</p>
             <p className="text-[#979797]">
@@ -345,7 +408,9 @@ const DemandDetails = () => {
       <SimpleTable
         data={demandData?.approvals}
         columns={columns}
-        cellComponents={{}}
+        cellComponents={{
+          timestamp: (value) => formatDate(value)
+        }}
       />
       </>
       
