@@ -37,7 +37,30 @@ const StatusChip = ({ value }) => {
   );
 };
 
-const SiPurchaseOrder = () => {
+// Date and time formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "-";
+  
+  // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  return `${day} ${month} ${year}, ${time}`;
+};
+
+// Date component for table
+const DateComponent = ({ value }) => {
+  return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+};
+
+  const SiPurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const {id} = useParams();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -100,6 +123,7 @@ const SiPurchaseOrder = () => {
           poQty: po.quantity || "-",
           amount: po.totalAmount ? `${po.totalAmount}PKR` : "-",
           status: po.status || "-",
+          createdAt: po.createdAt ? formatDate(po.createdAt) : "-",
           assingedVendors: po.vendorId || "-",
           proofOfBill: po.proofOfBill || "-",
         }));
@@ -179,6 +203,7 @@ const SiPurchaseOrder = () => {
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Amount", field: "amount" },
     { headerName: "Proof of Bill", field: "proofOfBill" },
+    { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
     // { headerName: "Action", field: "id" },
@@ -274,7 +299,11 @@ const SiPurchaseOrder = () => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
-            cellComponents={{  status: StatusChip, proofOfBill: ProofOfBillComponent }}
+            cellComponents={{ 
+              status: StatusChip, 
+              proofOfBill: ProofOfBillComponent,
+              createdAt: DateComponent 
+            }}
           />
         )}
       </div>

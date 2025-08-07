@@ -35,6 +35,8 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
   ]);
   const [errors, setErrors] = useState([]);
   const [confirmations, setConfirmations] = useState([false]);
+  const [totalNotes, setTotalNotes] = useState("");
+  const [totalNotesError, setTotalNotesError] = useState("");
 
   useEffect(() => {
     async function fetchVendors() {
@@ -71,6 +73,12 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
 
   const validateEntries = () => {
     let valid = true;
+    const totalPOQuantity = poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0);
+    const exceedsTotal = totalPOQuantity > Number(demandQuantity);
+    
+    // Reset total notes error
+    setTotalNotesError("");
+    
     const newErrors = poEntries.map((entry, idx) => {
       const entryErrors = {};
       if (!entry.vendorId) {
@@ -81,6 +89,8 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
         entryErrors.quantity = "Quantity must be at least 1";
         valid = false;
       }
+      
+      // Individual PO validation (existing logic)
       if (Number(entry.quantity) > Number(demandQuantity)) {
         if (!confirmations[idx]) {
           entryErrors.confirmation = "Please confirm that you want to create this PO with quantity greater than demand";
@@ -91,8 +101,16 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
           valid = false;
         }
       }
+      
       return entryErrors;
     });
+    
+    // Total PO validation - check for total notes
+    if (exceedsTotal && (!totalNotes || totalNotes.trim() === "")) {
+      setTotalNotesError("Notes are required when total PO quantity exceeds demand");
+      valid = false;
+    }
+    
     setErrors(newErrors);
     return valid;
   };
@@ -100,39 +118,64 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
   const handleSubmit = async () => {
     if (!validateEntries()) return;
     setLoading(true);
-    let allSuccess = true;
-    for (let entry of poEntries) {
+    let successCount = 0;
+    let failureCount = 0;
+    
+    for (let i = 0; i < poEntries.length; i++) {
+      const entry = poEntries[i];
       const payload = {
         demandId,
         sectionId,
         materialId,
         vendorId: entry.vendorId,
         quantity: Number(entry.quantity),
-        notes: entry.notes,
+        notes: entry.notes || totalNotes, // Use individual notes if available, otherwise use total notes
       };
+      
       try {
         const response = await apiClient.post("/purchase-orders", payload);
-        if (!response.ok) {
-          allSuccess = false;
-          toast.error(response.data?.message || "PO creation failed!");
+        if (response.ok) {
+          successCount++;
+        } else {
+          failureCount++;
+          toast.error(`PO ${i + 1} creation failed: ${response.data?.message || "Unknown error"}`);
         }
       } catch (error) {
-        allSuccess = false;
-        toast.error(error?.response?.data?.message || "Operation failed. Please try again.");
+        failureCount++;
+        toast.error(`PO ${i + 1} creation failed: ${error?.response?.data?.message || "Network error"}`);
       }
     }
+    
     setLoading(false);
-    if (allSuccess) {
-      toast.success("All purchase orders created!");
+    
+    if (successCount > 0) {
+      if (failureCount === 0) {
+        toast.success("All purchase orders created successfully!");
+      } else {
+        toast.success(`${successCount} purchase order(s) created successfully! ${failureCount} failed.`);
+      }
       setPoEntries([{ vendorId: "", quantity: "", notes: "" }]);
       setErrors([]);
       setConfirmations([false]);
+      setTotalNotes("");
+      setTotalNotesError("");
       onClose();
       window.location.reload();
+    } else {
+      toast.error("No purchase orders were created. Please try again.");
     }
   };
 
-  const isCreateDisabled = loading || poEntries.some((entry, idx) => Number(entry.quantity) > Number(demandQuantity) && !confirmations[idx]);
+  // Reset form when closed
+  useEffect(() => {
+    if (!isOpen) {
+      setPoEntries([{ vendorId: "", quantity: "", notes: "" }]);
+      setErrors([]);
+      setConfirmations([false]);
+      setTotalNotes("");
+      setTotalNotesError("");
+    }
+  }, [isOpen]);
 
   return (
     <Box sx={style}>
@@ -186,6 +229,8 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                 value={entry.quantity}
                 onChange={e => {
                   handleEntryChange(idx, "quantity", e.target.value);
+                  
+                  // Individual PO validation (existing logic)
                   if (
                     Number(e.target.value) > Number(demandQuantity) &&
                     (!entry._exceededToastShown)
@@ -194,6 +239,21 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                     handleEntryChange(idx, "_exceededToastShown", true);
                   } else if (Number(e.target.value) <= Number(demandQuantity) && entry._exceededToastShown) {
                     handleEntryChange(idx, "_exceededToastShown", false);
+                  }
+                  
+                  // Total PO validation (new logic)
+                  const newTotal = poEntries.reduce((sum, poEntry, i) => {
+                    if (i === idx) {
+                      return sum + Number(e.target.value || 0);
+                    }
+                    return sum + Number(poEntry.quantity || 0);
+                  }, 0);
+                  
+                  if (newTotal > Number(demandQuantity) && !entry._totalExceededToastShown) {
+                    toast.error("Total PO quantity exceeds demand quantity!");
+                    handleEntryChange(idx, "_totalExceededToastShown", true);
+                  } else if (newTotal <= Number(demandQuantity) && entry._totalExceededToastShown) {
+                    handleEntryChange(idx, "_totalExceededToastShown", false);
                   }
                 }}
                 error={!!errors[idx]?.quantity}
@@ -231,11 +291,37 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                   />
                 </>
               )}
-              {Number(entry.quantity) <= Number(demandQuantity) && (
-                null
-              )}
             </Box>
           ))}
+          
+          {/* Total Notes Field - shows when total PO quantity exceeds demand */}
+          {poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0) > Number(demandQuantity) && (
+            <Box 
+              mt={3} 
+              p={3} 
+              borderRadius={2} 
+              border={"2px solid #ff9800"} 
+              bgcolor={"#fff3e0"}
+            >
+              <Typography variant="h6" color="warning.main" gutterBottom>
+                ⚠️ Total PO quantity exceeds demand quantity!
+              </Typography>
+              <CustomTextField
+                fullWidth
+                margin="normal"
+                label="Notes *"
+                name="totalNotes"
+                value={totalNotes}
+                onChange={(e) => setTotalNotes(e.target.value)}
+                error={!!totalNotesError}
+                helperText={totalNotesError || "Required when total PO quantity exceeds demand quantity."}
+                required
+                multiline
+                rows={3}
+              />
+            </Box>
+          )}
+          
           <Button buttonText={"Add PO"} onClick={addPoEntry} disabled={loading} />
         </DialogContent>
         <DialogActions>
@@ -250,7 +336,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
           <Button
             buttonText={loading ? "Creating..." : "Create Purchase Order(s)"}
             onClick={handleSubmit}
-            disabled={isCreateDisabled}
+            disabled={loading}
           />
         </DialogActions>
       </Dialog>

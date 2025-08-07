@@ -305,6 +305,12 @@ const SiSectionDetailPage = () => {
     { headerName: "Action", field: "id" },
   ];
 
+  const columnsAcc = [
+    { headerName: "Name", field: "user.name" },
+    { headerName: "Email", field: "user.email" },
+    {headerName : "Role" , field : "user.role"},
+  
+  ];
   const capColumns = [
     { headerName: "Material Name", field: "materialName" },
     { headerName: "CAP Quantity", field: "capQuantity" },
@@ -489,7 +495,7 @@ const SiSectionDetailPage = () => {
                 <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px] w-full">
                   <div>
                     <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
-                      Head Store
+                     Section Head Store
                     </h3>
                     <div className="mb-2">
                       <span className="font-semibold">Name:</span> {sectionData.headStore.name}
@@ -497,9 +503,7 @@ const SiSectionDetailPage = () => {
                     <div className="mb-2">
                       <span className="font-semibold">Type:</span> {formatText(sectionData.headStore.type)}
                     </div>
-                    <div className="mb-2">
-                      <span className="font-semibold">ID:</span> {sectionData.headStore.id}
-                    </div>
+                 
                   </div>
                   {/* Store Incharge Section */}
                   <div className="mt-4 border-t pt-4">
@@ -591,7 +595,25 @@ const SiSectionDetailPage = () => {
 
           {/* CM Table */}
           <div className="mt-10">
-            <TopBar
+          <TopBar
+          title="Accountant"
+        />
+
+        <div className="overflow-x-auto mt-4 relative">
+          {loading ? (
+            <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+              <Loader />
+            </div>
+          ) : (
+            <SimpleTable
+              data={sectionData?.associatedAccountants || []}
+              columns={columnsAcc}
+              cellComponents={{}}
+            />
+          )}
+        </div>
+        <div className="mt-10">
+        <TopBar
               title="Construction Managers"
               // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
               buttonText="Add CM"
@@ -611,9 +633,11 @@ const SiSectionDetailPage = () => {
                 />
               )}
             </div>
+        </div>
+         
           </div>
 
-          <div className="mt-10">
+            <div className="mt-10">
           <TopBar
             title="Material CAP"
             buttonText="Add Material Cap"

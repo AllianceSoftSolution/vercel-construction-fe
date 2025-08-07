@@ -210,6 +210,12 @@ const PmSectionDetailPage = () => {
     { headerName: "Action", field: "action" },
   ];
 
+  const columnsAcc = [
+    { headerName: "Name", field: "user.name" },
+    { headerName: "Email", field: "user.email" },
+    {headerName : "Role" , field : "user.role"},
+  
+  ];
   const fetchSectionDetail = async () => {
     try {
       setLoading(true);
@@ -335,6 +341,24 @@ const PmSectionDetailPage = () => {
 
           {/* Construction Manager Table */}
           <div className="mt-10">
+          <TopBar
+              title="Accountant "
+            
+            />
+
+            <div className="overflow-x-auto mt-4 relative">
+              {loading ? (
+                <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <SimpleTable
+                data={sectionData?.associatedAccountants || []}
+                columns={columnsAcc}
+                  cellComponents={{}}
+                />
+              )}
+            </div>
             <TopBar
               title="Construction Managers"
               // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
