@@ -527,34 +527,13 @@ const SiSectionDetailPage = () => {
           {/* Section Info */}
           <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 flex flex-col gap-4">
             <div className="flex flex-col sm:flex-wrap sm:flex-row gap-4">
-              <InfoPair
-                label="Section Name"
-                value={sectionData.name || "Not available"}
-              />
-              <InfoPair
-                label="Section Code"
-                value={sectionData.code || "Not available"}
-              />
-              <InfoPair
-                label="Project Name"
-                value={sectionData.project?.name || "Not available"}
-              />
-              <InfoPair
-                label="Construction Manager"
-                value={getSectionManager()}
-              />
-              <InfoPair
-                label="Created Date"
-                value={formatDate(sectionData.createdAt)}
-              />
-              <InfoPair
-                label="Status"
-                value={sectionData.isActive ? "Active" : "Inactive"}
-              />
-              <InfoPair
-                label="Linked Stores"
-                value={sectionData.stores?.length || 0}
-              />
+              <InfoPair label="Section Name" value={sectionData.name || "Not available"} />
+              <InfoPair label="Section Code" value={sectionData.code || "Not available"} />
+              <InfoPair label="Project Name" value={sectionData.project?.name || "Not available"} />
+              <InfoPair label="Construction Manager" value={getSectionManager()} />
+              <InfoPair label="Created Date" value={formatDate(sectionData.createdAt)} />
+              <InfoPair label="Status" value={sectionData.isActive ? "Active" : "Inactive"} />
+              <InfoPair label="Linked Stores" value={sectionData.stores?.length || 0} />
             </div>
             {sectionData.description && (
               <div className="mt-2">
@@ -568,26 +547,26 @@ const SiSectionDetailPage = () => {
             Members Overview
           </h4>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-4">
-            {/* Construction Manager Card */}
-            <div className="w-full">
-              {sectionData?.associatedConstructionManagers && sectionData.associatedConstructionManagers.length > 0 ? (
-                <div className="w-full">
-                  <MemberInfoCard
-                    title="General information - Construction Manager"
-                    image={manager}
-                    name={sectionData.associatedConstructionManagers[0].user?.name || "Unknown"}
-                    phone={sectionData.associatedConstructionManagers[0].user?.phone || "-"}
-                    role={formatText(sectionData.associatedConstructionManagers[0].user?.role) || "Construction Manager"}
-                    email={sectionData.associatedConstructionManagers[0].user?.email || "-"}
-                    joiningDate={sectionData.associatedConstructionManagers[0].user?.createdAt ? new Date(sectionData.associatedConstructionManagers[0].user.createdAt).toLocaleDateString() : "-"}
-                    id={sectionData.associatedConstructionManagers[0].user?.id || "-"}
-                    address={sectionData.associatedConstructionManagers[0].user?.address || "-"}
-                    country={sectionData.associatedConstructionManagers[0].user?.country || "-"}
-                    linkedStores={[sectionData.associatedConstructionManagers[0].cmStore?.name || "-"]}
-                  />
-                </div>
-              ) : (
-                <div className="w-full">
+                         {/* Project Manager Card */}
+             <div className="w-full">
+               {sectionData?.associatedProjectManager ? (
+                 <div className="w-full">
+                   <MemberInfoCard
+                     title="General information - Project Manager"
+                     image={manager}
+                     name={sectionData.associatedProjectManager.user?.name || "Unknown"}
+                    //  phone={sectionData.associatedProjectManager.user?.phone || "-"}
+                     role={formatText(sectionData.associatedProjectManager.user?.role) || "Project Manager"}
+                     email={sectionData.associatedProjectManager.user?.email || "-"}
+                    //  joiningDate={sectionData.associatedProjectManager.user?.createdAt ? new Date(sectionData.associatedProjectManager.user.createdAt).toLocaleDateString() : "-"}
+                    //  id={sectionData.associatedProjectManager.user?.id || "-"}
+                    //  address={sectionData.associatedProjectManager.user?.address || "-"}
+                    //  country={sectionData.associatedProjectManager.user?.country || "-"}
+                    //  linkedStores={[sectionData.associatedProjectManager.cmStore?.name || "-"]}
+                   />
+                 </div>
+               ) : (
+                <div className="w-full [&_.border]:!w-full [&_.sm\\:w-\\[90\\%\\]]:!w-full [&_.md\\:w-\\[80\\%\\]]:!w-full [&_.lg\\:w-\\[60\\%\\]]:!w-full">
                   <MemebersOverviewCard
                     title="General Information"
                     subTitle="Project Manager"
@@ -818,6 +797,17 @@ const SiSectionDetailPage = () => {
             )}
           </div>
         </div>
+
+          {/* AssignMemberModal for Project Manager */}
+          <AssignMemberModal
+            role="Project Manager"
+            open={openAssignPMModal}
+            onClose={() => setOpenAssignPMModal(false)}
+            fetchUsers={fetchPMUsers}
+            createUser={createPMUser}
+            onAssign={handleAssignPMGeneric}
+            loading={modalLoading}
+          />
 
           {/* AssignMemberModal for Construction Manager */}
           <AssignMemberModal
