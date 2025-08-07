@@ -37,12 +37,27 @@ const StatusChip = ({ value }) => {
   );
 };
 
-// Date formatting function
-const formatDate = (dateString) => formatDateDMY(dateString);
+// Date and time formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "-";
+  
+  // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  return `${day} ${month} ${year}, ${time}`;
+};
 
 // Date component for table
 const DateComponent = ({ value }) => {
-  return <span>{formatDate(value)}</span>;
+  return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
 };
 
 const Demands = () => {
@@ -76,7 +91,7 @@ const Demands = () => {
     { headerName: "Unit", field: "unit" },
     { headerName: "Qty", field: "quantity" },
     { headerName: "Date", field: "createdAt" },
-    { headerName: "Fulfilled", field: "fulfilled" },
+    // { headerName: "Fulfilled", field: "fulfilled" },
     { headerName: "Created By", field: "creator.name" },
     { headerName: "Project", field: "section.projectName" },
     { headerName: "Section", field: "section.name" },

@@ -149,6 +149,15 @@ const SectionDetailPage = () => {
     { headerName: "Action", field: "id" },
   ];
 
+
+  const columnsAcc = [
+    { headerName: "Name", field: "user.name" },
+    { headerName: "Email", field: "user.email" },
+    {headerName : "Role" , field : "user.role"}
+  
+  ];
+
+
   const capColumns = [
     { headerName: "Material Name", field: "materialName" },
     { headerName: "CAP Quantity", field: "capQuantity" },
@@ -632,7 +641,7 @@ const SectionDetailPage = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
-          <InfoItem label="Project Status" value="project status" />
+          {/* <InfoItem label="Project Status" value="project status" /> */}
           <InfoItem label="Total Amount" value={sectionData?.totalAmount || "0"} />
           <InfoItem label="Paid Amount" value={sectionData?.paidAmount || "0"} />
           <InfoItem label="Remaining Amount" value={sectionData?.remainingAmount || "0"} />
@@ -690,7 +699,7 @@ const SectionDetailPage = () => {
               <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px]">
                 <div>
                   <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
-                    Head Store
+                     Section Head Store
                   </h3>
                   <div className="mb-2">
                     <span className="font-semibold">Name:</span>{" "}
@@ -700,10 +709,7 @@ const SectionDetailPage = () => {
                     <span className="font-semibold">Type:</span>{" "}
                     {formatText(sectionData.headStore.type)}
                   </div>
-                  <div className="mb-2">
-                    <span className="font-semibold">ID:</span>{" "}
-                    {sectionData.headStore.id}
-                  </div>
+                 
                 </div>
                 {/* Store Incharge Section */}
                 <div className="mt-4 border-t pt-4">
@@ -783,6 +789,24 @@ const SectionDetailPage = () => {
       </div>
 
       <div className="mt-10">
+      <TopBar
+          title="Accountant"
+        />
+
+        <div className="overflow-x-auto mt-4 relative">
+          {loading ? (
+            <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+              <Loader />
+            </div>
+          ) : (
+            <SimpleTable
+              data={sectionData?.associatedAccountants || []}
+              columns={columnsAcc}
+              cellComponents={{}}
+            />
+          )}
+        </div>
+        <div className="mt-10">
         <TopBar
           title="Construction Managers"
           // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
@@ -803,6 +827,8 @@ const SectionDetailPage = () => {
             />
           )}
         </div>
+        </div>
+      
         <div className="mt-10">
           <TopBar
             title="Material CAP"
