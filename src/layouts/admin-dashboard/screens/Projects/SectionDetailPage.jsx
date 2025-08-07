@@ -6,7 +6,7 @@ import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaStore, FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MembersOverviewCard from "../../../../mui/MembersOverviewCard";
@@ -50,22 +50,22 @@ const SectionDetailPage = () => {
   // Generic function to format text for display (roles, types, etc.)
   const formatText = (text) => {
     if (!text) return "-";
-    
+
     // Convert text to title case and replace underscores with spaces
     return text
       .toLowerCase()
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
-  
+
   const CustomActionComponent = ({ value: id }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
         // {
         //   label: "View Detail",
-        
+
         //     onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
         //   icon: <FaUserEdit />,
         // },
@@ -80,12 +80,12 @@ const SectionDetailPage = () => {
         //   icon: <FaTrash />,
         // },
         {
-          label:"Go to Store",
-          onClick:()=>{
-              navigate(`/admin-dashboard/store/${id}`)
+          label: "Go to Store",
+          onClick: () => {
+            navigate(`/admin-dashboard/store/${id}`);
           },
-          icon:<FaStore/>
-        }
+          icon: <FaStore />,
+        },
       ]}
     >
       <IconButton>
@@ -94,15 +94,24 @@ const SectionDetailPage = () => {
     </DropdownButton>
   );
 
+  const CustomStoreLinkComponent = ({ value }) => (
+    <Link
+      to={`/admin-dashboard/store/${value?.id}`}
+      className="underline text-blue-500"
+    >
+      {value?.name}
+    </Link>
+  );
+
   const CapActionComponent = ({ value: capId }) => {
     const handleDeleteCap = async () => {
       try {
         setModalLoading(true);
         const response = await apiClient.patch(`/material-caps/section/${id}`, {
           capId: capId,
-          action: "delete"
+          action: "delete",
         });
-        
+
         if (response.ok) {
           toast.success("CAP deleted successfully!");
           fetchCAPData(); // Refresh the CAP table
@@ -126,7 +135,6 @@ const SectionDetailPage = () => {
             onClick: handleDeleteCap,
             icon: <FaTrash />,
           },
-       
         ]}
       >
         <IconButton>
@@ -136,8 +144,6 @@ const SectionDetailPage = () => {
     );
   };
 
- 
-
   const columns = [
     // { headerName: "CM ID", field: "id" },
     { headerName: "Name", field: "user.name" },
@@ -145,18 +151,15 @@ const SectionDetailPage = () => {
     // { headerName: "Phone Number", field: "user.phone" },
     // { headerName: "Address", field: "user.address" },
     { headerName: "Created By", field: "user.creator.name" },
-    { headerName: "CM Store", field: "cmStore.name" },
+    { headerName: "CM Store", field: "cmStore" },
     { headerName: "Action", field: "id" },
   ];
-
 
   const columnsAcc = [
     { headerName: "Name", field: "user.name" },
     { headerName: "Email", field: "user.email" },
-    {headerName : "Role" , field : "user.role"}
-  
+    { headerName: "Role", field: "user.role" },
   ];
-
 
   const capColumns = [
     { headerName: "Material Name", field: "materialName" },
@@ -172,27 +175,23 @@ const SectionDetailPage = () => {
     if (!row) {
       return <span>{value}</span>;
     }
-    
+
     const capQuantity = row.capQuantity || 0;
     const demandQuantity = row.totalDemandQuantity || 0;
     const poQuantity = row.totalPurchaseOrderQuantity || 0;
-    
+
     // Check if demand quantity exceeds cap quantity
     const isDemandExceeded = demandQuantity > capQuantity;
     // Check if PO quantity exceeds cap quantity
     const isPOExceeded = poQuantity > capQuantity;
-    
-    let textColor = 'text-green-600 font-semibold'; // Default green
-    
+
+    let textColor = "text-green-600 font-semibold"; // Default green
+
     if (isDemandExceeded || isPOExceeded) {
-      textColor = 'text-red-600 font-semibold'; // Red if either exceeds
+      textColor = "text-red-600 font-semibold"; // Red if either exceeds
     }
-    
-    return (
-      <span className={textColor}>
-        {value}
-      </span>
-    );
+
+    return <span className={textColor}>{value}</span>;
   };
 
   // Custom cell renderer for status with chips
@@ -204,9 +203,15 @@ const SectionDetailPage = () => {
         case "WITHIN_LIMIT":
           return { text: "Within Limit", color: "bg-green-100 text-green-800" };
         case "DEMAND_EXCEEDED":
-          return { text: "Demand Exceeded", color: "bg-orange-100 text-orange-800" };
+          return {
+            text: "Demand Exceeded",
+            color: "bg-orange-100 text-orange-800",
+          };
         case "PO_EXCEEDED":
-          return { text: "PO Exceeded", color: "bg-yellow-100 text-yellow-800" };
+          return {
+            text: "PO Exceeded",
+            color: "bg-yellow-100 text-yellow-800",
+          };
         case "BOTH_EXCEEDED":
           return { text: "Both Exceeded", color: "bg-red-100 text-red-800" };
         case "PENDING":
@@ -214,19 +219,23 @@ const SectionDetailPage = () => {
         case "INACTIVE":
           return { text: "Inactive", color: "bg-gray-100 text-gray-600" };
         default:
-          return { text: status || "Unknown", color: "bg-gray-100 text-gray-800" };
+          return {
+            text: status || "Unknown",
+            color: "bg-gray-100 text-gray-800",
+          };
       }
     };
 
     const statusInfo = getStatusInfo(value);
 
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+      >
         {statusInfo.text}
       </span>
     );
   };
-
 
   const fetchSectionDetail = async () => {
     try {
@@ -253,16 +262,12 @@ const SectionDetailPage = () => {
     }
   };
 
-  
-
-
   useEffect(() => {
     if (id) {
       fetchSectionDetail();
     }
   }, [id]);
 
-  
   // Fetch CAP data for this section
   const fetchCAPData = async () => {
     try {
@@ -271,9 +276,9 @@ const SectionDetailPage = () => {
       if (response.ok) {
         const caps = response.data.caps || [];
         // Transform data to include formatted dates
-        const transformedCaps = caps.map(cap => ({
+        const transformedCaps = caps.map((cap) => ({
           ...cap,
-          createdAt: new Date(cap.createdAt).toLocaleDateString()
+          createdAt: new Date(cap.createdAt).toLocaleDateString(),
         }));
         setCapData(transformedCaps);
       } else {
@@ -336,10 +341,8 @@ const SectionDetailPage = () => {
     }
   };
 
-  
   const availableCMs = sectionData?.availableConstructionManagers || [];
 
-  
   const handleAssignCM = async (user) => {
     try {
       setModalLoading(true);
@@ -363,7 +366,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  
   const handleAddCM = async (data) => {
     try {
       setModalLoading(true);
@@ -388,7 +390,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  
   const fetchPMUsers = async () => {
     try {
       const response = await apiClient.get(`/assignments/users-by-role`, {
@@ -447,7 +448,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  
   const fetchCMUsers = async () => {
     try {
       const response = await apiClient.get(`/assignments/users-by-role`, {
@@ -508,7 +508,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  
   const fetchStoreInchargeUsers = async () => {
     try {
       setModalLoading(true);
@@ -575,12 +574,10 @@ const SectionDetailPage = () => {
     }
   };
 
-  
   const handleCAPSubmit = async (capItems) => {
     try {
       setModalLoading(true);
-      
-      
+
       const transformedItems = capItems.map((item) => ({
         materialId: item.materialId,
         quantity: parseInt(item.qty) || 0,
@@ -593,11 +590,11 @@ const SectionDetailPage = () => {
       // Call the new API endpoint
       console.log("Sending CAP data:", { caps: transformedItems });
       const response = await apiClient.post(`/material-caps/section/${id}`, {
-        caps: transformedItems
+        caps: transformedItems,
       });
-      
+
       console.log("API Response:", response);
-      
+
       if (response.ok) {
         toast.success("CAP items added successfully!");
         setOpenAssignCAPModal(false);
@@ -615,9 +612,6 @@ const SectionDetailPage = () => {
     }
   };
 
-
-
-  
   return (
     <div className=" sm:p-6 w-full">
       <TopBar
@@ -637,14 +631,22 @@ const SectionDetailPage = () => {
             value={sectionData?.project?.code || "-"}
           />
           <InfoItem label="Section" value={sectionData?.name || "-"} />
-        
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
           {/* <InfoItem label="Project Status" value="project status" /> */}
-          <InfoItem label="Total Amount" value={sectionData?.totalAmount || "0"} />
-          <InfoItem label="Paid Amount" value={sectionData?.paidAmount || "0"} />
-          <InfoItem label="Remaining Amount" value={sectionData?.remainingAmount || "0"} />
+          <InfoItem
+            label="Total Amount"
+            value={sectionData?.totalAmount || "0"}
+          />
+          <InfoItem
+            label="Paid Amount"
+            value={sectionData?.paidAmount || "0"}
+          />
+          <InfoItem
+            label="Remaining Amount"
+            value={sectionData?.remainingAmount || "0"}
+          />
         </div>
       </div>
 
@@ -699,17 +701,21 @@ const SectionDetailPage = () => {
               <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px]">
                 <div>
                   <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
-                     Section Head Store
+                    Section Head Store
                   </h3>
                   <div className="mb-2">
                     <span className="font-semibold">Name:</span>{" "}
-                    {sectionData.headStore.name}
+                    <Link
+                      to={`/admin-dashboard/store/${sectionData.headStore.id}`}
+                      className="underline text-blue-500 hover:text-blue-700"
+                    >
+                      {sectionData.headStore.name}
+                    </Link>
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">Type:</span>{" "}
                     {formatText(sectionData.headStore.type)}
                   </div>
-                 
                 </div>
                 {/* Store Incharge Section */}
                 <div className="mt-4 border-t pt-4">
@@ -754,11 +760,13 @@ const SectionDetailPage = () => {
                             : "-"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2"> 
+                      <div className="flex items-center gap-2">
                         <span className="font-semibold">Role:</span>
                         <span>
-                          {formatText(sectionData.headStore.storeInchargeAssignments[0]
-                            .user.role) || "Store Incharge"}
+                          {formatText(
+                            sectionData.headStore.storeInchargeAssignments[0]
+                              .user.role
+                          ) || "Store Incharge"}
                         </span>
                       </div>
                     </div>
@@ -789,9 +797,7 @@ const SectionDetailPage = () => {
       </div>
 
       <div className="mt-10">
-      <TopBar
-          title="Accountant"
-        />
+        <TopBar title="Accountant" />
 
         <div className="overflow-x-auto mt-4 relative">
           {loading ? (
@@ -807,28 +813,31 @@ const SectionDetailPage = () => {
           )}
         </div>
         <div className="mt-10">
-        <TopBar
-          title="Construction Managers"
-          // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-          buttonText="Add CM"
-          onButtonClick={() => setOpenAssignCMModal(true)}
-        />
+          <TopBar
+            title="Construction Managers"
+            // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            buttonText="Add CM"
+            onButtonClick={() => setOpenAssignCMModal(true)}
+          />
 
-        <div className="overflow-x-auto mt-4 relative">
-          {loading ? (
-            <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
-              <Loader />
-            </div>
-          ) : (
-            <SimpleTable
-              data={sectionData?.associatedConstructionManagers || []}
-              columns={columns}
-              cellComponents={{ id: CustomActionComponent }}
-            />
-          )}
+          <div className="overflow-x-auto mt-4 relative">
+            {loading ? (
+              <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                <Loader />
+              </div>
+            ) : (
+              <SimpleTable
+                data={sectionData?.associatedConstructionManagers || []}
+                columns={columns}
+                cellComponents={{
+                  id: CustomActionComponent,
+                  cmStore: CustomStoreLinkComponent,
+                }}
+              />
+            )}
+          </div>
         </div>
-        </div>
-      
+
         <div className="mt-10">
           <TopBar
             title="Material CAP"
@@ -844,10 +853,10 @@ const SectionDetailPage = () => {
               <SimpleTable
                 data={capData}
                 columns={capColumns}
-                cellComponents={{ 
+                cellComponents={{
                   id: CapActionComponent,
                   capQuantity: CapQuantityComponent,
-                  status: StatusComponent
+                  status: StatusComponent,
                 }}
               />
             )}
