@@ -5,9 +5,9 @@ import SimpleTable from "../../../../components/SimpleTable";
 import Loader from "../../../../components/ui/Loader";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaTrash, FaUserEdit } from "react-icons/fa";
+import { FaTrash, FaUserEdit, FaStore } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
@@ -42,27 +42,23 @@ const CapQuantityComponent = ({ value, row }) => {
   if (!row) {
     return <span>{value}</span>;
   }
-  
+
   const capQuantity = row.capQuantity || 0;
   const demandQuantity = row.totalDemandQuantity || 0;
   const poQuantity = row.totalPurchaseOrderQuantity || 0;
-  
+
   // Check if demand quantity exceeds cap quantity
   const isDemandExceeded = demandQuantity > capQuantity;
   // Check if PO quantity exceeds cap quantity
   const isPOExceeded = poQuantity > capQuantity;
-  
-  let textColor = 'text-green-600 font-semibold'; // Default green
-  
+
+  let textColor = "text-green-600 font-semibold"; // Default green
+
   if (isDemandExceeded || isPOExceeded) {
-    textColor = 'text-red-600 font-semibold'; // Red if either exceeds
+    textColor = "text-red-600 font-semibold"; // Red if either exceeds
   }
-  
-  return (
-    <span className={textColor}>
-      {value}
-    </span>
-  );
+
+  return <span className={textColor}>{value}</span>;
 };
 
 // Custom cell renderer for status with chips
@@ -74,7 +70,10 @@ const StatusComponent = ({ value, row }) => {
       case "WITHIN_LIMIT":
         return { text: "Within Limit", color: "bg-green-100 text-green-800" };
       case "DEMAND_EXCEEDED":
-        return { text: "Demand Exceeded", color: "bg-orange-100 text-orange-800" };
+        return {
+          text: "Demand Exceeded",
+          color: "bg-orange-100 text-orange-800",
+        };
       case "PO_EXCEEDED":
         return { text: "PO Exceeded", color: "bg-yellow-100 text-yellow-800" };
       case "BOTH_EXCEEDED":
@@ -84,14 +83,19 @@ const StatusComponent = ({ value, row }) => {
       case "INACTIVE":
         return { text: "Inactive", color: "bg-gray-100 text-gray-600" };
       default:
-        return { text: status || "Unknown", color: "bg-gray-100 text-gray-800" };
+        return {
+          text: status || "Unknown",
+          color: "bg-gray-100 text-gray-800",
+        };
     }
   };
 
   const statusInfo = getStatusInfo(value);
 
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+    >
       {statusInfo.text}
     </span>
   );
@@ -117,7 +121,7 @@ const PmSectionDetailPage = () => {
   const handleCAPSubmit = async (capItems) => {
     try {
       setModalLoading(true);
-      
+
       // Transform the data to match the API structure
       const transformedItems = capItems.map((item) => ({
         materialId: item.materialId,
@@ -131,11 +135,11 @@ const PmSectionDetailPage = () => {
       // Call the new API endpoint
       console.log("Sending CAP data:", { caps: transformedItems });
       const response = await apiClient.post(`/material-caps/section/${id}`, {
-        caps: transformedItems
+        caps: transformedItems,
       });
-      
+
       console.log("API Response:", response);
-      
+
       if (response.ok) {
         toast.success("CAP items added successfully!");
         setOpenAssignCAPModal(false);
@@ -161,9 +165,9 @@ const PmSectionDetailPage = () => {
       if (response.ok) {
         const caps = response.data.caps || [];
         // Transform data to include formatted dates
-        const transformedCaps = caps.map(cap => ({
+        const transformedCaps = caps.map((cap) => ({
           ...cap,
-          createdAt: new Date(cap.createdAt).toLocaleDateString()
+          createdAt: new Date(cap.createdAt).toLocaleDateString(),
         }));
         setCapData(transformedCaps);
       } else {
@@ -184,12 +188,19 @@ const PmSectionDetailPage = () => {
         {
           label: "View Detail",
           onClick: () => navigate("/admin-dashboard/user-Management/123"),
-          icon: <FaUserEdit />, 
+          icon: <FaUserEdit />,
+        },
+        {
+          label: "Go to Store",
+          onClick: () => {
+            navigate(`/project-manager-dashboard/store/${data}`);
+          },
+          icon: <FaStore />,
         },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),
-          icon: <FaTrash />, 
+          icon: <FaTrash />,
         },
       ]}
     >
@@ -197,6 +208,15 @@ const PmSectionDetailPage = () => {
         <BsThreeDotsVertical />
       </IconButton>
     </DropdownButton>
+  );
+
+  const CustomStoreLinkComponent = ({ value }) => (
+    <Link
+      to={`/project-manager-dashboard/store/${value?.id}`}
+      className="underline text-blue-500"
+    >
+      {value?.name}
+    </Link>
   );
 
   const columns = [
@@ -207,14 +227,14 @@ const PmSectionDetailPage = () => {
     { headerName: "Address", field: "address" },
     { headerName: "Status", field: "status" },
     { headerName: "Date", field: "date" },
+    { headerName: "CM Store", field: "cmStore" },
     { headerName: "Action", field: "action" },
   ];
 
   const columnsAcc = [
     { headerName: "Name", field: "user.name" },
     { headerName: "Email", field: "user.email" },
-    {headerName : "Role" , field : "user.role"},
-  
+    { headerName: "Role", field: "user.role" },
   ];
   const fetchSectionDetail = async () => {
     try {
@@ -222,9 +242,13 @@ const PmSectionDetailPage = () => {
       const response = await apiClient.get(`/sections/${id}`);
       if (response.ok) {
         setSectionData(response.data.section);
-        setSelectedPM(response.data.section.associatedProjectManager?.user || null);
+        setSelectedPM(
+          response.data.section.associatedProjectManager?.user || null
+        );
         const headStore = response.data.section.associatedHeadStores?.[0];
-        setSelectedStoreHead(headStore?.storeInchargeAssignments?.[0]?.user || null);
+        setSelectedStoreHead(
+          headStore?.storeInchargeAssignments?.[0]?.user || null
+        );
       } else {
         toast.error("Failed to fetch Section details.");
       }
@@ -257,7 +281,7 @@ const PmSectionDetailPage = () => {
     <div className="p-2 sm:p-4">
       {loading ? (
         <div className="flex items-center justify-center h-full min-h-[400px]">
-          <Loader/>
+          <Loader />
         </div>
       ) : (
         <>
@@ -270,15 +294,34 @@ const PmSectionDetailPage = () => {
           {/* Project Info Box */}
           <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-4">
             <div className="flex flex-wrap justify-between gap-4">
-              <InfoItem label="Project Name" value={sectionData?.project?.name || "-"} />
-              <InfoItem label="Project Code" value={sectionData?.project?.code || "-"} />
+              <InfoItem
+                label="Project Name"
+                value={sectionData?.project?.name || "-"}
+              />
+              <InfoItem
+                label="Project Code"
+                value={sectionData?.project?.code || "-"}
+              />
               <InfoItem label="Section" value={sectionData?.name || "-"} />
               <InfoItem label="Amount" value={sectionData?.amount || "-"} />
-              <InfoItem label="Date" value={sectionData?.createdAt ? new Date(sectionData?.createdAt).toLocaleDateString() : "-"} />
+              <InfoItem
+                label="Date"
+                value={
+                  sectionData?.createdAt
+                    ? new Date(sectionData?.createdAt).toLocaleDateString()
+                    : "-"
+                }
+              />
             </div>
             <div className="flex flex-wrap gap-10 mt-2">
-              <InfoItem label="Project Location" value={sectionData?.project?.location || "-"} />
-              <InfoItem label="Project Status" value={sectionData?.project?.status || "-"} />
+              <InfoItem
+                label="Project Location"
+                value={sectionData?.project?.location || "-"}
+              />
+              <InfoItem
+                label="Project Status"
+                value={sectionData?.project?.status || "-"}
+              />
             </div>
           </div>
 
@@ -339,12 +382,43 @@ const PmSectionDetailPage = () => {
             </div>
           </div>
 
+          {/* Head Store Card */}
+          {sectionData?.headStore && (
+            <div className="mt-10">
+              <h4 className="text-[#12141D] font-semibold text-xl mb-4">
+                Head Store Information
+              </h4>
+              <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white">
+                <div>
+                  <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
+                    Section Head Store
+                  </h3>
+                  <div className="mb-2">
+                    <span className="font-semibold">Name:</span>{" "}
+                    <Link
+                      to={`/project-manager-dashboard/store/${sectionData.headStore.id}`}
+                      className="underline text-blue-500 hover:text-blue-700"
+                    >
+                      {sectionData.headStore.name}
+                    </Link>
+                  </div>
+                  <div className="mb-2">
+                    <span className="font-semibold">Type:</span>{" "}
+                    {sectionData.headStore.type
+                      ? sectionData.headStore.type
+                          .replace(/_/g, " ")
+                          .toLowerCase()
+                          .replace(/\b\w/g, (l) => l.toUpperCase())
+                      : "-"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Construction Manager Table */}
           <div className="mt-10">
-          <TopBar
-              title="Accountant "
-            
-            />
+            <TopBar title="Accountant " />
 
             <div className="overflow-x-auto mt-4 relative">
               {loading ? (
@@ -353,8 +427,8 @@ const PmSectionDetailPage = () => {
                 </div>
               ) : (
                 <SimpleTable
-                data={sectionData?.associatedAccountants || []}
-                columns={columnsAcc}
+                  data={sectionData?.associatedAccountants || []}
+                  columns={columnsAcc}
                   cellComponents={{}}
                 />
               )}
@@ -366,7 +440,9 @@ const PmSectionDetailPage = () => {
               onButtonClick={handleOpen}
             />
 
-            {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+            {showModal && (
+              <AddMemberModal onClose={() => setShowModal(false)} />
+            )}
 
             {/* Modal */}
             <Modal open={open} onClose={handleClose}>
@@ -384,7 +460,10 @@ const PmSectionDetailPage = () => {
               <SimpleTable
                 data={sectionData?.associatedConstructionManagers || []}
                 columns={columns}
-                cellComponents={{ action: CustomActionComponent }}
+                cellComponents={{
+                  action: CustomActionComponent,
+                  cmStore: CustomStoreLinkComponent,
+                }}
               />
             </div>
           </div>
@@ -400,10 +479,10 @@ const PmSectionDetailPage = () => {
               <SimpleTable
                 data={capData}
                 columns={capColumns}
-                cellComponents={{ 
+                cellComponents={{
                   id: CustomActionComponent,
                   capQuantity: CapQuantityComponent,
-                  status: StatusComponent
+                  status: StatusComponent,
                 }}
               />
             </div>

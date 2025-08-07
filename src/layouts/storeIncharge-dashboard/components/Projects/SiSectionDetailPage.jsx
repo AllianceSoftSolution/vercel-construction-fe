@@ -4,9 +4,9 @@ import ProjectInfoCard from "../../../../components/ui/ProjectInfoCard";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaTrash, FaUserEdit } from "react-icons/fa";
+import { FaTrash, FaUserEdit, FaStore } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MemebersOverviewCard from "../../../../mui/MembersOverviewCard";
@@ -35,6 +35,13 @@ const SiSectionDetailPage = () => {
             icon: <FaUserEdit />,
           },
           {
+            label: "Go to Store",
+            onClick: () => {
+              navigate(`/store-incharge-dashboard/store/${data}`);
+            },
+            icon: <FaStore />,
+          },
+          {
             label: "Edit",
             onClick: () => alert("Edit"),
             icon: <FaUserEdit />,
@@ -53,6 +60,16 @@ const SiSectionDetailPage = () => {
       </DropdownButton>
     );
   };
+
+  const CustomStoreLinkComponent = ({ value }) => (
+    <Link
+      to={`/store-incharge-dashboard/store/${value?.id}`}
+      className="underline text-blue-500"
+    >
+      {value?.name}
+    </Link>
+  );
+
   const data = [
     {
       id: 1,
@@ -96,6 +113,7 @@ const SiSectionDetailPage = () => {
     { headerName: "Address", field: "address" },
     { headerName: "Status", field: "status" },
     { headerName: "Date", field: "date" },
+    { headerName: "CM Store", field: "cmStore" },
     { headerName: "Action", field: "action" },
   ];
   const [showModal, setShowModal] = useState(false);
@@ -242,7 +260,10 @@ const SiSectionDetailPage = () => {
         <SimpleTable
           data={data}
           columns={columns}
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ 
+            action: CustomActionComponent,
+            cmStore: CustomStoreLinkComponent
+          }}
         />
       </div>
     </div>
