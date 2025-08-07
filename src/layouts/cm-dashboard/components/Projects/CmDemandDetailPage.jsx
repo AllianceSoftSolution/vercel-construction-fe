@@ -225,37 +225,37 @@ const CmDemandDetailPage = () => {
         </div>
 
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold ">PO Quantity:</p>
             <p className="text-[#979797]">{demandData.poQuantity || "0"}</p>
           </div>
-          <div className="flex gap-x-4 items-center mt-2">
+          {/* <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold ">Approved By</p>
             <p className="text-[#979797]">{demandData.approvedBy || "N/A"}</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-2">
+          </div> */}
+          {/* <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold ">Fulfilled</p>
             <p className="text-[#979797]">{demandData.quantityFulfilled || "0"}</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-2">
+          </div> */}
+          {/* <div className="flex gap-x-4 items-center mt-2">
             <p className="text-[#444444] font-semibold ">
               Activity Description
             </p>
             <p className="text-[#979797]">{demandData.activity || "N/A"}</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-6">
+          </div> */}
+          <div className="flex gap-x-4 items-center">
             <p className="text-[#444444] font-semibold ">Notes by CM</p>
             <p className="text-[#979797]">{demandData.notes || "N/A"}</p>
           </div>
         </div>
-
+{/* 
         <div className="flex gap-x-8 items-center mt-2">
           <p className="text-[#444444] font-semibold ">Remarks</p>
           <ul>
             <li className="text-[#979797]">{demandData.remarks || "No remarks"}</li>
           </ul>
-        </div>
+        </div> */}
       </div>
       {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
         <DemandQuantityCard

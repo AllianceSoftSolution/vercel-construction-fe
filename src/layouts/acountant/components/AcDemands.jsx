@@ -64,7 +64,8 @@ const Demands = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
-  const [filter, setFilter] = useState({ Status: [] });
+  const [allDemands, setAllDemands] = useState([]); // Store all demands for filter options
+  const [filter, setFilter] = useState({ Status: [], Project: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
 
@@ -81,8 +82,12 @@ const Demands = () => {
     { label: "In Store", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
   ];
+  // Get unique project names from all demands (not filtered)
+  const projectOptions = [...new Set(allDemands.map(demand => demand.section?.projectName).filter(Boolean))];
+  
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions },
   ];
 
   const columns = [
@@ -99,19 +104,43 @@ const Demands = () => {
     { headerName: "Action", field: "demandId" },
   ];
 
-  // Fetch demands with status filter
+  // Fetch all demands for filter options
+  const fetchAllDemands = async () => {
+    try {
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          ...demand,
+          demandId: demand.id,
+          id: index + 1,
+        }));
+        setAllDemands(data);
+      }
+    } catch (error) {
+      console.error("Error fetching all demands:", error);
+    }
+  };
+
+  // Fetch all demands and apply filters on frontend
   const fetchDemands = async () => {
     try {
       setLoading(true);
       let url = "/demands";
+      const queryParams = [];
+      
       if (filter.Status && filter.Status.length > 0) {
         const backendStatus = filter.Status.map(
           label => statusOptions.find(o => o.label === label)?.value
         ).filter(Boolean);
         if (backendStatus.length > 0) {
-          url += `?status=${encodeURIComponent(backendStatus.join(","))}`;
+          queryParams.push(`status=${encodeURIComponent(backendStatus.join(","))}`);
         }
       }
+      
+      if (queryParams.length > 0) {
+        url += `?${queryParams.join("&")}`;
+      }
+      
       const response = await apiClient.get(url);
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
@@ -119,7 +148,16 @@ const Demands = () => {
           demandId: demand.id,
           id: index + 1,
         }));
-        setDemands(data);
+        
+        // Apply project filter on frontend
+        let filteredData = data;
+        if (filter.Project && filter.Project.length > 0) {
+          filteredData = data.filter(demand => 
+            filter.Project.includes(demand.section?.projectName)
+          );
+        }
+        
+        setDemands(filteredData);
       } else {
         toast.error("Failed to fetch Demands");
       }
@@ -130,6 +168,10 @@ const Demands = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAllDemands();
+  }, []);
 
   useEffect(() => {
     fetchDemands();
@@ -154,7 +196,7 @@ const Demands = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -165,26 +207,15 @@ const Demands = () => {
             label: "View Detail",
             onClick: () => {
               if (demandId) {
-                navigate(`/construction-manager-dashboard/demands/${demandId}`);
+                navigate(`/accountant-dashboard/demands/${demandId}`);
               } else {
                 console.error("Demand ID is undefined.");
               }
             },
             icon: <FaEye />,
           },
-          // {
-          //   label: "Edit",
-          //   onClick: () => alert("Edit"),
-          //   icon: <FaUserEdit />,
-          // },
-          // {
-          //   label: "Delete ",
-          //   onClick: () => {
-          //     setSelectedDemandId(demandId);
-          //     setShowDeleteModal(true);
-          //   },
-          //   icon: <FaTrash />,
-          // },
+         
+        
         ]}
       >
         <IconButton>
@@ -198,8 +229,6 @@ const Demands = () => {
     <div className=" h-full ">
       <TopBar
         title="Demands"
-        buttonText="Create Demand"
-        onButtonClick={() => navigate("/construction-manager-dashboard/demands/addDemand")}
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -207,7 +236,7 @@ const Demands = () => {
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by status"
+          placeholder="Filter by status or project"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
@@ -227,9 +256,10 @@ const Demands = () => {
           />
         )}
       </div>
-    
+  
     </div>
   );
 };
 
 export default Demands;
+

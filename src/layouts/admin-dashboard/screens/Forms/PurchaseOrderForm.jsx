@@ -90,8 +90,8 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
         valid = false;
       }
       
-      // Individual PO validation (existing logic)
-      if (Number(entry.quantity) > Number(demandQuantity)) {
+      // Individual PO validation - only if total doesn't exceed demand
+      if (!exceedsTotal && Number(entry.quantity) > Number(demandQuantity)) {
         if (!confirmations[idx]) {
           entryErrors.confirmation = "Please confirm that you want to create this PO with quantity greater than demand";
           valid = false;
@@ -105,7 +105,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
       return entryErrors;
     });
     
-    // Total PO validation - check for total notes
+    // Total PO validation - check for total notes only when total exceeds
     if (exceedsTotal && (!totalNotes || totalNotes.trim() === "")) {
       setTotalNotesError("Notes are required when total PO quantity exceeds demand");
       valid = false;
@@ -250,7 +250,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                  error={!!errors[idx]?.quantity}
                  helperText={errors[idx]?.quantity}
                />
-              {Number(entry.quantity) > Number(demandQuantity) && (
+              {Number(entry.quantity) > Number(demandQuantity) && !(poEntries.reduce((sum, poEntry) => sum + Number(poEntry.quantity || 0), 0) > Number(demandQuantity)) && (
                 <>
                   <Box mt={2}>
                     <FormControlLabel
@@ -292,6 +292,9 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
                <Typography variant="subtitle2" color="warning.main" gutterBottom>
                  ⚠️ Total PO quantity exceeds demand quantity
                </Typography>
+               <Typography variant="body2" color="text.secondary" mb={2}>
+                 The total PO quantity exceeds the demand quantity, please provide notes explaining the reason.
+               </Typography>
                <CustomTextField
                  fullWidth
                  margin="normal"
@@ -306,7 +309,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
              </Box>
            )}
            
-           <Button buttonText={"Add PO"} onClick={addPoEntry} disabled={loading} />
+           <Button buttonText={"Add PO"} onClick={addPoEntry} disabled={loading} className="mt-4" />
          </DialogContent>
         <DialogActions>
           <button

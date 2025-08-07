@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
-import { Box, IconButton, Modal } from "@mui/material";
+import { Box, IconButton, Modal, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import ReasonModal from "../Demands/ReasonModal";
@@ -12,6 +12,38 @@ import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
 import toast from "react-hot-toast";
+import { HiCheckCircle } from "react-icons/hi";
+import { TiTick } from "react-icons/ti";
+
+// Status color mapping for purchase order status
+const statusColorMap = {
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  PENDING: "#f59e42", // orange
+  REJECTED: "#ef4444", // red
+  CONFIRMED: "#44085c", // purple
+  APPROVED: "#22c55e", // green
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{
+        bgcolor: color,
+        color: "#fff",
+        fontWeight: 600,
+        letterSpacing: 0.5,
+      }}
+    />
+  );
+};
 
 const style = {
   position: "absolute",
@@ -90,17 +122,28 @@ const SiDemandDetails = () => {
     fetchDetails();
   }, [id]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+// Date and time formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "-";
+
+  // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = d.toLocaleDateString("en-US", { month: "short" });
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${day} ${month} ${year}, ${time}`;
+};
+
+// Date component for table
+const DateComponent = ({ value }) => {
+  return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+};
 
   const DateCellComponent = ({ value }) => {
     return <div>{formatDate(value)}</div>;
@@ -112,6 +155,22 @@ const SiDemandDetails = () => {
     { headerName: "Role", field: "userRole" },
     { headerName: "Remarks", field: "remarks" },
     { headerName: "Date", field: "createdAt" },
+  ];
+  const columnsPurchaseOrder = [
+    // { headerName: "Demand ID", field: "demandId" },
+    { headerName: "Project Name", field: "project" },
+    // { headerName: "Demand", field: "demandName" },
+    { headerName: "Materials", field: "material" },
+    { headerName: "Sections", field: "section" },
+    { headerName: "Qty", field: "qty" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "PO Qty", field: "poQty" },
+    { headerName: "Amount (PKR)", field: "amount" },
+    { headerName: "Proof of Bill", field: "proofOfBill" },
+    { headerName: "Date", field: "createdAt" },
+    { headerName: "Status", field: "status" },
+    // { headerName: "Assigned Vendors", field: "assingedVendors" },
+    // { headerName: "Action", field: "id" },
   ];
 
   const CustomActionComponent = () => {
@@ -280,40 +339,21 @@ const SiDemandDetails = () => {
               <span className="text-red-600 font-semibold mt-1">You are exceeding demand Qty.</span>
             </div>
           )}
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Approved By:</p>
-            <p className="text-[#979797]">{demandData?.approvedBy || "-"}</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Created By:</p>
-            <p className="text-[#979797]">{demandData?.creator?.name || "-"}</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Fulfilled:</p>
-            <p className="text-[#979797]">{demandData?.fulfilled || "-"}</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">
-              Activity Description:
-            </p>
-            <p className="text-[#979797]">
-              {demandData.activityDescription || "-"}
-            </p>
-          </div>
+        
           <div className="flex gap-2 items-center">
             <p className="text-[#444444] font-semibold">Notes by CM:</p>
             <p className="text-[#979797]">{demandData?.notes || "-"}</p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-y-2">
-          <p className="text-[#444444] font-semibold text-xl">Remarks</p>
-          <ul className="list-disc list-inside text-[#979797] space-y-1">
-            {(demandData.remarks || []).map((remark, index) => (
-              <li key={index}>{remark}</li>
-            ))}
-          </ul>
-        </div>
+          {/* <div className="flex flex-col gap-y-2">
+            <p className="text-[#444444] font-semibold text-xl">Remarks</p>
+            <ul className="list-disc list-inside text-[#979797] space-y-1">
+              {(demandData.remarks || []).map((remark, index) => (
+                <li key={index}>{remark}</li>
+              ))}
+            </ul>
+          </div> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -336,7 +376,32 @@ const SiDemandDetails = () => {
           material={demandData?.material?.name || "Cement"}
         />
       </div>
-
+      <div className="mt-6">
+            <TopBar title="Purchase Order" />
+            <SimpleTable
+              data={demandData?.purchaseOrders?.map((po, index) => ({
+                id: po.id,
+                demandId: po.demand?.referenceNumber || "-",
+                project: po.demand?.section?.project?.name || "-",
+                demandName: po.demand?.referenceNumber || "-",
+                material: po.material?.name || "-",
+                section: po.demand?.section?.name || "-",
+                qty: po.demand?.quantity || "-",
+                unit: po.demand?.unit || "-",
+                poQty: po.quantity || "-",
+                amount: po.totalAmount ? `${po.totalAmount}` : "-",
+                createdAt: po.createdAt ? formatDate(po.createdAt) : "-",
+                status: po.status || "-",
+                assingedVendors: po.vendorId || "-",
+                proofOfBill: po.proofOfBill || "-",
+              }))}
+              columns={columnsPurchaseOrder}
+              cellComponents={{
+                createdAt: DateComponent,
+                status: StatusChip,
+              }}
+            />
+          </div>
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
       <SimpleTable
         data={demandData?.approvals || []}

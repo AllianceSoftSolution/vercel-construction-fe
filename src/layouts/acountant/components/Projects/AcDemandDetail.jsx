@@ -4,16 +4,13 @@ import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import ReasonModal from "../Demands/ReasonModal";
-import PurchaseOrderForm from "../Forms/PurchaseOrderForm";
 import DemandQuantityCard from "../../../../components/DemandQuantityCard";
 import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
 import toast from "react-hot-toast";
-import { HiCheckCircle } from "react-icons/hi";
-import { TiTick } from "react-icons/ti";
+
 
 const style = {
   position: "absolute",
@@ -80,7 +77,7 @@ const DateComponent = ({ value }) => {
 
 const DemandDetails = () => {
   const [open, setOpen] = useState(false);
-  const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
+  // const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
   const [status, setStatus] = useState("");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -89,61 +86,61 @@ const DemandDetails = () => {
   const { id } = useParams();
   const [modalLoading, setModalLoading] = useState(false);
 
-  const handleActionClick = (newStatus) => {
-    if (newStatus === "Approved") {
-      setPendingStatus(newStatus);
-      setOpen(true);
-    } else {
-      setPendingStatus(newStatus);
-      setOpen(true);
-    }
-  };
+//   const handleActionClick = (newStatus) => {
+//     if (newStatus === "Approved") {
+//       setPendingStatus(newStatus);
+//       setOpen(true);
+//     } else {
+//       setPendingStatus(newStatus);
+//       setOpen(true);
+//     }
+//   };
 
-  const handleReasonSubmit = async (reasonText) => {
-    setModalLoading(true);
-    try {
-      if (pendingStatus === "Approved") {
-        // Remarks optional for approval
-        await approveDemand(reasonText);
-        toast.success("Demand approved!");
-        setOpen(false);
-        setPendingStatus(null);
-        setModalLoading(false);
-        // // Small delay to ensure modal closes, then reload
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 100);
-      } else if (pendingStatus === "Rejected") {
-        // Remarks required for rejection
-        if (!reasonText || reasonText.trim() === "") {
-          toast.error("Remarks are required for rejection!");
-          setModalLoading(false);
-          return;
-        }
-        await rejectDemand(reasonText);
-        toast.success("Demand rejected!");
-        setOpen(false);
-        setPendingStatus(null);
-        setModalLoading(false);
-        // // Small delay to ensure modal closes, then reload
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 100);
-      }
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Something went wrong"
-      );
-      setModalLoading(false);
-    }
-  };
+//   const handleReasonSubmit = async (reasonText) => {
+//     setModalLoading(true);
+//     try {
+//       if (pendingStatus === "Approved") {
+//         // Remarks optional for approval
+//         await approveDemand(reasonText);
+//         toast.success("Demand approved!");
+//         setOpen(false);
+//         setPendingStatus(null);
+//         setModalLoading(false);
+//         // // Small delay to ensure modal closes, then reload
+//         // setTimeout(() => {
+//         //   window.location.reload();
+//         // }, 100);
+//       } else if (pendingStatus === "Rejected") {
+//         // Remarks required for rejection
+//         if (!reasonText || reasonText.trim() === "") {
+//           toast.error("Remarks are required for rejection!");
+//           setModalLoading(false);
+//           return;
+//         }
+//         await rejectDemand(reasonText);
+//         toast.success("Demand rejected!");
+//         setOpen(false);
+//         setPendingStatus(null);
+//         setModalLoading(false);
+//         // // Small delay to ensure modal closes, then reload
+//         // setTimeout(() => {
+//         //   window.location.reload();
+//         // }, 100);
+//       }
+//     } catch (error) {
+//       toast.error(
+//         error?.response?.data?.message ||
+//           error?.message ||
+//           "Something went wrong"
+//       );
+//       setModalLoading(false);
+//     }
+//   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setPendingStatus(null);
-  };
+//   const handleClose = () => {
+//     setOpen(false);
+//     setPendingStatus(null);
+//   };
 
   const fetchDetails = async () => {
     try {
@@ -202,55 +199,55 @@ const DemandDetails = () => {
     // { headerName: "Action", field: "id" },
   ];
 
-  const CustomActionComponent = () => {
-    return (
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          { label: "Reject", onClick: () => handleActionClick("Rejected") },
-          { label: "Approve", onClick: () => handleActionClick("Approved") },
-        ]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
+        //   const CustomActionComponent = () => {
+        //         // return (
+        //         //   <DropdownButton
+        //         //     className="bg-[#FF0000] font-semibold"
+        //         //     items={[
+        //         //       { label: "Reject", onClick: () => handleActionClick("Rejected") },
+        //         //       { label: "Approve", onClick: () => handleActionClick("Approved") },
+        //         //     ]}
+        //         //   >
+        //         //     <IconButton>
+        //         //       <BsThreeDotsVertical />
+        //         //     </IconButton>
+        //         //   </DropdownButton>
+        //         // );
+        //   };
 
-  const rejectDemand = async (remarks) => {
-    // setLoading(true); // Remove page loader for modal loader
-    try {
-      const response = await apiClient.post(`/demands/${id}/reject`, {
-        remarks,
-      });
-      if (response?.data?.data?.demand) {
-        setDemandData(response.data.data.demand);
-      } else {
-        throw new Error(response?.data?.message || "Failed to reject");
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
+//   const rejectDemand = async (remarks) => {
+//     // setLoading(true); // Remove page loader for modal loader
+//     try {
+//       const response = await apiClient.post(`/demands/${id}/reject`, {
+//         remarks,
+//       });
+//       if (response?.data?.data?.demand) {
+//         setDemandData(response.data.data.demand);
+//       } else {
+//         throw new Error(response?.data?.message || "Failed to reject");
+//       }
+//     } catch (error) {
+//       throw error;
+//     }
+//   };
 
-  const approveDemand = async (remarks) => {
-    // setLoading(true); // Remove page loader for modal loader
-    try {
-      const requestBody = remarks ? { remarks } : {};
-      const response = await apiClient.post(
-        `/demands/${id}/approve`,
-        requestBody
-      );
-      if (response?.data?.data?.demand) {
-        setDemandData(response.data.data.demand);
-      } else {
-        throw new Error(response?.data?.message || "Failed to approve");
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
+//   const approveDemand = async (remarks) => {
+//     // setLoading(true); // Remove page loader for modal loader
+//     try {
+//       const requestBody = remarks ? { remarks } : {};
+//       const response = await apiClient.post(
+//         `/demands/${id}/approve`,
+//         requestBody
+//       );
+//       if (response?.data?.data?.demand) {
+//         setDemandData(response.data.data.demand);
+//       } else {
+//         throw new Error(response?.data?.message || "Failed to approve");
+//       }
+//     } catch (error) {
+//       throw error;
+//     }
+//   };
 
   return (
     <>
@@ -258,7 +255,7 @@ const DemandDetails = () => {
         <Loader />
       ) : (
         <>
-          <Modal open={open} onClose={handleClose}>
+          {/* <Modal open={open} onClose={handleClose}>
             <Box sx={style}>
               <ReasonModal
                 textAreaPlaceholder={
@@ -271,17 +268,9 @@ const DemandDetails = () => {
                 loading={modalLoading}
               />
             </Box>
-          </Modal>
+          </Modal> */}
 
-          <PurchaseOrderForm
-            isOpen={openPurchaseModal}
-            onClose={() => setOpenPurchaseModal(false)}
-            demandId={demandData?.id}
-            sectionId={demandData?.sectionId}
-            materialName={demandData?.material?.name}
-            materialId={demandData?.material?.id}
-            demandQuantity={demandData?.quantity}
-          />
+          
 
           <TopBar
             title="Demand Details"
@@ -313,13 +302,13 @@ const DemandDetails = () => {
 
                 {demandData?.status === "APPROVED" && (
                   <Button
-                    onClick={() => setOpenPurchaseModal(true)}
+                    // onClick={() => setOpenPurchaseModal(true)}
                     className="bg-primary text-white px-4 py-2 text-sm"
                     buttonText={"Create Purchase Order"}
                   />
                 )}
 
-                <CustomActionComponent />
+                {/* <CustomActionComponent /> */}
               </div>
             </div>
 

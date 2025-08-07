@@ -97,11 +97,12 @@ const PurchaseOrder = () => {
           section: po.demand?.section?.name || "-",
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
-          poQty: po.quantity || "-",
+          poQty: po.quantity || "-",  
           amount: po.totalAmount ? `${po.totalAmount}PKR` : "-",
           status: po.status || "-",
           assingedVendors: po.vendorId || "-",
           proofOfBill: po.proofOfBill || "-",
+          createdAt: po.createdAt || "-",
         }));
         setPurchaseOrders(data);
       } else {
@@ -168,6 +169,29 @@ const PurchaseOrder = () => {
     selected = { group: "Project", value: filter.Project.join(", ") };
   }
 
+  // Date and time formatting function
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const d = new Date(dateString);
+    if (isNaN(d)) return "-";
+    
+    // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = d.toLocaleDateString('en-US', { month: 'short' });
+    const year = d.getFullYear();
+    const time = d.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    return `${day} ${month} ${year}, ${time}`;
+  };
+
+  // Date component for table
+  const DateComponent = ({ value }) => {
+    return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+  };
+
   const columns = [
     { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
@@ -180,6 +204,7 @@ const PurchaseOrder = () => {
     { headerName: "Amount", field: "amount" },
     { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Status", field: "status" },
+    {headerName: "Date" , field:"createdAt"}
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
     // { headerName: "Action", field: "id" },
   ];
@@ -274,7 +299,11 @@ const PurchaseOrder = () => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
-            cellComponents={{ status: StatusChip, proofOfBill: ProofOfBillComponent }}
+            cellComponents={{ 
+              status: StatusChip, 
+              proofOfBill: ProofOfBillComponent,
+              createdAt: DateComponent 
+            }}
           />
         )}
       </div>

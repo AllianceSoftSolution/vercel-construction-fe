@@ -249,6 +249,65 @@ const SiSectionDetailPage = () => {
     }
   };
 
+  // PM assignment functions
+  const fetchPMUsers = async () => {
+    try {
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: "PROJECT_MANAGER",
+        projectId: sectionData?.project?.id,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const createPMUser = async (userData) => {
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: "PROJECT_MANAGER",
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
+  const handleAssignPMGeneric = async ({ userId }) => {
+    try {
+      const response = await apiClient.post(`/assignments/project-manager`, {
+        userId,
+        projectId: sectionData?.project?.id,
+        sectionId: sectionData?.id,
+      });
+      if (response.ok) {
+        toast.success("Project Manager assigned successfully");
+        setOpenAssignPMModal(false);
+        fetchSectionDetail();
+        return true;
+      } else {
+        toast.error(
+          response.data?.message || "Failed to assign Project Manager"
+        );
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign Project Manager");
+      return false;
+    }
+  };
+
   const handleAssignCMGeneric = async ({ userId }) => {
     try {
       setModalLoading(true);
@@ -396,6 +455,7 @@ const SiSectionDetailPage = () => {
   const [hasMemberInfo, setHasMemberInfo] = useState(false);
   const [hasStoreHeadInfo, setHasStoreHeadInfo] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openAssignPMModal, setOpenAssignPMModal] = useState(false);
 
   const constructionManagersData = transformConstructionManagersData();
   const storeIncharges = getStoreInchargeAssignments();
@@ -441,10 +501,10 @@ const SiSectionDetailPage = () => {
               <InfoPair label="Section Name" value={sectionData.name || "Not available"} />
               <InfoPair label="Section Code" value={sectionData.code || "Not available"} />
               <InfoPair label="Project Name" value={sectionData.project?.name || "Not available"} />
-              <InfoPair label="Construction Manager" value={getSectionManager()} />
+              {/* <InfoPair label="Construction Manager" value={getSectionManager()} />
               <InfoPair label="Created Date" value={formatDate(sectionData.createdAt)} />
               <InfoPair label="Status" value={sectionData.isActive ? "Active" : "Inactive"} />
-              <InfoPair label="Linked Stores" value={sectionData.stores?.length || 0} />
+              <InfoPair label="Linked Stores" value={sectionData.stores?.length || 0} /> */}
             </div>
             {sectionData.description && (
               <div className="mt-2">
@@ -458,33 +518,34 @@ const SiSectionDetailPage = () => {
             Members Overview
           </h4>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-4">
-            {/* Construction Manager Card */}
-            <div className="w-full">
-              {sectionData?.associatedConstructionManagers && sectionData.associatedConstructionManagers.length > 0 ? (
-                <div className="w-full">
-                  <MemberInfoCard
-                    title="General information - Construction Manager"
-                    image={manager}
-                    name={sectionData.associatedConstructionManagers[0].user?.name || "Unknown"}
-                    phone={sectionData.associatedConstructionManagers[0].user?.phone || "-"}
-                    role={formatText(sectionData.associatedConstructionManagers[0].user?.role) || "Construction Manager"}
-                    email={sectionData.associatedConstructionManagers[0].user?.email || "-"}
-                    joiningDate={sectionData.associatedConstructionManagers[0].user?.createdAt ? new Date(sectionData.associatedConstructionManagers[0].user.createdAt).toLocaleDateString() : "-"}
-                    id={sectionData.associatedConstructionManagers[0].user?.id || "-"}
-                    address={sectionData.associatedConstructionManagers[0].user?.address || "-"}
-                    country={sectionData.associatedConstructionManagers[0].user?.country || "-"}
-                    linkedStores={[sectionData.associatedConstructionManagers[0].cmStore?.name || "-"]}
-                  />
-                </div>
-              ) : (
-                <div className="w-full">
+                         {/* Project Manager Card */}
+             <div className="w-full">
+               {sectionData?.associatedProjectManager ? (
+                 <div className="w-full">
+                   <MemberInfoCard
+                     title="General information - Project Manager"
+                     image={manager}
+                     name={sectionData.associatedProjectManager.user?.name || "Unknown"}
+                    //  phone={sectionData.associatedProjectManager.user?.phone || "-"}
+                     role={formatText(sectionData.associatedProjectManager.user?.role) || "Project Manager"}
+                     email={sectionData.associatedProjectManager.user?.email || "-"}
+                    //  joiningDate={sectionData.associatedProjectManager.user?.createdAt ? new Date(sectionData.associatedProjectManager.user.createdAt).toLocaleDateString() : "-"}
+                    //  id={sectionData.associatedProjectManager.user?.id || "-"}
+                    //  address={sectionData.associatedProjectManager.user?.address || "-"}
+                    //  country={sectionData.associatedProjectManager.user?.country || "-"}
+                    //  linkedStores={[sectionData.associatedProjectManager.cmStore?.name || "-"]}
+                   />
+                 </div>
+               ) : (
+                <div className="w-full [&_.border]:!w-full [&_.sm\\:w-\\[90\\%\\]]:!w-full [&_.md\\:w-\\[80\\%\\]]:!w-full [&_.lg\\:w-\\[60\\%\\]]:!w-full">
                   <MemebersOverviewCard
                     title="General Information"
-                    subTitle="Construction Manager"
-                    linkText="Assign Construction Manager"
+                    subTitle="Project Manager"
+                    linkText="Assign Project Manager"
                     imageSrc={Search}
                     imageAlt="Search Illustration"
-                    onManagerClick={() => setOpenAssignCMModal(true)}
+                    onManagerClick={() => setOpenAssignPMModal(true)}
+                    className="!w-full !sm:w-full !md:w-full !lg:w-full"
                   />
                 </div>
               )}
@@ -661,6 +722,17 @@ const SiSectionDetailPage = () => {
             )}
           </div>
         </div>
+
+          {/* AssignMemberModal for Project Manager */}
+          <AssignMemberModal
+            role="Project Manager"
+            open={openAssignPMModal}
+            onClose={() => setOpenAssignPMModal(false)}
+            fetchUsers={fetchPMUsers}
+            createUser={createPMUser}
+            onAssign={handleAssignPMGeneric}
+            loading={modalLoading}
+          />
 
           {/* AssignMemberModal for Construction Manager */}
           <AssignMemberModal

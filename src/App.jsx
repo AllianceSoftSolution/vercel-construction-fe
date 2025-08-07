@@ -118,6 +118,8 @@ import SiPos from "./layouts/storeIncharge-dashboard/components/SiPos";
 import DemandDetails from "./layouts/admin-dashboard/screens/Projects/DemandDetails";
 import ResetOtp from "./layouts/auth/screens/ResetOtp";
 import NewPassword from "./layouts/auth/screens/NewPassword";
+import AcDemands from "./layouts/acountant/components/AcDemands";
+import AcDemandDetail from "./layouts/acountant/components/Projects/AcDemandDetail";
 
 const theme = createTheme({
   typography: {
@@ -293,6 +295,8 @@ const accountantRoutes = [
       { path: "sections/:id", element: <SectionDetailPage /> },
       { path: "payables", element: <AcPayables /> },
       { path: "payables/details/:id", element: <AcPayableDetails /> },
+      { path: "demands", element: <AcDemands /> },
+      { path: "demands/:id", element: <AcDemandDetail /> },
     ],
   },
 ];
