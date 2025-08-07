@@ -41,20 +41,19 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [userAnalytics, setUserAnalytics] = useState({
     totalUsers: 0,
-    roleBreakdown: {}
+    roleBreakdown: {},
   });
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState({ Role: [] });
 
-
   // Role filter options
   const roleOptions = [
-    { label: "admin", value: "ADMIN" },
-    { label: "site_incharge", value: "SITE_INCHARGE" },
-    { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
-    { label: "store_incharge", value: "STORE_INCHARGE" },
-    { label: "accountant", value: "ACCOUNTANT" },
-    { label: "project_management", value: "PROJECT_MANAGEMENT" },
+    { label: "Admin", value: "ADMIN" },
+    { label: "Site Incharge", value: "SITE_INCHARGE" },
+    { label: "Construction Manager", value: "CONSTRUCTION_MANAGER" },
+    { label: "Store Incharge", value: "STORE_INCHARGE" },
+    { label: "Accountant", value: "ACCOUNTANT" },
+    { label: "Project Manager", value: "PROJECT_MANAGER" },
   ];
 
   // Fetch users with optional role filter
@@ -64,7 +63,7 @@ const UserManagement = () => {
       let url = "/auth/users";
       if (filter.Role && filter.Role.length > 0) {
         const roleBackend = filter.Role.map(
-          label => roleOptions.find(o => o.label === label)?.value
+          (label) => roleOptions.find((o) => o.label === label)?.value
         ).filter(Boolean);
         if (roleBackend.length > 0) {
           url += `?role=${encodeURIComponent(roleBackend.join(","))}`;
@@ -79,12 +78,12 @@ const UserManagement = () => {
             iD: user.id || index + 1,
           })) || [];
         setUsers(data);
-        
+
         // Set analytics data from API response
         if (response.data.userAnalytics) {
           setUserAnalytics({
             totalUsers: response.data.userAnalytics.totalUsers || 0,
-            roleBreakdown: response.data.userAnalytics.roleBreakdown || {}
+            roleBreakdown: response.data.userAnalytics.roleBreakdown || {},
           });
         }
       } else {
@@ -104,9 +103,7 @@ const UserManagement = () => {
   }, [filter]);
 
   // CustomFilterDropdown config
-  const filters = [
-    { label: "Role", options: roleOptions.map(o => o.label) },
-  ];
+  const filters = [{ label: "Role", options: roleOptions.map((o) => o.label) }];
   const handleFilterChange = (selection) => {
     setFilter(selection);
   };
@@ -123,15 +120,17 @@ const UserManagement = () => {
   // Handle opening role edit modal
   const handleOpenRoleEdit = (user) => {
     // Navigate to AddUser form with user data as query params
-    const userData = encodeURIComponent(JSON.stringify({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      note: user.note,
-      isHead: user.isHead || false,
-      isEdit: true
-    }));
+    const userData = encodeURIComponent(
+      JSON.stringify({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        note: user.note,
+        isHead: user.isHead || false,
+        isEdit: true,
+      })
+    );
     navigate(`/admin-dashboard/user-management/addUser?userData=${userData}`);
   };
 
@@ -154,46 +153,90 @@ const UserManagement = () => {
       label: "Site Incharge",
       icon: FaPeopleLine,
       count: userAnalytics.roleBreakdown.SITE_INCHARGE || 0,
-      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.SITE_INCHARGE || 0) / userAnalytics.totalUsers * 100) : 0,
+      percentage:
+        userAnalytics.totalUsers > 0
+          ? Math.round(
+              ((userAnalytics.roleBreakdown.SITE_INCHARGE || 0) /
+                userAnalytics.totalUsers) *
+                100
+            )
+          : 0,
     },
     {
       label: "Project Manager",
       icon: Person,
       count: userAnalytics.roleBreakdown.PROJECT_MANAGER || 0,
-      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.PROJECT_MANAGER || 0) / userAnalytics.totalUsers * 100) : 0,
+      percentage:
+        userAnalytics.totalUsers > 0
+          ? Math.round(
+              ((userAnalytics.roleBreakdown.PROJECT_MANAGER || 0) /
+                userAnalytics.totalUsers) *
+                100
+            )
+          : 0,
     },
     {
       label: "Construction Manager",
       icon: Person3,
       count: userAnalytics.roleBreakdown.CONSTRUCTION_MANAGER || 0,
-      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.CONSTRUCTION_MANAGER || 0) / userAnalytics.totalUsers * 100) : 0,
+      percentage:
+        userAnalytics.totalUsers > 0
+          ? Math.round(
+              ((userAnalytics.roleBreakdown.CONSTRUCTION_MANAGER || 0) /
+                userAnalytics.totalUsers) *
+                100
+            )
+          : 0,
     },
     {
       label: "Store Incharge",
       icon: IoStorefrontSharp,
       count: userAnalytics.roleBreakdown.STORE_INCHARGE || 0,
-      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.STORE_INCHARGE || 0) / userAnalytics.totalUsers * 100) : 0,
+      percentage:
+        userAnalytics.totalUsers > 0
+          ? Math.round(
+              ((userAnalytics.roleBreakdown.STORE_INCHARGE || 0) /
+                userAnalytics.totalUsers) *
+                100
+            )
+          : 0,
     },
     {
       label: "Accountant",
       icon: Person2,
       count: userAnalytics.roleBreakdown.ACCOUNTANT || 0,
-      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.ACCOUNTANT || 0) / userAnalytics.totalUsers * 100) : 0,
+      percentage:
+        userAnalytics.totalUsers > 0
+          ? Math.round(
+              ((userAnalytics.roleBreakdown.ACCOUNTANT || 0) /
+                userAnalytics.totalUsers) *
+                100
+            )
+          : 0,
     },
     {
       label: "Admin",
       icon: Person2Outlined,
       count: userAnalytics.roleBreakdown.ADMIN || 0,
-      percentage: userAnalytics.totalUsers > 0 ? Math.round((userAnalytics.roleBreakdown.ADMIN || 0) / userAnalytics.totalUsers * 100) : 0,
+      percentage:
+        userAnalytics.totalUsers > 0
+          ? Math.round(
+              ((userAnalytics.roleBreakdown.ADMIN || 0) /
+                userAnalytics.totalUsers) *
+                100
+            )
+          : 0,
     },
   ];
 
   // Function to handle account activation/deactivation
   const handleAccountToggle = async (userId, isActive) => {
     try {
-      const endpoint = isActive ? `/auth/users/${userId}/deactivate` : `/auth/users/${userId}/activate`;
+      const endpoint = isActive
+        ? `/auth/users/${userId}/deactivate`
+        : `/auth/users/${userId}/activate`;
       const response = await apiClient.patch(endpoint);
-      
+
       if (response.ok) {
         const action = isActive ? "deactivated" : "activated";
         toast.success(`Account ${action} successfully`);
@@ -212,9 +255,9 @@ const UserManagement = () => {
 
   const CustomActionComponent = ({ value: id }) => {
     // Find the user data to check their active status
-    const user = users.find(u => u.id === id);
+    const user = users.find((u) => u.id === id);
     const isActive = user?.isActive;
-    
+
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
@@ -246,28 +289,26 @@ const UserManagement = () => {
   // Custom cell renderer for role to display properly formatted
   const RoleCell = ({ value }) => {
     if (!value) return "";
-    
+
     // Convert to title case and replace underscores with spaces
     const formattedRole = value
       .toLowerCase()
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-    
-    return (
-      <span className="text-sm text-black">
-        {formattedRole}
-      </span>
-    );
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+    return <span className="text-sm text-black">{formattedRole}</span>;
   };
 
   // Custom cell renderer for status to display Active/Inactive
   const StatusCell = ({ value }) => {
     return (
-      <span className={`text-sm px-2 py-1 rounded-full ${
-        value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-      }`}>
-        {value ? 'Active' : 'Inactive'}
+      <span
+        className={`text-sm px-2 py-1 rounded-full ${
+          value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+        }`}
+      >
+        {value ? "Active" : "Inactive"}
       </span>
     );
   };
@@ -329,7 +370,11 @@ const UserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ id: CustomActionComponent, role: RoleCell, isActive: StatusCell }}
+            cellComponents={{
+              id: CustomActionComponent,
+              role: RoleCell,
+              isActive: StatusCell,
+            }}
           />
         )}
       </div>
@@ -380,10 +425,9 @@ const UserManagement = () => {
             />
           </div>
         </div>
-                    )}
-      </div>
-    );
-  };
+      )}
+    </div>
+  );
+};
 
 export default UserManagement;
-

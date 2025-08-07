@@ -90,16 +90,60 @@ const PmDemandDetails = () => {
     fetchDetails();
   }, [id]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  // Function to format date for display
+  const formatDate = (dateInput) => {
+    console.log(
+      "formatDate called with:",
+      dateInput,
+      "Type:",
+      typeof dateInput
+    );
+
+    // Handle object with value property (from SimpleTable)
+    let dateString = dateInput;
+    if (dateInput && typeof dateInput === "object" && dateInput.value) {
+      dateString = dateInput.value;
+    }
+
+    if (!dateString) {
+      console.log("Date string is empty/null");
+      return "-";
+    }
+
+    try {
+      // Handle different date formats
+      let date;
+
+      // If it's already a Date object
+      if (dateString instanceof Date) {
+        date = dateString;
+      } else {
+        // Convert string to Date
+        date = new Date(dateString);
+      }
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid date:", dateString);
+        return "-";
+      }
+
+      // Format the date
+      const formattedDate = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      console.log("Formatted date:", formattedDate);
+      return formattedDate;
+    } catch (error) {
+      console.error("Error formatting date:", error, "Input:", dateInput);
+      return "-";
+    }
   };
 
   const DateCellComponent = ({ value }) => {
@@ -137,7 +181,7 @@ const PmDemandDetails = () => {
         remarks,
       });
       console.log("Reject response:", response);
-      
+
       if (response?.data?.data?.demand) {
         setDemandData(response.data.data.demand);
         return response.data.data.demand;
@@ -146,7 +190,11 @@ const PmDemandDetails = () => {
       }
     } catch (error) {
       console.error("Reject API error:", error);
-      throw new Error(error.response?.data?.message || error.message || "Failed to reject demand");
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to reject demand"
+      );
     }
   };
   const approveDemand = async () => {
@@ -160,7 +208,11 @@ const PmDemandDetails = () => {
       }
     } catch (error) {
       console.error("Approve API error:", error);
-      throw new Error(error.response?.data?.message || error.message || "Failed to approve demand");
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to approve demand"
+      );
     }
   };
 
@@ -171,181 +223,198 @@ const PmDemandDetails = () => {
       ) : (
         <>
           <Modal open={open} onClose={handleClose}>
-        <Box sx={style}>
-          <ReasonModal
-            //  textAreaPlaceholder="Enter your remarks here..."
-            onBackClick={handleClose}
-            onSaveClick={handleReasonSubmit}
-          />
-        </Box>
-      </Modal>
-
-      <PurchaseOrderForm
-        isOpen={openPurchaseModal}
-        onClose={() => setOpenPurchaseModal(false)}
-        demandId={demandData?.id}
-        sectionId={demandData?.sectionId}
-        materialName={demandData?.material?.name}
-        materialId={demandData?.material?.id}
-        demandQuantity={demandData?.quantity}
-      />
-
-      <TopBar title="Demand Details" 
-      showIcon={true}
-      // detail="lorem ipsum dolor sit amet" 
-      />
-
-      <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
-        <div className="flex flex-wrap justify-between items-center gap-y-4">
-          <p className="text-[#444444] font-semibold text-xl">
-            {demandData?.referenceNumber || "-"}
-          </p>
-          <div className="flex flex-wrap gap-2 items-center">
-            <div
-              className={`text-white px-6 py-1.5 rounded-lg text-sm ${
-                demandData?.status === "APPROVED"
-                  ? "bg-green-600"
-                  : demandData?.status === "PARTIALLY_APPROVED"
-                  ? "bg-yellow-500"
-                  : demandData?.status === "REJECTED"
-                  ? "bg-red-600"
-                  : demandData?.status === "PO_CREATED"
-                  ? "bg-purple-700"
-                  : "bg-[#0252AD]"
-              }`}
-            >
-              {demandData?.status || "PENDING"}
-            </div>
-
-            {demandData?.status === "APPROVED" && (
-              <Button
-                onClick={() => setOpenPurchaseModal(true)}
-                className="bg-primary text-white px-4 py-2 text-sm"
-                buttonText={"Create Purchase Order"}
+            <Box sx={style}>
+              <ReasonModal
+                //  textAreaPlaceholder="Enter your remarks here..."
+                onBackClick={handleClose}
+                onSaveClick={handleReasonSubmit}
               />
-            )}
+            </Box>
+          </Modal>
 
-            <CustomActionComponent />
-          </div>
-        </div>
+          <PurchaseOrderForm
+            isOpen={openPurchaseModal}
+            onClose={() => setOpenPurchaseModal(false)}
+            demandId={demandData?.id}
+            sectionId={demandData?.sectionId}
+            materialName={demandData?.material?.name}
+            materialId={demandData?.material?.id}
+            demandQuantity={demandData?.quantity}
+          />
 
-        <div className="h-[1px] bg-[#CDCDCD] w-full" />
+          <TopBar
+            title="Demand Details"
+            showIcon={true}
+            // detail="lorem ipsum dolor sit amet"
+          />
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Project Name:</p>
-            <p className="text-[#979797]">
-              {demandData?.section?.projectName || "-"}
-            </p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Section Name:</p>
-            <p className="text-[#979797]">{demandData?.section?.name || "-"}</p>
-          </div>
-          </div>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Material:</p>
-            <p className="text-[#979797]">
-              {demandData?.material?.name || "-"}
-            </p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Quantity:</p>
-            <p className="text-[#979797]">{demandData?.quantity || "-"}</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Unit:</p>
-            <p className="text-[#979797]">{demandData?.unit || "-"}</p>
-          </div>
-        </div>
+          <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-6">
+            <div className="flex flex-wrap justify-between items-center gap-y-4">
+              <p className="text-[#444444] font-semibold text-xl">
+                {demandData?.referenceNumber || "-"}
+              </p>
+              <div className="flex flex-wrap gap-2 items-center">
+                <div
+                  className={`text-white px-6 py-1.5 rounded-lg text-sm ${
+                    demandData?.status === "APPROVED"
+                      ? "bg-green-600"
+                      : demandData?.status === "PARTIALLY_APPROVED"
+                      ? "bg-yellow-500"
+                      : demandData?.status === "REJECTED"
+                      ? "bg-red-600"
+                      : demandData?.status === "PO_CREATED"
+                      ? "bg-purple-700"
+                      : "bg-[#0252AD]"
+                  }`}
+                >
+                  {demandData?.status || "PENDING"}
+                </div>
 
+                {demandData?.status === "APPROVED" && (
+                  <Button
+                    onClick={() => setOpenPurchaseModal(true)}
+                    className="bg-primary text-white px-4 py-2 text-sm"
+                    buttonText={"Create Purchase Order"}
+                  />
+                )}
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">PO Quantity:</p>
-            <p className="text-[#979797]">{demandData?.poQuantity || "-"}</p>
-          </div>
-          {Number(demandData?.poQuantity) > Number(demandData?.quantity) && (
-            <div className="flex flex-col col-span-2">
-              <div className="flex items-center gap-2 mt-1">
-                <input
-                  type="checkbox"
-                  id="exceed-po-checkbox"
-                  className="accent-red-600 w-4 h-4"
-                />
-                <label htmlFor="exceed-po-checkbox" className="text-[#444444] font-semibold">
-                  Are you sure to create PO greater than demand?
-                </label>
+                <CustomActionComponent />
               </div>
-              <span className="text-red-600 font-semibold mt-1">You are exceeding demand Qty.</span>
             </div>
-          )}
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Approved By:</p>
-            <p className="text-[#979797]">{demandData?.approvedBy || "-"}</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Created By:</p>
-            <p className="text-[#979797]">{demandData?.creator?.name || "-"}</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Fulfilled:</p>
-            <p className="text-[#979797]">{demandData?.fulfilled || "-"}</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">
-              Activity Description:
-            </p>
-            <p className="text-[#979797]">
-              {demandData.activityDescription || "-"}
-            </p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-[#444444] font-semibold">Notes by CM:</p>
-            <p className="text-[#979797]">{demandData?.notes || "-"}</p>
-          </div>
-        </div>
 
-        <div className="flex flex-col gap-y-2">
-          <p className="text-[#444444] font-semibold text-xl">Remarks</p>
-          <ul className="list-disc list-inside text-[#979797] space-y-1">
-            {(demandData.remarks || []).map((remark, index) => (
-              <li key={index}>{remark}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
+            <div className="h-[1px] bg-[#CDCDCD] w-full" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <DemandQuantityCard
-          storeName="Head Store"
-          totalQty={
-            demandData?.headStoreQty === 0 ? 0 : demandData?.headStoreQty || "-"
-          }
-          material={demandData?.material?.name || "Cement"}
-          headStoreId={demandData?.headStoreId}
-          cmStoreId={demandData?.cmStoreId}
-          showButton
-          id={id}
-        />
-        <DemandQuantityCard
-          storeName="CM Store"
-          totalQty={
-            demandData?.cmStoreQty === 0 ? 0 : demandData?.cmStoreQty || "-"
-          }
-          material={demandData?.material?.name || "Cement"}
-        />
-      </div>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Project Name:</p>
+                <p className="text-[#979797]">
+                  {demandData?.section?.projectName || "-"}
+                </p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Section Name:</p>
+                <p className="text-[#979797]">
+                  {demandData?.section?.name || "-"}
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Material:</p>
+                <p className="text-[#979797]">
+                  {demandData?.material?.name || "-"}
+                </p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Quantity:</p>
+                <p className="text-[#979797]">{demandData?.quantity || "-"}</p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Unit:</p>
+                <p className="text-[#979797]">{demandData?.unit || "-"}</p>
+              </div>
+            </div>
 
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
-      <SimpleTable
-        data={demandData?.approvals || []}
-        columns={columns}
-        cellComponents={{ createdAt: DateCellComponent }}
-      />
-      </>
-      
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">PO Quantity:</p>
+                <p className="text-[#979797]">
+                  {demandData?.poQuantity || "-"}
+                </p>
+              </div>
+              {Number(demandData?.poQuantity) >
+                Number(demandData?.quantity) && (
+                <div className="flex flex-col col-span-2">
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      type="checkbox"
+                      id="exceed-po-checkbox"
+                      className="accent-red-600 w-4 h-4"
+                    />
+                    <label
+                      htmlFor="exceed-po-checkbox"
+                      className="text-[#444444] font-semibold"
+                    >
+                      Are you sure to create PO greater than demand?
+                    </label>
+                  </div>
+                  <span className="text-red-600 font-semibold mt-1">
+                    You are exceeding demand Qty.
+                  </span>
+                </div>
+              )}
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Approved By:</p>
+                <p className="text-[#979797]">
+                  {demandData?.approvedBy || "-"}
+                </p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Created By:</p>
+                <p className="text-[#979797]">
+                  {demandData?.creator?.name || "-"}
+                </p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Fulfilled:</p>
+                <p className="text-[#979797]">{demandData?.fulfilled || "-"}</p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">
+                  Activity Description:
+                </p>
+                <p className="text-[#979797]">
+                  {demandData.activityDescription || "-"}
+                </p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Notes by CM:</p>
+                <p className="text-[#979797]">{demandData?.notes || "-"}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-y-2">
+              <p className="text-[#444444] font-semibold text-xl">Remarks</p>
+              <ul className="list-disc list-inside text-[#979797] space-y-1">
+                {(demandData.remarks || []).map((remark, index) => (
+                  <li key={index}>{remark}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <DemandQuantityCard
+              storeName="Head Store"
+              totalQty={
+                demandData?.headStoreQty === 0
+                  ? 0
+                  : demandData?.headStoreQty || "-"
+              }
+              material={demandData?.material?.name || "Cement"}
+              headStoreId={demandData?.headStoreId}
+              cmStoreId={demandData?.cmStoreId}
+              showButton
+              id={id}
+            />
+            <DemandQuantityCard
+              storeName="CM Store"
+              totalQty={
+                demandData?.cmStoreQty === 0 ? 0 : demandData?.cmStoreQty || "-"
+              }
+              material={demandData?.material?.name || "Cement"}
+            />
+          </div>
+
+          <h4 className="mt-8 text-[#444444] font-semibold text-xl">
+            Status Logs
+          </h4>
+          <SimpleTable
+            data={demandData?.approvals || []}
+            columns={columns}
+            cellComponents={{ createdAt: DateCellComponent }}
+          />
+        </>
       )}
     </>
   );
