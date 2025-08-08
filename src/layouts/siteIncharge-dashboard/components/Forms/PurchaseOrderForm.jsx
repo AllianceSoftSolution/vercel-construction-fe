@@ -27,7 +27,7 @@ const style = {
   borderRadius: 20,
 };
 
-export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId, materialName, materialId, demandQuantity }) {
+export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId, materialName, materialId, demandQuantity, remainingQuantity = 0 }) {
   const [loading, setLoading] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [poEntries, setPoEntries] = useState([
@@ -35,8 +35,12 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
   ]);
   const [errors, setErrors] = useState([]);
   const [confirmations, setConfirmations] = useState([false]);
+  const [remainingQtyConfirmations, setRemainingQtyConfirmations] = useState([false]);
   const [totalNotes, setTotalNotes] = useState("");
   const [totalNotesError, setTotalNotesError] = useState("");
+  
+  // Use the remaining quantity from props
+  const actualRemainingQuantity = Number(remainingQuantity);
 
   useEffect(() => {
     async function fetchVendors() {
@@ -58,6 +62,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
     setPoEntries((prev) => [...prev, { vendorId: "", quantity: "", notes: "" }]);
     setErrors((prev) => [...prev, {}]);
     setConfirmations((prev) => [...prev, false]);
+    setRemainingQtyConfirmations((prev) => [...prev, false]);
   };
 
   const removePoEntry = (idx) => {
@@ -65,16 +70,22 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
     setPoEntries((prev) => prev.filter((_, i) => i !== idx));
     setErrors((prev) => prev.filter((_, i) => i !== idx));
     setConfirmations((prev) => prev.filter((_, i) => i !== idx));
+    setRemainingQtyConfirmations((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleConfirmationChange = (idx, checked) => {
     setConfirmations((prev) => prev.map((conf, i) => i === idx ? checked : conf));
   };
 
+  const handleRemainingQtyConfirmationChange = (idx, checked) => {
+    setRemainingQtyConfirmations((prev) => prev.map((conf, i) => i === idx ? checked : conf));
+  };
+
   const validateEntries = () => {
     let valid = true;
     const totalPOQuantity = poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0);
     const exceedsTotal = totalPOQuantity > Number(demandQuantity);
+    const exceedsRemaining = totalPOQuantity > actualRemainingQuantity;
     
     // Reset total notes error
     setTotalNotesError("");
@@ -90,8 +101,8 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
         valid = false;
       }
       
-      // Individual PO validation (existing logic)
-      if (Number(entry.quantity) > Number(demandQuantity)) {
+      // Individual PO validation - only if total doesn't exceed demand
+      if (!exceedsTotal && Number(entry.quantity) > Number(demandQuantity)) {
         if (!confirmations[idx]) {
           entryErrors.confirmation = "Please confirm that you want to create this PO with quantity greater than demand";
           valid = false;
@@ -105,9 +116,15 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
       return entryErrors;
     });
     
-    // Total PO validation - check for total notes
+    // Total PO validation - check for total notes when total exceeds demand
     if (exceedsTotal && (!totalNotes || totalNotes.trim() === "")) {
       setTotalNotesError("Notes are required when total PO quantity exceeds demand");
+      valid = false;
+    }
+    
+    // Total PO validation - check for total notes when total exceeds remaining quantity
+    if (exceedsRemaining && (!totalNotes || totalNotes.trim() === "")) {
+      setTotalNotesError("Notes are required when total PO quantity exceeds remaining demand");
       valid = false;
     }
     
@@ -157,6 +174,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
       setPoEntries([{ vendorId: "", quantity: "", notes: "" }]);
       setErrors([]);
       setConfirmations([false]);
+      setRemainingQtyConfirmations([false]);
       setTotalNotes("");
       setTotalNotesError("");
       onClose();
@@ -172,6 +190,7 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
       setPoEntries([{ vendorId: "", quantity: "", notes: "" }]);
       setErrors([]);
       setConfirmations([false]);
+      setRemainingQtyConfirmations([false]);
       setTotalNotes("");
       setTotalNotesError("");
     }
@@ -294,33 +313,39 @@ export default function PurchaseOrderForm({ isOpen, onClose, demandId, sectionId
             </Box>
           ))}
           
-          {/* Total Notes Field - shows when total PO quantity exceeds demand */}
-          {poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0) > Number(demandQuantity) && (
-            <Box 
-              mt={3} 
-              p={3} 
-              borderRadius={2} 
-              border={"2px solid #ff9800"} 
-              bgcolor={"#fff3e0"}
-            >
-              <Typography variant="h6" color="warning.main" gutterBottom>
-                ⚠️ Total PO quantity exceeds demand quantity!
-              </Typography>
-              <CustomTextField
-                fullWidth
-                margin="normal"
-                label="Notes *"
-                name="totalNotes"
-                value={totalNotes}
-                onChange={(e) => setTotalNotes(e.target.value)}
-                error={!!totalNotesError}
-                helperText={totalNotesError || "Required when total PO quantity exceeds demand quantity."}
-                required
-                multiline
-                rows={3}
-              />
-            </Box>
-          )}
+                     {/* Total Notes Field - shown when total PO quantity exceeds demand or remaining quantity */}
+           {(poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0) > Number(demandQuantity) || 
+             poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0) > actualRemainingQuantity) && (
+             <Box 
+               mt={3} 
+               p={2} 
+               borderRadius={2} 
+               border={"1px solid #ff9800"} 
+               bgcolor={"#fff3e0"}
+             >
+               <Typography variant="subtitle2" color="warning.main" gutterBottom>
+                 ⚠️ {poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0) > Number(demandQuantity) 
+                   ? "Total PO quantity exceeds demand quantity" 
+                   : "Total PO quantity exceeds remaining demand quantity"}
+               </Typography>
+               <Typography variant="body2" color="text.secondary" mb={2}>
+                 {poEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0) > Number(demandQuantity)
+                   ? "The total PO quantity exceeds the demand quantity, please provide notes explaining the reason."
+                   : "The total PO quantity exceeds the remaining demand quantity, please provide notes explaining the reason."}
+               </Typography>
+               <CustomTextField
+                 fullWidth
+                 margin="normal"
+                 label="Notes (Required)"
+                 name="totalNotes"
+                 value={totalNotes}
+                 onChange={(e) => setTotalNotes(e.target.value)}
+                 error={!!totalNotesError}
+                 helperText={totalNotesError || "Required notes explaining why total PO quantity exceeds demand."}
+                 required
+               />
+             </Box>
+           )}
           
           <Button buttonText={"Add PO"} onClick={addPoEntry} disabled={loading} />
         </DialogContent>

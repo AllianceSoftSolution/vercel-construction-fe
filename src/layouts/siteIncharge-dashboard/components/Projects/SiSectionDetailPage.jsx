@@ -38,6 +38,7 @@ const SiSectionDetailPage = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [openAssignCMModal, setOpenAssignCMModal] = useState(false);
   const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
+  const [openAssignStoreInchargeModal, setOpenAssignStoreInchargeModal] = useState(false);
   const [capData, setCapData] = useState([]);
   const [capDataType, setCapDataType] = useState("analytics"); // "analytics" or "raw"
 
@@ -294,6 +295,41 @@ const SiSectionDetailPage = () => {
     }
   };
 
+  // Store Incharge assignment functions
+  const fetchStoreInchargeUsers = async () => {
+    try {
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: "STORE_INCHARGE",
+        projectId: sectionData?.project?.id,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const createStoreInchargeUser = async (userData) => {
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: "STORE_INCHARGE",
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
   const handleAssignPMGeneric = async ({ userId }) => {
     try {
       const response = await apiClient.post(`/assignments/project-manager`, {
@@ -344,6 +380,36 @@ const SiSectionDetailPage = () => {
     }
   };
 
+  const handleAssignStoreInchargeGeneric = async ({ userId }) => {
+    try {
+      setModalLoading(true);
+      const response = await apiClient.post(
+        `/assignments/store-incharge`,
+        { 
+          userId, 
+          sectionId: id,
+          storeId: sectionData?.headStore?.id 
+        }
+      );
+      if (response.ok) {
+        toast.success("Store Incharge assigned successfully!");
+        setOpenAssignStoreInchargeModal(false);
+        fetchSectionDetail();
+        return true;
+      } else {
+        toast.error(
+          response.data?.message || "Failed to assign Store Incharge"
+        );
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign Store Incharge");
+      return false;
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   const CustomActionComponent = ({ value: id }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
@@ -372,7 +438,7 @@ const SiSectionDetailPage = () => {
   const CustomStoreLinkComponent = ({ value }) => (
     <Link
       to={`/siteincharge-dashboard/store/${value?.id}`}
-      className="underline text-blue-500"
+      className="underline text-primary"
     >
       {value?.name}
     </Link>
@@ -386,7 +452,7 @@ const SiSectionDetailPage = () => {
     // { headerName: "Address", field: "user.address" },
     { headerName: "Created By", field: "user.creator.name" },
     { headerName: "CM Store", field: "cmStore" },
-    { headerName: "Action", field: "id" },
+    // { headerName: "Action", field: "id" },
   ];
 
   const columnsAcc = [
@@ -526,20 +592,20 @@ const SiSectionDetailPage = () => {
         <>
           {/* Section Info */}
           <div className="bg-[#F7F7F7] rounded-md mt-4 p-4 flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-wrap sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-wrap sm:flex-row gap-8">
               <InfoPair label="Section Name" value={sectionData.name || "Not available"} />
               <InfoPair label="Section Code" value={sectionData.code || "Not available"} />
               <InfoPair label="Project Name" value={sectionData.project?.name || "Not available"} />
-              <InfoPair label="Construction Manager" value={getSectionManager()} />
+              {/* <InfoPair label="Construction Manager" value={getSectionManager()} />
               <InfoPair label="Created Date" value={formatDate(sectionData.createdAt)} />
               <InfoPair label="Status" value={sectionData.isActive ? "Active" : "Inactive"} />
-              <InfoPair label="Linked Stores" value={sectionData.stores?.length || 0} />
+              <InfoPair label="Linked Stores" value={sectionData.stores?.length || 0} /> */}
             </div>
-            {sectionData.description && (
+            {/* {sectionData.description && (
               <div className="mt-2">
                 <InfoPair label="Description" value={sectionData.description} />
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Member Cards */}
@@ -591,7 +657,7 @@ const SiSectionDetailPage = () => {
                       <span className="font-semibold">Name:</span>{" "}
                       <Link
                         to={`/siteincharge-dashboard/store/${sectionData.headStore.id}`}
-                        className="underline text-blue-500 hover:text-blue-700"
+                        className="underline text-primary"
                       >
                         {sectionData.headStore.name}
                       </Link>
@@ -626,14 +692,14 @@ const SiSectionDetailPage = () => {
                               .user.email || "-"}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2">
                           <span className="font-semibold">Phone:</span>
                           <span>
                             {sectionData.headStore.storeInchargeAssignments[0]
                               .user.phone || "-"}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-2">
+                        </div> */}
+                        {/* <div className="flex items-center gap-2">
                           <span className="font-semibold">Joining Date:</span>
                           <span>
                             {sectionData.headStore.storeInchargeAssignments[0]
@@ -643,7 +709,7 @@ const SiSectionDetailPage = () => {
                                 ).toLocaleDateString()
                               : "-"}
                           </span>
-                        </div>
+                        </div> */}
                         <div className="flex items-center gap-2">
                           <span className="font-semibold">Role:</span>
                           <span>
@@ -661,7 +727,7 @@ const SiSectionDetailPage = () => {
                         </span>
                         <button
                           className="mt-2 px-4 py-2 bg-[#BF1017] text-white rounded hover:bg-[#a00e13] transition"
-                          onClick={() => setHasStoreHeadInfo(true)}
+                          onClick={() => setOpenAssignStoreInchargeModal(true)}
                         >
                           Assign Store Incharge
                         </button>

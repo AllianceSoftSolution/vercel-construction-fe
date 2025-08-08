@@ -257,10 +257,30 @@ const Payables = () => {
 
   const handleGlobalProjectFilterChange = (newSelected) => {
     setGlobalProjectFilter(newSelected);
+    
+    // Get the selected project ID
+    const selectedProject = newSelected.Project && newSelected.Project.length > 0 
+      ? newSelected.Project[0] 
+      : null;
+    
+    // Find the project ID from the project name
+    const selectedProjectId = selectedProject 
+      ? projectOptions.find(p => p.label === selectedProject)?.value 
+      : null;
+    
+    // Fetch vendor accounts with project filter
+    fetchVendorAccount(selectedProjectId);
+    
+    // Fetch chart data with project filter
+    fetchPaymentsByProjectSection(selectedProjectId);
   };
 
   const handleGlobalProjectFilterClear = () => {
     setGlobalProjectFilter([]);
+    // Fetch all vendor accounts when filter is cleared
+    fetchVendorAccount();
+    // Fetch all chart data when filter is cleared
+    fetchPaymentsByProjectSection();
   };
 
   // Filter purchase orders by status, project, and global project filter
@@ -289,19 +309,9 @@ const Payables = () => {
   });
 
   // Filter vendor accounts by global project filter
-  const filteredVendorAccounts = vendorAccounts.filter((vendor) => {
-    // If no global project filter is applied, show all vendors
-    if (
-      !globalProjectFilter.Project ||
-      globalProjectFilter.Project.length === 0
-    ) {
-      return true;
-    }
-
-    // For now, we'll show all vendors since vendor-project relationship might not be direct
-    // This can be enhanced later if vendor-project relationship is available in the data
-    return true;
-  });
+  // Note: This filtering is now handled at the API level, so we just return all vendor accounts
+  // The API will return only the vendors for the selected project
+  const filteredVendorAccounts = vendorAccounts;
 
   // Vendor Accounts columns
   const vendorColumns = [
@@ -326,10 +336,15 @@ const Payables = () => {
     { headerName: "Action", field: "id" },
   ];
 
-  const fetchVendorAccount = async () => {
+  const fetchVendorAccount = async (projectId = null) => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/vendor-account/vendors");
+      let url = "/vendor-account/vendors";
+      if (projectId) {
+        url += `?projectId=${projectId}`;
+      }
+      
+      const response = await apiClient.get(url);
       if (response.ok) {
         const vendorData = response.data.data || [];
         const summary = response.data.summary || {};
@@ -407,11 +422,14 @@ const Payables = () => {
   };
 
   // Fetch payments by project/section for grouped bar chart
-  const fetchPaymentsByProjectSection = async () => {
+  const fetchPaymentsByProjectSection = async (projectId = null) => {
     try {
-      const response = await apiClient.get(
-        "/analytics/payments-by-project-section"
-      );
+      let url = "/analytics/payments-by-project-section";
+      if (projectId) {
+        url += `?projectId=${projectId}`;
+      }
+      
+      const response = await apiClient.get(url);
       if (response.ok) {
         setPaymentsByProjectSection(response.data.data || []);
       } else {
@@ -558,7 +576,10 @@ const Payables = () => {
           />
         </div>
       </div>
-
+  {/* Payments by Project & Section Chart */}
+  <div className="mt-10">
+        <GroupedProjectSectionBarChart apiData={paymentsByProjectSection} />
+      </div>
       <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
         {payablesData.map((item, index) => (
           <div
@@ -574,10 +595,7 @@ const Payables = () => {
         ))}
       </div>
 
-      {/* Payments by Project & Section Chart */}
-      <div className="mt-10">
-        <GroupedProjectSectionBarChart apiData={paymentsByProjectSection} />
-      </div>
+    
 
       <div className="mt-10">
         <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders</h1>

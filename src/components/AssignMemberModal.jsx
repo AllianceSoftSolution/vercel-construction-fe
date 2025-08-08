@@ -282,8 +282,8 @@ function AssignSectionStep({
     );
   };
   const handleSelectAll = () => {
-    if (role === "Accountant") {
-      // For Accountants: include all sections regardless of assignment status
+    if (role === "Accountant" || role === "Site Incharge") {
+      // For Accountants and Site Incharge: include all sections regardless of assignment status
       if (
         filteredSections.every(
           (s) => selectedSections.includes(s.id)
@@ -304,7 +304,7 @@ function AssignSectionStep({
         ]);
       }
     } else {
-      // For other roles (Site Incharge, etc.): exclude sections assigned to others
+      // For other roles: exclude sections assigned to others
       if (
         filteredSections.every(
           (s) => selectedSections.includes(s.id) || s.assignedToOther
@@ -329,7 +329,7 @@ function AssignSectionStep({
   };
   const isAllSelected =
     filteredSections.length > 0 &&
-    (role === "Accountant"
+    (role === "Accountant" || role === "Site Incharge"
       ? filteredSections.every((s) => selectedSections.includes(s.id))
       : filteredSections.every(
           (s) => selectedSections.includes(s.id) || s.assignedToOther
@@ -370,21 +370,21 @@ function AssignSectionStep({
               >
                 {section.name}
               </span>
-              {section.assignedToOther && role === "Accountant" && (
+              {section.assignedToOther && (role === "Accountant" || role === "Site Incharge") && (
                 <span className="text-xs text-orange-500 mt-1">
-                  Section assigned to other accountant
+                  Section assigned to other {role === "Accountant" ? "accountant" : "site incharge"}
                 </span>
               )}
             </div>
                          <input
                type="checkbox"
                checked={
-                 role === "Accountant" 
+                 role === "Accountant" || role === "Site Incharge"
                    ? selectedSections.includes(section.id)
                    : selectedSections.includes(section.id) || section.assignedToOther
                }
                onChange={() => handleCheckboxChange(section.id)}
-               disabled={section.assignedToOther && role !== "Accountant"}
+               disabled={section.assignedToOther && role !== "Accountant" && role !== "Site Incharge"}
              />
           </div>
         ))}

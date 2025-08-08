@@ -97,7 +97,7 @@ const SectionDetailPage = () => {
   const CustomStoreLinkComponent = ({ value }) => (
     <Link
       to={`/admin-dashboard/store/${value?.id}`}
-      className="underline text-blue-500"
+      className="underline text-primary"
     >
       {value?.name}
     </Link>
@@ -152,7 +152,7 @@ const SectionDetailPage = () => {
     // { headerName: "Address", field: "user.address" },
     { headerName: "Created By", field: "user.creator.name" },
     { headerName: "CM Store", field: "cmStore" },
-    { headerName: "Action", field: "id" },
+    // { headerName: "Action", field: "id" },
   ];
 
   const columnsAcc = [
@@ -707,7 +707,7 @@ const SectionDetailPage = () => {
                     <span className="font-semibold">Name:</span>{" "}
                     <Link
                       to={`/admin-dashboard/store/${sectionData.headStore.id}`}
-                      className="underline text-blue-500 hover:text-blue-700"
+                      className="underline text-primary"
                     >
                       {sectionData.headStore.name}
                     </Link>
@@ -742,14 +742,14 @@ const SectionDetailPage = () => {
                             .user.email || "-"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      {/* <div className="flex items-center gap-2">
                         <span className="font-semibold">Phone:</span>
                         <span>
                           {sectionData.headStore.storeInchargeAssignments[0]
                             .user.phone || "-"}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-2">
+                      </div> */}
+                      {/* <div className="flex items-center gap-2">
                         <span className="font-semibold">Joining Date:</span>
                         <span>
                           {sectionData.headStore.storeInchargeAssignments[0]
@@ -759,7 +759,7 @@ const SectionDetailPage = () => {
                               ).toLocaleDateString()
                             : "-"}
                         </span>
-                      </div>
+                      </div> */}
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">Role:</span>
                         <span>
@@ -830,7 +830,7 @@ const SectionDetailPage = () => {
                 data={sectionData?.associatedConstructionManagers || []}
                 columns={columns}
                 cellComponents={{
-                  id: CustomActionComponent,
+                  // id: CustomActionComponent,
                   cmStore: CustomStoreLinkComponent,
                 }}
               />

@@ -35,6 +35,7 @@ const statusColorMap = {
   APPROVED: "#22c55e", // green
   PARTIALLY_APPROVED: "#eab308", // yellow
   PO_CREATED: "#8b5cf6", // purple
+  PARTIALLY_PO_CREATED: "#8b5cf6", // purple
   default: "#0252AD", // fallback blue
 };
 
@@ -281,6 +282,7 @@ const DemandDetails = () => {
             materialName={demandData?.material?.name}
             materialId={demandData?.material?.id}
             demandQuantity={demandData?.quantity}
+            remainingQuantity={demandData?.quantityRemaining}
           />
 
           <TopBar
@@ -311,7 +313,7 @@ const DemandDetails = () => {
                   {demandData?.status || "PENDING"}
                 </div>
 
-                {demandData?.status === "APPROVED" && (
+                {(demandData?.status === "APPROVED" || demandData?.status === "PARTIALLY_PO_CREATED") && (
                   <Button
                     onClick={() => setOpenPurchaseModal(true)}
                     className="bg-primary text-white px-4 py-2 text-sm"

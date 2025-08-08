@@ -15,6 +15,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { useSelector } from "react-redux";
 
 const style = {
   position: "absolute",
@@ -34,7 +35,7 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -61,7 +62,7 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
 
     try {
       setLoading(true);
-      
+
       // Create form data for file upload
       const submitData = new FormData();
       submitData.append('unitPrice', formData.unitPrice);
@@ -99,29 +100,29 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
     setFile(null);
     onClose();
   };
-  
+
   return (
     <Modal open={open} onClose={handleClose}>
       <Box sx={style} className="bg-white p-5">
         <h1 className="text-3xl font-semibold mb-4">Add Price Details</h1>
         <div className="flex flex-col gap-5">
-          <CustomTextField 
-            label="Unit Price" 
-            placeholder="Enter Unit Price" 
+          <CustomTextField
+            label="Unit Price"
+            placeholder="Enter Unit Price"
             value={formData.unitPrice}
             onChange={(e) => handleInputChange('unitPrice', e.target.value)}
             type="number"
             disabled={loading}
             required
           />
-          
+
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">
               Upload Document <span className="text-gray-500">(Optional)</span>
             </label>
-            <input 
-              type="file" 
-              className="border border-gray-300 rounded p-2 w-full" 
+            <input
+              type="file"
+              className="border border-gray-300 rounded p-2 w-full"
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               onChange={handleFileChange}
               disabled={loading}
@@ -130,10 +131,10 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
               Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG
             </p>
           </div>
-          
-          <CustomTextField 
-            label="Notes" 
-            placeholder="Enter detailed notes about the pricing" 
+
+          <CustomTextField
+            label="Notes"
+            placeholder="Enter detailed notes about the pricing"
             multiline
             rows={3}
             value={formData.notes}
@@ -150,8 +151,8 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
           >
             Cancel
           </button>
-          <Button 
-            buttonText={loading ? "Adding Price..." : "Add Price"} 
+          <Button
+            buttonText={loading ? "Adding Price..." : "Add Price"}
             onClick={handleSubmit}
             disabled={loading || !formData.unitPrice || !formData.notes.trim()}
           />
@@ -161,13 +162,13 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
   );
 };
 
-const CustomActionComponent = ({ value:id }) => {
+const CustomActionComponent = ({ value: id }) => {
   const navigate = useNavigate();
-  
+
   const onNavigation = () => {
     navigate(`/accountant-dashboard/payables/details/${id}`);
   };
-  
+
   return (
     <DropdownButton
       items={[
@@ -195,7 +196,18 @@ const AccPayables = () => {
   });
   const [filter, setFilter] = useState({
     Status: [],
-  });
+    Project: [],
+    });
+  const [projects, setProjects] = useState([]);
+  const [globalProjectFilter, setGlobalProjectFilter] = useState([]);
+  
+  // Get user role from Redux store
+  const user = useSelector((state) => state.auth.user);
+  const userRole = user?.role;
+  
+  // Check if user is head accountant (has permission to view vendor accounts)
+  // Use isHead property to determine if user is head accountant
+  const isHeadAccountant = user?.isHead === true;
 
   // Status options for filter
   const statusOptions = [
@@ -214,31 +226,103 @@ const AccPayables = () => {
     { label: "Fulfilled", value: "FULFILLED" },
     { label: "Partial", value: "PARTIAL" },
   ];
+  // Fetch all projects for filter
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await apiClient.get("/projects");
+        if (response.ok) {
+          setProjects(response.data.projects || []);
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  const projectOptions = projects.map((p) => ({ label: p.name, value: p.id }));
+
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions.map(o => o.label) },
+  ];
+
+  // Global project filter options
+  const globalProjectFilters = [
+    { label: "Project", options: projectOptions.map(o => o.label) },
   ];
 
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
 
-  // Filter purchase orders by status
-  const filteredPurchaseOrders = filter.Status && filter.Status.length > 0
-    ? purchaseOrders.filter(po =>
-        filter.Status.includes(
-          statusOptions.find(opt => opt.value === po.status)?.label || po.status
-        )
-      )
-    : purchaseOrders;
+    const handleGlobalProjectFilterChange = (newSelected) => {
+    setGlobalProjectFilter(newSelected);
+    
+    // Only apply project filter for head accountants
+    if (!isHeadAccountant) return;
+    
+    // Get the selected project ID
+    const selectedProject = newSelected.Project && newSelected.Project.length > 0 
+      ? newSelected.Project[0] 
+      : null;
+    
+    // Find the project ID from the project name
+    const selectedProjectId = selectedProject 
+      ? projectOptions.find(p => p.label === selectedProject)?.value 
+      : null;
+    
+    // Fetch vendor accounts with project filter
+    fetchVendorAccount(selectedProjectId);
+  };
+
+  const handleGlobalProjectFilterClear = () => {
+    setGlobalProjectFilter([]);
+    // Only fetch vendor accounts for head accountants when filter is cleared
+    if (isHeadAccountant) {
+      fetchVendorAccount();
+    }
+  };
+
+  // Filter purchase orders by status, project, and global project filter
+  const filteredPurchaseOrders = purchaseOrders.filter((po) => {
+    // Status filter
+    const statusMatch =
+      !filter.Status ||
+      filter.Status.length === 0 ||
+      filter.Status.includes(
+        statusOptions.find((opt) => opt.value === po.status)?.label || po.status
+      );
+
+    // Project filter
+    const projectMatch =
+      !filter.Project ||
+      filter.Project.length === 0 ||
+      filter.Project.includes(po.project);
+
+    // Global project filter
+    const globalProjectMatch =
+      !globalProjectFilter.Project ||
+      globalProjectFilter.Project.length === 0 ||
+      globalProjectFilter.Project.includes(po.project);
+
+    return statusMatch && projectMatch && globalProjectMatch;
+  });
+
+  // Filter vendor accounts by global project filter
+  // Note: This filtering is now handled at the API level, so we just return all vendor accounts
+  // The API will return only the vendors for the selected project
+  const filteredVendorAccounts = vendorAccounts;
 
   // Vendor Accounts columns
   const vendorColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "Vendor Name", field: "vendorName" },
-    { headerName: "Total Amount", field: "totalBalance" },
-    { headerName: "Remaining Amount", field: "remainingBalance" },
-    { headerName: "Paid Amount", field: "paidAmount" },
+    { headerName: "Total Amount (PKR)", field: "totalBalance" },
+    { headerName: "Remaining Amount (PKR)", field: "remainingBalance" },
+    { headerName: "Paid Amount (PKR)", field: "paidAmount" },
     { headerName: "Action", field: "id" },
   ];
 
@@ -250,19 +334,24 @@ const AccPayables = () => {
     { headerName: "Material", field: "material" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    { headerName: "Amount", field: "amount" },
+    { headerName: "Amount (PKR)", field: "amount" },
     { headerName: "Status", field: "status" },
     { headerName: "Action", field: "id" },
   ];
 
-  const fetchVendorAccount = async () => {
+  const fetchVendorAccount = async (projectId = null) => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/vendor-account/vendors");
+      let url = "/vendor-account/vendors";
+      if (projectId) {
+        url += `?projectId=${projectId}`;
+      }
+
+      const response = await apiClient.get(url);
       if (response.ok) {
         const vendorData = response.data.data || [];
         const summary = response.data.summary || {};
-        
+
         // Map vendor account data to table format
         const mappedData = vendorData.map((account, index) => {
           console.log("Vendor account data:", account);
@@ -270,12 +359,16 @@ const AccPayables = () => {
             id: account.vendorId, // Use vendorId for navigation to detail page
             no: index + 1,
             vendorName: account.vendor?.name || "-",
-            totalBalance: account.totalCredited ? `$${account.totalCredited.toLocaleString()}` : "-",
-            remainingBalance: account.remainingAmount ? `$${account.remainingAmount.toLocaleString()}` : "-",
-            paidAmount: account.paidAmount ? `$${account.paidAmount.toLocaleString()}` : "-",
+            totalBalance: account.totalCredited ? `${account.totalCredited.toLocaleString()}` : "-",
+            remainingBalance: account.remainingAmount ? `${account.remainingAmount.toLocaleString()}` : "-",
+            paidAmount: account.paidAmount ? `${account.paidAmount.toLocaleString()}` : "-",
+            // Store original numeric values for color coding
+            totalBalanceValue: account.totalCredited || 0,
+            remainingBalanceValue: account.remainingAmount || 0,
+            paidAmountValue: account.paidAmount || 0,
           };
         });
-        
+
         setVendorAccounts(mappedData);
         setPayablesSummary(summary);
       } else {
@@ -305,7 +398,7 @@ const AccPayables = () => {
             material: po.material?.name || "-", // Material name for display
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
-            amount: po.totalAmount ? `$${po.totalAmount.toLocaleString()}` : "-",
+            amount: po.totalAmount ? `${po.totalAmount.toLocaleString()}` : "-",
             status: po.status || "-",
             // Complete PO data for modal
             poData: po // Store complete PO data separately
@@ -337,33 +430,37 @@ const AccPayables = () => {
       icon: AccountBalance,
       count: payablesSummary.totalDebited || 0,
     },
-    {
+    // Only show balance remaining for head accountants
+    ...(isHeadAccountant ? [{
       label: "Balance Remaining",
       icon: Balance,
       count: payablesSummary.totalBalance || 0,
-    },
+    }] : []),
   ];
 
   useEffect(() => {
-    fetchVendorAccount();
-  }, []);
+    // Only fetch vendor accounts for head accountants
+    if (isHeadAccountant) {
+      fetchVendorAccount();
+    }
+  }, [isHeadAccountant]);
 
   useEffect(() => {
     fetchNewPurchaseOrders();
   }, []);
 
   // ActionComforRegPOs component with access to fetchNewPurchaseOrders
-  const ActionComforRegPOs = ({ value: id}) => {
+  const ActionComforRegPOs = ({ value: id }) => {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
-    
+
 
 
     const handleSuccess = () => {
       // Refresh the purchase orders list
       fetchNewPurchaseOrders();
     };
-    
+
     return (
       <>
         <DropdownButton
@@ -375,10 +472,10 @@ const AccPayables = () => {
             <BsThreeDotsVertical />
           </IconButton>
         </DropdownButton>
-        <AddPriceModal 
-          open={open} 
-          onClose={() => setOpen(false)} 
-          poId={id} 
+        <AddPriceModal
+          open={open}
+          onClose={() => setOpen(false)}
+          poId={id}
           onSuccess={handleSuccess}
         />
       </>
@@ -414,17 +511,51 @@ const AccPayables = () => {
     );
   };
 
+  // Color-coded amount component for vendor accounts
+  const ColorCodedAmount = ({ value, field }) => {
+    if (!value || value === "-") return <span>{value}</span>;
+
+    // Remove commas and convert to number
+    const numericValue = parseFloat(value.replace(/,/g, ""));
+
+    if (isNaN(numericValue)) return <span>{value}</span>;
+
+    const color = numericValue >= 0 ? "#ef4444" : "#22c55e"; // red for positive, green for negative
+    const fontWeight = "font-semibold";
+
+    return (
+      <span style={{ color, fontWeight }} className={fontWeight}>
+        {value}
+      </span>
+    );
+  };
+
   return (
     <div className=" ">
-      <TopBar
-        title="Payables"
-        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        // showFilter={true}
-        // filterOptions={["Assigned", "Not-Assigned"]}
-        // onFilterChange={(selected) =>
-        //   console.log("Selected Filters:", selected)
-        // }
-      />
+            <div className="flex justify-between items-center">
+        <TopBar
+          title="Payables"
+          // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+          // showFilter={true}
+          // filterOptions={["Assigned", "Not-Assigned"]}
+          // onFilterChange={(selected) =>
+          //   console.log("Selected Filters:", selected)
+          // }
+        />
+        {/* Only show global project filter for head accountants */}
+        {isHeadAccountant && (
+          <div className="flex items-center gap-4">
+            <CustomFilterDropdown
+              filters={globalProjectFilters}
+              selected={globalProjectFilter}
+              onChange={handleGlobalProjectFilterChange}
+              onClear={handleGlobalProjectFilterClear}
+              placeholder="Filter by project"
+              dropdownAlign="right"
+            />
+          </div>
+        )}
+      </div>
 
       <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
         {payablesData.map((item, index) => (
@@ -451,7 +582,7 @@ const AccPayables = () => {
             selected={filter}
             onChange={handleFilterChange}
             onClear={handleFilterClear}
-            placeholder="Filter by status"
+            placeholder="Filter by status or project"
             dropdownAlign="left"
           />
         </div>
@@ -462,7 +593,7 @@ const AccPayables = () => {
             <SimpleTable
               columns={purchaseOrderColumns}
               data={filteredPurchaseOrders}
-              cellComponents={{ 
+              cellComponents={{
                 id: ActionComforRegPOs,
                 status: StatusChip
               }}
@@ -470,21 +601,29 @@ const AccPayables = () => {
           )}
         </div>
       </div>
-
-      <div className="mt-10">
-        <h1 className="text-xl md:text-2xl font-bold mb-5">Vendor Accounts</h1>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <Loader />
-          ) : (
-            <SimpleTable
-              columns={vendorColumns}
-              data={vendorAccounts}
-              cellComponents={{ id: CustomActionComponent }}
-            />
-          )}
+      
+      {/* Only show vendor accounts section for head accountants */}
+      {isHeadAccountant && (
+        <div className="mt-10">
+          <h1 className="text-xl md:text-2xl font-bold mb-5">Vendor Accounts</h1>
+          <div className="overflow-x-auto">
+            {loading ? (
+              <Loader />
+            ) : (
+              <SimpleTable
+                columns={vendorColumns}
+                data={filteredVendorAccounts}
+                cellComponents={{ 
+                  id: CustomActionComponent,
+                  totalBalance: ColorCodedAmount,
+                  remainingBalance: ColorCodedAmount,
+                  paidAmount: ColorCodedAmount,
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -45,12 +45,12 @@ const SInchargeUserManagement = () => {
 
   // Role filter options
   const roleOptions = [
-    { label: "admin", value: "ADMIN" },
-    { label: "site_incharge", value: "SITE_INCHARGE" },
-    { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
-    { label: "store_incharge", value: "STORE_INCHARGE" },
-    { label: "accountant", value: "ACCOUNTANT" },
-    { label: "project_management", value: "PROJECT_MANAGER" },
+    { label: "Admin", value: "ADMIN" },
+    { label: "Site Incharge", value: "SITE_INCHARGE" },
+    { label: "Construction Manager", value: "CONSTRUCTION_MANAGER" },
+    { label: "Store Incharge", value: "STORE_INCHARGE" },
+    { label: "Accountant", value: "ACCOUNTANT" },
+    { label: "Project Manager", value: "PROJECT_MANAGER" },
   ];
   const filters = [
     { label: "Role", options: roleOptions.map(o => o.label) },

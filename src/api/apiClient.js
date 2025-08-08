@@ -1,8 +1,8 @@
 import { create } from "apisauce";
 import { store } from "../redux/store";
 // const baseURL = import.meta.env.VITE_BASE_URL;
-// const baseURL = "/api/";
-const baseURL = "http://192.168.1.26:5000/api/";  
+// const baseURL = "https://app.rustumdynamic.com/api/";
+const baseURL = "http://192.168.1.16:5000/api/";  
 // const baseURL = "http://radc-be-env.eba-emmvfm8c.eu-north-1.elasticbeanstalk.com/api/";
 
 const apiClient = create({

@@ -263,24 +263,25 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Sections", field: "noOfSection" },
+
     // { headerName: "Role", field: "role" },
     // { headerName: "Status", field: "status" },
     // { headerName: "Note", field: "note" },
     // { headerName: "Date", field: "date" },
-    // { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "action" },
   ];
 
   const CustomActionComponent = () => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "View Detail",
-          onClick: () => navigate("/admin-dashboard/user-management/123"),
-          icon: <FaEye />,
-        },
-        // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-        { label: "Delete ", onClick: () => alert("Delete"), icon: <FaTrash /> },
+        // {
+        //   label: "View Detail",
+        //   onClick: () => navigate("/admin-dashboard/user-management/123"),
+        //   icon: <FaEye />,
+        // },
+        { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+        // { label: "Delete ", onClick: () => alert("Delete"), icon: <FaTrash /> },
       ]}
     >
       <IconButton>

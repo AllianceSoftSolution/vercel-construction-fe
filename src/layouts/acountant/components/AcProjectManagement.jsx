@@ -28,11 +28,11 @@ const AcProjectManagement = () => {
       const response = await apiClient.get("/projects");
       if (response.ok) {
         const data = response.data.projects.map((project, index) => ({
+          ...project,
           no: index + 1,
           startDate: formatDateDMY(project.startDate),
           endDate: formatDateDMY(project.endDate),
           action: project.id,
-          ...project,
         }));
         setProjects(data);
       } else {
