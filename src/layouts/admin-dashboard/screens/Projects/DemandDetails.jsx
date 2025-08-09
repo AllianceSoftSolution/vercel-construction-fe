@@ -35,7 +35,7 @@ const statusColorMap = {
   APPROVED: "#22c55e", // green
   PARTIALLY_APPROVED: "#eab308", // yellow
   PO_CREATED: "#8b5cf6", // purple
-  PARTIALLY_PO_CREATED: "#8b5cf6", // purple
+  PARTIALLY_PO_CREATED: "#23420b",
   default: "#0252AD", // fallback blue
 };
 
@@ -77,6 +77,19 @@ const formatDate = (dateString) => {
 // Date component for table
 const DateComponent = ({ value }) => {
   return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+};
+
+// Role formatting component
+const RoleComponent = ({ value }) => {
+  if (!value) return "-";
+  
+  // Convert SITE_INCHARGE to Site Incharge format
+  const formattedRole = value
+    .replace(/_/g, " ") // Replace underscores with spaces
+    .toLowerCase() // Convert to lowercase
+    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter of each word
+  
+  return <span className="text-black ">{formattedRole}</span>;
 };
 
 const DemandDetails = () => {
@@ -172,10 +185,7 @@ const DemandDetails = () => {
   useEffect(() => {
     if (demandData?.approvals && demandData.approvals.length > 0) {
       console.log("Approvals data:", demandData.approvals);
-      console.log(
-        "First approval timestamp:",
-        demandData.approvals[0]?.timestamp
-      );
+     
     }
   }, [demandData]);
 
@@ -192,11 +202,12 @@ const DemandDetails = () => {
     // { headerName: "Demand", field: "demandName" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
+    // { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Amount (PKR)", field: "amount" },
     { headerName: "Proof of Bill", field: "proofOfBill" },
+    { headerName: "Notes", field: "notes" },
     { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
@@ -306,7 +317,9 @@ const DemandDetails = () => {
                       : demandData?.status === "REJECTED"
                       ? "bg-red-600"
                       : demandData?.status === "PO_CREATED"
-                      ? "bg-purple-700"
+                      ? "bg-purple-700" 
+                      : demandData?.status === "PARTIALLY_PO_CREATED"
+                      ? "bg-[#23420b]"
                       : "bg-[#0252AD]"
                   }`}
                 >
@@ -363,6 +376,12 @@ const DemandDetails = () => {
                 <p className="text-[#444444] font-semibold">PO Quantity:</p>
                 <p className="text-[#979797]">
                   {demandData?.poQuantity || "-"}
+                </p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Quantity Remaining:</p>
+                <p className="text-[#979797]">
+                  {demandData?.quantityRemaining || "-"}
                 </p>
               </div>
               {/* Exceeding Demand Quantity Alert and Checkbox */}
@@ -430,7 +449,7 @@ const DemandDetails = () => {
                 demandName: po.demand?.referenceNumber || "-",
                 material: po.material?.name || "-",
                 section: po.demand?.section?.name || "-",
-                qty: po.demand?.quantity || "-",
+                // qty: po.demand?.quantity || "-",
                 unit: po.demand?.unit || "-",
                 poQty: po.quantity || "-",
                 amount: po.totalAmount ? `${po.totalAmount}` : "-",
@@ -438,6 +457,7 @@ const DemandDetails = () => {
                 status: po.status || "-",
                 assingedVendors: po.vendorId || "-",
                 proofOfBill: po.proofOfBill || "-",
+                notes: po.notes || "-",
               }))}
               columns={columnsPurchaseOrder}
               cellComponents={{
@@ -456,6 +476,7 @@ const DemandDetails = () => {
             cellComponents={{
               timestamp: DateComponent,
               status: StatusChip,
+              userRole: RoleComponent,
             }}
           />
         </>

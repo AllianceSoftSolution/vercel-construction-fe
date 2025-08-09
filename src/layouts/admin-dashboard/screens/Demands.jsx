@@ -22,6 +22,7 @@ const statusColorMap = {
   PARTIALLY_APPROVED: "#eab308", // yellow
   PO_CREATED: "#8b5cf6", // purple
   FULFILLED: "#0ea5e9", // blue
+  PARTIALLY_PO_CREATED: "#23420b",
   default: "#0252AD", // fallback blue
 };
 
