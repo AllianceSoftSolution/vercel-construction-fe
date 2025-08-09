@@ -25,7 +25,7 @@ const statusColorMap = {
   APPROVED: "#22c55e", // green
   PARTIALLY_APPROVED: "#eab308", // yellow
   PO_CREATED: "#8b5cf6", // purple
-  PARTIALLY_PO_CREATED: "#8b5cf6", // purple
+  PARTIALLY_PO_CREATED: "#23420b", // purple
   default: "#0252AD", // fallback blue
 };
 
@@ -168,6 +168,7 @@ const DateComponent = ({ value }) => {
     { headerName: "PO Qty", field: "poQty" },
     { headerName: "Amount (PKR)", field: "amount" },
     { headerName: "Proof of Bill", field: "proofOfBill" },
+    { headerName: "Notes", field: "notes" },
     { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
@@ -272,6 +273,8 @@ const DateComponent = ({ value }) => {
                   ? "bg-red-600"
                   : demandData?.status === "PO_CREATED"
                   ? "bg-purple-700"
+                  : demandData?.status === "PARTIALLY_PO_CREATED"
+                  ? "bg-[#23420b]"
                   : "bg-[#0252AD]"
               }`}
             >
@@ -326,6 +329,12 @@ const DateComponent = ({ value }) => {
             <p className="text-[#444444] font-semibold">PO Quantity:</p>
             <p className="text-[#979797]">{demandData?.poQuantity || "-"}</p>
           </div>
+          <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Quantity Remaining:</p>
+                <p className="text-[#979797]">
+                  {demandData?.quantityRemaining || "-"}
+                </p>
+              </div>
           {Number(demandData?.poQuantity) > Number(demandData?.quantity) && (
             <div className="flex flex-col col-span-2">
               <div className="flex items-center gap-2 mt-1">
@@ -396,6 +405,7 @@ const DateComponent = ({ value }) => {
                 status: po.status || "-",
                 assingedVendors: po.vendorId || "-",
                 proofOfBill: po.proofOfBill || "-",
+                  notes: po.notes || "-",
               }))}
               columns={columnsPurchaseOrder}
               cellComponents={{

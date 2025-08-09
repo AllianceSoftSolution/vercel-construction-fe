@@ -141,9 +141,9 @@ const CmUserManagement = () => {
         showFilter={true}
         filterOptions={[
           "Project Manager",
-          "Const Manager",
-          "Site Manager",
-          "Store-INCHARGE",
+            "Construction Manager",
+          "Site Incharge",
+          "Store Incharge",
           "Accountant",
         ]}
         onFilterChange={(selected) =>

@@ -335,6 +335,12 @@ const DateCellComponent = ({ value }) => {
                   {demandData?.poQuantity || "-"}
                 </p>
               </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-[#444444] font-semibold">Quantity Remaining:</p>
+                <p className="text-[#979797]">
+                  {demandData?.quantityRemaining || "-"}
+                </p>
+              </div>
               {Number(demandData?.poQuantity) >
                 Number(demandData?.quantity) && (
                 <div className="flex flex-col col-span-2">
@@ -413,6 +419,7 @@ const DateCellComponent = ({ value }) => {
                 status: po.status || "-",
                 assingedVendors: po.vendorId || "-",
                 proofOfBill: po.proofOfBill || "-",
+                notes: po.notes || "-",
               }))}
               columns={columnsPurchaseOrder}
               cellComponents={{

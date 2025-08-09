@@ -45,12 +45,12 @@ const PmUserManagement = () => {
 
   // Role filter options (label: UI, value: backend)
   const roleOptions = [
-    { label: "admin", value: "ADMIN" },
-    { label: "site_incharge", value: "SITE_INCHARGE" },
-    { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
-    { label: "store_incharge", value: "STORE_INCHARGE" },
-    { label: "accountant", value: "ACCOUNTANT" },
-    { label: "project_management", value: "PROJECT_MANAGER" },
+    { label: "Admin", value: "ADMIN" },
+    { label: "Site Incharge", value: "SITE_INCHARGE" },
+    { label: "Construction Manager", value: "CONSTRUCTION_MANAGER" },
+    { label: "Store Incharge", value: "STORE_INCHARGE" },
+    { label: "Accountant", value: "ACCOUNTANT" },
+    { label: "Project Manager", value: "PROJECT_MANAGER" },
   ];
 
   // Add this mapping at the top, after roleOptions
@@ -60,7 +60,6 @@ const PmUserManagement = () => {
     CONSTRUCTION_MANAGER: "Construction Manager",
     STORE_INCHARGE: "Store Incharge",
     ACCOUNTANT: "Accountant",
-    PROJECT_MANAGEMENT: "Project Management",
     PROJECT_MANAGER: "Project Manager", // If this role exists in your backend
   };
 
