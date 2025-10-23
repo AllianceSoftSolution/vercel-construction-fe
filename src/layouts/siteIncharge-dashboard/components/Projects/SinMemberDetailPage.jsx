@@ -15,44 +15,19 @@ const SinMemberDetailPage = () => {
   const { id } = useParams();
   const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const data = [  
-    {
-      id: 1,
-      no: "1",
-      projectName: "Bridge Construction",
-      code: 9909,
-      location: "London",
-      section: "A1",
-      amount: 120000,
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      no: "2",
-      projectName: "Highway Expansion",
-      code: 9909,
-      location: "New York",
-      section: "B2",
-      amount: 2500000,
-      status: "Approved",
-      date: "2025-06-14",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      no: "3",
-      projectName: "Metro Rail",
-      code: 9909,
-      location: "Paris",
-      section: "C3",
-      amount: 3000000,
-      status: "In Progress",
-      date: "2025-06-13",
-      action: "id-here",
-    },
-  ];
+
+  // Function to format role for display
+  const formatRole = (role) => {
+    if (!role) return "-";
+    
+    // Convert role to title case and replace underscores with spaces
+    return role
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
 
   const columns = [
     { headerName: "No", field: "no" },
@@ -91,7 +66,10 @@ const SinMemberDetailPage = () => {
 
     return (
     <div className="px-4 md:px-6 py-4">
-      <TopBar title="Member Detail" detail="lorem ipsum" showExport={true} />
+      <TopBar title="Member Detail" 
+      showIcon={true}
+    // detail="lorem ipsum" showExport={true} 
+    />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
 
       <div className="flex flex-col lg:flex-row gap-4 mt-4">
@@ -112,7 +90,7 @@ const SinMemberDetailPage = () => {
             <InfoRow label="Email" value={memberData?.email || "-"} />
             <InfoRow label="Joining Date" value={memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString() : "-"} />
             <InfoRow label="Employee ID" value={memberData?.employeeId || "-"} />
-            <InfoRow label="Role" value={memberData?.role || "-"} />
+            <InfoRow label="Role" value={formatRole(memberData?.role)} />
             <InfoRow label="Status" value={memberData?.isActive ? "Active" : "Inactive"} />
             <InfoRow label="Created By" value={memberData?.creator?.name || "-"} />
           </div>
@@ -122,10 +100,10 @@ const SinMemberDetailPage = () => {
         <div className="w-full lg:w-2/3 flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold text-[#BF1017]">Overview</h3>
-            <div className="flex gap-x-2">
-              <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-              <MdEdit className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-            </div>
+            {/* <div className="flex gap-x-2">
+                  <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+                  <MdEdit className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
+                </div> */}
           </div>
 
           <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">

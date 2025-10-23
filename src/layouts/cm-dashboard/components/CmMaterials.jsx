@@ -34,8 +34,8 @@ const CmMaterials = () => {
     <div className="h-full">
       <TopBar
         title="Materials"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+            // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
         // showFilter={true}
         buttonText="Add Product"
         onButtonClick={() => navigate("/construction-manager-dashboard/materials/addProduct")}

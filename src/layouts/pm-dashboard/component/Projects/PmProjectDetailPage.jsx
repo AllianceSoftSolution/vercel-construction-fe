@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import SectionTab from "./tabs/SectionTab";
 import ProjectInformationTab from "./tabs/ProjectInformationTab";
 import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
+import CAPTab from "./tabs/CAPTab";
 
 const PmProjectDetailPage = () => {
   const navigate = useNavigate();
@@ -53,8 +54,9 @@ const PmProjectDetailPage = () => {
           {/* TopBar Component */}
           <TopBar
             title="Project Details"
-            detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-            showExport={true}
+            showIcon={true}
+            // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            // showExport={true}
           />
 
           {/* Tab Navigation Box */}
@@ -95,6 +97,7 @@ const PmProjectDetailPage = () => {
               <Tab label="Project Information" />
               <Tab label="Associated Members" />
               <Tab label="Sections" />
+              <Tab label="CAP" />
             </Tabs>
           </Box>
 
@@ -105,6 +108,7 @@ const PmProjectDetailPage = () => {
             {tabIndex === 2 && (
               <SectionTab data={projectData?.sections} />
             )}
+            {tabIndex === 3 && <CAPTab data={projectData} loading={loading} projectId={id}  />}
           </Box>
         </>
       )}

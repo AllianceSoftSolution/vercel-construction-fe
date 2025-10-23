@@ -7,6 +7,7 @@ import AssociatedMembersTab from "./tabs/AssociatedMembersTab";
 import SectionTab from "./tabs/SInchargeSectionTab";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import CAPTab from "./tabs/CAPTab"
 
 const SiteProjectDetailPage = () => {
   const navigate = useNavigate();
@@ -47,8 +48,9 @@ const SiteProjectDetailPage = () => {
     <div className="px-4 md:px-6 py-4 w-full">
       <TopBar
         title="Project Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        showIcon={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <Box
@@ -89,6 +91,7 @@ const SiteProjectDetailPage = () => {
           <Tab label="Project Information" />
           <Tab label="Associated Members" />
           <Tab label="Sections" />
+          <Tab label="CAP" />
         </Tabs>
       </Box>
 
@@ -102,6 +105,7 @@ const SiteProjectDetailPage = () => {
             loading={loading}
           />
         )}
+          {tabIndex === 3 && <CAPTab data={projectData} loading={loading} projectId={id} />}
       </Box>
     </div>
   );

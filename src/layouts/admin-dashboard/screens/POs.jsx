@@ -8,11 +8,13 @@ import { IoIosEye } from "react-icons/io";
 import { RiFileEditFill } from "react-icons/ri";
 import ChangeVendor from "./users/modals/ChangeVendor";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaUserEdit } from "react-icons/fa";
+import { FaUserEdit, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import DeleteModal from "../../../mui/DeleteModal";
+// import { formatDate } from "../../../utils";
 
 // Status color mapping for purchase order status
 const statusColorMap = {
@@ -20,6 +22,7 @@ const statusColorMap = {
   PARTIAL: "#eab308", // yellow
   PENDING: "#f59e42", // orange
   REJECTED: "#ef4444", // red
+  CONFIRMED: "#44085c", // purple 
   default: "#0252AD", // fallback blue
 };
 
@@ -35,6 +38,28 @@ const StatusChip = ({ value }) => {
   );
 };
 
+// Date and time formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "-";
+  
+  // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  return `${day} ${month} ${year}, ${time}`;
+};
+
+// Date component for table
+const DateComponent = ({ value }) => {
+  return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+};
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const {id} = useParams();
@@ -42,6 +67,8 @@ const PurchaseOrder = () => {
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState({ Status: [], Project: [] });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedPOId, setSelectedPOId] = useState(null);
   const navigate = useNavigate();
 
   // Fetch all projects for filter
@@ -94,9 +121,11 @@ const PurchaseOrder = () => {
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
-          amount: po.totalAmount ? `$${po.totalAmount}` : "-",
+          amount: po.totalAmount ? `${po.totalAmount}` : "-",
+          createdAt: po.createdAt ? formatDate(po.createdAt) : "-",
           status: po.status || "-",
           assingedVendors: po.vendorId || "-",
+          proofOfBill: po.proofOfBill || "-",
         }));
         setPurchaseOrders(data);
       } else {
@@ -114,6 +143,21 @@ const PurchaseOrder = () => {
     fetchPurchaseOrders();
     // eslint-disable-next-line
   }, [filter]);
+
+  const deletePurchaseOrder = async () => {
+    try {
+      const response = await apiClient.delete(`/purchase-orders/${selectedPOId}`);
+      if (response.ok) {
+        fetchPurchaseOrders();
+        setShowDeleteModal(false);
+        toast.success("Purchase Order deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete purchase order");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
 
   // Filter options
   const statusOptions = [
@@ -151,15 +195,17 @@ const PurchaseOrder = () => {
   const columns = [
     { headerName: "Demand ID", field: "demandId" },
     { headerName: "Project Name", field: "project" },
-    { headerName: "Demand", field: "demandName" },
+    // { headerName: "Demand", field: "demandName" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Amount", field: "amount" },
+    { headerName: "Amount (PKR)", field: "amount" },
+    { headerName: "Proof of Bill", field: "proofOfBill" },
+    { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
-    { headerName: "Assigned Vendors", field: "assingedVendors" },
+    // { headerName: "Assigned Vendors", field: "assingedVendors" },
     { headerName: "Action", field: "id" },
   ];
 
@@ -168,20 +214,28 @@ const PurchaseOrder = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          {
-            label: "View",
-            onClick: () => navigate(`/admin-dashboard/pOS/${id}`),
-            icon: <IoIosEye />,
-          },
-          {
-            label: "Edit",
-            icon: <FaUserEdit />,
-          },
+          // {
+          //   label: "View",
+          //   onClick: () => navigate(`/admin-dashboard/pOS/${id}`),
+          //   icon: <IoIosEye />,
+          // },
+          // {
+          //   label: "Edit",
+          //   icon: <FaUserEdit />,
+          // },
           // {  
           //   label: "Change Vendor",
           //   onClick: () => setVendorModalOpen(true),
           //   icon: <RiFileEditFill />,
           // },
+          {
+            label: "Delete",
+            onClick: () => {
+              setSelectedPOId(id);
+              setShowDeleteModal(true);
+            },
+            icon: <FaTrash />,
+          },
         ]}
       >
         <IconButton>
@@ -190,12 +244,43 @@ const PurchaseOrder = () => {
       </DropdownButton>
     );
   };
+
+  const ProofOfBillComponent = ({ value }) => {
+    if (!value || value === "-") {
+      return <span>-</span>;
+    }
+    
+    // Check if the value is a valid URL
+    const isValidUrl = (string) => {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    };
+
+    if (isValidUrl(value)) {
+      return (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-black hover:text-primary underline cursor-pointer"
+        >
+          View Proof
+        </a>
+      );
+    }
+    
+    return <span>{value}</span>;
+  };
   console.log(purchaseOrders);
   return (
     <div className="h-full ">
       <TopBar
         title="Purchase Orders"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -214,7 +299,12 @@ const PurchaseOrder = () => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
-            cellComponents={{ id: CustomActionComponent, status: StatusChip }}
+            cellComponents={{ 
+              id: CustomActionComponent, 
+              status: StatusChip, 
+              proofOfBill: ProofOfBillComponent,
+              createdAt: DateComponent 
+            }}
           />
         )}
       </div>
@@ -224,6 +314,12 @@ const PurchaseOrder = () => {
         open={isVendorModalOpen}
         onClose={() => setVendorModalOpen(false)}
       />
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={deletePurchaseOrder}
+        />
+      )}
     </div>
   );
 };

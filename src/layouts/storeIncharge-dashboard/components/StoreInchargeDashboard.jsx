@@ -17,8 +17,11 @@ import { useEffect } from "react";
 import { useState } from "react";
 import  apiClient  from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import { Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 function StoreInchargeDashboard() {
+  const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -49,7 +52,7 @@ function StoreInchargeDashboard() {
       if (response.ok && response.data?.data?.summary) {
         const summary = response.data.data.summary;
         setProjectStats([
-          { label: "Total Stores", icon: IoStorefrontSharp, count: summary.totalStores || 0, percentage: 0 },
+          { label: "Total Stores", icon: IoStorefrontSharp, count: summary.totalStores || 0, percentage: 0 , onClick: () => navigate("/store-incharge-dashboard/store")},
           { label: "Total Materials", icon: FaToolbox, count: summary.totalMaterials || 0, percentage: 0 },
           { label: "Total Stock", icon: FaBoxesStacked, count: summary.totalStock || 0, percentage: 0 },
           { label: "Total Reserved", icon: FaHandHoldingHeart, count: summary.totalReserved || 0, percentage: 0 },
@@ -62,6 +65,38 @@ function StoreInchargeDashboard() {
       toast.error("Error fetching analytics data");
       console.error(error);
     }
+  };
+
+  const statusColorMap = {
+    APPROVED: "#22c55e", // green
+    REJECTED: "#ef4444", // red
+    PENDING: "#f59e42", // orange
+    PARTIALLY_APPROVED: "#eab308", // yellow
+    PO_CREATED: "#8b5cf6", // purple
+    FULFILLED: "#0ea5e9", // blue
+    // default: "#0252AD", // fallback blue
+    COMPLETED: "#22c55e", // green
+    PARTIAL: "#eab308", // yellow
+    PENDING: "#f59e42", // orange
+    REJECTED: "#ef4444", // red
+    CONFIRMED: "#7a0b4a",
+    default: "#0252AD", // fallback blue
+  };
+
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
+    return <Chip label={status.replace(/_/g, " ")} sx={{ backgroundColor: color, color: "white" }} />;
+  };
+
+  // Helper function to format date to dd-mm-yyyy
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   const fetchDemands = async () => {
@@ -77,7 +112,7 @@ function StoreInchargeDashboard() {
           qty: demand.quantity || "-",
           status: demand.status || "-",
           cmName: demand.creator?.name || "-",
-          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "-",
+          date: formatDate(demand.createdAt),
         }));
         setDemands(data);
       } else {
@@ -110,8 +145,8 @@ function StoreInchargeDashboard() {
       {/* Header */}
       <TopBar
         title="Store-Incharge Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -129,17 +164,18 @@ function StoreInchargeDashboard() {
                 icon={item.icon}
                 count={item.count}
                 percentage={item.percentage}
+                onClick={item.onClick}
               />
             </div>
           );
         })}
       </div>
-      <BasicBarChart />
+      {/* <BasicBarChart /> */}
 
       {/* table */}
       <div className="overflow-x-auto">
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
       </div>
       {/* <div>
         <h2 className="text-xl font-bold mb-4">Recent POs</h2>

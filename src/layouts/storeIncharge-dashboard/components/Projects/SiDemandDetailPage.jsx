@@ -100,7 +100,7 @@ const SiDemandDetailPage = () => {
         onClose={() => setOpenPurchaseModal(false)}
       />
 
-      <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
+      <TopBar title="Demand Details" showIcon={true} />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex justify-between">

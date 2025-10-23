@@ -15,14 +15,59 @@ import {
   NewReleasesOutlined,
   NewspaperOutlined,
   NewspaperSharp,
+  PeopleSharp,
 } from "@mui/icons-material";
 import Divider from "../../../components/Divider";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
+import { IconButton, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
+// Status color mapping for demands and POs
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  // default: "#0252AD", // fallback blue
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  PENDING: "#f59e42", // orange
+  REJECTED: "#ef4444", // red
+  CONFIRMED: "#7a0b4a",
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  return date.toLocaleDateString("en-CA"); // YYYY-MM-DD
+};
+
+const DateCell = ({ value }) => (
+  <span className="whitespace-nowrap">{formatDate(value)}</span>
+);
 
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [initialLoading, setInitialLoading] = useState(true);
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [analyticsData, setAnalyticsData] = useState([
@@ -38,12 +83,34 @@ function AdminDashboard() {
   const [poDistributionByVendor, setPoDistributionByVendor] = useState([]);
   const [amountByVendor, setAmountByVendor] = useState([]);
   const [financialProgress, setFinancialProgress] = useState([]);
+  const [usersByRole, setUsersByRole] = useState([]);
 
-  const columns = [
-    { headerName: "Id", field: "id" },
-    { headerName: "Material Id", field: "materialId" },
-    { headerName: "Qty", field: "quantity" },
+  const demandsColumns = [
+    // { headerName: "Id", field: "id" },
+    { headerName: "Material", field: "material.name" },
     { headerName: "Unit", field: "unit" },
+    { headerName: "Qty", field: "quantity" },
+    { headerName: "Date", field: "createdAt" },
+    { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Created By", field: "creator.name" },
+    { headerName: "Project", field: "section.projectName" },
+    { headerName: "Section", field: "section.name" },
+    { headerName: "Status", field: "status" },
+    // { headerName: "Action", field: "demandId" },
+  ];
+  const purchaseOrdersColumns = [
+    // { headerName: "Demand ID", field: "demandId" },
+    { headerName: "Project Name", field: "project" },
+    { headerName: "Demand", field: "demandName" },
+    { headerName: "Materials", field: "material" },
+    { headerName: "Sections", field: "section" },
+    { headerName: "Qty", field: "qty" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "PO Qty", field: "poQty" },
+    { headerName: "Amount", field: "amount" },
+    { headerName: "Status", field: "status" },
+    // { headerName: "Assigned Vendors", field: "assingedVendors" },
+    // { headerName: "Action", field: "id" },
   ];
   const fetchDemands = async () => {
     try {
@@ -72,11 +139,19 @@ function AdminDashboard() {
       const response = await apiClient.get("/purchase-orders");
       if (response.ok) {
         // Map the API response to match the columns
-        const data = response.data.data.map((po) => ({
+        const data = response.data.data.map((po, index) => ({
           id: po.id,
-          materialId: po.materialId,
-          quantity: po.quantity,
+          // demandId: po.demand?.referenceNumber || "-", 
+          project: po.demand?.section?.project?.name || "-",
+          demandName: po.demand?.referenceNumber || "-",
+          material: po.material?.name || "-",
+          section: po.demand?.section?.name || "-",
+          qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
+          poQty: po.quantity || "-",
+          amount: po.totalAmount ? `${po.totalAmount} PKR` : "-",
+          status: po.status || "-",
+          // assingedVendors: po.vendorId || "-",
         }));
         setPurchaseOrders(data);
       } else {
@@ -104,30 +179,63 @@ function AdminDashboard() {
             icon: FaBoxesStacked,
             count: summary.totalProjects || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/project-management");
+            }
           },
           {
             label: "Total Demands",
             icon: FaHandHoldingHeart,
             count: summary.totalDemands || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/demands");
+            }
           },
           {
             label: "Total POs Created",
             icon: NewReleasesOutlined,
             count: summary.totalPOsCreated || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/pOS");
+            }
           },
           {
             label: "Total Amount Paid",
             icon: NewspaperOutlined,
             count: summary.totalAmountPaid || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/payables");
+            }
           },
           {
-            label: "Balance Amount",
+            label: "Pending Amount",
             icon: CachedSharp,
             count: summary.totalAmountPending || 0,
             percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/payables");
+            }
+          },
+          {
+            label: "Amount Spent",
+            icon: NewspaperOutlined,
+            count: summary.totalAmountSpent || 0,
+            percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/payables");
+            }
+          },
+          {
+            label: "Total Vendors",
+            icon: PeopleSharp,
+            count: summary.totalVendors || 0,
+            percentage: 0,
+            onClick: () => {
+              navigate("/admin-dashboard/vendors");
+            }
           },
         ]);
         // Set chart data
@@ -140,6 +248,7 @@ function AdminDashboard() {
         setPoDistributionByVendor(charts.poDistributionByVendor || []);
         setAmountByVendor(charts.amountByVendor || []);
         setFinancialProgress(charts.financialProgressPerProject || []);
+        setUsersByRole(charts.usersByRole || []);
       } else {
         toast.error("Failed to fetch analytics data");
       }
@@ -151,21 +260,45 @@ function AdminDashboard() {
     }
   };
 
+  // Initial data loading
+  const loadInitialData = async () => {
+    try {
+      setInitialLoading(true);
+      await Promise.all([
+        fetchAnalytics(),
+        fetchDemands(),
+        fetchPurchaseOrders()
+      ]);
+    } catch (error) {
+      console.error("Error loading initial data:", error);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchAnalytics();
-    fetchDemands();
-    fetchPurchaseOrders();
+    loadInitialData();
   }, []);
+
+  // Show initial loading spinner
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <div className=" md:px- w-full">
      
       <TopBar
         title="Admin Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
-      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
+      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 
       <h2 className="text-xl md:text-2xl font-semibold text-primary mt-4">
         Overview
@@ -183,6 +316,7 @@ function AdminDashboard() {
               icon={item.icon}
               count={item.count}
               percentage={item.percentage}
+              onClick={item.onClick}
             />
           </div>
         ))}
@@ -206,8 +340,26 @@ function AdminDashboard() {
         </div>
       </div>
 
+      {/* User Role Bar Chart */}
       <div className="mt-6">
         <BasicBarChart
+          title="User Role"
+          xAxis={usersByRole.map((u) => u.role)}
+          series={[
+            {
+              data: usersByRole.map((u) => u.count),
+              label: "User Count",
+              color: "#1D4ED8"
+            }
+          ]}
+        />
+      </div>
+
+     
+      <div className="mt-6">
+        {/* <h3 className="text-lg font-semibold mb-2">Financial Progress Per Project</h3> */}
+        <BasicBarChart
+          title="Financial Progress Per Project"
           xAxis={financialProgress.map((p) => p.projectName)}
           series={[
             { data: financialProgress.map((p) => p.total), label: "Total Amount", color: "#1D4ED8" },
@@ -219,19 +371,11 @@ function AdminDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />
-        {loading ? (
-          <Loader />
-        ) : (
-          <SimpleTable columns={columns} data={demands} cellComponents={{}} />
-        )}
+        <SimpleTable columns={demandsColumns} data={demands} cellComponents={{ status: StatusChip, createdAt: DateCell }} />
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />
-        {loading ? (
-          <Loader />
-        ) : (
-          <SimpleTable columns={columns} data={purchaseOrders} cellComponents={{}} />
-        )}
+        <SimpleTable columns={purchaseOrdersColumns} data={purchaseOrders} cellComponents={{ status: StatusChip }} />
       </div>
     </div>
   );

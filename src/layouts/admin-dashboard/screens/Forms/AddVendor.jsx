@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TopBar from "@/components/ui/TopBar";
 import CustomTextField from "@/mui/CustomTextField";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import apiClient from "../../../../api/apiClient";
@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 
 const AddVendor = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editingVendor = location.state?.vendor;
   const [loading, setLoading] = useState(false);
 
   const validationSchema = Yup.object({
@@ -21,22 +23,28 @@ const AddVendor = () => {
 
   const formik = useFormik({
     initialValues: {
-      name: "",
-      contactPerson: "",
-      phone: "",
-      email: "",
-      address: "",
+      name: editingVendor?.name || "",
+      contactPerson: editingVendor?.contactPerson || "",
+      phone: editingVendor?.phone || "",
+      email: editingVendor?.email || "",
+      address: editingVendor?.address || "",
     },
+    enableReinitialize: true,
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
         setLoading(true);
-        const response = await apiClient.post("/vendors", values);
+        let response;
+        if (editingVendor) {
+          response = await apiClient.put(`/vendors/${editingVendor.id}`, values);
+        } else {
+          response = await apiClient.post("/vendors", values);
+        }
         if (response.ok) {
           resetForm();
           navigate(-1);
         } else {
-          toast.error("Vendor creation failed!");
+          toast.error(editingVendor ? "Vendor update failed!" : "Vendor creation failed!");
         }
       } catch (error) {
         console.error(error);
@@ -52,7 +60,7 @@ const AddVendor = () => {
 
   return (
     <div>
-      <TopBar title="Add Vendor" detail="Add New Vendor" showIcon={true} />
+      <TopBar title={editingVendor ? "Edit Vendor" : "Add Vendor"} detail={editingVendor ? "Edit Vendor Information" : "Add New Vendor"} showIcon={true} />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 
       <form onSubmit={formik.handleSubmit}>
@@ -143,7 +151,7 @@ const AddVendor = () => {
             type="submit"
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save"}
+            {loading ? (editingVendor ? "Updating..." : "Saving...") : (editingVendor ? "Update" : "Save")}
           </button>
         </div>
       </form>

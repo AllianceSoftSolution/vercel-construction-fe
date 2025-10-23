@@ -11,7 +11,7 @@ const SectionTab = ({ data }) => {
     <div className="w-full">
       <TopBar
         title="Project Sections"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
       <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">

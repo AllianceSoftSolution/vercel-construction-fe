@@ -20,7 +20,7 @@ const MemberInfoCard = ({
       <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold">
         {title}
       </h3>
-      <MoreVertIcon className="w-6 h-6 bg-[#F7F7F7] rounded-md cursor-pointer mt-2 sm:mt-0" />
+      {/* <MoreVertIcon className="w-6 h-6 bg-[#F7F7F7] rounded-md cursor-pointer mt-2 sm:mt-0" /> */}
     </div>
 
     <div className="flex flex-col sm:flex-row gap-6 mt-6">

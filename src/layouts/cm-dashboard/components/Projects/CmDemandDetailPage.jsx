@@ -71,17 +71,29 @@ const CmDemandDetailPage = () => {
     setPendingStatus(null);
   };
 
-  const data = [
-    { id: 1, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-    { id: 2, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-    { id: 3, name: "John Doe", createdDemand: "Approved", date: "12/3/25" },
-  ];
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const columns = [
-    { headerName: "Name", field: "name" },
-    { headerName: "Created Demand", field: "createdDemand" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Name", field: "userName" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Role", field: "userRole" },
+    { headerName: "Remarks", field: "remarks" },
+    { headerName: "Date", field: "createdAt" },
   ];
+
+  const DateCellComponent = ({ value }) => {
+    return <div>{formatDate(value)}</div>;
+  };
 
   const CustomActionComponent = () => {
     return (
@@ -148,7 +160,10 @@ const CmDemandDetailPage = () => {
         demandQuantity={demandData?.quantity}
       />
 
-      <TopBar title="Demand Details" detail="lorem ipsum dolor sit amet" />
+      <TopBar title="Demand Details"
+        showIcon={true}
+        //  detail="lorem ipsum dolor sit amet" 
+       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex justify-between">
@@ -180,66 +195,69 @@ const CmDemandDetailPage = () => {
 
         <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
 
-        <div className="flex justify-between gap-x-4 flex-wrap">
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">
-              Project Name:
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Project Name:</p>
+            <p className="text-[#979797]">
+              {demandData?.section?.projectName || "-"}
             </p>
-            <p className="text-[#979797]">{demandData.section?.project?.name || "N/A"}</p>
           </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">
-              Section Name:
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Section Name:</p>
+            <p className="text-[#979797]">{demandData?.section?.name || "-"}</p>
+          </div>
+          </div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Material:</p>
+            <p className="text-[#979797]">
+              {demandData?.material?.name || "-"}
             </p>
-            <p className="text-[#979797]">{demandData.section?.name || "N/A"}</p>
           </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Material</p>
-            <p className="text-[#979797]">{demandData.material?.name || "N/A"}</p>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Quantity:</p>
+            <p className="text-[#979797]">{demandData?.quantity || "-"}</p>
           </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Quantity</p>
-            <p className="text-[#979797]">{demandData.quantity || "N/A"}</p>
-          </div>
-          <div className="flex gap-x-4 items-center">
-            <p className="text-[#444444] font-semibold text-xl">Unit</p>
-            <p className="text-[#979797]">{demandData.unit || "N/A"}</p>
+          <div className="flex gap-2 items-center">
+            <p className="text-[#444444] font-semibold">Unit:</p>
+            <p className="text-[#979797]">{demandData?.unit || "-"}</p>
           </div>
         </div>
 
-        <div className="flex justify-start gap-x-14 flex-wrap">
+
+        <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">PO Quantity:</p>
+            <p className="text-[#444444] font-semibold ">PO Quantity:</p>
             <p className="text-[#979797]">{demandData.poQuantity || "0"}</p>
           </div>
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">Approved By</p>
+          {/* <div className="flex gap-x-4 items-center mt-2">
+            <p className="text-[#444444] font-semibold ">Approved By</p>
             <p className="text-[#979797]">{demandData.approvedBy || "N/A"}</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">Fulfilled</p>
+          </div> */}
+          {/* <div className="flex gap-x-4 items-center mt-2">
+            <p className="text-[#444444] font-semibold ">Fulfilled</p>
             <p className="text-[#979797]">{demandData.quantityFulfilled || "0"}</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-2">
-            <p className="text-[#444444] font-semibold text-xl">
+          </div> */}
+          {/* <div className="flex gap-x-4 items-center mt-2">
+            <p className="text-[#444444] font-semibold ">
               Activity Description
             </p>
             <p className="text-[#979797]">{demandData.activity || "N/A"}</p>
-          </div>
-          <div className="flex gap-x-4 items-center mt-6">
-            <p className="text-[#444444] font-semibold text-xl">Notes by CM</p>
+          </div> */}
+          <div className="flex gap-x-4 items-center">
+            <p className="text-[#444444] font-semibold ">Notes by CM</p>
             <p className="text-[#979797]">{demandData.notes || "N/A"}</p>
           </div>
         </div>
-
+{/* 
         <div className="flex gap-x-8 items-center mt-2">
-          <p className="text-[#444444] font-semibold text-xl">Remarks</p>
+          <p className="text-[#444444] font-semibold ">Remarks</p>
           <ul>
             <li className="text-[#979797]">{demandData.remarks || "No remarks"}</li>
           </ul>
-        </div>
+        </div> */}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
         <DemandQuantityCard
           storeName="Head Store"
           totalQty={demandData.quantity || 0}
@@ -251,10 +269,13 @@ const CmDemandDetailPage = () => {
           totalQty={50}
           material="Cement"
         />
-      </div>
+      </div> */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
-      <SimpleTable data={data} columns={columns} cellComponents={{}} />
-    </>
+      <SimpleTable
+        data={demandData?.approvals || []}
+        columns={columns}
+        cellComponents={{ createdAt: DateCellComponent }}
+      />    </>
   );
 };
 

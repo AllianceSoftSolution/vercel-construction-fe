@@ -7,17 +7,19 @@ import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { IconButton } from "@mui/material";
-import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import apiClient from "../../../api/apiClient";
 import { RiDeleteBin5Fill } from "react-icons/ri";
-import Loader from "../../../components/ui/Loader";
+import DeleteModal from "../../../mui/DeleteModal";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { formatDateDMY } from '../../../utils';
 
 const PmProjectManagement = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [filter, setFilter] = useState({ "Project Name": [], "Project Code": [] });
 
@@ -37,10 +39,12 @@ const PmProjectManagement = () => {
       if (response.ok) {
         const data = response.data.projects.map((project, index) => ({
           no: index + 1,
-          startDate: formatDateToDDMMYYYY(project.startDate),
-          endDate: formatDateToDDMMYYYY(project.endDate),
-          action: project.id,
-          ...project,
+          projectName: project.name,
+          code: project.code,
+          description: project.description || "-",
+          startDate: formatDateDMY(project.startDate),
+          endDate: formatDateDMY(project.endDate),
+          id: project.id,
         }));
         setProjects(data);
       } else {
@@ -58,9 +62,24 @@ const PmProjectManagement = () => {
     fetchProjects();
   }, []);
 
+  const deleteProject = async () => {
+    try {
+      const response = await apiClient.delete(`/projects/${selectedProjectId}`);
+      if (response.ok) {
+        fetchProjects();
+        setShowDeleteModal(false);
+        toast.success("Project deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete project");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
   const columns = [
     { headerName: "No", field: "no" },
-    { headerName: "Project Name", field: "name" },
+    { headerName: "Project Name", field: "projectName" },
     { headerName: "Code", field: "code" },
     { headerName: "Description", field: "description" },
     { headerName: "Start Date", field: "startDate" },
@@ -68,28 +87,40 @@ const PmProjectManagement = () => {
     { headerName: "Action", field: "id" },
   ];
 
-  const CustomActionComponent = ({ value: id }) => {
-    return (
-      <DropdownButton
-        className="bg-[#FF0000] font-semibold"
-        items={[
-          {
-            label: "View Detail Page",
-            onClick: () =>
-              navigate(`/project-manager-dashboard/project-Management/${id}`),
-            icon: <FaEye />,
-          },
-        ]}
-      >
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
+  const CustomActionComponent = ({ value: projectId }) => (
+    <DropdownButton
+      className="bg-[#FF0000] font-semibold"
+      items={[
+        {
+          label: "View Detail Page",
+          icon: <FaEye />,
+          onClick: () =>
+            navigate(`/project-manager-dashboard/project-management/${projectId}`),
+        },
+        // {
+        //   label: "Edit",
+        //   icon: <FaUserEdit />,
+        //   onClick: () =>
+        //     navigate(`/siteincharge-dashboard/project-management/edit/${projectId}`),
+        // },
+        // {
+        //   label: "Delete",
+        //   icon: <FaTrash />,
+        //   onClick: () => {
+        //     setSelectedProjectId(projectId);
+        //     setShowDeleteModal(true);
+        //   },
+        // },
+      ]}
+    >
+      <IconButton>
+        <BsThreeDotsVertical />
+      </IconButton>
+    </DropdownButton>
+  );
 
   // Filter options
-  const nameOptions = projects.map((p) => p.name).filter(Boolean);
+  const nameOptions = projects.map((p) => p.projectName).filter(Boolean);
   const codeOptions = projects.map((p) => p.code).filter(Boolean);
   const filters = [
     { label: "Project Name", options: nameOptions },
@@ -100,7 +131,7 @@ const PmProjectManagement = () => {
   const filteredProjects = projects.filter((project) => {
     const nameMatch =
       filter["Project Name"].length === 0 ||
-      filter["Project Name"].includes(project.name);
+      filter["Project Name"].includes(project.projectName);
     const codeMatch =
       filter["Project Code"].length === 0 ||
       filter["Project Code"].includes(project.code);
@@ -113,10 +144,14 @@ const PmProjectManagement = () => {
   const handleFilterClear = () => setFilter({ "Project Name": [], "Project Code": [] });
 
   return (
-    <div className="h-full">
+    <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="Project Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Manage all your construction projects in one place."
+        // buttonText="Create Project"
+        // onButtonClick={() =>
+        //       navigate("/siteincharge-dashboard/project-management/addProject")
+        // }
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -128,15 +163,18 @@ const PmProjectManagement = () => {
         />
       </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-
+      
       <div className="overflow-x-auto">
         {loading ? (
-          <Loader />
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-2 text-gray-600">Loading projects...</p>
+          </div>
         ) : (
-        <SimpleTable
-          columns={columns}
-          data={filteredProjects}
-          cellComponents={{ id: CustomActionComponent }}
+          <SimpleTable
+            columns={columns}
+            data={filteredProjects}
+            cellComponents={{ id: CustomActionComponent }}
           />
         )}
       </div>
@@ -154,34 +192,28 @@ const PmProjectManagement = () => {
               showProfile={false}
               buttonText="View Project Details"
               onButtonClick={() =>
-                navigate(
-                  `/project-manager-dashboard/project-Management/${selectedProjectId}`
-                )
+                navigate("/siteincharge-dashboard/project-management/123")
               }
               actions={[
                 {
                   type: "edit",
                   icon: <FaUserEdit />,
                   label: "Edit",
-                  onClick: () =>
-                    navigate(
-                      `/project-manager-dashboard/project-Management/edit/${selectedProjectId}`
-                    ),
+                  onClick: () => console.log("Edit clicked"),
                 },
                 {
                   type: "delete",
                   icon: <RiDeleteBin5Fill />,
                   label: "Delete",
-                  onClick: () => {
-                    toast.success("Delete action triggered");
-                    setShowModal(false);
-                  },
+                  onClick: () => console.log("Delete clicked"),
                 },
               ]}
             />
           </div>
         </div>
       )}
+
+     
     </div>
   );
 };

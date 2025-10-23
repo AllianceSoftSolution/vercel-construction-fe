@@ -10,6 +10,7 @@ import Button from "../../../../../components/Button";
 import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
 import { useSearchParams } from "react-router-dom";
+import { formatDateDMY } from '../../../../../utils';
 
 const style = {
   position: "absolute",
@@ -21,7 +22,7 @@ const style = {
 };
 const ProjectInformationTab = ({ data }) => {
   const columns = [
-    { headerName: "ID", field: "iD" },
+    // { headerName: "ID", field: "iD" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Phone Number", field: "phone" },
@@ -92,15 +93,19 @@ const ProjectInformationTab = ({ data }) => {
     <>
       <ProjectInfoCard
         title="Project Information"
+        status={data?.status || "IN-PROGRESS"}
+        onDelete={() => console.log("delete")}
+        onEdit={() => console.log("edit")}
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
-        section={data?.sections?.length || "0"}
-        totalAmount={data?.totalAmount ? `$${data.totalAmount}` : "$0"}
-        remainingAmount={data?.remainingAmount ? `$${data.remainingAmount}` : "$0"}
-        paidAmount={data?.paidAmount ? `$${data.paidAmount}` : "$0"}
-        date={data?.startDate ? new Date(data.startDate).toLocaleDateString() : "N/A"}
-        projectLocation={data?.location || "Not specified"}
-        projectStatus={data?.status || "N/A"}
+        section={data?.sections.length || "0"}
+        totalAmount={data?.totalAmount || "0"}
+        remainingAmount={data?.remainingAmount || "0"}
+        paidAmount={data?.paidAmount || "0"}
+        startDate={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
+        endDate={data?.endDate ? formatDateDMY(data.endDate) : "N/A"}
+        // projectLocation={data?.location || "Not specified"}
+        // projectStatus={data?.status || "N/A"}
       />
       <ProjectDescriptionCard
         title="Project Description"

@@ -39,8 +39,8 @@ const AcProjectDetailPage = () => {
     <div className="px-4 md:px-6 lg:px-8 py-4 w-full">
       <TopBar
         title="Project Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        
+        showIcon={true}
       />
 
       <Box

@@ -15,56 +15,8 @@ const PmMemberDetailPage = () => {
   const { id } = useParams();
   const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      no: "1",
-      projectName: "Bridge Construction",
-      code: 9909,
-      location: "London",
-      section: "A1",
-      amount: 120000,
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      no: "2",
-      projectName: "Highway Expansion",
-      code: 9909,
-      location: "New York",
-      section: "B2",
-      amount: 2500000,
-      status: "Approved",
-      date: "2025-06-14",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      no: "3",
-      projectName: "Metro Rail",
-      code: 9909,
-      location: "Paris",
-      section: "C3",
-      amount: 3000000,
-      status: "In Progress",
-      date: "2025-06-13",
-      action: "id-here",
-    },
-  ];
+  
 
-  const columns = [
-    { headerName: "No", field: "no" },
-    { headerName: "Project Name", field: "projectName" },
-    { headerName: "Code", field: "code" },
-    { headerName: "Location", field: "location" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Construction Amount", field: "amount" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
-  ];
 
 
   const fetchMemberDetails = async () => {      
@@ -91,7 +43,11 @@ const PmMemberDetailPage = () => {
   }, [id]);
   return (
     <div className="p-2">
-      <TopBar title="Member" detail="lorem ipsum" showExport={true} />
+      <TopBar title="Member Detail"
+      showIcon={true}
+       // detail="lorem ipsum"
+        //  showExport={true} 
+        />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
       <div className="flex flex-col md:flex-row gap-4">
         {/* Left Section */}
@@ -140,10 +96,10 @@ const PmMemberDetailPage = () => {
         <div className="w-full md:w-[70%] mt-2 p-2">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <h3 className="text-xl font-semibold text-[#BF1017]">Overview</h3>
-            <div className="flex gap-x-2 mt-2 sm:mt-0">
+            {/* <div className="flex gap-x-2 mt-2 sm:mt-0">
               <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
               <MdEdit className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-            </div>
+            </div> */}
           </div>
 
           <div className="border mt-4 border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">

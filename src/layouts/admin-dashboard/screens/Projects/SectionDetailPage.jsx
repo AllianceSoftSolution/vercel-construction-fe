@@ -4,9 +4,9 @@ import SimpleTable from "../../../../components/SimpleTable";
 import Loader from "../../../../components/ui/Loader";
 import { Box, IconButton, Modal } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaTrash, FaUserEdit } from "react-icons/fa";
+import { FaStore, FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import MemberInfoCard from "../../../../mui/MemberInfoCard";
 import MembersOverviewCard from "../../../../mui/MembersOverviewCard";
@@ -16,6 +16,7 @@ import AssignProjectManagerModal from "../../../../components/AssignProjectManag
 import toast from "react-hot-toast";
 import apiClient from "../../../../api/apiClient";
 import AssignMemberModal from "../../../../components/AssignMemberModal";
+import AssignCAPModal from "../../../../components/AssignCAPModal";
 
 const style = {
   position: "absolute",
@@ -36,33 +37,54 @@ const SectionDetailPage = () => {
   const [openAssignCMModal, setOpenAssignCMModal] = useState(false);
   const [openAssignStoreInchargeModal, setOpenAssignStoreInchargeModal] =
     useState(false);
+  const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
   const [selectedPM, setSelectedPM] = useState(null);
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
   const { id } = useParams();
   const [sectionData, setSectionData] = useState({});
+  const [capData, setCapData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
-  
-  const CustomActionComponent = ({ data }) => (
+
+  // Generic function to format text for display (roles, types, etc.)
+  const formatText = (text) => {
+    if (!text) return "-";
+
+    // Convert text to title case and replace underscores with spaces
+    return text
+      .toLowerCase()
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  const CustomActionComponent = ({ value: id }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
+        // {
+        //   label: "View Detail",
+
+        //     onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
+        //   icon: <FaUserEdit />,
+        // },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
+        // {
+        //   label: "Delete ",
+        //   onClick: () => alert("Delete"),
+        //   icon: <FaTrash />,
+        // },
         {
-          label: "View Detail",
-          onClick: () =>
-            navigate("/project-manager-dashboard/user-management/123"),
-          icon: <FaUserEdit />,
-        },
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
-        {
-          label: "Delete ",
-          onClick: () => alert("Delete"),
-          icon: <FaTrash />,
+          label: "Go to Store",
+          onClick: () => {
+            navigate(`/admin-dashboard/store/${id}`);
+          },
+          icon: <FaStore />,
         },
       ]}
     >
@@ -72,41 +94,148 @@ const SectionDetailPage = () => {
     </DropdownButton>
   );
 
-  const data = [
-    {
-      id: 1,
-      cmId: "1",
-      constructionManager: "Hassan",
-      email: "h@gmail.com",
-      phone: +123455666,
-      address: "A1",
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      cmId: "2",
-      constructionManager: "Ali",
-      email: "ali@gmail.com",
-      phone: +123455667,
-      address: "B2",
-      status: "Approved",
-      date: "2025-06-16",
-      action: "id-here",
-    },
-  ];
+  const CustomStoreLinkComponent = ({ value }) => (
+    <Link
+      to={`/admin-dashboard/store/${value?.id}`}
+      className="underline text-primary"
+    >
+      {value?.name}
+    </Link>
+  );
+
+  const CapActionComponent = ({ value: capId }) => {
+    const handleDeleteCap = async () => {
+      try {
+        setModalLoading(true);
+        const response = await apiClient.patch(`/material-caps/section/${id}`, {
+          capId: capId,
+          action: "delete",
+        });
+
+        if (response.ok) {
+          toast.success("CAP deleted successfully!");
+          fetchCAPData(); // Refresh the CAP table
+        } else {
+          toast.error("Failed to delete CAP");
+        }
+      } catch (error) {
+        console.error("Error deleting CAP:", error);
+        toast.error("Error deleting CAP");
+      } finally {
+        setModalLoading(false);
+      }
+    };
+
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          {
+            label: "Delete",
+            onClick: handleDeleteCap,
+            icon: <FaTrash />,
+          },
+        ]}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
 
   const columns = [
-    { headerName: "CM ID", field: "id" },
+    // { headerName: "CM ID", field: "id" },
     { headerName: "Name", field: "user.name" },
     { headerName: "Email", field: "user.email" },
     // { headerName: "Phone Number", field: "user.phone" },
     // { headerName: "Address", field: "user.address" },
     { headerName: "Created By", field: "user.creator.name" },
-    { headerName: "CM Store", field: "cmStore.name" },
-    { headerName: "Action", field: "action" },
+    { headerName: "CM Store", field: "cmStore" },
+    // { headerName: "Action", field: "id" },
   ];
+
+  const columnsAcc = [
+    { headerName: "Name", field: "user.name" },
+    { headerName: "Email", field: "user.email" },
+    { headerName: "Role", field: "user.role" },
+  ];
+
+  const capColumns = [
+    { headerName: "Material Name", field: "materialName" },
+    { headerName: "CAP Quantity", field: "capQuantity" },
+    { headerName: "Unit", field: "capUnit" },
+    { headerName: "Demand Quantity", field: "totalDemandQuantity" },
+    { headerName: "PO Quantity", field: "totalPurchaseOrderQuantity" },
+    { headerName: "Status", field: "status" },
+    // { headerName: "Action", field: "materialId" },
+  ];
+
+  const CapQuantityComponent = ({ value, row }) => {
+    if (!row) {
+      return <span>{value}</span>;
+    }
+
+    const capQuantity = row.capQuantity || 0;
+    const demandQuantity = row.totalDemandQuantity || 0;
+    const poQuantity = row.totalPurchaseOrderQuantity || 0;
+
+    // Check if demand quantity exceeds cap quantity
+    const isDemandExceeded = demandQuantity > capQuantity;
+    // Check if PO quantity exceeds cap quantity
+    const isPOExceeded = poQuantity > capQuantity;
+
+    let textColor = "text-green-600 font-semibold"; // Default green
+
+    if (isDemandExceeded || isPOExceeded) {
+      textColor = "text-red-600 font-semibold"; // Red if either exceeds
+    }
+
+    return <span className={textColor}>{value}</span>;
+  };
+
+  // Custom cell renderer for status with chips
+  const StatusComponent = ({ value, row }) => {
+    // If row is undefined, we'll work with just the value
+    const getStatusInfo = (status) => {
+      // Map status strings to display info
+      switch (status) {
+        case "WITHIN_LIMIT":
+          return { text: "Within Limit", color: "bg-green-100 text-green-800" };
+        case "DEMAND_EXCEEDED":
+          return {
+            text: "Demand Exceeded",
+            color: "bg-orange-100 text-orange-800",
+          };
+        case "PO_EXCEEDED":
+          return {
+            text: "PO Exceeded",
+            color: "bg-yellow-100 text-yellow-800",
+          };
+        case "BOTH_EXCEEDED":
+          return { text: "Both Exceeded", color: "bg-red-100 text-red-800" };
+        case "PENDING":
+          return { text: "Pending", color: "bg-gray-100 text-gray-800" };
+        case "INACTIVE":
+          return { text: "Inactive", color: "bg-gray-100 text-gray-600" };
+        default:
+          return {
+            text: status || "Unknown",
+            color: "bg-gray-100 text-gray-800",
+          };
+      }
+    };
+
+    const statusInfo = getStatusInfo(value);
+
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+      >
+        {statusInfo.text}
+      </span>
+    );
+  };
 
   const fetchSectionDetail = async () => {
     try {
@@ -134,8 +263,44 @@ const SectionDetailPage = () => {
   };
 
   useEffect(() => {
-    if (id) fetchSectionDetail();
+    if (id) {
+      fetchSectionDetail();
+    }
   }, [id]);
+
+  // Fetch CAP data for this section
+  const fetchCAPData = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/material-caps/section/${id}`);
+      if (response.ok) {
+        const caps = response.data.caps || [];
+        // Transform data to include formatted dates
+        const transformedCaps = caps.map((cap) => ({
+          ...cap,
+          createdAt: new Date(cap.createdAt).toLocaleDateString(),
+        }));
+        setCapData(transformedCaps);
+      } else {
+        toast.error("Failed to fetch CAP data");
+      }
+    } catch (error) {
+      console.error("Error fetching CAP data:", error);
+      toast.error("Error fetching CAP data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (sectionData?.materialCapAnalytics) {
+      console.log("Material CAP Analytics:", sectionData.materialCapAnalytics);
+      setCapData(sectionData.materialCapAnalytics);
+    } else if (id) {
+      // Fetch CAP data if not available in sectionData
+      fetchCAPData();
+    }
+  }, [sectionData, id]);
 
   if (pageLoading) {
     return (
@@ -176,10 +341,8 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Add this helper to get available CMs from sectionData
   const availableCMs = sectionData?.availableConstructionManagers || [];
 
-  // Handler for assigning a Construction Manager
   const handleAssignCM = async (user) => {
     try {
       setModalLoading(true);
@@ -203,7 +366,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Handler for adding a new Construction Manager
   const handleAddCM = async (data) => {
     try {
       setModalLoading(true);
@@ -228,7 +390,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Project Manager assignment logic
   const fetchPMUsers = async () => {
     try {
       const response = await apiClient.get(`/assignments/users-by-role`, {
@@ -287,7 +448,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Construction Manager assignment logic
   const fetchCMUsers = async () => {
     try {
       const response = await apiClient.get(`/assignments/users-by-role`, {
@@ -348,7 +508,6 @@ const SectionDetailPage = () => {
     }
   };
 
-  // Store Incharge assignment logic
   const fetchStoreInchargeUsers = async () => {
     try {
       setModalLoading(true);
@@ -415,11 +574,50 @@ const SectionDetailPage = () => {
     }
   };
 
+  const handleCAPSubmit = async (capItems) => {
+    try {
+      setModalLoading(true);
+
+      const transformedItems = capItems.map((item) => ({
+        materialId: item.materialId,
+        quantity: parseInt(item.qty) || 0,
+        unit: item.unit,
+      }));
+
+      console.log("Original CAP items:", capItems);
+      console.log("Transformed items:", transformedItems);
+
+      // Call the new API endpoint
+      console.log("Sending CAP data:", { caps: transformedItems });
+      const response = await apiClient.post(`/material-caps/section/${id}`, {
+        caps: transformedItems,
+      });
+
+      console.log("API Response:", response);
+
+      if (response.ok) {
+        toast.success("CAP items added successfully!");
+        setOpenAssignCAPModal(false);
+        // Refresh section data to get updated materialCapAnalytics
+        fetchSectionDetail();
+      } else {
+        console.error("API Error:", response.data);
+        toast.error(response.data?.message || "Failed to add CAP items");
+      }
+    } catch (error) {
+      console.error("Error adding CAP items:", error);
+      toast.error("Failed to add CAP items");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   return (
     <div className=" sm:p-6 w-full">
       <TopBar
         title="Section Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        showIcon={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 ">
@@ -433,14 +631,22 @@ const SectionDetailPage = () => {
             value={sectionData?.project?.code || "-"}
           />
           <InfoItem label="Section" value={sectionData?.name || "-"} />
-        
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
-          <InfoItem label="Project Status" value="project status" />
-          <InfoItem label="Total Amount" value="1200$" />
-          <InfoItem label="Paid Amount" value="1500$" />
-          <InfoItem label="Remaining Amount" value="1600$" />
+          {/* <InfoItem label="Project Status" value="project status" /> */}
+          <InfoItem
+            label="Total Amount"
+            value={sectionData?.totalAmount || "0"}
+          />
+          <InfoItem
+            label="Paid Amount"
+            value={sectionData?.paidAmount || "0"}
+          />
+          <InfoItem
+            label="Remaining Amount"
+            value={sectionData?.remainingAmount || "0"}
+          />
         </div>
       </div>
 
@@ -463,7 +669,7 @@ const SectionDetailPage = () => {
                   image={manager}
                   name={selectedPM.name}
                   phone={selectedPM.phone || "-"}
-                  role={selectedPM.role || "Project Manager"}
+                  role={formatText(selectedPM.role) || "Project Manager"}
                   email={selectedPM.email}
                   joiningDate={selectedPM.joiningDate || "-"}
                   id={selectedPM.id}
@@ -495,19 +701,20 @@ const SectionDetailPage = () => {
               <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-4 bg-white min-h-[320px]">
                 <div>
                   <h3 className="text-[#BF1017] text-lg sm:text-xl font-semibold mb-2">
-                    Head Store
+                    Section Head Store
                   </h3>
                   <div className="mb-2">
                     <span className="font-semibold">Name:</span>{" "}
-                    {sectionData.headStore.name}
+                    <Link
+                      to={`/admin-dashboard/store/${sectionData.headStore.id}`}
+                      className="underline text-primary"
+                    >
+                      {sectionData.headStore.name}
+                    </Link>
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">Type:</span>{" "}
-                    {sectionData.headStore.type}
-                  </div>
-                  <div className="mb-2">
-                    <span className="font-semibold">ID:</span>{" "}
-                    {sectionData.headStore.id}
+                    {formatText(sectionData.headStore.type)}
                   </div>
                 </div>
                 {/* Store Incharge Section */}
@@ -535,14 +742,14 @@ const SectionDetailPage = () => {
                             .user.email || "-"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      {/* <div className="flex items-center gap-2">
                         <span className="font-semibold">Phone:</span>
                         <span>
                           {sectionData.headStore.storeInchargeAssignments[0]
                             .user.phone || "-"}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-2">
+                      </div> */}
+                      {/* <div className="flex items-center gap-2">
                         <span className="font-semibold">Joining Date:</span>
                         <span>
                           {sectionData.headStore.storeInchargeAssignments[0]
@@ -552,12 +759,14 @@ const SectionDetailPage = () => {
                               ).toLocaleDateString()
                             : "-"}
                         </span>
-                      </div>
+                      </div> */}
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">Role:</span>
                         <span>
-                          {sectionData.headStore.storeInchargeAssignments[0]
-                            .user.role || "Store Incharge"}
+                          {formatText(
+                            sectionData.headStore.storeInchargeAssignments[0]
+                              .user.role
+                          ) || "Store Incharge"}
                         </span>
                       </div>
                     </div>
@@ -588,12 +797,7 @@ const SectionDetailPage = () => {
       </div>
 
       <div className="mt-10">
-        <TopBar
-          title="Construction Managers"
-          detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-          buttonText="Add CM"
-          onButtonClick={() => setOpenAssignCMModal(true)}
-        />
+        <TopBar title="Accountant" />
 
         <div className="overflow-x-auto mt-4 relative">
           {loading ? (
@@ -602,11 +806,61 @@ const SectionDetailPage = () => {
             </div>
           ) : (
             <SimpleTable
-              data={sectionData?.associatedConstructionManagers || []}
-              columns={columns}
-              cellComponents={{ action: CustomActionComponent }}
+              data={sectionData?.associatedAccountants || []}
+              columns={columnsAcc}
+              cellComponents={{}}
             />
           )}
+        </div>
+        <div className="mt-10">
+          <TopBar
+            title="Construction Managers"
+            // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            buttonText="Add CM"
+            onButtonClick={() => setOpenAssignCMModal(true)}
+          />
+
+          <div className="overflow-x-auto mt-4 relative">
+            {loading ? (
+              <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                <Loader />
+              </div>
+            ) : (
+              <SimpleTable
+                data={sectionData?.associatedConstructionManagers || []}
+                columns={columns}
+                cellComponents={{
+                  // id: CustomActionComponent,
+                  cmStore: CustomStoreLinkComponent,
+                }}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="mt-10">
+          <TopBar
+            title="Material CAP"
+            buttonText="Add Material Cap"
+            onButtonClick={() => setOpenAssignCAPModal(true)}
+          />
+          <div className="overflow-x-auto mt-4 relative">
+            {loading ? (
+              <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
+                <Loader />
+              </div>
+            ) : (
+              <SimpleTable
+                data={capData}
+                columns={capColumns}
+                cellComponents={{
+                  id: CapActionComponent,
+                  capQuantity: CapQuantityComponent,
+                  status: StatusComponent,
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -647,6 +901,15 @@ const SectionDetailPage = () => {
         createUser={createStoreInchargeUser}
         onAssign={handleAssignStoreInchargeGeneric}
         loading={modalLoading}
+      />
+
+      <AssignCAPModal
+        open={openAssignCAPModal}
+        onClose={() => setOpenAssignCAPModal(false)}
+        onSubmit={handleCAPSubmit}
+        loading={modalLoading}
+        sectionId={id}
+        onCapDeleted={fetchCAPData}
       />
     </div>
   );

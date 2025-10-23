@@ -15,6 +15,7 @@ import AssignMemberModal from "../../../../../components/AssignMemberModal";
 import apiClient from "../../../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../../../components/ui/Loader";
+import { formatDateDMY } from "../../../../../utils";
 
 const style = {
   position: "absolute",
@@ -33,7 +34,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
   const [openSection, setOpenSection] = useState(false);
   const [openAssignModal, setOpenAssignModal] = useState(false);
   const [assignRole, setAssignRole] = useState("");
-  
+
   // Loading states for different operations
   const [siteInchargeLoading, setSiteInchargeLoading] = useState(false);
   const [accountantLoading, setAccountantLoading] = useState(false);
@@ -42,7 +43,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
   const [addUserModalLoading, setAddUserModalLoading] = useState(false);
   const [sectionModalLoading, setSectionModalLoading] = useState(false);
   const [initialDataLoading, setInitialDataLoading] = useState(false);
-  
+
   const handleOpenPM = () => setOpenPM(true);
   const handlePMCreate = () => {
     setOpenPM(false);
@@ -59,13 +60,13 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     setAssignRole(role);
     setInitialDataLoading(true);
     setOpenAssignModal(true);
-    
+
     try {
       // Pre-fetch users for the selected role
       let apiRole = null;
       if (role === "Site Incharge") apiRole = "SITE_INCHARGE";
       if (role === "Accountant") apiRole = "ACCOUNTANT";
-      
+
       if (apiRole) {
         const response = await apiClient.get(`/assignments/users-by-role`, {
           role: apiRole,
@@ -220,8 +221,8 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     try {
       setPmModalLoading(true);
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (action === 'create') {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (action === "create") {
         handlePMCreate();
       }
     } catch (error) {
@@ -235,7 +236,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     try {
       setAddUserModalLoading(true);
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       handleAddUserDone();
     } catch (error) {
       toast.error("Failed to add user");
@@ -248,7 +249,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     try {
       setSectionModalLoading(true);
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       handleSectionDone();
     } catch (error) {
       toast.error("Failed to assign sections");
@@ -257,54 +258,30 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     }
   };
 
-  const membersData = [
-    {
-      id: 1,
-      iD: "01",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Project Manager",
-      status: "Pending",
-      note: "Ahmed Raza",
-      date: "2025-06-15",
-    },
-    {
-      id: 2,
-      iD: "02",
-      name: "Ahmed Raza",
-      email: "c@gmail.com",
-      phone: 123456789,
-      role: "Construction Manager",
-      status: "Approved",
-      note: "Fatima Khan",
-      date: "2025-06-14",
-    },
-  ];
-
   const columns = [
-    { headerName: "ID", field: "id" },
+    // { headerName: "ID", field: "id" },
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Sections", field: "noOfSection" },
+
     // { headerName: "Role", field: "role" },
     // { headerName: "Status", field: "status" },
     // { headerName: "Note", field: "note" },
     // { headerName: "Date", field: "date" },
-    // { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "action" },
   ];
 
   const CustomActionComponent = () => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "View Detail",
-          onClick: () => navigate("/admin-dashboard/user-management/123"),
-          icon: <FaEye />,
-        },
+        // {
+        //   label: "View Detail",
+        //   onClick: () => navigate("/admin-dashboard/user-management/123"),
+        //   icon: <FaEye />,
+        // },
         { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-        { label: "Delete ", onClick: () => alert("Delete"), icon: <FaTrash /> },
+        // { label: "Delete ", onClick: () => alert("Delete"), icon: <FaTrash /> },
       ]}
     >
       <IconButton>
@@ -317,33 +294,35 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     <>
       <ProjectInfoCard
         title="Project Information"
+        status={data?.status || "IN-PROGRESS"}
+        onDelete={() => console.log("delete")}
+        onEdit={() => console.log("edit")}
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
-        section={data?.sections.length || "0"}
-        totalAmount={data?.totalAmount ? `$${data.totalAmount}` : "$0"}
-        remainingAmount={
-          data?.remainingAmount ? `$${data.remainingAmount}` : "$0"
-        }
-        paidAmount={data?.paidAmount ? `$${data.paidAmount}` : "$0"}
-        date={
-          data?.startDate
-            ? new Date(data.startDate).toLocaleDateString()
-            : "N/A"
-        }
-        projectLocation={data?.location || "Not specified"}
-        projectStatus={data?.status || "N/A"}
+        sections={data?.sections.length || "0"}
+        totalAmountSpent={data?.totalAmountSpent || "0"}
+        // remainingAmount={data?.remainingAmount || "0"}
+        // paidAmount={data?.paidAmount || "0"}
+        startDate={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
+        endDate={data?.endDate ? formatDateDMY(data.endDate) : "N/A"}
+        // projectLocation={data?.location || "Not specified"}
+        // projectStatus={data?.status || "N/A"}
       />
 
       <ProjectDescriptionCard
         title="Project Description"
         description={data?.description || "No description available."}
-        onEdit={() => console.log("edit description")}
+        // onEdit={() => console.log("edit description")}
       />
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
         <Button
-          buttonText={initialDataLoading && assignRole === "Site Incharge" ? "Loading..." : "Create Site Incharge"}
+          buttonText={
+            initialDataLoading && assignRole === "Site Incharge"
+              ? "Loading..."
+              : "Assign Site Incharge"
+          }
           onClick={() => handleOpenAssignModal("Site Incharge")}
           disabled={initialDataLoading}
         />
@@ -367,7 +346,11 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
         <Button
-          buttonText={initialDataLoading && assignRole === "Accountant" ? "Loading..." : "Create An Accountant"}
+          buttonText={
+            initialDataLoading && assignRole === "Accountant"
+              ? "Loading..."
+              : "Assign Accountant"
+          }
           onClick={() => handleOpenAssignModal("Accountant")}
           disabled={initialDataLoading}
         />
@@ -411,9 +394,9 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
               <Loader />
             </div>
           ) : (
-            <AssignProjectManagerModal 
-              onCreateClick={() => handlePMModalAction('create')}
-              onManagerClick={(id) => handlePMModalAction('select')}
+            <AssignProjectManagerModal
+              onCreateClick={() => handlePMModalAction("create")}
+              onManagerClick={(id) => handlePMModalAction("select")}
               loading={pmModalLoading}
             />
           )}
@@ -427,7 +410,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
               <Loader />
             </div>
           ) : (
-            <AddMemberModal 
+            <AddMemberModal
               onAddUserClick={handleAddUserModalAction}
               onClose={() => setOpenAddUser(false)}
               loading={addUserModalLoading}

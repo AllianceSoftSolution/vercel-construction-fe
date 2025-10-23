@@ -10,6 +10,7 @@ import Button from "../../../../../components/Button";
 import AddMemberModal from "../../users/modals/AddMemberModal";
 import AssignSectionModal from "../../../../../components/ui/modals/AssignSectionsModal";
 import { useSearchParams } from "react-router-dom";
+import { formatDateDMY } from '../../../../../utils';
 
 const style = {
   position: "absolute",
@@ -126,16 +127,18 @@ const ProjectInformationTab = () => {
     <>
       <ProjectInfoCard
         title="Project Information"
-        status="IN-PROGRESS"
+        status={data?.status || "IN-PROGRESS"}
         onDelete={() => console.log("delete")}
         onEdit={() => console.log("edit")}
-        projectName="Project Name Here"
-        projectCode="123"
-        section="4"
-        amount="$12333"
-        date="12/04/2025"
-        projectLocation="United Kingdom 11 street Real Estate London"
-        projectStatus="IN-PROGRESS"
+        projectName={data?.name || "N/A"}
+        projectCode={data?.code || "N/A"}
+        section={data?.sections?.length || "0"}
+        totalAmount={data?.totalAmount || "0"}
+        remainingAmount={data?.remainingAmount || "0"}
+        paidAmount={data?.paidAmount || "0"}
+        date={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
+        projectLocation={data?.location || "Not specified"}
+        projectStatus={data?.status || "N/A"}
       />
       <ProjectDescriptionCard
         title="Project Description"

@@ -8,13 +8,18 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import DeleteModal from "../../../mui/DeleteModal";
+import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 
 const Vendors = () => {
   const navigate = useNavigate();
   const [vendors, setvendors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const fetchVendor = async () => {
+  const fetchVendor = async () => { 
     try {
       setLoading(true);
       const response = await apiClient.get("/vendors");
@@ -40,6 +45,31 @@ const Vendors = () => {
     fetchVendor();
   }, []);
 
+  const handleDelete = async () => {
+    if (!selectedVendorId) {
+      return;
+    }
+    
+    try {
+      setDeleting(true);
+      const response = await apiClient.delete(`/vendors/${selectedVendorId}`);
+      if (response.ok) {
+        console.log("Vendor deleted successfully");
+        toast.success("Vendor deleted successfully");
+        setShowDeleteModal(false);
+        setSelectedVendorId(null);
+        fetchVendor();
+      } else {
+        throw new Error(response.originalError.message);
+      }
+    } catch (error) {
+      console.error("Error deleting Vendor item!", error.message);
+      toast.error("Error deleting Vendor item!");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const columns = [
     { headerName: "Vendor Id", field: "vendorId" },
     { headerName: "Vendor Name", field: "name" },
@@ -57,13 +87,21 @@ const Vendors = () => {
           {
             label: "View Detail",
             onClick: () => navigate(`/admin-dashboard/vendors/${id}`),
-            // icon: <FaUserEdit />,
+            icon: <FaEye />,
           },
           {
-            label: "Delete ",
-            // onClick: () => alert("Delete"),
-            // icon: <FaTrash />,
+            label: "Edit",
+            onClick: () => navigate(`/admin-dashboard/vendors/addVendor`, { state: { vendor: vendors.find(v => v.id === id) } }),
+            icon: <FaUserEdit />,
           },
+          // {
+          //   label: "Delete",
+          //   onClick: () => {
+          //     setSelectedVendorId(id);
+          //     setShowDeleteModal(true);
+          //   },
+          //   icon: <FaTrash />,
+          // },
         ]}
         // onClick={handleActionClick}
       >
@@ -77,13 +115,9 @@ const Vendors = () => {
     <div className="h-full">
       <TopBar
         title="Vendors"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
-        showFilter={true}
-        filterOptions={["Active", "Inactive"]}
-        onFilterChange={(selected) =>
-          console.log("Selected Filters:", selected)
-        }
+       
         buttonText="Add Vendors"
         onButtonClick={() => navigate("/admin-dashboard/vendors/addVendor")}
       />
@@ -100,6 +134,13 @@ const Vendors = () => {
           />
         )}
       </div>
+      {showDeleteModal && (
+         <DeleteModal
+           onClose={() => setShowDeleteModal(false)}
+           onConfirm={handleDelete}
+           loading={deleting}
+         />
+       )}
     </div>
   );
 };

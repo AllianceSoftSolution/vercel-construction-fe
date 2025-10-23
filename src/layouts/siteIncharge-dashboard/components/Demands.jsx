@@ -6,17 +6,69 @@ import DropdownButton from "@/comments/components/DropdownButton";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
 import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { date } from "zod";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import DeleteModal from "../../../mui/DeleteModal";
+import { formatDateDMY } from '../../../utils';
+
+// Status color mapping
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
+
+// Date and time formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "-";
+  
+  // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  return `${day} ${month} ${year}, ${time}`;
+};
+
+// Date component for table
+const DateComponent = ({ value }) => {
+  return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+};
 
 const Demands = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
   const [filter, setFilter] = useState({ Status: [] });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDemandId, setSelectedDemandId] = useState(null);
 
-  // Status options (same as admin Demands)
+  // Status options
   const statusOptions = [
     { label: "Request Sent", value: "REQUEST_SENT" },
     { label: "Partially Approved", value: "PARTIALLY_APPROVED" },
@@ -33,30 +85,22 @@ const Demands = () => {
     { label: "Status", options: statusOptions.map(o => o.label) },
   ];
 
-  // Status color mapping (same as admin Demands)
-  const statusColorMap = {
-    APPROVED: "#22c55e", // green
-    REJECTED: "#ef4444", // red
-    PENDING: "#f59e42", // orange
-    PARTIALLY_APPROVED: "#eab308", // yellow
-    PO_CREATED: "#8b5cf6", // purple
-    FULFILLED: "#0ea5e9", // blue
-    default: "#0252AD", // fallback blue
-  };
+  const columns = [
+    { headerName: "Id", field: "referenceNumber" },
+    { headerName: "Material", field: "material.name" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "Qty", field: "quantity" },
+    { headerName: "Date", field: "createdAt" },
+    // { headerName: "Fulfilled", field: "fulfilled" },
+    { headerName: "Created By", field: "creator.name" },
+    { headerName: "Project", field: "section.projectName" },
+    { headerName: "Section", field: "section.name" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Action", field: "demandId" },
+  ];
 
-  const StatusChip = ({ value }) => {
-    const status = (value || "PENDING").toUpperCase();
-    const color = statusColorMap[status] || statusColorMap.default;
-    return (
-      <Chip
-        label={status.replace(/_/g, " ")}
-        size="small"
-        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
-      />
-    );
-  };
-
-  const fetchDemand = async () => {
+  // Fetch demands with status filter
+  const fetchDemands = async () => {
     try {
       setLoading(true);
       let url = "/demands";
@@ -71,68 +115,77 @@ const Demands = () => {
       const response = await apiClient.get(url);
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
-          no: demand.referenceNumber || `REF-${index + 1}`,
-          project: demand.section?.project?.name || "N/A",
-          material: demand.material?.name || "N/A",
-          section: demand.section?.name || "N/A",
-          qty: demand.quantity || "N/A",
-          unit: demand.unit || "N/A",
-          poQty: demand.poQuantity || "0",
-          status: demand.status || "N/A",
-          approvedBy: demand.approvedBy || "N/A",
-          fulfilled: demand.quantityFulfilled || "0",
-          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "N/A",
-          action: demand.id,
+          ...demand,
+          demandId: demand.id,
+          id: index + 1,
         }));
         setDemands(data);
       } else {
-        toast.error("Failed to fetch demands");
+        toast.error("Failed to fetch Demands");
       }
     } catch (error) {
+      console.error("Error fetching demands:", error);
       toast.error("Error fetching demands");
-      console.error(error);
-    } finally {
+    } finally {   
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDemand();
+    fetchDemands();
     // eslint-disable-next-line
   }, [filter]);
+
+  const deleteDemand = async () => {
+    try {
+      const response = await apiClient.delete(`/demands/${selectedDemandId}`);
+      if (response.ok) {
+        fetchDemands();
+        setShowDeleteModal(false);
+        toast.success("Demand deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete demand");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
 
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
   const handleFilterClear = () => setFilter({ Status: [] });
 
-  const columns = [
-    { headerName: "No", field: "no" },
-    { headerName: "Project Name", field: "project" },
-    { headerName: "Materials", field: "material" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Qty", field: "qty" },
-    { headerName: "Unit", field: "unit" },
-    { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Approved By", field: "approvedBy" },
-    { headerName: "Fulfilled", field: "fulfilled" },
-    { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
-  ];
-  const CustomActionComponent = ({ value }) => {
+  const CustomActionComponent = ({ value: demandId }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
           {
             label: "View Detail",
-            onClick: () => navigate(`/siteincharge-dashboard/demands/${value}`),
+            onClick: () => {
+              if (demandId) {
+                navigate(`/siteincharge-dashboard/demands/${demandId}`);
+              } else {
+                console.error("Demand ID is undefined.");
+              }
+            },
             icon: <FaEye />,
           },
-    
+          // {
+          //   label: "Edit",
+          //   onClick: () => alert("Edit"),
+          //   icon: <FaUserEdit />,
+          // },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => {
+          //     setSelectedDemandId(demandId);
+          //     setShowDeleteModal(true);
+          //   },
+          //   icon: <FaTrash />,
+          // },
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -140,11 +193,11 @@ const Demands = () => {
       </DropdownButton>
     );
   };
+
   return (
-    <div className="md:px-2 mx-2 h-full md:mx-0">
+    <div className=" h-full ">
       <TopBar
         title="Demands"
-        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -155,22 +208,24 @@ const Demands = () => {
           placeholder="Filter by status"
         />
       </div>
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
+      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       {/* table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mt-4">
         {loading ? (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="mt-2 text-gray-600">Loading ...</p>
-          </div>
+          <Loader />
         ) : (
           <SimpleTable
             columns={columns}
             data={demands}
-            cellComponents={{ action: CustomActionComponent, status: StatusChip }}
+            cellComponents={{ 
+              demandId: CustomActionComponent, 
+              status: StatusChip,
+              createdAt: DateComponent 
+            }}
           />
         )}
       </div>
+    
     </div>
   );
 };

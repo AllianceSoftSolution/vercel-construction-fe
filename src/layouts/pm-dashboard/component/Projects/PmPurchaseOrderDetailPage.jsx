@@ -80,8 +80,9 @@ const PmPurchaseOrderDetailPage = () => {
       {loading ? <Loader/> : (
         <>
           <TopBar
-        title="Purchase Order Detail Page"
-        detail="lorem ipsum dolor sit amet"
+        title="Purchase Order Detail "
+        showIcon={true}
+        // detail="lorem ipsum dolor sit amet"
       />
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-y-4 w-full">
@@ -140,15 +141,15 @@ const PmPurchaseOrderDetailPage = () => {
           </div>
         </div>
       </div>
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Store Sync Status</h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet </p>
+      <h4 className="mt-8 text-[#444444] font-semibold text-xl mb-4">Store Sync Status</h4>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
       <SimpleTable
         data={[]}
         columns={columns}
         cellComponents={{ id: CustomActionComponent }}
       />
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Finance</h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet </p>
+      <h4 className="mt-8 text-[#444444] font-semibold text-xl mb-4">Finance</h4>
+      {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
       <SimpleTable
         data={[]}
         columns={columns}

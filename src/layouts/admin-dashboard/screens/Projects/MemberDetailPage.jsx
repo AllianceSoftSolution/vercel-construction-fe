@@ -16,56 +16,21 @@ const MemberDetailPage = () => {
   const { id } = useParams();
   const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      no: "1",
-      projectName: "Bridge Construction",
-      code: 9909,
-      location: "London",
-      section: "A1",
-      amount: 120000,
-      status: "Pending",
-      date: "2025-06-15",
-      action: "id-here",
-    },
-    {
-      id: 2,
-      no: "2",
-      projectName: "Highway Expansion",
-      code: 9909,
-      location: "New York",
-      section: "B2",
-      amount: 2500000,
-      status: "Approved",
-      date: "2025-06-14",
-      action: "id-here",
-    },
-    {
-      id: 3,
-      no: "3",
-      projectName: "Metro Rail",
-      code: 9909,
-      location: "Paris",
-      section: "C3",
-      amount: 3000000,
-      status: "In Progress",
-      date: "2025-06-13",
-      action: "id-here",
-    },
-  ];
+ 
+  // Function to format role for display
+  const formatRole = (role) => {
+    if (!role) return "-";
+    
+    // Convert role to title case and replace underscores with spaces
+    return role
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+ 
 
-  const columns = [
-    { headerName: "No", field: "no" },
-    { headerName: "Project Name", field: "projectName" },
-    { headerName: "Code", field: "code" },
-    { headerName: "Location", field: "location" },
-    { headerName: "Sections", field: "section" },
-    { headerName: "Construction Amount", field: "amount" },
-    { headerName: "Status", field: "status" },
-    { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
-  ];
+
 
   const fetchMemberDetails = async () => {
     try {
@@ -93,7 +58,11 @@ const MemberDetailPage = () => {
 
   return (
     <div className="p-4 w-full">
-      <TopBar title="Member Detail" detail="lorem ipsum" showExport={true} />
+      <TopBar title="Member Detail"
+      showIcon={true}
+      //  detail="lorem ipsum" 
+      //  showExport={true} 
+       />
       <div className="h-[1px] w-full bg-[#CDCDCD] mt-2"></div>
 
       <div className="flex flex-col lg:flex-row gap-6 mt-4">
@@ -118,7 +87,7 @@ const MemberDetailPage = () => {
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Joining Date</p>
-              <p>{memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString() : "-"}</p>
+              <p>{memberData?.createdAt ? new Date(memberData.createdAt).toLocaleDateString('en-GB') : "-"}</p>
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Employee ID</p>
@@ -126,7 +95,7 @@ const MemberDetailPage = () => {
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Role</p>
-              <p>{memberData?.role || "-"}</p>
+              <p>{formatRole(memberData?.role)}</p>
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Status</p>
@@ -143,10 +112,10 @@ const MemberDetailPage = () => {
         <div className="w-full lg:w-[70%] flex flex-col gap-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold text-[#BF1017]">Overview</h3>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
               <MdEdit className="text-white bg-primary w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-            </div>
+            </div> */}
           </div>
 
           <div className="border-[0.5px] border-[#CDC9C9] rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

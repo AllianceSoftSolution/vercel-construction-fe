@@ -12,16 +12,46 @@ import { useState } from "react";
 import  apiClient  from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
+import { IconButton, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { formatDateDMY } from '../../../utils';
+
+// Status color mapping for demands and POs
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  CONFIRMED: "#7a0b4a",
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
 
 function PmDashboard() {
+  const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Analytics and chart data states
   const [analyticsData, setAnalyticsData] = useState([
-    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
-    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
-    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/project-management")},
+    { label: "Total Demands", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/demands")},
+    { label: "Total POs Created", icon: FaHandHoldingHeart, count: 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/pOS")},
   ]);
   const [demandBreakdown, setDemandBreakdown] = useState([]);
   const [amountByVendor, setAmountByVendor] = useState([]);
@@ -45,9 +75,9 @@ function PmDashboard() {
         const summary = response.data.data.summary;
         const charts = response.data.data.charts || {};
         setAnalyticsData([
-          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 },
-          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
-          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
+          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/project-management")},
+          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/demands")},
+          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/pOS")},
         ]);
         setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
         setAmountByVendor(charts.amountByVendor || []);
@@ -74,7 +104,7 @@ function PmDashboard() {
           unit: demand.unit || "N/A",
           status: demand.status || "N/A",
           cmName: demand.creator?.name || "N/A",
-          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "N/A",
+          date: demand.createdAt ? formatDateDMY(demand.createdAt) : "N/A",
         }));
         setDemands(data);
       } else {
@@ -97,8 +127,8 @@ function PmDashboard() {
     <div className="h-full">
       <TopBar
         title="Project-Manager Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -116,6 +146,7 @@ function PmDashboard() {
               icon={item.icon}
               count={item.count}
               percentage={item.percentage}
+              onClick={item.onClick}
             />
           </div>
         ))}
@@ -130,9 +161,9 @@ function PmDashboard() {
             series={[{ dataKey: "totalAmount", label: "Total Amount" }]}
           />
         </div>
-        <div className="flex-1 w-full xl:w-1/3 min-w-[300px]">
+        {/* <div className="flex-1 w-full xl:w-1/3 min-w-[300px]">
           <BasicBarChart />
-        </div>
+        </div> */}
       </div>
 
       <div className="overflow-x-auto mt-10">
@@ -140,7 +171,7 @@ function PmDashboard() {
         {loading ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+          <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
         )}
       </div>
     </div>

@@ -9,8 +9,12 @@ import VertcleBarChart from "../../../components/ui/Graphs/VerticleBarChart";
 import Loader from "../../../components/ui/Loader";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import { Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { formatDateDMY } from '../../../utils';
 
 function AccountantDashboard() {
+  const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -36,6 +40,34 @@ function AccountantDashboard() {
     { headerName: "Date", field: "date" },
   ];
 
+  const statusColorMap = {
+    APPROVED: "#22c55e", // green
+    REJECTED: "#ef4444", // red
+    PENDING: "#f59e42", // orange
+    PARTIALLY_APPROVED: "#eab308", // yellow
+    PO_CREATED: "#8b5cf6", // purple
+    FULFILLED: "#0ea5e9", // blue
+    // default: "#0252AD", // fallback blue
+    COMPLETED: "#22c55e", // green
+    PARTIAL: "#eab308", // yellow
+    PENDING: "#f59e42", // orange
+    REJECTED: "#ef4444", // red
+    CONFIRMED: "#7a0b4a",
+    default: "#0252AD", // fallback blue
+  };
+
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
+    return (
+      <Chip
+        label={status.replace(/_/g, " ")}
+        sx={{ backgroundColor: color, color: "#fff" }}
+        size="small"
+      />
+    );
+  };
+
   const fetchAnalytics = async () => {
     try {
       const response = await apiClient.get("/analytics/accountant/dashboard");
@@ -43,9 +75,9 @@ function AccountantDashboard() {
         const summary = response.data.data.summary;
         setAnalyticsData([
           { label: "Total Vendors", icon: FaBoxesStacked, count: summary.totalVendors || 0, percentage: 0 },
-          { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: summary.totalAmountSpent || 0, percentage: 0 },
-          { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: summary.totalAmountPending || 0, percentage: 0 },
-          { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: summary.totalAmountPaid || 0, percentage: 0 },
+          { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: summary.totalAmountSpent || 0, percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
+          { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: summary.totalAmountPending || 0, percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
+          { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: summary.totalAmountPaid || 0, percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
           { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0 },
         ]);
         setTopVendorAccounts(response.data.data.topVendorAccounts || []);
@@ -71,7 +103,7 @@ function AccountantDashboard() {
           qty: demand.quantity,
           status: demand.status,
           cmName: demand.creator?.name || "-",
-          date: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : "-",
+          date: demand.createdAt ? formatDateDMY(demand.createdAt) : "-",
         }));
         setDemands(data);
       } else {
@@ -103,8 +135,8 @@ function AccountantDashboard() {
     <div className="w-full h-full overflow-y-auto">
       <TopBar
         title="Accountant Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -123,6 +155,7 @@ function AccountantDashboard() {
                 icon={item.icon}
                 count={item.count}
                 percentage={item.percentage}
+                onClick={item.onClick}
               />
             </div>
           );
@@ -130,7 +163,7 @@ function AccountantDashboard() {
       </div>
 
       <div className="mt-8 flex flex-col lg:flex-row gap-6">
-        <PieGraph pieTitle="Payable" data={[]} />
+        {/* <PieGraph pieTitle="Payable" data={[]} /> */}
         <VertcleBarChart
           verTitle="Top Vendor Balances"
           dataset={topVendorAccounts.map(v => ({ vendorName: v.vendorName, balance: Number(v.balance) }))}
@@ -140,7 +173,7 @@ function AccountantDashboard() {
 
       <div className="overflow-x-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+        <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
       </div>
     </div>
   );

@@ -32,11 +32,11 @@ const SinPurchaseOrderDetailPage = () => {
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),
@@ -134,8 +134,9 @@ const SinPurchaseOrderDetailPage = () => {
   return (
     <div className="px-4 md:px-6 py-4">
       <TopBar
-        title="Purchase Order Detail Page"
-        detail="View detailed information about the purchase order"
+        title="Purchase Order Detail  "
+        showIcon={true}
+        // detail="View detailed information about the purchase order"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">

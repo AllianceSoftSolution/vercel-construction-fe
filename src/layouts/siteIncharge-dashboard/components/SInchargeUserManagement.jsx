@@ -38,15 +38,19 @@ const SInchargeUserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState({ Role: [] });
+  const [userAnalytics, setUserAnalytics] = useState({
+    totalUsers: 0,
+    roleBreakdown: {}
+  });
 
   // Role filter options
   const roleOptions = [
-    { label: "admin", value: "ADMIN" },
-    { label: "site_incharge", value: "SITE_INCHARGE" },
-    { label: "construction_manager", value: "CONSTRUCTION_MANAGER" },
-    { label: "store_incharge", value: "STORE_INCHARGE" },
-    { label: "accountant", value: "ACCOUNTANT" },
-    { label: "project_management", value: "PROJECT_MANAGEMENT" },
+    { label: "Admin", value: "ADMIN" },
+    { label: "Site Incharge", value: "SITE_INCHARGE" },
+    { label: "Construction Manager", value: "CONSTRUCTION_MANAGER" },
+    { label: "Store Incharge", value: "STORE_INCHARGE" },
+    { label: "Accountant", value: "ACCOUNTANT" },
+    { label: "Project Manager", value: "PROJECT_MANAGER" },
   ];
   const filters = [
     { label: "Role", options: roleOptions.map(o => o.label) },
@@ -74,6 +78,14 @@ const SInchargeUserManagement = () => {
             iD: user.id || index + 1,
           })) || [];
         setUsers(data);
+        
+        // Update analytics with actual data from API
+        if (response.data.userAnalytics) {
+          setUserAnalytics({
+            totalUsers: response.data.userAnalytics.totalUsers || 0,
+            roleBreakdown: response.data.userAnalytics.roleBreakdown || {}
+          });
+        }
       } else {
         toast.error("Failed to fetch users");
       }
@@ -104,32 +116,59 @@ const SInchargeUserManagement = () => {
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Role", field: "role" },
+    // { headerName: "Note", field: "note" },
     { headerName: "Created By", field: "creator.name" },
     {
       headerName: "Action",
       field: "id",
     },
   ];
-  const teamAnalytics = [
-    {
-      label: "Site Manager",
-      icon: FaPeopleLine,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Project Manager",
-      icon: Person,
-      count: 10,
-      percentage: 10,
-    },
-    {
-      label: "Construction Manager",
-      icon: Person3,
-      count: 10,
-      percentage: 10,
-    },
-  ];
+
+  // Generate analytics cards based on actual role breakdown
+  const generateTeamAnalytics = () => {
+    const roleIcons = {
+      SITE_INCHARGE: FaPeopleLine,
+      PROJECT_MANAGER: Person,
+      CONSTRUCTION_MANAGER: Person3,
+      STORE_INCHARGE: IoStorefrontSharp,
+      ACCOUNTANT: Person,
+      ADMIN: Person
+    };
+
+    const roleLabels = {
+      SITE_INCHARGE: "Site Incharge",
+      PROJECT_MANAGER: "Project Manager", 
+      CONSTRUCTION_MANAGER: "Construction Manager",
+      STORE_INCHARGE: "Store Incharge",
+      ACCOUNTANT: "Accountant",
+      ADMIN: "Admin"
+    };
+
+    return Object.entries(userAnalytics.roleBreakdown).map(([role, count]) => ({
+      label: roleLabels[role] || role,
+      icon: roleIcons[role] || Person,
+      count: count,
+      percentage: userAnalytics.totalUsers > 0 ? Math.round((count / userAnalytics.totalUsers) * 100) : 0,
+    }));
+  };
+
+  // Custom cell renderer for role to display properly formatted
+  const RoleCell = ({ value }) => {
+    if (!value) return "";
+    
+    // Convert to title case and replace underscores with spaces
+    const formattedRole = value
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    return (
+      <span className="text-sm text-black">
+        {formattedRole}
+      </span>
+    );
+  };
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -141,20 +180,20 @@ const SInchargeUserManagement = () => {
             onClick: () => navigate(`/siteincharge-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
-          {
-            label: "Ban",
-            icon: <MdNoAccounts className="w-5 h-5" />,
-          },
-          {
-            label: "Suspend Account",
-            icon: <FaBan />,
-          },
+          // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => alert("Delete"),
+          //   icon: <FaTrash />,
+          // },
+          // {
+          //   label: "Ban",
+          //   icon: <MdNoAccounts className="w-5 h-5" />,
+          // },
+          // {
+          //   label: "Suspend Account",
+          //   icon: <FaBan />,
+          // },
         ]}
       >
         <IconButton>
@@ -163,16 +202,19 @@ const SInchargeUserManagement = () => {
       </DropdownButton>
     );
   };
+
+  const teamAnalytics = generateTeamAnalytics();
+
   return (
     <div className="md:px-2 mx-2 h-full md:mx-0">
       <TopBar
         title="User Management"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
-        buttonText="Create New User"
-        onButtonClick={() =>
-          navigate("/siteincharge-dashboard/user-management/addUser")
-        }
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
+        // buttonText="Create New User"
+        // onButtonClick={() =>
+        //   navigate("/siteincharge-dashboard/user-management/addUser")
+        // }
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -211,7 +253,7 @@ const SInchargeUserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
-            cellComponents={{ id: CustomActionComponent }}
+            cellComponents={{ id: CustomActionComponent, role: RoleCell }}
             loading={loading}
           />
         )}

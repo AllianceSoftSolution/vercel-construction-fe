@@ -8,6 +8,7 @@ import SectionTab from "./tabs/SectionTab";
 import Loader from "@/components/ui/Loader";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import CAPTab from "./tabs/CAPTab";
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
@@ -50,8 +51,9 @@ const ProjectDetailPage = () => {
     <div className="px-4 py-4 w-full h-full">
       <TopBar
         title="Project Details"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        showIcon={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <Box
@@ -93,6 +95,7 @@ const ProjectDetailPage = () => {
           <Tab label="Project Information" />
           <Tab label="Associated Members" />
           <Tab label="Sections" />
+          <Tab label="CAP" />
         </Tabs>
       </Box>
 
@@ -109,6 +112,7 @@ const ProjectDetailPage = () => {
                 onSectionDeleted={handleSectionDeleted}
               />
             )}
+            {tabIndex === 3 && <CAPTab data={projectData} projectId={id} />}
           </>
         )}
       </Box>

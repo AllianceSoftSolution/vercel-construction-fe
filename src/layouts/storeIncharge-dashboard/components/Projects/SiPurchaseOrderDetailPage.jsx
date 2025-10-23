@@ -36,7 +36,7 @@ const SiPurchaseOrderDetailPage = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          // { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
           {
             label: "Delete",
             onClick: () => alert("Delete"),
@@ -84,7 +84,8 @@ const SiPurchaseOrderDetailPage = () => {
     <div className="">
       <TopBar
         title="Purchase Order Detail Page"
-        detail="lorem ipsum dolor sit amet"
+        showIcon={true}
+        // detail="lorem ipsum dolor sit amet"
       />
 
       <div className="bg-[#F7F7F7] rounded-md mt-4 flex flex-col p-4 gap-y-4">
@@ -144,7 +145,7 @@ const SiPurchaseOrderDetailPage = () => {
 
       <SectionTable
         title="Store Sync Status"
-        description="lorem ipsum dolor sit amet"
+        // description="lorem ipsum dolor sit amet"
         columns={columns}
         data={data}
         action={CustomActionComponent}

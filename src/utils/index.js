@@ -31,3 +31,12 @@ export function formatSessionDateTime({ date, time, timezone, sessionDurationHou
     formattedTimeWithTimezone: `${formattedStartTime} to ${formattedEndTime}${timezoneDisplay}`, // e.g., "12:55 PM to 1:55 PM (Asia/Karachi)"
   };
 }
+
+export function formatDateDMY(dateString) {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "-";
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${day}-${month}-${d.getFullYear()}`;
+}

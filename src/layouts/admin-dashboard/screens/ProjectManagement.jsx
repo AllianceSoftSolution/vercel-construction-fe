@@ -13,6 +13,18 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import DeleteModal from "../../../mui/DeleteModal";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { formatDateDMY } from '../../../utils';
+
+// Function to convert date to YYYY-MM-DD format for HTML date input
+function toDateInputValue(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 const ProjectManagement = () => {
   const navigate = useNavigate();
@@ -23,15 +35,6 @@ const ProjectManagement = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [filter, setFilter] = useState({ "Project Name": [], "Project Code": [] });
 
-  function formatDateToDDMMYYYY(dateInput) {
-    const date = new Date(dateInput);
-    if (isNaN(date)) return "";
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  }
-
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -40,8 +43,11 @@ const ProjectManagement = () => {
         const data = response.data.projects.map((project, index) => ({
           ...project,
           no: index + 1,
-          startDate: formatDateToDDMMYYYY(project.startDate),
-          endDate: formatDateToDDMMYYYY(project.endDate),
+          // Store original dates for editing, formatted dates for display
+          originalStartDate: project.startDate,
+          originalEndDate: project.endDate,
+          startDate: formatDateDMY(project.startDate),
+          endDate: formatDateDMY(project.endDate),
         }));
         setProjects(data);
       } else {
@@ -96,8 +102,18 @@ const ProjectManagement = () => {
         {
           label: "Edit",
           icon: <FaUserEdit />,
-          onClick: () =>
-            navigate(`/admin-dashboard/project-management/edit/${projectId}`),
+          onClick: () => {
+            const project = projects.find(p => p.id === projectId);
+            // Create a project object with properly formatted dates for editing
+            const projectForEdit = {
+              ...project,
+              startDate: toDateInputValue(project.originalStartDate),
+              endDate: toDateInputValue(project.originalEndDate),
+            };
+            navigate(`/admin-dashboard/project-management/addProject`, {
+              state: { project: projectForEdit }
+            });
+          },
         },
         {
           label: "Delete",
@@ -143,13 +159,13 @@ const ProjectManagement = () => {
     <div className="h-full">
       <TopBar
         title="Project Management"
-        detail="Manage all your construction projects in one place."
+        // detail="Manage all your construction projects in one place."
         buttonText="Create Project"
         onButtonClick={() =>
           navigate("/admin-dashboard/project-management/addProject")
         }
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+      <div className="flex justify-end items-center gap-4 mt-8 ">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}

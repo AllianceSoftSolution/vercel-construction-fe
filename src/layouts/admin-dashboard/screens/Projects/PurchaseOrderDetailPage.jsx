@@ -29,11 +29,11 @@ const PurchaseOrderDetailPage = () => {
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "Edit",
-          onClick: () => alert("Edit"),
-          icon: <FaUserEdit />,
-        },
+        // {
+        //   label: "Edit",
+        //   onClick: () => alert("Edit"),
+        //   icon: <FaUserEdit />,
+        // },
         {
           label: "Delete ",
           onClick: () => alert("Delete"),
@@ -89,8 +89,8 @@ const PurchaseOrderDetailPage = () => {
       ) : (
         <>
       <TopBar
-        title="Purchase Order Detail Page"
-        detail="lorem ipsum dolor sit amet"
+        title="Purchase Order Detail "
+        // detail="lorem ipsum dolor sit amet"
       />
 
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
@@ -105,22 +105,22 @@ const PurchaseOrderDetailPage = () => {
               <p className="text-[#444444] font-semibold text-lg md:text-xl">
                 {purchaseOrderData?.referenceNumber || "Order Name Here"}
               </p>
-              <div className="flex flex-wrap gap-2 items-center">
+              {/* <div className="flex flex-wrap gap-2 items-center">
                 <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-sm">
                   {purchaseOrderData?.status || "Partial"}
                 </div>
                 <MdDelete className="text-white bg-[#EF0404] w-10 h-10 p-2 rounded-tl-xl rounded-br-xl cursor-pointer" />
-              </div>
+              </div> */}
             </div>
 
             <div className="border-t border-[#CDCDCD]"></div>
 
             {/* Info Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-              <Info
+              {/* <Info
                 label="Demand ID"
                 value={purchaseOrderData?.demand?.referenceNumber || "-"}
-              />
+              /> */}
               <Info
                 label="Demand Name"
                 value={purchaseOrderData?.demand?.referenceNumber || "-"}
@@ -133,7 +133,7 @@ const PurchaseOrderDetailPage = () => {
                 label="Section"
                 value={purchaseOrderData?.demand?.section?.name || "-"}
               />
-              <Info label="Material" value={purchaseOrderData?.materialId || "-"} />
+              <Info label="Material" value={purchaseOrderData?.material?.name || "-"} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -146,13 +146,13 @@ const PurchaseOrderDetailPage = () => {
                 label="PO Quantity"
                 value={purchaseOrderData?.quantity || "-"}
               />
-              <Info
+              {/* <Info
                 label="Assigned Vendor"
                 value={purchaseOrderData?.vendorId || "-"}
-              />
+              /> */}
               <Info
-                label="Vendor Phone No"
-                value={purchaseOrderData?.vendor?.phone || "-"}
+                label="Vendor Name"
+                value={purchaseOrderData?.vendor?.name || "-"}
               />
             </div>
           </>
@@ -160,7 +160,7 @@ const PurchaseOrderDetailPage = () => {
       </div>
 
       {/* Tables */}
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <h4 className="text-[#444444] font-semibold text-lg md:text-xl">
           Store Sync Status
         </h4>
@@ -178,7 +178,7 @@ const PurchaseOrderDetailPage = () => {
             />
           )}
             </div>
-          </div>
+          </div> */}
         </>
       )}
     </div>

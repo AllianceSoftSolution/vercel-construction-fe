@@ -12,9 +12,70 @@ import Loader from "../../../components/ui/Loader";
 import { FaBoxesStacked, FaHandHoldingHeart } from "react-icons/fa6";
 import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
+import { IconButton, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { formatDateDMY } from '../../../utils';
 
+// Status color mapping for demands and POs
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  CONFIRMED: "#44085c", // purple 
+  REQUEST_SENT: "#707782", // gray
+  default: "#0252AD", // fallback blue
+};
+
+const StatusChip = ({ value }) => {
+  const status = (value || "PENDING").toUpperCase();
+  const color = statusColorMap[status] || statusColorMap.default;
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      size="small"
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+    />
+  );
+};
+
+const ProofOfBillComponent = ({ value }) => {
+  if (!value || value === "-") {
+    return <span>-</span>;
+  }
+  
+  // Check if the value is a valid URL
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  if (isValidUrl(value)) {
+    return (
+      <a
+        href={value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-black hover:text-primary underline cursor-pointer"
+      >
+        View Proof
+      </a>
+    );
+  }
+  
+  return <span>{value}</span>;
+};
 
 function SinteInchargeDashbaord() {
+  const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loadingDemands, setLoadingDemands] = useState(false);
@@ -43,14 +104,16 @@ function SinteInchargeDashbaord() {
   ];
 
   const columns2 = [
-    { headerName: "Ref No", field: "refNo" },
-    { headerName: "Projects", field: "project" },
+    { headerName: "Demand ID", field: "demandId" },
+    { headerName: "Project Name", field: "project" },
     { headerName: "Materials", field: "material" },
     { headerName: "Sections", field: "section" },
     { headerName: "Qty", field: "qty" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "PO Qty", field: "poQty" },
+    { headerName: "Amount(PKR)", field: "amount" },
+    { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Status", field: "status" },
-    { headerName: "CM Name", field: "cmName" },
-    { headerName: "Date", field: "date" },
   ];
 
 
@@ -68,7 +131,7 @@ function SinteInchargeDashbaord() {
           qty: demand.quantity,
           status: demand.status,
           cmName: demand.creator?.name || "-",
-          date: new Date(demand.createdAt).toLocaleDateString(),
+          date: formatDateDMY(demand.createdAt),
         }));
         setDemands(data);
       } else {
@@ -91,14 +154,18 @@ function SinteInchargeDashbaord() {
         // Map the API response to match the columns
         const data = response.data.data.map((po) => ({
           id: po.id,
-          refNo: po.referenceNumber,
-          project: po.demand?.section?.project?.name || po.section?.project?.name || "-",
+          demandId: po.demand?.referenceNumber || "-",
+          project: po.demand?.section?.project?.name || "-",
+          demandName: po.demand?.referenceNumber || "-",
           material: po.material?.name || "-",
-          section: po.section?.name || "-",
-          qty: po.quantity,
-          status: po.status,
-          cmName: po.demand?.creator?.name || "-",
-          date: new Date(po.createdAt).toLocaleDateString(),
+          section: po.demand?.section?.name || "-",
+          qty: po.demand?.quantity || "-",
+          unit: po.demand?.unit || "-",
+          poQty: po.quantity || "-",
+          amount: po.totalAmount ? `${po.totalAmount}` : "-",
+          status: po.status || "-",
+          assingedVendors: po.vendorId || "-",
+          proofOfBill: po.proofOfBill || "-",
         }));
         setPurchaseOrders(data);
       } else {
@@ -120,9 +187,9 @@ function SinteInchargeDashbaord() {
         const summary = response.data.data.summary;
         const charts = response.data.data.charts || {};
         setDashboardStats([
-          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 },
-          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 },
-          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 },
+          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management") },
+          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/demands")},
+          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/pOS")},
           { label: "Assigned Sections", icon: IoStorefrontSharp, count: summary.assignedSections || 0, percentage: 0 },
         ]);
         setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
@@ -147,8 +214,8 @@ function SinteInchargeDashbaord() {
     <div className="px-4 md:px-6 lg:px-8 py-4 w-full">
       <TopBar
         title="Site-Incharge Dashboard"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showExport={true}
       />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -161,10 +228,11 @@ function SinteInchargeDashbaord() {
             className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 lg:last:after:hidden"
           >
             <AnalyticsCard
-              label={item.label}
+              label={item.label}  
               icon={item.icon}
               count={item.count}
               percentage={item.percentage}
+              onClick={item.onClick}
             />
           </div>
         ))}
@@ -184,16 +252,16 @@ function SinteInchargeDashbaord() {
         />
       </div>
 
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <BasicBarChart />
-      </div>
+      </div> */}
 
       <div className="overflow-x-auto mt-8">  
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
         {loadingDemands ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns} data={demands} cellComponents={{}} />
+          <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
         )}
       </div>
       <div className="overflow-x-auto mt-8">
@@ -202,7 +270,14 @@ function SinteInchargeDashbaord() {
         {loadingPurchaseOrders ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns2} data={purchaseOrders} cellComponents={{}} />
+          <SimpleTable 
+            columns={columns2} 
+            data={purchaseOrders} 
+            cellComponents={{ 
+              status: StatusChip, 
+              proofOfBill: ProofOfBillComponent 
+            }} 
+          />
         )}
       </div>
     </div>

@@ -29,11 +29,11 @@ const CmPurchaseOrderDetail = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          {
-            label: "Edit",
-            onClick: () => alert("Edit"),
-            icon: <FaUserEdit />,
-          },
+          // {
+          //   label: "Edit",
+          //   onClick: () => alert("Edit"),
+          //   icon: <FaUserEdit />,
+          // },
           {
             label: "Delete ",
             onClick: () => alert("Delete"),
@@ -84,7 +84,7 @@ const CmPurchaseOrderDetail = () => {
 
   return (
     <div className="p-4">
-      <TopBar title="Purchase Order Detail Page" detail="lorem ipsum dolor sit amet" />
+        <TopBar title="Purchase Order Detail Page" showIcon={true} />
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
           <p className="text-[#444444] font-semibold text-xl">{purchaseOrderData?.referenceNumber || "Order Name Here"}</p>
@@ -110,7 +110,7 @@ const CmPurchaseOrderDetail = () => {
       </div>
       <div className="mt-8">
         <h4 className="text-[#444444] font-semibold text-xl">Store Sync Status</h4>
-        <p className="text-[#979797]">lorem ipsum dolor sit amet </p>
+        {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
         <div className="overflow-x-auto">
           <SimpleTable
             data={[]}
@@ -121,7 +121,7 @@ const CmPurchaseOrderDetail = () => {
       </div>
       <div className="mt-8">
         <h4 className="text-[#444444] font-semibold text-xl">Finance</h4>
-        <p className="text-[#979797]">lorem ipsum dolor sit amet </p>
+        {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
         <div className="overflow-x-auto">
           <SimpleTable
             data={[]}

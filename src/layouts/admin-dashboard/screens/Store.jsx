@@ -24,15 +24,20 @@ const Stores = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
-  const [filter, setFilter] = useState({ Type: [] });
+  const [filter, setFilter] = useState({ Type: [], Project: [], Section: [] });
 
   // Store type filter options
   const typeOptions = [
     { label: "Head Store", value: "HEAD_STORE" },
     { label: "CM Store", value: "CM_STORE" },
   ];
+  // Project and Section filter options
+  const projectOptions = Array.from(new Set(store.map(s => s.section?.project?.name).filter(Boolean))).map(name => ({ label: name, value: name }));
+  const sectionOptions = Array.from(new Set(store.map(s => s.section?.name).filter(Boolean))).map(name => ({ label: name, value: name }));
   const filters = [
     { label: "Type", options: typeOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions.map(o => o.label) },
+    { label: "Section", options: sectionOptions.map(o => o.label) },
   ];
 
   const handleLinkClick = () => {
@@ -58,7 +63,15 @@ const Stores = () => {
           action: store.id,
           ...store,
         }));
-        setStore(data);
+        // Apply frontend filters for project and section
+        let filtered = data;
+        if (filter.Project && filter.Project.length > 0) {
+          filtered = filtered.filter(s => filter.Project.includes(s.section?.project?.name));
+        }
+        if (filter.Section && filter.Section.length > 0) {
+          filtered = filtered.filter(s => filter.Section.includes(s.section?.name));
+        }
+        setStore(filtered);
       } else {
         toast.error("Failed to fetch stores");
       }
@@ -89,7 +102,7 @@ const Stores = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Type: [] });
+  const handleFilterClear = () => setFilter({ Type: [], Project: [], Section: [] });
 
   const CustomActionComponent = ({ value: id }) => {
     return (
@@ -101,24 +114,24 @@ const Stores = () => {
             onClick: () => navigate(`/admin-dashboard/store/${id}`),
             icon: <FaEye />,
           },
-          {
-            label: "Delete ",
-            onClick: () => {
-              setSelectedStoreId(id);
-              setShowDeleteModal(true);
-            },
-            icon: <FaTrash />,
-          },
-          {
-            label: "Assign Store Incharge",
-            onClick: () => handleLinkClick(),
-            icon: <IoPersonCircle />,
-          },
-          {
-            label: "Assign Accountant",
-            onClick: () => handleLinkClick(),
-            icon: <RiAccountBox2Fill />,
-          },
+          // {
+          //   label: "Delete ",
+          //   onClick: () => {
+          //     setSelectedStoreId(id);
+          //     setShowDeleteModal(true);
+          //   },
+          //   icon: <FaTrash />,
+          // },
+          // {
+          //   label: "Assign Store Incharge",
+          //   onClick: () => handleLinkClick(),
+          //   icon: <IoPersonCircle />,
+          // },
+          // {
+          //   label: "Assign Accountant",
+          //   onClick: () => handleLinkClick(),
+          //   icon: <RiAccountBox2Fill />,
+          // },
         ]}
       >
         <IconButton>
@@ -130,8 +143,8 @@ const Stores = () => {
 
   // Store type color mapping (updated for only CM STORE, HEAD STORE, default)
   const typeColorMap = {
-    "CM STORE": "#0ea5e9", // blue
-    "HEAD STORE": "#22c55e", // green
+    "CM_STORE": "#320d4a",
+    "HEAD_STORE": "#e8a113",
     default: "#6b7280", // gray
   };
 
@@ -150,8 +163,9 @@ const Stores = () => {
   const columns = [
     { headerName: "Store Id", field: "storeId" },
     { headerName: "Store Name", field: "name" },
+    { headerName: "Project Name", field: "section.project.name" },
     { headerName: "Type", field: "type" },
-    { headerName: "Section Id", field: "sectionId" },
+    { headerName: "Section Name", field: "section.name" },
     { headerName: "Action", field: "id" },
   ];
 
@@ -159,7 +173,7 @@ const Stores = () => {
     <div className="h-full">
       <TopBar
         title="Stores"
-        detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // buttonText="Add New Store"
         // onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
       />

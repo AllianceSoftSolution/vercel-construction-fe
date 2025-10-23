@@ -14,7 +14,7 @@ import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
-import AddMemberModal from "../users/modals/AddMemberModal";
+import AssignMemberModal from "../../../../components/AssignMemberModal";
 import CustomSelect from "../../../../mui/CustomSelect";
 import MenuItem from "@mui/material/MenuItem";
 import Loader from "../../../../components/ui/Loader";
@@ -34,6 +34,8 @@ const StoreDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedStoreIncharge, setSelectedStoreIncharge] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [openAssignStoreInchargeModal, setOpenAssignStoreInchargeModal] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
 
   const columns = [
@@ -48,17 +50,6 @@ const StoreDetail = () => {
     { headerName: "Status", field: "status" },
   ];
 
-  const data1 = [
-    {
-      id: 1,
-      date: "12-12-25",
-      material: "Cement",
-      type: "issued",
-      qty: "20bags",
-      handledBy: "John Doe",
-      remarks: "For base pour",
-    },
-  ];
 
   const columns1 = [
     { headerName: "Material", field: "material" },
@@ -138,7 +129,7 @@ const StoreDetail = () => {
 
     return (
       <>
-        <DropdownButton
+        {/* <DropdownButton
           className="bg-[#FF0000] font-semibold"
           items={[
             { label: "Stock In", onClick: () => handleOpen("stock-in") },
@@ -148,9 +139,9 @@ const StoreDetail = () => {
           <IconButton>
             <BsThreeDotsVertical />
           </IconButton>
-        </DropdownButton>
+        </DropdownButton> */}
 
-        <Modal
+        {/* <Modal
           open={open}
           onClose={handleClose}
           aria-labelledby="modal-modal-title"
@@ -249,7 +240,7 @@ const StoreDetail = () => {
               </div>
             </div>
           </Box>
-        </Modal>
+        </Modal> */}
       </>
     );
   };
@@ -276,6 +267,32 @@ const StoreDetail = () => {
     if (id) fetchStoreDetail();
   }, [id]);
 
+  // Format text for display (roles, types, etc.)
+  const formatText = (text) => {
+    if (!text) return "-";
+    
+    // Convert text to title case and replace underscores with spaces
+    return text
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Format date to dd-mm-yyyy
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}-${month}-${year}`;
+  };
+
   // Handler for adding and assigning a new Store Incharge
   const handleAddStoreIncharge = async (data) => {
     try {
@@ -299,91 +316,171 @@ const StoreDetail = () => {
     }
   };
 
+ 
+  const fetchStoreInchargeUsers = async () => {
+    try {
+      // Use sectionId instead of projectId for fetching store incharge users
+      const sectionId = storeData?.sectionId || storeData?.section?.id;
+      const response = await apiClient.get(`/assignments/users-by-role`, {
+        role: "STORE_INCHARGE",
+        sectionId: sectionId,
+      });
+      if (response.ok && response.data?.users) {
+        return response.data.users;
+      }
+      return [];
+    } catch (e) {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  const createStoreInchargeUser = async (userData) => {
+    try {
+      const response = await apiClient.post(`/auth/register`, {
+        ...userData,
+        role: "STORE_INCHARGE",
+      });
+      if (response.ok && response.data?.user) {
+        toast.success("User created successfully");
+        return response.data.user;
+      }
+      toast.error(response.data?.message || "Failed to create user");
+      return null;
+    } catch (e) {
+      toast.error("Failed to create user");
+      return null;
+    }
+  };
+
+  const handleAssignStoreInchargeGeneric = async ({ userId }) => {
+    try {
+      setModalLoading(true);
+      const response = await apiClient.post(`/assignments/store-incharge`, {
+        userId,
+        storeId: id,
+      });
+      if (response.ok) {
+        toast.success("Store Incharge assigned successfully!");
+        fetchStoreDetail();
+        setOpenAssignStoreInchargeModal(false);
+        return true;
+      } else {
+        toast.error(
+          response.data?.message || "Failed to assign Store Incharge"
+        );
+        return false;
+      }
+    } catch (e) {
+      toast.error("Failed to assign Store Incharge");
+      return false;
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   return (
     <>
-    {loading ? (
+      {loading ? (
         <Loader />
       ) : (
         <>
-      <TopBar
-        title="Store Detail"
-        detail="lorem ipsum dolor sit amet"
-        showExport={true}
-        // buttonText="Add Store"
-      />
-      <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
-        <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
-          <p className="text-[#444444] font-semibold text-lg md:text-xl">
-            {storeData?.name || "Order Name Here"}
-          </p>
-          <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
+          <TopBar
+            title="Store Detail"
+            showIcon={true}
+          // detail="lorem ipsum dolor sit amet"
+          // showExport={true}
+          // buttonText="Add Store"
+          />
+          <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
+            <div className="flex flex-col md:flex-row md:justify-between gap-y-2">
+              <p className="text-[#444444] font-semibold text-lg md:text-xl">
+                {storeData?.name || "Order Name Here"}
+              </p>
+              {/* <div className="flex items-center justify-between sm:flex-row gap-2  sm:items-center">
             <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
               IN-STORE
             </div>
             <CustomActionComponent />
+          </div> */}
+            </div>
+
+            <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
+
+            <div className="flex justify-between gap-x-4 flex-wrap">
+              {/* <InfoRow label="Store ID:" value={storeData?.id || "-"} /> */}
+              <InfoRow label="Store Name:" value={storeData?.name || "-"} />
+              <InfoRow
+                label="Project:"
+                value={storeData?.section?.project?.name || "-"}
+              />
+              <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
+              <InfoRow
+                label="Material:"
+                value={storeData?.inventory?.[0]?.material || "N/A"}
+              />{" "}
+              <InfoRow
+                label="Store Incharge:"
+                value={storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"}
+              />
+            </div>
           </div>
-        </div>
-
-        <div className="h-[1px] bg-[#CDCDCD] w-full "></div>
-
-        <div className="flex justify-between gap-x-4 flex-wrap">
-          <InfoRow label="Store ID:" value={storeData?.id || "-"} />
-          <InfoRow label="Store Name:" value={storeData?.name || "-"} />
-          <InfoRow
-            label="Project:"
-            value={storeData?.section?.name?.split(" of ")[1] || "-"}
-          />
-          <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
-          <InfoRow
-            label="Material:"
-            value={storeData?.inventory?.[0]?.material || "N/A"}
+          {/* Head Store Table */}
+          <div className="mt-10">
+          <TopBar
+            title="Store Incharge "
+            buttonText="Add Store Incharge"
+            onButtonClick={() => setOpenAssignStoreInchargeModal(true)}
+            />
+                     <SimpleTable
+             data={(storeData?.storeInchargeAssignments || []).map(a => ({
+               id: a.id,
+               userName: a.user?.name || "-",
+               email: a.user?.email || "-",
+               role: formatText(a.user?.role) || "Store Incharge",
+               createdAt: formatDate(a.createdAt),
+             }))}
+             columns={[
+              //  { headerName: "Assignment ID", field: "id" },
+               { headerName: "Store Incharge Name", field: "userName" },
+               { headerName: "Email", field: "email" },
+               { headerName: "Role", field: "role" },
+               { headerName: "Assigned At", field: "createdAt" },
+             ]}
+             cellComponents={{}}
+           />
+          </div>
+        
+          {/* Inventory Table */}
+          <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
+          {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
+          <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
+          <SimpleTable
+            data={storeData?.inventory || []}
+            columns={columns}
+            cellComponents={{}} />{" "}
+          {/* Stock Movement Table */}
+          <h4 className="mt-8 text-[#444444] font-semibold text-xl">
+            Stock Movement History
+          </h4>
+          {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
+          <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
+          <SimpleTable
+            data={storeData?.transactions || []}
+            columns={columns1}
+            cellComponents={{}}
           />{" "}
-          <InfoRow
-            label="Store Incharge:"
-            value={storeData?.storeInchargeAssignments?.[0]?.user?.name || "N/A"}
-          />
-        </div>
-      </div>
-      {/* Head Store Table */}
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Head Store Assignments</h4>
-      <SimpleTable
-        data={(storeData?.storeInchargeAssignments || []).map(a => ({
-          id: a.id,
-          userName: a.user?.name || "-",
-          email: a.user?.email || "-",
-          role: a.user?.role || "-",
-          createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
-        }))}
-        columns={[
-          { headerName: "Assignment ID", field: "id" },
-          { headerName: "Store Incharge Name", field: "userName" },
-          { headerName: "Email", field: "email" },
-          { headerName: "Role", field: "role" },
-          { headerName: "Assigned At", field: "createdAt" },
-        ]}
-        cellComponents={{}}
-      />
-      {/* Inventory Table */}
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
-      <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable
-       data={storeData?.inventory || []} 
-      columns={columns} 
-      cellComponents={{}} />{" "}
-      {/* Stock Movement Table */}
-      <h4 className="mt-8 text-[#444444] font-semibold text-xl">
-        Stock Movement History
-      </h4>
-      <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
-      <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable
-        data={storeData?.transactions || []}
-        columns={columns1}
-        cellComponents={{}}
-      />{" "}
-      </>
+        </>
       )}
+
+      <AssignMemberModal
+        role="Store Incharge"
+        open={openAssignStoreInchargeModal}
+        onClose={() => setOpenAssignStoreInchargeModal(false)}
+        fetchUsers={fetchStoreInchargeUsers}
+        createUser={createStoreInchargeUser}
+        onAssign={handleAssignStoreInchargeGeneric}
+      />
     </>
   );
 };

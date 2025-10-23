@@ -11,6 +11,8 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import DeleteModal from "../../../mui/DeleteModal";
+import { formatDateDMY } from '../../../utils';
 
 // Status color mapping
 const statusColorMap = {
@@ -20,6 +22,7 @@ const statusColorMap = {
   PARTIALLY_APPROVED: "#eab308", // yellow
   PO_CREATED: "#8b5cf6", // purple
   FULFILLED: "#0ea5e9", // blue
+  PARTIALLY_PO_CREATED: "#23420b",
   default: "#0252AD", // fallback blue
 };
 
@@ -35,11 +38,37 @@ const StatusChip = ({ value }) => {
   );
 };
 
+// Date and time formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "-";
+  
+  // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  return `${day} ${month} ${year}, ${time}`;
+};
+
+// Date component for table
+const DateComponent = ({ value }) => {
+  return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+};
+
 const Demands = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
-  const [filter, setFilter] = useState({ Status: [] });
+  const [allDemands, setAllDemands] = useState([]); // Store all demands for filter options
+  const [filter, setFilter] = useState({ Status: [], Project: [] });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDemandId, setSelectedDemandId] = useState(null);
 
   // Status options
   const statusOptions = [
@@ -54,17 +83,21 @@ const Demands = () => {
     { label: "In Store", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
   ];
+  // Get unique project names from all demands (not filtered)
+  const projectOptions = [...new Set(allDemands.map(demand => demand.section?.projectName).filter(Boolean))];
+  
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions },
   ];
 
   const columns = [
-    { headerName: "Id", field: "id" },
+    { headerName: "Id", field: "referenceNumber" },
     { headerName: "Material", field: "material.name" },
     { headerName: "Unit", field: "unit" },
     { headerName: "Qty", field: "quantity" },
     { headerName: "Date", field: "createdAt" },
-    { headerName: "Fulfilled", field: "fulfilled" },
+    // { headerName: "Fulfilled", field: "fulfilled" },
     { headerName: "Created By", field: "creator.name" },
     { headerName: "Project", field: "section.projectName" },
     { headerName: "Section", field: "section.name" },
@@ -72,19 +105,43 @@ const Demands = () => {
     { headerName: "Action", field: "demandId" },
   ];
 
-  // Fetch demands with status filter
+  // Fetch all demands for filter options
+  const fetchAllDemands = async () => {
+    try {
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          ...demand,
+          demandId: demand.id,
+          id: index + 1,
+        }));
+        setAllDemands(data);
+      }
+    } catch (error) {
+      console.error("Error fetching all demands:", error);
+    }
+  };
+
+  // Fetch all demands and apply filters on frontend
   const fetchDemands = async () => {
     try {
       setLoading(true);
       let url = "/demands";
+      const queryParams = [];
+      
       if (filter.Status && filter.Status.length > 0) {
         const backendStatus = filter.Status.map(
           label => statusOptions.find(o => o.label === label)?.value
         ).filter(Boolean);
         if (backendStatus.length > 0) {
-          url += `?status=${encodeURIComponent(backendStatus.join(","))}`;
+          queryParams.push(`status=${encodeURIComponent(backendStatus.join(","))}`);
         }
       }
+      
+      if (queryParams.length > 0) {
+        url += `?${queryParams.join("&")}`;
+      }
+      
       const response = await apiClient.get(url);
       if (response.ok) {
         const data = response.data.demands.map((demand, index) => ({
@@ -92,7 +149,16 @@ const Demands = () => {
           demandId: demand.id,
           id: index + 1,
         }));
-        setDemands(data);
+        
+        // Apply project filter on frontend
+        let filteredData = data;
+        if (filter.Project && filter.Project.length > 0) {
+          filteredData = data.filter(demand => 
+            filter.Project.includes(demand.section?.projectName)
+          );
+        }
+        
+        setDemands(filteredData);
       } else {
         toast.error("Failed to fetch Demands");
       }
@@ -105,14 +171,33 @@ const Demands = () => {
   };
 
   useEffect(() => {
+    fetchAllDemands();
+  }, []);
+
+  useEffect(() => {
     fetchDemands();
     // eslint-disable-next-line
   }, [filter]);
 
+  const deleteDemand = async () => {
+    try {
+      const response = await apiClient.delete(`/demands/${selectedDemandId}`);
+      if (response.ok) {
+        fetchDemands();
+        setShowDeleteModal(false);
+        toast.success("Demand deleted successfully");
+      } else {
+        toast.error(response.data?.message || "Failed to delete demand");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -130,16 +215,8 @@ const Demands = () => {
             },
             icon: <FaEye />,
           },
-          {
-            label: "Edit",
-            onClick: () => alert("Edit"),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: "Delete ",
-            onClick: () => alert("Delete"),
-            icon: <FaTrash />,
-          },
+         
+        
         ]}
       >
         <IconButton>
@@ -153,7 +230,6 @@ const Demands = () => {
     <div className=" h-full ">
       <TopBar
         title="Demands"
-        detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
       />
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
@@ -161,7 +237,7 @@ const Demands = () => {
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by status"
+          placeholder="Filter by status or project"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
@@ -173,12 +249,23 @@ const Demands = () => {
           <SimpleTable
             columns={columns}
             data={demands}
-            cellComponents={{ demandId: CustomActionComponent, status: StatusChip }}
+            cellComponents={{ 
+              demandId: CustomActionComponent, 
+              status: StatusChip,
+              createdAt: DateComponent 
+            }}
           />
         )}
       </div>
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={deleteDemand}
+        />
+      )}
     </div>
   );
 };
 
 export default Demands;
+
