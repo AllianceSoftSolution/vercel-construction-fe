@@ -40,3 +40,20 @@ export function formatDateDMY(dateString) {
   const month = String(d.getMonth() + 1).padStart(2, "0");
   return `${day}-${month}-${d.getFullYear()}`;
 }
+
+export function formatToK(num) {
+  // Handle cases where the input is null, undefined, or not a valid number
+  if (num == null || isNaN(num)) {
+    return "0"; // Return "0" for invalid inputs
+  }
+
+  if (num >= 1_000_000) {
+    // If number is greater than or equal to 1 million, format in millions (M)
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  } else if (num >= 1_000) {
+    // If number is greater than or equal to 1 thousand, format in thousands (K)
+    return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  }
+
+  return num?.toString(); // Return the number as a string if it's less than 1000
+}

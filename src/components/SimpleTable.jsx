@@ -23,7 +23,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
     whiteSpace: "nowrap",
     backgroundColor: "#EBEBEB",
     border: "1px solid #EBEBEB",
-    border: "rounded",
+    borderRadius: "7px",
     "&:first-of-type": {
       borderTopLeftRadius: "7px",
       borderBottomLeftRadius: "7px",
@@ -36,7 +36,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   "& .MuiTableRow-root": {
     backgroundColor: "transparent",
     border: "1px solid #ccc",
-    border: "rounded",
+    borderRadius: "7px",
   },
   "& .MuiTableCell-root": {
     // borderBottom: "none", // remove default bottom border on cells if needed

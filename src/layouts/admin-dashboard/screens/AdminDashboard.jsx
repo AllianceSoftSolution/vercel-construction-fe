@@ -33,11 +33,8 @@ const statusColorMap = {
   PARTIALLY_APPROVED: "#eab308", // yellow
   PO_CREATED: "#8b5cf6", // purple
   FULFILLED: "#0ea5e9", // blue
-  // default: "#0252AD", // fallback blue
   COMPLETED: "#22c55e", // green
   PARTIAL: "#eab308", // yellow
-  PENDING: "#f59e42", // orange
-  REJECTED: "#ef4444", // red
   CONFIRMED: "#7a0b4a",
   default: "#0252AD", // fallback blue
 };
