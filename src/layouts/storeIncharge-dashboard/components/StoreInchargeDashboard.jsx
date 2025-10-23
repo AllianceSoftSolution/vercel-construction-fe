@@ -19,6 +19,7 @@ import  apiClient  from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { formatToK } from '../../../utils';
 
 function StoreInchargeDashboard() {
   const navigate = useNavigate();
@@ -52,11 +53,11 @@ function StoreInchargeDashboard() {
       if (response.ok && response.data?.data?.summary) {
         const summary = response.data.data.summary;
         setProjectStats([
-          { label: "Total Stores", icon: IoStorefrontSharp, count: summary.totalStores || 0, percentage: 0 , onClick: () => navigate("/store-incharge-dashboard/store")},
-          { label: "Total Materials", icon: FaToolbox, count: summary.totalMaterials || 0, percentage: 0 },
-          { label: "Total Stock", icon: FaBoxesStacked, count: summary.totalStock || 0, percentage: 0 },
-          { label: "Total Reserved", icon: FaHandHoldingHeart, count: summary.totalReserved || 0, percentage: 0 },
-          { label: "Assigned Sections", icon: IoStorefrontSharp, count: summary.assignedSections || 0, percentage: 0 },
+          { label: "Total Stores", icon: IoStorefrontSharp, count: formatToK(summary.totalStores || 0), percentage: 0 , onClick: () => navigate("/store-incharge-dashboard/store")},
+          { label: "Total Materials", icon: FaToolbox, count: formatToK(summary.totalMaterials || 0), percentage: 0 },
+          { label: "Total Stock", icon: FaBoxesStacked, count: formatToK(summary.totalStock || 0), percentage: 0 },
+          { label: "Total Reserved", icon: FaHandHoldingHeart, count: formatToK(summary.totalReserved || 0), percentage: 0 },
+          { label: "Assigned Sections", icon: IoStorefrontSharp, count: formatToK(summary.assignedSections || 0), percentage: 0 },
         ]);
       } else {
         toast.error("Failed to fetch analytics data");

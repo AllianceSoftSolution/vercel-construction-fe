@@ -11,7 +11,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { formatDateDMY } from '../../../utils';
+import { formatDateDMY, formatToK } from '../../../utils';
 
 function AccountantDashboard() {
   const navigate = useNavigate();
@@ -74,11 +74,11 @@ function AccountantDashboard() {
       if (response.ok && response.data?.data?.summary) {
         const summary = response.data.data.summary;
         setAnalyticsData([
-          { label: "Total Vendors", icon: FaBoxesStacked, count: summary.totalVendors || 0, percentage: 0 },
-          { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: summary.totalAmountSpent || 0, percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
-          { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: summary.totalAmountPending || 0, percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
-          { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: summary.totalAmountPaid || 0, percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
-          { label: "Assigned Sections", icon: FaBoxesStacked, count: summary.assignedSections || 0, percentage: 0 },
+          { label: "Total Vendors", icon: FaBoxesStacked, count: formatToK(summary.totalVendors || 0), percentage: 0 },
+          { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: formatToK(summary.totalAmountSpent || 0), percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
+          { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: formatToK(summary.totalAmountPending || 0), percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
+          { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: formatToK(summary.totalAmountPaid || 0), percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
+          { label: "Assigned Sections", icon: FaBoxesStacked, count: formatToK(summary.assignedSections || 0), percentage: 0 },
         ]);
         setTopVendorAccounts(response.data.data.topVendorAccounts || []);
       } else {

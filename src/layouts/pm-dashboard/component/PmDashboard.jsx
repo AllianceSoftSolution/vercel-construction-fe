@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { formatDateDMY } from '../../../utils';
+import { formatDateDMY, formatToK } from '../../../utils';
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -75,9 +75,9 @@ function PmDashboard() {
         const summary = response.data.data.summary;
         const charts = response.data.data.charts || {};
         setAnalyticsData([
-          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/project-management")},
-          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/demands")},
-          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 , onClick: () => navigate("/project-manager-dashboard/pOS")},
+          { label: "Total Projects", icon: FaBoxesStacked, count: formatToK(summary.totalProjects || 0), percentage: 0 , onClick: () => navigate("/project-manager-dashboard/project-management")},
+          { label: "Total Demands", icon: FaHandHoldingHeart, count: formatToK(summary.totalDemands || 0), percentage: 0 , onClick: () => navigate("/project-manager-dashboard/demands")},
+          { label: "Total POs Created", icon: FaHandHoldingHeart, count: formatToK(summary.totalPOsCreated || 0), percentage: 0 , onClick: () => navigate("/project-manager-dashboard/pOS")},
         ]);
         setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
         setAmountByVendor(charts.amountByVendor || []);

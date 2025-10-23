@@ -4,7 +4,7 @@ import { store } from "../redux/store";
 // const baseURL = "https://app.rustumdynamic.com/api/";
 const baseURL = "/api/";
 
-// const baseURL = "http://192.168.1.16:5000/api/";  
+// const baseURL = "http://127.0.0.1:5000/api/";  
 // const baseURL = "http://radc-be-env.eba-emmvfm8c.eu-north-1.elasticbeanstalk.com/api/";
 
 const apiClient = create({

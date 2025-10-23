@@ -23,6 +23,7 @@ import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
 import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { formatToK } from '../../../utils';
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -177,7 +178,7 @@ function AdminDashboard() {
           {
             label: "Total Projects",
             icon: FaBoxesStacked,
-            count: summary.totalProjects || 0,
+            count: formatToK(summary.totalProjects || 0),
             percentage: 0,
             onClick: () => {
               navigate("/admin-dashboard/project-management");
@@ -186,7 +187,7 @@ function AdminDashboard() {
           {
             label: "Total Demands",
             icon: FaHandHoldingHeart,
-            count: summary.totalDemands || 0,
+            count: formatToK(summary.totalDemands || 0),
             percentage: 0,
             onClick: () => {
               navigate("/admin-dashboard/demands");
@@ -195,7 +196,7 @@ function AdminDashboard() {
           {
             label: "Total POs Created",
             icon: NewReleasesOutlined,
-            count: summary.totalPOsCreated || 0,
+            count: formatToK(summary.totalPOsCreated || 0),
             percentage: 0,
             onClick: () => {
               navigate("/admin-dashboard/pOS");
@@ -204,7 +205,7 @@ function AdminDashboard() {
           {
             label: "Total Amount Paid",
             icon: NewspaperOutlined,
-            count: summary.totalAmountPaid || 0,
+            count: formatToK(summary.totalAmountPaid || 0),
             percentage: 0,
             onClick: () => {
               navigate("/admin-dashboard/payables");
@@ -213,7 +214,7 @@ function AdminDashboard() {
           {
             label: "Pending Amount",
             icon: CachedSharp,
-            count: summary.totalAmountPending || 0,
+            count: formatToK(summary.totalAmountPending || 0),
             percentage: 0,
             onClick: () => {
               navigate("/admin-dashboard/payables");
@@ -222,7 +223,7 @@ function AdminDashboard() {
           {
             label: "Amount Spent",
             icon: NewspaperOutlined,
-            count: summary.totalAmountSpent || 0,
+            count: formatToK(summary.totalAmountSpent || 0),
             percentage: 0,
             onClick: () => {
               navigate("/admin-dashboard/payables");

@@ -14,7 +14,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { formatDateDMY } from '../../../utils';
+import { formatDateDMY, formatToK } from '../../../utils';
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -187,10 +187,10 @@ function SinteInchargeDashbaord() {
         const summary = response.data.data.summary;
         const charts = response.data.data.charts || {};
         setDashboardStats([
-          { label: "Total Projects", icon: FaBoxesStacked, count: summary.totalProjects || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management") },
-          { label: "Total Demands", icon: FaHandHoldingHeart, count: summary.totalDemands || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/demands")},
-          { label: "Total POs Created", icon: FaHandHoldingHeart, count: summary.totalPOsCreated || 0, percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/pOS")},
-          { label: "Assigned Sections", icon: IoStorefrontSharp, count: summary.assignedSections || 0, percentage: 0 },
+          { label: "Total Projects", icon: FaBoxesStacked, count: formatToK(summary.totalProjects || 0), percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/project-management") },
+          { label: "Total Demands", icon: FaHandHoldingHeart, count: formatToK(summary.totalDemands || 0), percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/demands")},
+          { label: "Total POs Created", icon: FaHandHoldingHeart, count: formatToK(summary.totalPOsCreated || 0), percentage: 0 , onClick: () => navigate("/siteincharge-dashboard/pOS")},
+          { label: "Assigned Sections", icon: IoStorefrontSharp, count: formatToK(summary.assignedSections || 0), percentage: 0 },
         ]);
         setDemandBreakdown((charts.demandBreakdown || []).map((item) => ({ label: item.status, value: item.count })));
         setPoDistributionByVendor(charts.poDistributionByVendor || []);

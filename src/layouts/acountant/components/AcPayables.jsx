@@ -186,6 +186,7 @@ const AccPayables = () => {
   const [loading, setLoading] = useState(false);
   const [vendorAccounts, setVendorAccounts] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [purchaseOrdersWithAmount, setPurchaseOrdersWithAmount] = useState([]);
   const [payablesSummary, setPayablesSummary] = useState({
     totalVendors: 0,
     totalCredited: 0,
@@ -334,6 +335,7 @@ const AccPayables = () => {
     { headerName: "Material", field: "material" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
+    { headerName: "Unit Price", field: "unitPrice" },
     { headerName: "Amount (PKR)", field: "amount" },
     { headerName: "Status", field: "status" },
     { headerName: "Action", field: "id" },
@@ -398,6 +400,7 @@ const AccPayables = () => {
             material: po.material?.name || "-", // Material name for display
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
+            unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
             amount: po.totalAmount ? `${po.totalAmount.toLocaleString()}` : "-",
             status: po.status || "-",
             // Complete PO data for modal
@@ -413,6 +416,43 @@ const AccPayables = () => {
     } catch (error) {
       console.error("Error fetching purchase orders:", error);
       toast.error("Error fetching purchase orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPurchaseOrdersWithAmount = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/purchase-orders?hasAmount=true");
+      if (response.ok) {
+        const data = response.data.data.map((po, index) => {
+          // Create rowData with all PO data and display fields
+          const rowData = {
+            // Display fields for table
+            id: po.id,
+            no: index + 1,
+            poReference: po.referenceNumber || po.id || "-",
+            project: po.demand?.section?.project?.name || "-",
+            material: po.material?.name || "-", // Material name for display
+            quantity: po.quantity || "-",
+            unit: po.demand?.unit || "-",
+            unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
+            amount: po.totalAmount ? `${po.totalAmount.toLocaleString()}` : "-",
+            status: po.status || "-",
+            // Complete PO data for modal
+            poData: po // Store complete PO data separately
+          };
+          return rowData;
+        });
+        console.log("Mapped purchase orders with amount data:", data); // Debug log
+        setPurchaseOrdersWithAmount(data);
+      } else {
+        toast.error("Failed to fetch purchase orders with amounts");
+      }
+    } catch (error) {
+      console.error("Error fetching purchase orders with amounts:", error);
+      toast.error("Error fetching purchase orders with amounts");
     } finally {
       setLoading(false);
     }
@@ -447,6 +487,7 @@ const AccPayables = () => {
 
   useEffect(() => {
     fetchNewPurchaseOrders();
+    fetchPurchaseOrdersWithAmount();
   }, []);
 
   // ActionComforRegPOs component with access to fetchNewPurchaseOrders
@@ -457,8 +498,9 @@ const AccPayables = () => {
 
 
     const handleSuccess = () => {
-      // Refresh the purchase orders list
+      // Refresh both purchase orders lists
       fetchNewPurchaseOrders();
+      fetchPurchaseOrdersWithAmount();
     };
 
     return (
@@ -595,6 +637,26 @@ const AccPayables = () => {
               data={filteredPurchaseOrders}
               cellComponents={{
                 id: ActionComforRegPOs,
+                status: StatusChip
+              }}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Purchase Orders with Amounts */}
+      <div className="mt-10">
+        <h1 className="text-xl md:text-2xl font-bold mb-5">
+          Purchase Orders with Amounts
+        </h1>
+        <div className="overflow-x-auto">
+          {loading ? (
+            <Loader />
+          ) : (
+            <SimpleTable
+              columns={purchaseOrderColumns}
+              data={purchaseOrdersWithAmount}
+              cellComponents={{
                 status: StatusChip
               }}
             />

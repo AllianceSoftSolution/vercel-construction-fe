@@ -375,7 +375,7 @@ const CmDashboardLayout = ({ role }) => {
 
         {/* {isMenuOpen && (
           <div className="lg:hidden flex flex-col gap-3 px-4 pb-4 border-b bg-white">
-            {/* <div className="relative">
+            <div className="relative">
               <input
                 type="text"
                 placeholder="Search..."
@@ -384,11 +384,11 @@ const CmDashboardLayout = ({ role }) => {
               <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white p-2 rounded-full cursor-pointer">
                 <FaSearch className="text-sm" />
               </div>
-            </div> */}
+            </div>
 
             <div className="flex gap-3">
               <IoMdNotifications className="w-8 h-8 rounded-full border border-gray-300 text-gray-400 p-1.5" />
-              {/* <IoMdSettings className="w-8 h-8 rounded-full border border-gray-300 text-gray-400 p-1.5" /> */}
+              <IoMdSettings className="w-8 h-8 rounded-full border border-gray-300 text-gray-400 p-1.5" />
             </div>
 
             <div className="flex items-center justify-between">
