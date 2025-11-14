@@ -64,7 +64,8 @@ const PmDemands = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
-  const [filter, setFilter] = useState({ Status: [] });
+  const [allDemands, setAllDemands] = useState([]); // Store all demands for filter options
+  const [filter, setFilter] = useState({ Status: [], Section: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
 
@@ -81,8 +82,12 @@ const PmDemands = () => {
     { label: "In Store", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
   ];
+  // Get unique section names from all demands (not filtered)
+  const sectionOptions = [...new Set(allDemands.map(demand => demand.section?.name).filter(Boolean))];
+  
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
+    { label: "Section", options: sectionOptions },
   ];
 
   const columns = [
@@ -99,7 +104,24 @@ const PmDemands = () => {
     { headerName: "Action", field: "demandId" },
   ];
 
-  // Fetch demands with status filter
+  // Fetch all demands for filter options
+  const fetchAllDemands = async () => {
+    try {
+      const response = await apiClient.get("/demands");
+      if (response.ok) {
+        const data = response.data.demands.map((demand, index) => ({
+          ...demand,
+          demandId: demand.id,
+          id: index + 1,
+        }));
+        setAllDemands(data);
+      }
+    } catch (error) {
+      console.error("Error fetching all demands:", error);
+    }
+  };
+
+  // Fetch demands with status and section filters
   const fetchDemands = async () => {
     try {
       setLoading(true);
@@ -119,7 +141,16 @@ const PmDemands = () => {
           demandId: demand.id,
           id: index + 1,
         }));
-        setDemands(data);
+        
+        // Apply section filter on frontend
+        let filteredData = data;
+        if (filter.Section && filter.Section.length > 0) {
+          filteredData = data.filter(demand => 
+            filter.Section.includes(demand.section?.name)
+          );
+        }
+        
+        setDemands(filteredData);
       } else {
         toast.error("Failed to fetch Demands");
       }
@@ -132,6 +163,10 @@ const PmDemands = () => {
   };
 
   useEffect(() => {
+    fetchAllDemands();
+  }, []);
+
+  useEffect(() => {
     fetchDemands();
     // eslint-disable-next-line
   }, [filter]);
@@ -141,7 +176,7 @@ const PmDemands = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Section: [] });
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (

@@ -61,7 +61,17 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const GroupedProjectSectionBarChart = ({ apiData, height = 400 }) => {
-  const { data, sectionKeys } = transformPaymentsData(apiData || []);
+  // Safety check for undefined or null apiData
+  if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+    return (
+      <div className="w-full border-2 mt-5 rounded-lg p-4 sm:p-5">
+        <h3 className="text-lg font-semibold mb-2">Payments by Project & Section</h3>
+        <p className="text-gray-500 text-center py-8">No data available</p>
+      </div>
+    );
+  }
+
+  const { data, sectionKeys } = transformPaymentsData(apiData);
   // Generate color palette for sections
   const colorScale = chroma.scale(["#5A51E7", "#FDBA74", "#EF4444", "#22c55e", "#0ea5e9", "#8b5cf6", "#eab308", "#7a0b4a"]).colors(sectionKeys.length);
 

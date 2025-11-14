@@ -31,6 +31,8 @@ const style = {
 const paymentColumns = [
   { headerName: "Date", field: "date" },
   { headerName: "Description", field: "description" },
+  { headerName: "Project", field: "project" },
+  { headerName: "Section", field: "section" },
   { headerName: "Type", field: "type" },
   { headerName: "Amount", field: "amount" },
   // { headerName: "Balance", field: "balance" },
@@ -228,6 +230,8 @@ export default function AcPayableDetails() {
           id: transaction.id,
           date: formatDateDMY(transaction.createdAt),
           description: transaction.note || transaction.type,
+          project: transaction.purchaseOrder?.section?.project?.name || "-",
+          section: transaction.purchaseOrder?.section?.name || "-",
           type: transaction.type,
           amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()} PKR` : "-",
           proof: transaction.proofOfPayment,

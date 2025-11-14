@@ -322,7 +322,10 @@ const getRoutesByRole = (role) => {
 
 const App = () => {
   // alert(role )
-  const role = useSelector((state) => state?.auth?.user?.role);
+  const role = useSelector((state) => {
+    if (!state || !state.auth) return null;
+    return state.auth.user?.role;
+  });
 
   // const role = 'AD';
   const routes = getRoutesByRole(role || "");

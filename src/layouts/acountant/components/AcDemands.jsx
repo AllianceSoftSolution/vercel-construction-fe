@@ -13,6 +13,7 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { formatDateDMY } from '../../../utils';
+import { useSelector } from "react-redux";
 
 // Status color mapping
 const statusColorMap = {
@@ -65,9 +66,18 @@ const Demands = () => {
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
   const [allDemands, setAllDemands] = useState([]); // Store all demands for filter options
-  const [filter, setFilter] = useState({ Status: [], Project: [] });
+  const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
+  const [globalProjectFilter, setGlobalProjectFilter] = useState({ Project: [] });
+  const [projects, setProjects] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
+  
+  // Get user from Redux to check if head accountant
+  const user = useSelector((state) => {
+    if (!state || !state.auth) return null;
+    return state.auth.user;
+  });
+  const isHeadAccountant = user?.isHead === true;
 
   // Status options
   const statusOptions = [
@@ -84,10 +94,13 @@ const Demands = () => {
   ];
   // Get unique project names from all demands (not filtered)
   const projectOptions = [...new Set(allDemands.map(demand => demand.section?.projectName).filter(Boolean))];
+  // Get unique section names from all demands (not filtered)
+  const sectionOptions = [...new Set(allDemands.map(demand => demand.section?.name).filter(Boolean))];
   
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
     { label: "Project", options: projectOptions },
+    { label: "Section", options: sectionOptions },
   ];
 
   const columns = [
@@ -149,11 +162,22 @@ const Demands = () => {
           id: index + 1,
         }));
         
-        // Apply project filter on frontend
+        // Apply project, section, and global project filters on frontend
         let filteredData = data;
         if (filter.Project && filter.Project.length > 0) {
-          filteredData = data.filter(demand => 
+          filteredData = filteredData.filter(demand => 
             filter.Project.includes(demand.section?.projectName)
+          );
+        }
+        if (filter.Section && filter.Section.length > 0) {
+          filteredData = filteredData.filter(demand => 
+            filter.Section.includes(demand.section?.name)
+          );
+        }
+        // Apply global project filter (for head accountants)
+        if (isHeadAccountant && globalProjectFilter.Project && globalProjectFilter.Project.length > 0) {
+          filteredData = filteredData.filter(demand => 
+            globalProjectFilter.Project.includes(demand.section?.projectName)
           );
         }
         
@@ -169,6 +193,23 @@ const Demands = () => {
     }
   };
 
+  // Fetch projects for global filter
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await apiClient.get("/projects");
+        if (response.ok) {
+          setProjects(response.data.projects || []);
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    if (isHeadAccountant) {
+      fetchProjects();
+    }
+  }, [isHeadAccountant]);
+
   useEffect(() => {
     fetchAllDemands();
   }, []);
@@ -176,7 +217,7 @@ const Demands = () => {
   useEffect(() => {
     fetchDemands();
     // eslint-disable-next-line
-  }, [filter]);
+  }, [filter, globalProjectFilter]);
 
   const deleteDemand = async () => {
     try {
@@ -196,7 +237,20 @@ const Demands = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
+
+  const globalProjectOptions = projects.map((p) => ({ label: p.name, value: p.id }));
+  const globalProjectFilters = [
+    { label: "Project", options: globalProjectOptions.map(o => o.label) },
+  ];
+
+  const handleGlobalProjectFilterChange = (newSelected) => {
+    setGlobalProjectFilter(newSelected);
+  };
+
+  const handleGlobalProjectFilterClear = () => {
+    setGlobalProjectFilter({ Project: [] });
+  };
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -227,16 +281,30 @@ const Demands = () => {
 
   return (
     <div className=" h-full ">
-      <TopBar
-        title="Demands"
-      />
+      <div className="flex justify-between items-center">
+        <TopBar
+          title="Demands"
+        />
+        {isHeadAccountant && (
+          <div className="flex items-center gap-4">
+            <CustomFilterDropdown
+              filters={globalProjectFilters}
+              selected={globalProjectFilter}
+              onChange={handleGlobalProjectFilterChange}
+              onClear={handleGlobalProjectFilterClear}
+              placeholder="Filter by project"
+              dropdownAlign="right"
+            />
+          </div>
+        )}
+      </div>
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by status or project"
+          placeholder="Filter by status, project, or section"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}

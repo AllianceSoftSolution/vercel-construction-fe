@@ -321,51 +321,61 @@ function AdminDashboard() {
       </div>
 
       <div className="mt-6 flex flex-col lg:flex-row gap-6">
-        <PieGraph pieTitle="Demand Status" data={demandBreakdown} />
-        <div className="flex-1 min-w-[280px]">
-          <HorixontalBarchartGraph
-            title="PO Distribution by Vendor"
-            dataset={poDistributionByVendor}
-            series={[{ dataKey: "poCount", label: "PO Count" }]}
-          />
-        </div>
-        <div className="flex-1 min-w-[280px]">
-          <VertcleBarChart
-            verTitle="Amount by Vendor"
-            dataset={amountByVendor}
-            series={[{ dataKey: "totalAmount", label: "Total Amount" }]}
-          />
-        </div>
+        {demandBreakdown && demandBreakdown.length > 0 && (
+          <PieGraph pieTitle="Demand Status" data={demandBreakdown} />
+        )}
+        {poDistributionByVendor && poDistributionByVendor.length > 0 && (
+          <div className="flex-1 min-w-[280px]">
+            <HorixontalBarchartGraph
+              title="PO Distribution by Vendor"
+              dataset={poDistributionByVendor}
+              series={[{ dataKey: "poCount", label: "PO Count" }]}
+            />
+          </div>
+        )}
+        {amountByVendor && amountByVendor.length > 0 && (
+          <div className="flex-1 min-w-[280px]">
+            <VertcleBarChart
+              verTitle="Amount by Vendor"
+              dataset={amountByVendor}
+              series={[{ dataKey: "totalAmount", label: "Total Amount" }]}
+            />
+          </div>
+        )}
       </div>
 
       {/* User Role Bar Chart */}
-      <div className="mt-6">
-        <BasicBarChart
-          title="User Role"
-          xAxis={usersByRole.map((u) => u.role)}
-          series={[
-            {
-              data: usersByRole.map((u) => u.count),
-              label: "User Count",
-              color: "#1D4ED8"
-            }
-          ]}
-        />
-      </div>
+      {usersByRole && usersByRole.length > 0 && (
+        <div className="mt-6">
+          <BasicBarChart
+            title="User Role"
+            xAxis={usersByRole.map((u) => u.role || "")}
+            series={[
+              {
+                data: usersByRole.map((u) => u.count || 0),
+                label: "User Count",
+                color: "#1D4ED8"
+              }
+            ]}
+          />
+        </div>
+      )}
 
      
-      <div className="mt-6">
-        {/* <h3 className="text-lg font-semibold mb-2">Financial Progress Per Project</h3> */}
-        <BasicBarChart
-          title="Financial Progress Per Project"
-          xAxis={financialProgress.map((p) => p.projectName)}
-          series={[
-            { data: financialProgress.map((p) => p.total), label: "Total Amount", color: "#1D4ED8" },
-            { data: financialProgress.map((p) => p.paid), label: "Paid", color: "#FDBA74" },
-            { data: financialProgress.map((p) => p.balance), label: "Balance", color: "#EF4444" },
-          ]}
-        />
-      </div>
+      {financialProgress && financialProgress.length > 0 && (
+        <div className="mt-6">
+          {/* <h3 className="text-lg font-semibold mb-2">Financial Progress Per Project</h3> */}
+          <BasicBarChart
+            title="Financial Progress Per Project"
+            xAxis={financialProgress.map((p) => p.projectName || "")}
+            series={[
+              { data: financialProgress.map((p) => p.total || 0), label: "Total Amount", color: "#1D4ED8" },
+              { data: financialProgress.map((p) => p.paid || 0), label: "Paid", color: "#FDBA74" },
+              { data: financialProgress.map((p) => p.balance || 0), label: "Balance", color: "#EF4444" },
+            ]}
+          />
+        </div>
+      )}
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />

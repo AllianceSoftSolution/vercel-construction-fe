@@ -4,6 +4,16 @@ import { PieChart } from "@mui/x-charts/PieChart";
 import TopBar from "../TopBar";
 
 export default function PieGraph({ pieTitle, data = [] }) {
+  // Safety check: don't render if data is empty or invalid
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <div className="max-w-lg w-full border-2 mt-5 rounded-lg p-5">
+        <TopBar title={pieTitle} />
+        <p className="text-gray-500 text-center py-8">No data available</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-lg w-full border-2 mt-5 rounded-lg p-5">
       <TopBar title={pieTitle} />
