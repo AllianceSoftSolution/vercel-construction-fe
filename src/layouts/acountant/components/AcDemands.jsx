@@ -13,7 +13,6 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { formatDateDMY } from '../../../utils';
-import { useSelector } from "react-redux";
 
 // Status color mapping
 const statusColorMap = {
@@ -67,17 +66,8 @@ const Demands = () => {
   const [demands, setDemands] = useState([]);
   const [allDemands, setAllDemands] = useState([]); // Store all demands for filter options
   const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
-  const [globalProjectFilter, setGlobalProjectFilter] = useState({ Project: [] });
-  const [projects, setProjects] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
-  
-  // Get user from Redux to check if head accountant
-  const user = useSelector((state) => {
-    if (!state || !state.auth) return null;
-    return state.auth.user;
-  });
-  const isHeadAccountant = user?.isHead === true;
 
   // Status options
   const statusOptions = [
@@ -162,7 +152,7 @@ const Demands = () => {
           id: index + 1,
         }));
         
-        // Apply project, section, and global project filters on frontend
+        // Apply project and section filters on frontend
         let filteredData = data;
         if (filter.Project && filter.Project.length > 0) {
           filteredData = filteredData.filter(demand => 
@@ -172,12 +162,6 @@ const Demands = () => {
         if (filter.Section && filter.Section.length > 0) {
           filteredData = filteredData.filter(demand => 
             filter.Section.includes(demand.section?.name)
-          );
-        }
-        // Apply global project filter (for head accountants)
-        if (isHeadAccountant && globalProjectFilter.Project && globalProjectFilter.Project.length > 0) {
-          filteredData = filteredData.filter(demand => 
-            globalProjectFilter.Project.includes(demand.section?.projectName)
           );
         }
         
@@ -193,23 +177,6 @@ const Demands = () => {
     }
   };
 
-  // Fetch projects for global filter
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await apiClient.get("/projects");
-        if (response.ok) {
-          setProjects(response.data.projects || []);
-        }
-      } catch (e) {
-        // ignore
-      }
-    };
-    if (isHeadAccountant) {
-      fetchProjects();
-    }
-  }, [isHeadAccountant]);
-
   useEffect(() => {
     fetchAllDemands();
   }, []);
@@ -217,7 +184,7 @@ const Demands = () => {
   useEffect(() => {
     fetchDemands();
     // eslint-disable-next-line
-  }, [filter, globalProjectFilter]);
+  }, [filter]);
 
   const deleteDemand = async () => {
     try {
@@ -238,19 +205,6 @@ const Demands = () => {
     setFilter(newSelected);
   };
   const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
-
-  const globalProjectOptions = projects.map((p) => ({ label: p.name, value: p.id }));
-  const globalProjectFilters = [
-    { label: "Project", options: globalProjectOptions.map(o => o.label) },
-  ];
-
-  const handleGlobalProjectFilterChange = (newSelected) => {
-    setGlobalProjectFilter(newSelected);
-  };
-
-  const handleGlobalProjectFilterClear = () => {
-    setGlobalProjectFilter({ Project: [] });
-  };
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -285,18 +239,6 @@ const Demands = () => {
         <TopBar
           title="Demands"
         />
-        {isHeadAccountant && (
-          <div className="flex items-center gap-4">
-            <CustomFilterDropdown
-              filters={globalProjectFilters}
-              selected={globalProjectFilter}
-              onChange={handleGlobalProjectFilterChange}
-              onClear={handleGlobalProjectFilterClear}
-              placeholder="Filter by project"
-              dropdownAlign="right"
-            />
-          </div>
-        )}
       </div>
       <div className="flex justify-end items-center gap-4 mt-2 mb-6">
         <CustomFilterDropdown

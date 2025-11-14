@@ -440,22 +440,40 @@ const Payables = () => {
     }
   };
 
+  // Format number with commas
+  const formatAmount = (amount) => {
+    return (amount || 0).toLocaleString('en-US');
+  };
+
+  // Get color for balance remaining: red for zero/positive, green for negative
+  const getBalanceRemainingColor = (balance) => {
+    const numericBalance = balance || 0;
+    if (numericBalance < 0) {
+      return "#22c55e"; // green for negative
+    } else {
+      return "#ef4444"; // red for zero and positive
+    }
+  };
+
   // Update analytics with real data from API
   const payablesData = [
     {
       label: "Total Payables",
       icon: IoPeopleSharp,
-      count: payablesSummary.totalCredited || 0,
+      count: formatAmount(payablesSummary.totalCredited),
+      countColor: "#ef4444", // red
     },
     {
       label: "Total Paid",
       icon: AccountBalance,
-      count: payablesSummary.totalDebited || 0,
+      count: formatAmount(payablesSummary.totalDebited),
+      countColor: "#22c55e", // green
     },
     {
       label: "Balance Remaining",
       icon: Balance,
-      count: payablesSummary.totalBalance || 0,
+      count: formatAmount(payablesSummary.totalBalance),
+      countColor: getBalanceRemainingColor(payablesSummary.totalBalance),
     },
   ];
 
@@ -590,6 +608,7 @@ const Payables = () => {
               label={item.label}
               icon={item.icon}
               count={item.count}
+              countColor={item.countColor}
             />
           </div>
         ))}

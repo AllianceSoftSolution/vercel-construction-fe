@@ -620,6 +620,22 @@ const AccPayables = () => {
     { headerName: "Action", field: "id" },
   ];
 
+  // Purchase Orders with Amounts columns (includes View Document column)
+  const purchaseOrderWithAmountColumns = [
+    { headerName: "No.", field: "no" },
+    { headerName: "PO Reference", field: "poReference" },
+    { headerName: "Project", field: "project" },
+    { headerName: "Material", field: "material" },
+    { headerName: "Vendor", field: "vendor" },
+    { headerName: "Quantity", field: "quantity" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "Unit Price", field: "unitPrice" },
+    { headerName: "Amount (PKR)", field: "amount" },
+    { headerName: "Status", field: "status" },
+    { headerName: "View Document", field: "proofOfBill" },
+    { headerName: "Action", field: "id" },
+  ];
+
   const fetchVendorAccount = async (projectId = null) => {
     try {
       setLoading(true);
@@ -680,8 +696,8 @@ const AccPayables = () => {
             vendor: po.vendor?.name || "-",
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
-            unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
-            amount: po.totalAmount ? `${po.totalAmount.toLocaleString()}` : "-",
+            unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
+            amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
             status: po.status || "-",
             // Complete PO data for modal
             poData: po // Store complete PO data separately
@@ -718,9 +734,10 @@ const AccPayables = () => {
             vendor: po.vendor?.name || "-",
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
-            unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
-            amount: po.totalAmount ? `${po.totalAmount.toLocaleString()}` : "-",
+            unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
+            amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
             status: po.status || "-",
+            proofOfBill: po.proofOfBill || null, // Document URL
             // Complete PO data for modal
             poData: po // Store complete PO data separately
           };
@@ -739,23 +756,41 @@ const AccPayables = () => {
     }
   };
 
+  // Format number with commas
+  const formatAmount = (amount) => {
+    return (amount || 0).toLocaleString('en-US');
+  };
+
+  // Get color for balance remaining: red for zero/positive, green for negative
+  const getBalanceRemainingColor = (balance) => {
+    const numericBalance = balance || 0;
+    if (numericBalance < 0) {
+      return "#22c55e"; // green for negative
+    } else {
+      return "#ef4444"; // red for zero and positive
+    }
+  };
+
   // Update analytics with real data from API
   const payablesData = [
     {
       label: "Total Payables",
       icon: IoPeopleSharp,
-      count: payablesSummary.totalCredited || 0,
+      count: formatAmount(payablesSummary.totalCredited),
+      countColor: "#ef4444", // red
     },
     {
       label: "Total Paid",
       icon: AccountBalance,
-      count: payablesSummary.totalDebited || 0,
+      count: formatAmount(payablesSummary.totalDebited),
+      countColor: "#22c55e", // green
     },
     // Only show balance remaining for head accountants
     ...(isHeadAccountant ? [{
       label: "Balance Remaining",
       icon: Balance,
-      count: payablesSummary.totalBalance || 0,
+      count: formatAmount(payablesSummary.totalBalance),
+      countColor: getBalanceRemainingColor(payablesSummary.totalBalance),
     }] : []),
   ];
 
@@ -878,6 +913,26 @@ const AccPayables = () => {
     );
   };
 
+  // View Document component for Purchase Orders with Amounts
+  const ViewDocument = ({ value }) => {
+    if (!value) {
+      return <span className="text-gray-400">-</span>;
+    }
+
+    const handleViewDocument = () => {
+      window.open(value, '_blank');
+    };
+
+    return (
+      <button
+        onClick={handleViewDocument}
+        className="text-blue-600 hover:text-blue-800 underline font-medium cursor-pointer"
+      >
+        View Document
+      </button>
+    );
+  };
+
   // Color-coded amount component for vendor accounts
   const ColorCodedAmount = ({ value, field }) => {
     if (!value || value === "-") return <span>{value}</span>;
@@ -940,6 +995,7 @@ const AccPayables = () => {
               label={item.label}
               icon={item.icon}
               count={item.count}
+              countColor={item.countColor}
             />
           </div>
         ))}
@@ -985,11 +1041,12 @@ const AccPayables = () => {
             <Loader />
           ) : (
             <SimpleTable
-              columns={purchaseOrderColumns}
+              columns={purchaseOrderWithAmountColumns}
               data={purchaseOrdersWithAmount}
               cellComponents={{
                 id: ActionForPOsWithAmount,
-                status: StatusChip
+                status: StatusChip,
+                proofOfBill: ViewDocument
               }}
             />
           )}
