@@ -34,7 +34,7 @@ const paymentColumns = [
   { headerName: "Project", field: "project" },
   { headerName: "Section", field: "section" },
   { headerName: "Type", field: "type" },
-  { headerName: "Amount", field: "amount" },
+  { headerName: "Amount(PKR)", field: "amount" },
   // { headerName: "Balance", field: "balance" },
   { headerName: "Proof", field: "proof" },
 ];
@@ -233,7 +233,7 @@ export default function AcPayableDetails() {
           project: transaction.purchaseOrder?.section?.project?.name || "-",
           section: transaction.purchaseOrder?.section?.name || "-",
           type: transaction.type,
-          amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()} PKR` : "-",
+          amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()} ` : "-",
           proof: transaction.proofOfPayment,
         })) || [];
         
@@ -266,24 +266,62 @@ export default function AcPayableDetails() {
   };
   const handleFilterClear = () => setFilter({ Type: [] });
 
+  const formatAmount = (amount) => {
+    if (amount === null || amount === undefined || amount === "") return "0";
+    return parseFloat(amount).toLocaleString();
+  };
+
+  const getAmountColor = (amount) => {
+    const numericAmount = Number(amount) || 0;
+    if (numericAmount < 0) {
+      return "#22c55e"; // green for negative (advance/overpayment)
+    } else if (numericAmount > 0) {
+      return "#ef4444"; // red for positive (amount owed)
+    }
+    return "#222222"; // neutral for zero
+  };
+
+  const ColorCodedAmount = ({ value }) => {
+    if (!value || value === "-") return <span>{value || "-"}</span>;
+
+    const numericValue = parseFloat(value.replace(/,/g, ""));
+    if (isNaN(numericValue)) return <span>{value}</span>;
+
+    let color = "#222222";
+    if (numericValue < 0) {
+      color = "#22c55e";
+    } else if (numericValue > 0) {
+      color = "#ef4444";
+    }
+
+    return (
+      <span style={{ color, fontWeight: "600" }}>
+        {value}
+      </span>
+    );
+  };
+
   const analyticsData = [
     {
       id: 1,
       label: "Total Credited",
       icon: AccountTree,
-      count: vendorAccount?.totalCredited ? parseFloat(vendorAccount.totalCredited).toLocaleString() : "0",
+      count: vendorAccount?.totalCredited ? formatAmount(vendorAccount.totalCredited) : "0",
+      countColor: getAmountColor(vendorAccount?.totalCredited),
     },
     {
       id: 2,
       label: "Total Debited",
       icon: Paid,
-      count: vendorAccount?.totalDebited ? parseFloat(vendorAccount.totalDebited).toLocaleString() : "0",
+      count: vendorAccount?.totalDebited ? formatAmount(vendorAccount.totalDebited) : "0",
+      countColor: getAmountColor(vendorAccount?.totalDebited),
     },
     {
       id: 3,
       label: "Current Balance",
       icon: RiRecordMailLine,
-      count: vendorAccount?.balance ? parseFloat(vendorAccount.balance).toLocaleString() : "0",
+      count: vendorAccount?.balance ? formatAmount(vendorAccount.balance) : "0",
+      countColor: getAmountColor(vendorAccount?.balance),
     },
   ];
 
@@ -341,6 +379,7 @@ export default function AcPayableDetails() {
               label={item.label}
               icon={item.icon}
               count={item.count}
+              countColor={item.countColor}
             />
           </div>
         ))}
@@ -353,7 +392,7 @@ export default function AcPayableDetails() {
             <SimpleTable
               data={creditTransactions}
               columns={paymentColumns}
-              cellComponents={{ proof: ProofCell }}
+            cellComponents={{ proof: ProofCell, amount: ColorCodedAmount }}
             />
           </div>
         </div>
@@ -363,7 +402,7 @@ export default function AcPayableDetails() {
             <SimpleTable
               data={debitTransactions}
               columns={paymentColumns}
-              cellComponents={{ proof: ProofCell }}
+            cellComponents={{ proof: ProofCell, amount: ColorCodedAmount }}
             />
           </div>
         </div>

@@ -65,7 +65,7 @@ const PmDemands = () => {
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
   const [allDemands, setAllDemands] = useState([]); // Store all demands for filter options
-  const [filter, setFilter] = useState({ Status: [], Section: [] });
+  const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
 
@@ -82,11 +82,13 @@ const PmDemands = () => {
     { label: "In Store", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
   ];
-  // Get unique section names from all demands (not filtered)
+  // Get unique project and section names from all demands (not filtered)
+  const projectOptions = [...new Set(allDemands.map(demand => demand.section?.projectName).filter(Boolean))];
   const sectionOptions = [...new Set(allDemands.map(demand => demand.section?.name).filter(Boolean))];
   
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions },
     { label: "Section", options: sectionOptions },
   ];
 
@@ -142,10 +144,15 @@ const PmDemands = () => {
           id: index + 1,
         }));
         
-        // Apply section filter on frontend
+        // Apply project and section filters on frontend
         let filteredData = data;
+        if (filter.Project && filter.Project.length > 0) {
+          filteredData = filteredData.filter(demand =>
+            filter.Project.includes(demand.section?.projectName)
+          );
+        }
         if (filter.Section && filter.Section.length > 0) {
-          filteredData = data.filter(demand => 
+          filteredData = filteredData.filter(demand =>
             filter.Section.includes(demand.section?.name)
           );
         }
@@ -176,7 +183,7 @@ const PmDemands = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [], Section: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -227,7 +234,7 @@ const PmDemands = () => {
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by status"
+          placeholder="Filter by status, project or section"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}

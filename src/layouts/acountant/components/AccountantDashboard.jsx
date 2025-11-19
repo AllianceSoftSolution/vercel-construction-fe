@@ -12,10 +12,15 @@ import toast from "react-hot-toast";
 import { Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { formatDateDMY, formatToK } from '../../../utils';
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 function AccountantDashboard() {
   const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
+  const [demandsFilter, setDemandsFilter] = useState({
+    Project: [],
+    Section: [],
+  });
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -24,7 +29,7 @@ function AccountantDashboard() {
     { label: "Total Vendors", icon: FaBoxesStacked, count: 0, percentage: 0 },
     { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
     { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
-    { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: 0, percentage: 0 },
+    { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: 0, percentage: 0, countColor: "#22c55e" },
     { label: "Assigned Sections", icon: FaBoxesStacked, count: 0, percentage: 0 },
   ]);
   const [topVendorAccounts, setTopVendorAccounts] = useState([]);
@@ -74,7 +79,7 @@ function AccountantDashboard() {
           { label: "Total Vendors", icon: FaBoxesStacked, count: formatToK(summary.totalVendors || 0), percentage: 0 },
           { label: "Total Amount Spent", icon: FaHandHoldingHeart, count: formatToK(summary.totalAmountSpent || 0), percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
           { label: "Total Amount Pending", icon: FaHandHoldingHeart, count: formatToK(summary.totalAmountPending || 0), percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
-          { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: formatToK(summary.totalAmountPaid || 0), percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables")},
+          { label: "Total Amount Paid", icon: FaHandHoldingHeart, count: formatToK(summary.totalAmountPaid || 0), percentage: 0 , onClick: () => navigate("/accountant-dashboard/payables"), countColor: "#22c55e"},
           { label: "Assigned Sections", icon: FaBoxesStacked, count: formatToK(summary.assignedSections || 0), percentage: 0 },
         ]);
         setTopVendorAccounts(response.data.data.topVendorAccounts || []);
@@ -120,6 +125,39 @@ function AccountantDashboard() {
     fetchDemands();
   }, []);
 
+  const projectOptions = [...new Set(demands.map((demand) => demand.project).filter(Boolean))];
+  const sectionOptions = [...new Set(demands.map((demand) => demand.section).filter(Boolean))];
+
+  const demandFilters = [
+    { label: "Project", options: projectOptions },
+    { label: "Section", options: sectionOptions },
+  ];
+
+  const handleDemandFilterChange = (newSelected) => {
+    setDemandsFilter(newSelected);
+  };
+
+  const handleDemandFilterClear = () => {
+    setDemandsFilter({
+      Project: [],
+      Section: [],
+    });
+  };
+
+  const filteredDemands = demands.filter((demand) => {
+    const projectMatch =
+      !demandsFilter.Project ||
+      demandsFilter.Project.length === 0 ||
+      demandsFilter.Project.includes(demand.project);
+
+    const sectionMatch =
+      !demandsFilter.Section ||
+      demandsFilter.Section.length === 0 ||
+      demandsFilter.Section.includes(demand.section);
+
+    return projectMatch && sectionMatch;
+  });
+
   if (pageLoading) {
     return (
       <div className="flex justify-center items-center h-full min-h-[400px]">
@@ -153,6 +191,7 @@ function AccountantDashboard() {
                 count={item.count}
                 percentage={item.percentage}
                 onClick={item.onClick}
+                countColor={item.countColor}
               />
             </div>
           );
@@ -170,7 +209,17 @@ function AccountantDashboard() {
 
       <div className="overflow-x-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={demandFilters}
+            selected={demandsFilter}
+            onChange={handleDemandFilterChange}
+            onClear={handleDemandFilterClear}
+            placeholder="Filter by project or section"
+            dropdownAlign="right"
+          />
+        </div>
+        <SimpleTable columns={columns} data={filteredDemands} cellComponents={{ status: StatusChip }} />
       </div>
     </div>
   );

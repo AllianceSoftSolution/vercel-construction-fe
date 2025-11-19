@@ -461,6 +461,9 @@ const AccPayables = () => {
     });
   const [projects, setProjects] = useState([]);
   const [globalProjectFilter, setGlobalProjectFilter] = useState([]);
+  const [poWithAmountFilter, setPoWithAmountFilter] = useState({
+    Project: [],
+  });
   
   // Get user role from Redux store
   const user = useSelector((state) => {
@@ -520,6 +523,10 @@ const AccPayables = () => {
     { label: "Section", options: sectionOptions },
   ];
 
+  const poWithAmountFilters = [
+    { label: "Project", options: projectOptions.map(o => o.label) },
+  ];
+
   // Global project filter options
   const globalProjectFilters = [
     { label: "Project", options: projectOptions.map(o => o.label) },
@@ -529,6 +536,11 @@ const AccPayables = () => {
     setFilter(newSelected);
   };
   const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
+
+  const handlePOWithAmountFilterChange = (newSelected) => {
+    setPoWithAmountFilter(newSelected);
+  };
+  const handlePOWithAmountFilterClear = () => setPoWithAmountFilter({ Project: [] });
 
     const handleGlobalProjectFilterChange = (newSelected) => {
     setGlobalProjectFilter(newSelected);
@@ -594,6 +606,15 @@ const AccPayables = () => {
   // Note: This filtering is now handled at the API level, so we just return all vendor accounts
   // The API will return only the vendors for the selected project
   const filteredVendorAccounts = vendorAccounts;
+
+  const filteredPurchaseOrdersWithAmount = purchaseOrdersWithAmount.filter((po) => {
+    const projectMatch =
+      !poWithAmountFilter.Project ||
+      poWithAmountFilter.Project.length === 0 ||
+      poWithAmountFilter.Project.includes(po.project);
+
+    return projectMatch;
+  });
 
   // Vendor Accounts columns
   const vendorColumns = [
@@ -926,7 +947,7 @@ const AccPayables = () => {
     return (
       <button
         onClick={handleViewDocument}
-        className="text-blue-600 hover:text-blue-800 underline font-medium cursor-pointer"
+        className="text-orange-500 hover:text-orange-600 underline font-medium cursor-pointer"
       >
         View Document
       </button>
@@ -960,30 +981,15 @@ const AccPayables = () => {
 
   return (
     <div className=" ">
-            <div className="flex justify-between items-center">
-        <TopBar
-          title="Payables"
-          // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-          // showFilter={true}
-          // filterOptions={["Assigned", "Not-Assigned"]}
-          // onFilterChange={(selected) =>
-          //   console.log("Selected Filters:", selected)
-          // }
-        />
-        {/* Only show global project filter for head accountants */}
-        {isHeadAccountant && (
-          <div className="flex items-center gap-4">
-            <CustomFilterDropdown
-              filters={globalProjectFilters}
-              selected={globalProjectFilter}
-              onChange={handleGlobalProjectFilterChange}
-              onClear={handleGlobalProjectFilterClear}
-              placeholder="Filter by project"
-              dropdownAlign="right"
-            />
-          </div>
-        )}
-      </div>
+      <TopBar
+        title="Payables"
+        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+        // showFilter={true}
+        // filterOptions={["Assigned", "Not-Assigned"]}
+        // onFilterChange={(selected) =>
+        //   console.log("Selected Filters:", selected)
+        // }
+      />
 
       <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
         {payablesData.map((item, index) => (
@@ -1036,17 +1042,29 @@ const AccPayables = () => {
         <h1 className="text-xl md:text-2xl font-bold mb-5">
           Purchase Orders with Amounts
         </h1>
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={poWithAmountFilters}
+            selected={poWithAmountFilter}
+            onChange={handlePOWithAmountFilterChange}
+            onClear={handlePOWithAmountFilterClear}
+            placeholder="Filter by project"
+            dropdownAlign="right"
+          />
+        </div>
         <div className="overflow-x-auto">
           {loading ? (
             <Loader />
           ) : (
             <SimpleTable
               columns={purchaseOrderWithAmountColumns}
-              data={purchaseOrdersWithAmount}
+              data={filteredPurchaseOrdersWithAmount}
               cellComponents={{
                 id: ActionForPOsWithAmount,
                 status: StatusChip,
-                proofOfBill: ViewDocument
+                proofOfBill: ViewDocument,
+                // unitPrice: ColorCodedAmount,
+                amount: ColorCodedAmount
               }}
             />
           )}

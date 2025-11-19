@@ -43,7 +43,8 @@ const SiPurchaseOrder = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
-  const [filter, setFilter] = useState({ Status: [], Project: [] });
+  const [sections, setSections] = useState([]);
+  const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPOId, setSelectedPOId] = useState(null);
   const navigate = useNavigate();
@@ -104,7 +105,16 @@ const SiPurchaseOrder = () => {
           assingedVendors: po.vendorId || "-",
           proofOfBill: po.proofOfBill || "-",
         }));
-        setPurchaseOrders(data);
+        const uniqueSections = [...new Set(data.map((po) => po.section).filter((section) => section && section !== "-"))];
+        setSections(uniqueSections);
+
+        let filteredData = data;
+        if (filter.Section && filter.Section.length > 0) {
+          filteredData = filteredData.filter((po) =>
+            filter.Section.includes(po.section)
+          );
+        }
+        setPurchaseOrders(filteredData);
       } else {
         toast.error("Failed to fetch purchase orders");
       }
@@ -153,13 +163,14 @@ const SiPurchaseOrder = () => {
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
     { label: "Project", options: projectOptions.map(o => o.label) },
+    { label: "Section", options: sections },
   ];
 
   // Multi-select filter change handler
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
   // Pass the filter state directly as selected
   let selected = null;
@@ -167,6 +178,8 @@ const SiPurchaseOrder = () => {
     selected = { group: "Status", value: filter.Status.join(", ") };
   } else if (filter.Project && filter.Project.length > 0) {
     selected = { group: "Project", value: filter.Project.join(", ") };
+  } else if (filter.Section && filter.Section.length > 0) {
+    selected = { group: "Section", value: filter.Section.join(", ") };
   }
 
   const columns = [
@@ -265,7 +278,7 @@ const SiPurchaseOrder = () => {
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by status or project"
+          placeholder="Filter by status, project or section"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}

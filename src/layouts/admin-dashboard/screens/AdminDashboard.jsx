@@ -24,6 +24,7 @@ import Loader from "../../../components/ui/Loader";
 import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { formatToK } from '../../../utils';
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -68,6 +69,14 @@ function AdminDashboard() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [demandsFilter, setDemandsFilter] = useState({
+    Project: [],
+    Section: [],
+  });
+  const [purchaseOrdersFilter, setPurchaseOrdersFilter] = useState({
+    Project: [],
+    Section: [],
+  });
   const [analyticsData, setAnalyticsData] = useState([
     // Initial empty state to avoid undefined errors
     { label: "Total Projects", icon: FaBoxesStacked, count: 0, percentage: 0 },
@@ -161,6 +170,64 @@ function AdminDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const demandProjectOptions = [...new Set(demands.map((demand) => demand.section?.projectName).filter(Boolean))];
+  const demandSectionOptions = [...new Set(demands.map((demand) => demand.section?.name).filter(Boolean))];
+  const demandFiltersConfig = [
+    { label: "Project", options: demandProjectOptions },
+    { label: "Section", options: demandSectionOptions },
+  ];
+
+  const poProjectOptions = [...new Set(purchaseOrders.map((po) => po.project).filter(Boolean))];
+  const poSectionOptions = [...new Set(purchaseOrders.map((po) => po.section).filter(Boolean))];
+  const poFiltersConfig = [
+    { label: "Project", options: poProjectOptions },
+    { label: "Section", options: poSectionOptions },
+  ];
+
+  const filteredDemands = demands.filter((demand) => {
+    const projectName = demand.section?.projectName || "-";
+    const sectionName = demand.section?.name || "-";
+    const projectMatch =
+      !demandsFilter.Project ||
+      demandsFilter.Project.length === 0 ||
+      demandsFilter.Project.includes(projectName);
+    const sectionMatch =
+      !demandsFilter.Section ||
+      demandsFilter.Section.length === 0 ||
+      demandsFilter.Section.includes(sectionName);
+    return projectMatch && sectionMatch;
+  });
+
+  const filteredPurchaseOrders = purchaseOrders.filter((po) => {
+    const projectName = po.project || "-";
+    const sectionName = po.section || "-";
+    const projectMatch =
+      !purchaseOrdersFilter.Project ||
+      purchaseOrdersFilter.Project.length === 0 ||
+      purchaseOrdersFilter.Project.includes(projectName);
+    const sectionMatch =
+      !purchaseOrdersFilter.Section ||
+      purchaseOrdersFilter.Section.length === 0 ||
+      purchaseOrdersFilter.Section.includes(sectionName);
+    return projectMatch && sectionMatch;
+  });
+
+  const handleDemandsFilterChange = (newSelected) => {
+    setDemandsFilter(newSelected);
+  };
+
+  const handleDemandsFilterClear = () => {
+    setDemandsFilter({ Project: [], Section: [] });
+  };
+
+  const handlePOFilterChange = (newSelected) => {
+    setPurchaseOrdersFilter(newSelected);
+  };
+
+  const handlePOFilterClear = () => {
+    setPurchaseOrdersFilter({ Project: [], Section: [] });
   };
 
   // Fetch analytics data for dashboard
@@ -379,11 +446,31 @@ function AdminDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />
-        <SimpleTable columns={demandsColumns} data={demands} cellComponents={{ status: StatusChip, createdAt: DateCell }} />
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={demandFiltersConfig}
+            selected={demandsFilter}
+            onChange={handleDemandsFilterChange}
+            onClear={handleDemandsFilterClear}
+            placeholder="Filter by project or section"
+            dropdownAlign="right"
+          />
+        </div>
+        <SimpleTable columns={demandsColumns} data={filteredDemands} cellComponents={{ status: StatusChip, createdAt: DateCell }} />
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />
-        <SimpleTable columns={purchaseOrdersColumns} data={purchaseOrders} cellComponents={{ status: StatusChip }} />
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={poFiltersConfig}
+            selected={purchaseOrdersFilter}
+            onChange={handlePOFilterChange}
+            onClear={handlePOFilterClear}
+            placeholder="Filter by project or section"
+            dropdownAlign="right"
+          />
+        </div>
+        <SimpleTable columns={purchaseOrdersColumns} data={filteredPurchaseOrders} cellComponents={{ status: StatusChip }} />
       </div>
     </div>
   );

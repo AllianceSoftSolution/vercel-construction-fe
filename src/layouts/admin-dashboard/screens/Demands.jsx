@@ -66,7 +66,7 @@ const Demands = () => {
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
   const [allDemands, setAllDemands] = useState([]); // Store all demands for filter options
-  const [filter, setFilter] = useState({ Status: [], Project: [] });
+  const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
 
@@ -85,10 +85,11 @@ const Demands = () => {
   ];
   // Get unique project names from all demands (not filtered)
   const projectOptions = [...new Set(allDemands.map(demand => demand.section?.projectName).filter(Boolean))];
-  
+  const sectionOptions = [...new Set(allDemands.map(demand => demand.section?.name).filter(Boolean))];
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
     { label: "Project", options: projectOptions },
+    { label: "Section", options: sectionOptions },
   ];
 
   const columns = [
@@ -157,7 +158,11 @@ const Demands = () => {
             filter.Project.includes(demand.section?.projectName)
           );
         }
-        
+        if (filter.Section && filter.Section.length > 0) {
+          filteredData = data.filter(demand => 
+            filter.Section.includes(demand.section?.name)
+          );
+        }
         setDemands(filteredData);
       } else {
         toast.error("Failed to fetch Demands");
@@ -197,7 +202,7 @@ const Demands = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -237,7 +242,7 @@ const Demands = () => {
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by status or project"
+          placeholder="Filter by status, project or section"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
