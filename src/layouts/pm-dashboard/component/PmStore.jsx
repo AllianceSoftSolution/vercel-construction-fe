@@ -189,7 +189,7 @@ const Stores = () => {
           onChange={handleFilterChange}
           onClear={handleFilterClear}
           placeholder="Filter by type, project or section"
-          dropdownAlign="left"
+          dropdownAlign="right"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
