@@ -22,6 +22,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import { Chip } from "@mui/material";
 import { formatDateDMY } from "../../../utils";
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 // Status color mapping for demand status
 const statusColorMap = {
@@ -33,23 +34,37 @@ const statusColorMap = {
   default: "#0252AD", // fallback blue
 };
 
+const formatStatusLabel = (value) => {
+  if (!value) return "-";
+  return value
+    .toString()
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 const StatusChip = ({ value }) => {
-  const status = (value || "PENDING").toUpperCase();
-  const color = statusColorMap[status] || statusColorMap.default;
+  const statusValue = value || "PENDING";
+  const statusKey = statusValue.toUpperCase().replace(/\s+/g, "_");
+  const color = statusColorMap[statusKey] || statusColorMap.default;
+  const label = formatStatusLabel(statusValue);
   return (
     <Chip
-      label={status.replace(/_/g, " ")}
+      label={label}
       size="small"
       sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
     />
   );
 };
 
+const statusOptions = Object.keys(statusColorMap).filter((key) => key !== "default");
+
 function CmDashboard() {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
+  const [demandsFilter, setDemandsFilter] = useState({ Project: [], Section: [], Status: [] });
   const navigate = useNavigate();
   
   // Get current user from Redux store
@@ -187,6 +202,45 @@ function CmDashboard() {
     fetchAnalytics();
   }, []);
 
+
+  const demandProjectOptions = [...new Set(demands.map((d) => d.project).filter(Boolean))];
+  const demandSectionOptions = [...new Set(demands.map((d) => d.section).filter(Boolean))];
+  const demandStatusOptions = statusOptions.map((option) => formatStatusLabel(option));
+
+  const demandFilters = [
+    { label: "Project", options: demandProjectOptions },
+    { label: "Section", options: demandSectionOptions },
+    { label: "Status", options: demandStatusOptions },
+  ];
+
+  const normalizedSelectedStatuses =
+    demandsFilter.Status?.map((status) =>
+      status ? status.toUpperCase().replace(/\s+/g, "_") : status
+    ) || [];
+
+  const filteredDemands = demands.filter((demand) => {
+    const projectMatch =
+      !demandsFilter.Project ||
+      demandsFilter.Project.length === 0 ||
+      demandsFilter.Project.includes(demand.project);
+    const sectionMatch =
+      !demandsFilter.Section ||
+      demandsFilter.Section.length === 0 ||
+      demandsFilter.Section.includes(demand.section);
+    const demandStatusKey = (demand.status || "").toUpperCase().replace(/\s+/g, "_");
+    const statusMatch =
+      normalizedSelectedStatuses.length === 0 ||
+      normalizedSelectedStatuses.includes(demandStatusKey);
+    return projectMatch && sectionMatch && statusMatch;
+  });
+
+  const handleDemandFilterChange = (newSelected) => {
+    setDemandsFilter(newSelected);
+  };
+
+  const handleDemandFilterClear = () => {
+    setDemandsFilter({ Project: [], Section: [], Status: [] });
+  };
 
   const columns = [
     { headerName: "Ref No", field: "refNo" },
@@ -333,7 +387,17 @@ function CmDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} loading={loading} cellComponents={{ status: StatusChip }} />
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={demandFilters}
+            selected={demandsFilter}
+            onChange={handleDemandFilterChange}
+            onClear={handleDemandFilterClear}
+            placeholder="Filter by status, project or section"
+            dropdownAlign="right"
+          />
+        </div>
+        <SimpleTable columns={columns} data={filteredDemands} loading={loading} cellComponents={{ status: StatusChip }} />
       </div>
     </div>
   );

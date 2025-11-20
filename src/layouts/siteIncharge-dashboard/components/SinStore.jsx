@@ -21,6 +21,8 @@ const SiStore = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [store, setStore] = useState([]);
+  const [projectOptions, setProjectOptions] = useState([]);
+  const [sectionOptions, setSectionOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
@@ -31,13 +33,10 @@ const SiStore = () => {
     { label: "Head Store", value: "HEAD_STORE" },
     { label: "CM Store", value: "CM_STORE" },
   ];
-  // Project and Section filter options
-  const projectOptions = Array.from(new Set(store.map(s => s.section?.project?.name).filter(Boolean))).map(name => ({ label: name, value: name }));
-  const sectionOptions = Array.from(new Set(store.map(s => s.section?.name).filter(Boolean))).map(name => ({ label: name, value: name }));
   const filters = [
     { label: "Type", options: typeOptions.map(o => o.label) },
-    { label: "Project", options: projectOptions.map(o => o.label) },
-    { label: "Section", options: sectionOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions },
+    { label: "Section", options: sectionOptions },
   ];
 
   const handleLinkClick = () => {
@@ -63,6 +62,11 @@ const SiStore = () => {
           action: store.id,
           ...store,
         }));
+        const uniqueProjects = Array.from(new Set(data.map(s => s.section?.project?.name).filter(Boolean)));
+        const uniqueSections = Array.from(new Set(data.map(s => s.section?.name).filter(Boolean)));
+        setProjectOptions(uniqueProjects);
+        setSectionOptions(uniqueSections);
+
         // Apply frontend filters for project and section
         let filtered = data;
         if (filter.Project && filter.Project.length > 0) {
@@ -183,8 +187,8 @@ const SiStore = () => {
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by type"
-          dropdownAlign="left"
+          placeholder="Filter by type, project or section"
+          dropdownAlign="right"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}

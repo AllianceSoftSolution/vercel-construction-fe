@@ -20,12 +20,29 @@ import toast from "react-hot-toast";
 import { Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { formatToK } from '../../../utils';
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+
+const statusColorMap = {
+  APPROVED: "#22c55e", // green
+  REJECTED: "#ef4444", // red
+  PENDING: "#f59e42", // orange
+  PARTIALLY_APPROVED: "#eab308", // yellow
+  PO_CREATED: "#8b5cf6", // purple
+  FULFILLED: "#0ea5e9", // blue
+  COMPLETED: "#22c55e", // green
+  PARTIAL: "#eab308", // yellow
+  CONFIRMED: "#7a0b4a",
+  default: "#0252AD", // fallback blue
+};
+
+const statusOptions = Object.keys(statusColorMap).filter((key) => key !== "default");
 
 function StoreInchargeDashboard() {
   const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [demandsFilter, setDemandsFilter] = useState({ Status: [], Project: [], Section: [] });
 
   // Analytics data state
   const [projectStats, setProjectStats] = useState([
@@ -66,19 +83,6 @@ function StoreInchargeDashboard() {
       toast.error("Error fetching analytics data");
       console.error(error);
     }
-  };
-
-  const statusColorMap = {
-    APPROVED: "#22c55e", // green
-    REJECTED: "#ef4444", // red
-    PENDING: "#f59e42", // orange
-    PARTIALLY_APPROVED: "#eab308", // yellow
-    PO_CREATED: "#8b5cf6", // purple
-    FULFILLED: "#0ea5e9", // blue
-    COMPLETED: "#22c55e", // green
-    PARTIAL: "#eab308", // yellow
-    CONFIRMED: "#7a0b4a",
-    default: "#0252AD", // fallback blue
   };
 
   const StatusChip = ({ value }) => {
@@ -130,6 +134,43 @@ function StoreInchargeDashboard() {
     fetchDemands();
   }, []);
 
+  const demandProjectOptions = [...new Set(demands.map((d) => d.project).filter((project) => project && project !== "-"))];
+  const demandSectionOptions = [...new Set(demands.map((d) => d.section).filter((section) => section && section !== "-"))];
+  const demandStatusOptions = statusOptions.map((status) => status.replace(/_/g, " "));
+
+  const filters = [
+    { label: "Status", options: demandStatusOptions },
+    { label: "Project", options: demandProjectOptions },
+    { label: "Section", options: demandSectionOptions },
+  ];
+
+  const normalizedSelectedStatuses =
+    demandsFilter.Status?.map((status) => status?.toUpperCase().replace(/\s+/g, "_")) || [];
+
+  const filteredDemands = demands.filter((demand) => {
+    const projectMatch =
+      !demandsFilter.Project ||
+      demandsFilter.Project.length === 0 ||
+      demandsFilter.Project.includes(demand.project);
+    const sectionMatch =
+      !demandsFilter.Section ||
+      demandsFilter.Section.length === 0 ||
+      demandsFilter.Section.includes(demand.section);
+    const demandStatusKey = (demand.status || "").toUpperCase().replace(/\s+/g, "_");
+    const statusMatch =
+      normalizedSelectedStatuses.length === 0 ||
+      normalizedSelectedStatuses.includes(demandStatusKey);
+    return projectMatch && sectionMatch && statusMatch;
+  });
+
+  const handleDemandFilterChange = (newSelected) => {
+    setDemandsFilter(newSelected);
+  };
+
+  const handleDemandFilterClear = () => {
+    setDemandsFilter({ Status: [], Project: [], Section: [] });
+  };
+
   if (pageLoading) {
     return (
       <div className="flex justify-center items-center h-full min-h-[400px]">
@@ -173,7 +214,17 @@ function StoreInchargeDashboard() {
       {/* table */}
       <div className="overflow-x-auto">
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
-        <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={filters}
+            selected={demandsFilter}
+            onChange={handleDemandFilterChange}
+            onClear={handleDemandFilterClear}
+            placeholder="Filter by status, project or section"
+            dropdownAlign="right"
+          />
+        </div>
+        <SimpleTable columns={columns} data={filteredDemands} cellComponents={{ status: StatusChip }} />
       </div>
       {/* <div>
         <h2 className="text-xl font-bold mb-4">Recent POs</h2>

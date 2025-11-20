@@ -15,6 +15,7 @@ import Loader from "../../../components/ui/Loader";
 import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { formatDateDMY, formatToK } from '../../../utils';
+import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -29,6 +30,8 @@ const statusColorMap = {
   CONFIRMED: "#7a0b4a",
   default: "#0252AD", // fallback blue
 };
+
+const statusOptions = Object.keys(statusColorMap).filter((key) => key !== "default");
 
 const StatusChip = ({ value }) => {
   const status = (value || "PENDING").toUpperCase();
@@ -46,6 +49,7 @@ function PmDashboard() {
   const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [demandsFilter, setDemandsFilter] = useState({ Project: [], Status: [] });
 
   // Analytics and chart data states
   const [analyticsData, setAnalyticsData] = useState([
@@ -118,6 +122,33 @@ function PmDashboard() {
     }
   };
 
+  const demandProjectOptions = [...new Set(demands.map((d) => d.project).filter(Boolean))];
+
+  const demandFilters = [
+    { label: "Project", options: demandProjectOptions },
+    { label: "Status", options: statusOptions },
+  ];
+
+  const filteredDemands = demands.filter((demand) => {
+    const projectMatch =
+      !demandsFilter.Project ||
+      demandsFilter.Project.length === 0 ||
+      demandsFilter.Project.includes(demand.project);
+    const statusMatch =
+      !demandsFilter.Status ||
+      demandsFilter.Status.length === 0 ||
+      demandsFilter.Status.includes(demand.status);
+    return projectMatch && statusMatch;
+  });
+
+  const handleDemandFilterChange = (newSelected) => {
+    setDemandsFilter(newSelected);
+  };
+
+  const handleDemandFilterClear = () => {
+    setDemandsFilter({ Project: [], Status: [] });
+  };
+
   useEffect(() => {
     fetchAnalytics();
     fetchDemand();
@@ -168,10 +199,20 @@ function PmDashboard() {
 
       <div className="overflow-x-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
+        <div className="my-4 flex justify-end">
+          <CustomFilterDropdown
+            filters={demandFilters}
+            selected={demandsFilter}
+            onChange={handleDemandFilterChange}
+            onClear={handleDemandFilterClear}
+            placeholder="Filter by project or status"
+            dropdownAlign="right"
+          />
+        </div>
         {loading ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns} data={demands} cellComponents={{ status: StatusChip }} />
+          <SimpleTable columns={columns} data={filteredDemands} cellComponents={{ status: StatusChip }} />
         )}
       </div>
     </div>

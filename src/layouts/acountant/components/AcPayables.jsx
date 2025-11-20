@@ -513,7 +513,7 @@ const AccPayables = () => {
   // Get unique sections from purchase orders
   const sectionOptions = [...new Set(
     [...purchaseOrders, ...purchaseOrdersWithAmount]
-      .map(po => po.poData?.section?.name || po.poData?.demand?.section?.name)
+      .map(po => po.section)
       .filter(Boolean)
   )];
 
@@ -587,7 +587,7 @@ const AccPayables = () => {
       filter.Project.includes(po.project);
 
     // Section filter
-    const sectionName = po.poData?.section?.name || po.poData?.demand?.section?.name || "-";
+    const sectionName = po.section || "-";
     const sectionMatch =
       !filter.Section ||
       filter.Section.length === 0 ||
@@ -633,6 +633,7 @@ const AccPayables = () => {
     { headerName: "Project", field: "project" },
     { headerName: "Material", field: "material" },
     { headerName: "Vendor", field: "vendor" },
+    { headerName: "Section", field: "section" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
     { headerName: "Unit Price", field: "unitPrice" },
@@ -648,6 +649,7 @@ const AccPayables = () => {
     { headerName: "Project", field: "project" },
     { headerName: "Material", field: "material" },
     { headerName: "Vendor", field: "vendor" },
+    { headerName: "Section", field: "section" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
     { headerName: "Unit Price", field: "unitPrice" },
@@ -715,6 +717,7 @@ const AccPayables = () => {
             project: po.demand?.section?.project?.name || "-",
             material: po.material?.name || "-", // Material name for display
             vendor: po.vendor?.name || "-",
+            section: po.demand?.section?.name || po.section?.name || "-",
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
             unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
@@ -753,6 +756,7 @@ const AccPayables = () => {
             project: po.demand?.section?.project?.name || "-",
             material: po.material?.name || "-", // Material name for display
             vendor: po.vendor?.name || "-",
+            section: po.demand?.section?.name || po.section?.name || "-",
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
             unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
@@ -1017,7 +1021,7 @@ const AccPayables = () => {
             selected={filter}
             onChange={handleFilterChange}
             onClear={handleFilterClear}
-            placeholder="Filter by status or project"
+            placeholder="Filter by status, project or section"
             dropdownAlign="left"
           />
         </div>

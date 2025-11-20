@@ -13,7 +13,6 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { formatDateDMY } from '../../../utils';
-
 // Status color mapping
 const statusColorMap = {
   APPROVED: "#22c55e", // green
@@ -64,7 +63,7 @@ const Demands = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [demands, setDemands] = useState([]);
-  const [filter, setFilter] = useState({ Status: [] });
+  const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
 
@@ -81,8 +80,13 @@ const Demands = () => {
     { label: "In Store", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
   ];
+  const projectOptions = [...new Set(demands.map((demand) => demand.section?.projectName).filter(Boolean))];
+  const sectionOptions = [...new Set(demands.map((demand) => demand.section?.name).filter(Boolean))];
+
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
+    { label: "Project", options: projectOptions },
+    { label: "Section", options: sectionOptions },
   ];
 
   const columns = [
@@ -154,7 +158,33 @@ const Demands = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
+
+  const filteredDemands = demands.filter((demand) => {
+    const projectName = demand.section?.projectName || "N/A";
+    const sectionName = demand.section?.name || "N/A";
+    const statusLabel =
+      statusOptions.find((option) => option.value === demand.status)?.label ||
+      demand.status?.replace(/_/g, " ") ||
+      "N/A";
+
+    const statusMatch =
+      !filter.Status ||
+      filter.Status.length === 0 ||
+      filter.Status.includes(statusLabel);
+
+    const projectMatch =
+      !filter.Project ||
+      filter.Project.length === 0 ||
+      filter.Project.includes(projectName);
+
+    const sectionMatch =
+      !filter.Section ||
+      filter.Section.length === 0 ||
+      filter.Section.includes(sectionName);
+
+    return statusMatch && projectMatch && sectionMatch;
+  });
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -207,7 +237,7 @@ const Demands = () => {
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
-          placeholder="Filter by status"
+          placeholder="Filter by status, project and section"
         />
       </div>
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
@@ -218,8 +248,8 @@ const Demands = () => {
         ) : (
           <SimpleTable
             columns={columns}
-            data={demands}
-            cellComponents={{ 
+            data={filteredDemands}
+            cellComponents={{
               demandId: CustomActionComponent, 
               status: StatusChip,
               createdAt: DateComponent 

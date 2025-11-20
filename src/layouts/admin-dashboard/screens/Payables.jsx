@@ -201,6 +201,7 @@ const Payables = () => {
   const [filter, setFilter] = useState({
     Status: [],
     Project: [],
+    Section: [],
   });
   const [paymentsByProjectSection, setPaymentsByProjectSection] = useState([]);
   const [globalProjectFilter, setGlobalProjectFilter] = useState([]);
@@ -240,9 +241,12 @@ const Payables = () => {
 
   const projectOptions = projects.map((p) => ({ label: p.name, value: p.id }));
 
+  const sectionOptions = [...new Set(purchaseOrders.map((po) => po.section).filter((section) => section && section !== "-"))];
+
   const filters = [
     { label: "Status", options: statusOptions.map((o) => o.label) },
     { label: "Project", options: projectOptions.map((o) => o.label) },
+    { label: "Section", options: sectionOptions },
   ];
 
   // Global project filter options
@@ -253,7 +257,7 @@ const Payables = () => {
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
   };
-  const handleFilterClear = () => setFilter({ Status: [], Project: [] });
+  const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
   const handleGlobalProjectFilterChange = (newSelected) => {
     setGlobalProjectFilter(newSelected);
@@ -299,13 +303,19 @@ const Payables = () => {
       filter.Project.length === 0 ||
       filter.Project.includes(po.project);
 
+    // Section filter
+    const sectionMatch =
+      !filter.Section ||
+      filter.Section.length === 0 ||
+      filter.Section.includes(po.section);
+
     // Global project filter
     const globalProjectMatch =
       !globalProjectFilter.Project ||
       globalProjectFilter.Project.length === 0 ||
       globalProjectFilter.Project.includes(po.project);
 
-    return statusMatch && projectMatch && globalProjectMatch;
+    return statusMatch && projectMatch && sectionMatch && globalProjectMatch;
   });
 
   // Filter vendor accounts by global project filter
@@ -329,6 +339,8 @@ const Payables = () => {
     { headerName: "PO Reference", field: "poReference" },
     { headerName: "Project", field: "project" },
     { headerName: "Material", field: "material" },
+    { headerName: "Vendor Name", field: "vendorName" },
+    { headerName: "Section", field: "section" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
     { headerName: "Amount (PKR)", field: "amount" },
@@ -399,6 +411,8 @@ const Payables = () => {
             poReference: po.referenceNumber || po.id || "-",
             project: po.demand?.section?.project?.name || "-",
             material: po.material?.name || "-", // Material name for display
+            vendorName: po.vendor?.name || po.vendorName || "-",
+            section: po.demand?.section?.name || po.section?.name || "-",
             quantity: po.quantity || "-",
             unit: po.demand?.unit || "-",
             amount: po.totalAmount ? `${po.totalAmount.toLocaleString()}` : "-",
@@ -624,8 +638,8 @@ const Payables = () => {
             selected={filter}
             onChange={handleFilterChange}
             onClear={handleFilterClear}
-            placeholder="Filter by status or project"
-            dropdownAlign="left"
+            placeholder="Filter by status,project or section"
+            dropdownAlign="right"
           />
         </div>
         <div className="overflow-x-auto">
