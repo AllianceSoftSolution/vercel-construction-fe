@@ -35,7 +35,7 @@ class ChartErrorBoundary extends React.Component {
   }
 }
 
-export default function HorixontalBarchartGraph({ title, dataset = [], series = [{ dataKey: "value", label: "Value" }] }) {
+export default function HorixontalBarchartGraph({ title, dataset = [], series = [{ dataKey: "value", label: "Value" }], yAxisDataKey = "vendorName" }) {
   // Safety check: don't render if dataset is empty or invalid
   if (!dataset || !Array.isArray(dataset) || dataset.length === 0) {
     return (
@@ -56,7 +56,7 @@ export default function HorixontalBarchartGraph({ title, dataset = [], series = 
           layout="horizontal"
           grid={{ vertical: true }}
           xAxis={[{ id: "xAxis", scaleType: "linear" }]}
-          yAxis={[{ id: "yAxis", dataKey: "vendorName", scaleType: "band" }]}
+          yAxis={[{ id: "yAxis", dataKey: yAxisDataKey, scaleType: "band" }]}
           {...chartSetting}
         slots={{
           bar: (props) => {

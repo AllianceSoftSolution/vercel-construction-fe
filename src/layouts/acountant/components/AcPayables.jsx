@@ -473,8 +473,10 @@ const AccPayables = () => {
   const userRole = user?.role;
   
   // Check if user is head accountant (has permission to view vendor accounts)
-  // Use isHead property to determine if user is head accountant
-  const isHeadAccountant = user?.isHead === true;
+  // Use Boolean() to safely coerce any truthy isHead value (true, 1, "true", etc.)
+  const isHeadAccountant = Boolean(user?.isHead);
+  // Section accountant: ACCOUNTANT role without isHead flag
+  const isSectionAccountant = userRole === 'ACCOUNTANT' && !isHeadAccountant;
 
   // Status options for filter
   const statusOptions = [
@@ -626,7 +628,7 @@ const AccPayables = () => {
     { headerName: "Action", field: "id" },
   ];
 
-  // Purchase Orders columns
+  // Purchase Orders columns — Unit Price and Amount hidden for section accountants
   const purchaseOrderColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "PO Reference", field: "poReference" },
@@ -636,13 +638,17 @@ const AccPayables = () => {
     { headerName: "Section", field: "section" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    { headerName: "Unit Price", field: "unitPrice" },
-    { headerName: "Amount (PKR)", field: "amount" },
+    ...(!isSectionAccountant ? [
+      { headerName: "Unit Price", field: "unitPrice" },
+      { headerName: "Amount (PKR)", field: "amount" },
+    ] : [
+      { headerName: "Payment Status", field: "paymentStatus" },
+    ]),
     { headerName: "Status", field: "status" },
     { headerName: "Action", field: "id" },
   ];
 
-  // Purchase Orders with Amounts columns (includes View Document column)
+  // Purchase Orders with Amounts columns — Unit Price and Amount hidden for section accountants
   const purchaseOrderWithAmountColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "PO Reference", field: "poReference" },
@@ -652,8 +658,12 @@ const AccPayables = () => {
     { headerName: "Section", field: "section" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    { headerName: "Unit Price", field: "unitPrice" },
-    { headerName: "Amount (PKR)", field: "amount" },
+    ...(!isSectionAccountant ? [
+      { headerName: "Unit Price", field: "unitPrice" },
+      { headerName: "Amount (PKR)", field: "amount" },
+    ] : [
+      { headerName: "Payment Status", field: "paymentStatus" },
+    ]),
     { headerName: "Status", field: "status" },
     { headerName: "View Document", field: "proofOfBill" },
     { headerName: "Action", field: "id" },
@@ -723,6 +733,7 @@ const AccPayables = () => {
             unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
             amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
             status: po.status || "-",
+            paymentStatus: getPaymentStatus(po.status),
             // Complete PO data for modal
             poData: po // Store complete PO data separately
           };
@@ -762,6 +773,7 @@ const AccPayables = () => {
             unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
             amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
             status: po.status || "-",
+            paymentStatus: getPaymentStatus(po.status),
             proofOfBill: po.proofOfBill || null, // Document URL
             // Complete PO data for modal
             poData: po // Store complete PO data separately
@@ -820,11 +832,9 @@ const AccPayables = () => {
   ];
 
   useEffect(() => {
-    // Only fetch vendor accounts for head accountants
-    if (isHeadAccountant) {
-      fetchVendorAccount();
-    }
-  }, [isHeadAccountant]);
+    // Fetch vendor accounts for all accountants so payables summary cards populate
+    fetchVendorAccount();
+  }, []);
 
   useEffect(() => {
     fetchNewPurchaseOrders();
@@ -938,6 +948,35 @@ const AccPayables = () => {
     );
   };
 
+  // Payment status badge for section accountants (replaces Unit Price / Amount columns)
+  const getPaymentStatus = (status) => {
+    const s = (status || '').toUpperCase();
+    if (s === 'COMPLETED') return 'Paid';
+    if (s === 'PARTIAL' || s === 'PARTIALLY_APPROVED') return 'Partially Paid';
+    return 'Balance';
+  };
+
+  const PaymentStatusBadge = ({ value }) => {
+    let bg, color;
+    if (value === 'Paid') {
+      bg = '#4CAF50'; color = '#fff';
+    } else if (value === 'Partially Paid') {
+      bg = '#FFD700'; color = '#333';
+    } else {
+      bg = '#00BCD4'; color = '#fff';
+    }
+    return (
+      <span style={{
+        backgroundColor: bg, color,
+        borderRadius: '12px', padding: '3px 12px',
+        fontWeight: 600, fontSize: '12px',
+        display: 'inline-block', whiteSpace: 'nowrap'
+      }}>
+        {value || 'Balance'}
+      </span>
+    );
+  };
+
   // View Document component for Purchase Orders with Amounts
   const ViewDocument = ({ value }) => {
     if (!value) {
@@ -1034,7 +1073,8 @@ const AccPayables = () => {
               data={filteredPurchaseOrders}
               cellComponents={{
                 id: ActionComforRegPOs,
-                status: StatusChip
+                status: StatusChip,
+                ...(isSectionAccountant ? { paymentStatus: PaymentStatusBadge } : {})
               }}
             />
           )}
@@ -1067,8 +1107,12 @@ const AccPayables = () => {
                 id: ActionForPOsWithAmount,
                 status: StatusChip,
                 proofOfBill: ViewDocument,
-                // unitPrice: ColorCodedAmount,
-                amount: ColorCodedAmount
+                ...(!isSectionAccountant ? {
+                  // unitPrice: ColorCodedAmount,
+                  amount: ColorCodedAmount,
+                } : {
+                  paymentStatus: PaymentStatusBadge,
+                })
               }}
             />
           )}

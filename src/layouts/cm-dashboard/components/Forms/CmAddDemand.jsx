@@ -236,7 +236,7 @@ const CmAddDemand = () => {
               className="bg-primary px-10 py-2 rounded-lg font-medium text-white"
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Creating..." : "Create Demand"}
             </button>
           </div>
         </div>

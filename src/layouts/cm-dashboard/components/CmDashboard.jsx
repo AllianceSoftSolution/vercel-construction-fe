@@ -317,7 +317,8 @@ function CmDashboard() {
         <HorixontalBarchartGraph
           title={"Fulfillment Progress"}
           dataset={fulfillmentProgress}
-          series={[{ dataKey: "progress", label: "Progress" }]}
+          series={[{ dataKey: "progress", label: "Progress (%)" }]}
+          yAxisDataKey="sectionName"
         />
       </div>
       

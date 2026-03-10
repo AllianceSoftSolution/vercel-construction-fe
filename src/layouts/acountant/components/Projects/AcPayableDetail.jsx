@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import { Box, IconButton, Modal } from "@mui/material";
 import SimpleTable from "../../../../components/SimpleTable";
 import AnalyticsCard from "../../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { FiFilter } from "react-icons/fi";
 import { AccountBalance, AccountTree, Paid } from "@mui/icons-material";
 import { RiRecordMailLine } from "react-icons/ri";
 import apiClient from "../../../../api/apiClient";
@@ -39,6 +40,14 @@ const paymentColumns = [
   { headerName: "Proof", field: "proof" },
 ];
 
+const SORT_OPTIONS = [
+  { label: 'Date (newest first)', value: 'date_desc' },
+  { label: 'Date (oldest first)', value: 'date_asc' },
+  { label: 'Amount (high to low)', value: 'amount_desc' },
+  { label: 'Amount (low to high)', value: 'amount_asc' },
+  { label: 'Project Name', value: 'project_asc' },
+];
+
 export default function AcPayableDetails() {
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
@@ -46,7 +55,20 @@ export default function AcPayableDetails() {
   const [transactions, setTransactions] = useState([]);
   const [filter, setFilter] = useState({ Type: [] });
   const [open, setOpen] = useState(false);
+  const [sortOption, setSortOption] = useState('date_desc');
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Filter options for transaction type
   const typeOptions = [
@@ -101,52 +123,79 @@ export default function AcPayableDetails() {
     );
   };
 
-  const TransactionModal = ({ open, onClose, onSave, loading = false }) => {
+  const TransactionModal = ({ open, onClose }) => {
     const [formData, setFormData] = useState({
       amount: '',
       note: '',
-      file: null
+      vendorName: '',
+      projectId: '',
+      sectionId: '',
+      file: null,
     });
     const [modalLoading, setModalLoading] = useState(false);
-  
+    const [projects, setProjects] = useState([]);
+    const [allSections, setAllSections] = useState([]);
+    const [filteredSections, setFilteredSections] = useState([]);
+
+    // Fetch projects & sections when modal opens
+    useEffect(() => {
+      if (!open) return;
+      const fetchData = async () => {
+        try {
+          const [projRes, secRes] = await Promise.all([
+            apiClient.get('/projects'),
+            apiClient.get('/sections'),
+          ]);
+          if (projRes.ok) setProjects(projRes.data.projects || []);
+          if (secRes.ok) setAllSections(secRes.data.sections || []);
+        } catch (e) {
+          console.error('Error fetching projects/sections', e);
+        }
+      };
+      fetchData();
+    }, [open]);
+
+    // Filter sections when project changes
+    useEffect(() => {
+      if (formData.projectId) {
+        setFilteredSections(allSections.filter(s => s.projectId === formData.projectId));
+      } else {
+        setFilteredSections([]);
+      }
+      setFormData(prev => ({ ...prev, sectionId: '' }));
+    }, [formData.projectId, allSections]);
+
     const handleInputChange = (field, value) => {
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      }));
+      setFormData(prev => ({ ...prev, [field]: value }));
     };
-  
+
     const handleFileChange = (e) => {
-      setFormData(prev => ({
-        ...prev,
-        file: e.target.files[0]
-      }));
+      setFormData(prev => ({ ...prev, file: e.target.files[0] }));
     };
-  
+
     const handleSubmit = async () => {
+      if (!formData.amount || !formData.note || !formData.vendorName || !formData.projectId || !formData.sectionId) {
+        toast.error('Please fill all required fields');
+        return;
+      }
       try {
         setModalLoading(true);
-        
-        // Create form data for file upload
         const submitData = new FormData();
         submitData.append('amount', formData.amount);
         submitData.append('note', formData.note);
+        submitData.append('vendorName', formData.vendorName);
+        submitData.append('projectId', formData.projectId);
+        submitData.append('sectionId', formData.sectionId);
         if (formData.file) {
           submitData.append('proofOfPayment', formData.file);
         }
-
         const response = await apiClient.post(`/vendor-account/vendors/${id}/payments`, submitData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
-
         if (response.ok) {
           toast.success('Payment added successfully!');
           onClose();
-          // Reset form
-          setFormData({ amount: '', note: '', file: null });
-          // Refresh the transaction data
+          setFormData({ amount: '', note: '', vendorName: '', projectId: '', sectionId: '', file: null });
           fetchDetails();
         } else {
           toast.error(response.data?.message || 'Failed to add payment');
@@ -160,25 +209,70 @@ export default function AcPayableDetails() {
     };
 
     const handleClose = () => {
-      setFormData({ amount: '', note: '', file: null });
+      setFormData({ amount: '', note: '', vendorName: '', projectId: '', sectionId: '', file: null });
       onClose();
     };
-  
+
+    const isSubmitDisabled = modalLoading || !formData.amount || !formData.note ||
+      !formData.vendorName || !formData.projectId || !formData.sectionId;
+
     return (
       <Modal open={open} onClose={handleClose}>
-        <Box sx={style} className="bg-white p-5">
+        <Box sx={style} className="bg-white p-5 overflow-y-auto" style={{ maxHeight: '90vh' }}>
           <h1 className="text-3xl font-semibold mb-4">Add Payment</h1>
           <div className="flex flex-col gap-5">
+            {/* Row 1: Amount + Vendor Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CustomTextField
+                label="Amount *"
+                placeholder="Amount"
+                value={formData.amount}
+                onChange={(e) => handleInputChange('amount', e.target.value)}
+                disabled={modalLoading}
+                type="number"
+              />
+              <CustomTextField
+                label="Vendor Name *"
+                placeholder="Enter vendor name"
+                value={formData.vendorName}
+                onChange={(e) => handleInputChange('vendorName', e.target.value)}
+                disabled={modalLoading}
+              />
+            </div>
+            {/* Row 2: Project Name + Section Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Project Name *</label>
+                <select
+                  className="border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  value={formData.projectId}
+                  onChange={(e) => handleInputChange('projectId', e.target.value)}
+                  disabled={modalLoading}
+                >
+                  <option value="">Select Project</option>
+                  {projects.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Section Name *</label>
+                <select
+                  className="border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50"
+                  value={formData.sectionId}
+                  onChange={(e) => handleInputChange('sectionId', e.target.value)}
+                  disabled={modalLoading || !formData.projectId}
+                >
+                  <option value="">{formData.projectId ? 'Select Section' : 'Select a project first'}</option>
+                  {filteredSections.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {/* Note */}
             <CustomTextField
-              label="Amount"
-              placeholder="Amount"
-              value={formData.amount}
-              onChange={(e) => handleInputChange('amount', e.target.value)}
-              disabled={modalLoading}
-              type="number"
-            />
-            <CustomTextField
-              label="Note"
+              label="Note *"
               placeholder="Note"
               value={formData.note}
               onChange={(e) => handleInputChange('note', e.target.value)}
@@ -186,9 +280,9 @@ export default function AcPayableDetails() {
             />
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">Upload File</label>
-              <input 
-                type="file" 
-                className="border border-gray-300 rounded p-2 w-full" 
+              <input
+                type="file"
+                className="border border-gray-300 rounded p-2 w-full"
                 onChange={handleFileChange}
                 disabled={modalLoading}
               />
@@ -202,10 +296,10 @@ export default function AcPayableDetails() {
             >
               Cancel
             </button>
-            <Button 
-              buttonText={modalLoading ? "Submitting..." : "Add Payment"} 
+            <Button
+              buttonText={modalLoading ? 'Submitting...' : 'Add Payment'}
               onClick={handleSubmit}
-              disabled={modalLoading || !formData.amount || !formData.note}
+              disabled={isSubmitDisabled}
             />
           </div>
         </Box>
@@ -229,11 +323,13 @@ export default function AcPayableDetails() {
         const transactionData = responseData.transactions?.map((transaction) => ({
           id: transaction.id,
           date: formatDateDMY(transaction.createdAt),
+          rawDate: transaction.createdAt,
           description: transaction.note || transaction.type,
-          project: transaction.purchaseOrder?.section?.project?.name || "-",
-          section: transaction.purchaseOrder?.section?.name || "-",
+          project: transaction.purchaseOrder?.section?.project?.name || transaction.project?.name || "-",
+          section: transaction.purchaseOrder?.section?.name || transaction.section?.name || "-",
           type: transaction.type,
           amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()} ` : "-",
+          rawAmount: parseFloat(transaction.amount) || 0,
           proof: transaction.proofOfPayment,
         })) || [];
         
@@ -260,6 +356,18 @@ export default function AcPayableDetails() {
   // Filtered transactions for credit and debit
   const creditTransactions = transactions.filter(txn => txn.type === 'CREDIT');
   const debitTransactions = transactions.filter(txn => txn.type === 'DEBIT');
+
+  // Sorted debit transactions
+  const sortedDebitTransactions = [...debitTransactions].sort((a, b) => {
+    switch (sortOption) {
+      case 'date_asc':  return new Date(a.rawDate) - new Date(b.rawDate);
+      case 'date_desc': return new Date(b.rawDate) - new Date(a.rawDate);
+      case 'amount_desc': return b.rawAmount - a.rawAmount;
+      case 'amount_asc':  return a.rawAmount - b.rawAmount;
+      case 'project_asc': return (a.project || '').localeCompare(b.project || '');
+      default: return 0;
+    }
+  });
 
   const handleFilterChange = (newSelected) => {
     setFilter(newSelected);
@@ -397,12 +505,44 @@ export default function AcPayableDetails() {
           </div>
         </div>
         <div>
-          <TopBar title="Debit Transactions" detail="All debit transactions for this vendor account." buttonText="Add Payment" onButtonClick={() => setOpen(true)}/>
+          {/* Debit header with Sort + Add Payment */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-2xl font-bold text-[#444444]">Debit Transactions</span>
+            <div className="flex items-center gap-2">
+              {/* Sort Filter dropdown */}
+              <div className="relative" ref={sortDropdownRef}>
+                <button
+                  onClick={() => setSortDropdownOpen(prev => !prev)}
+                  className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  <FiFilter className="text-gray-500" />
+                  Sort
+                  <IoMdArrowDropdown className="text-gray-500" />
+                </button>
+                {sortDropdownOpen && (
+                  <div className="absolute top-10 right-0 bg-white border border-gray-200 rounded-xl shadow-lg p-2 z-20 w-52">
+                    {SORT_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => { setSortOption(opt.value); setSortDropdownOpen(false); }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-50 ${
+                          sortOption === opt.value ? 'font-semibold text-orange-500' : 'text-gray-700'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Button buttonText="Add Payment" onClick={() => setOpen(true)} />
+            </div>
+          </div>
           <div className="mt-4 overflow-x-auto relative">
             <SimpleTable
-              data={debitTransactions}
+              data={sortedDebitTransactions}
               columns={paymentColumns}
-            cellComponents={{ proof: ProofCell, amount: ColorCodedAmount }}
+              cellComponents={{ proof: ProofCell, amount: ColorCodedAmount }}
             />
           </div>
         </div>

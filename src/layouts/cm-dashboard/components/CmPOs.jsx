@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import DropdownButton from "../../../comments/components/DropdownButton";
@@ -47,6 +48,9 @@ const PurchaseOrder = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPOId, setSelectedPOId] = useState(null);
   const navigate = useNavigate();
+  const user = useSelector((state) => state?.auth?.user ?? null);
+  const userRole = user?.role?.toUpperCase();
+  const canViewFinancials = userRole !== "CONSTRUCTION_MANAGER";
 
   // Fetch all projects for filter
   useEffect(() => {
@@ -204,8 +208,10 @@ const PurchaseOrder = () => {
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Unit Price", field: "unitPrice" },
-    { headerName: "Amount", field: "amount" },
+    ...(canViewFinancials ? [
+      { headerName: "Unit Price", field: "unitPrice" },
+      { headerName: "Amount", field: "amount" },
+    ] : []),
     { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Status", field: "status" },
     {headerName: "Date" , field:"createdAt"}

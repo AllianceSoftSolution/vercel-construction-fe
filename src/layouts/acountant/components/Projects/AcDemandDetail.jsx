@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Box, IconButton, Modal, Chip } from "@mui/material";
@@ -85,6 +86,8 @@ const DemandDetails = () => {
   const [statusLogs, setStatusLogs] = useState([]);
   const { id } = useParams();
   const [modalLoading, setModalLoading] = useState(false);
+  const user = useSelector((state) => state?.auth?.user ?? null);
+  const isHeadAccountant = Boolean(user?.isHead);
 
 //   const handleActionClick = (newStatus) => {
 //     if (newStatus === "Approved") {
@@ -301,7 +304,7 @@ const DemandDetails = () => {
                   {demandData?.status || "PENDING"}
                 </div>
 
-                {demandData?.status === "APPROVED" && (
+                {isHeadAccountant && demandData?.status === "APPROVED" && (
                   <Button
                     // onClick={() => setOpenPurchaseModal(true)}
                     className="bg-primary text-white px-4 py-2 text-sm"
