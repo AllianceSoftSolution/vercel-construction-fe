@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState, useRef } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import { Box, IconButton, Modal, Chip } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -16,6 +17,7 @@ import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import { useSelector } from "react-redux";
+import { formatDateDMY } from '../../../utils';
 
 const style = {
   position: "absolute",
@@ -437,9 +439,163 @@ const ViewPriceDetailsModal = ({ open, onClose, poData, onEdit }) => {
   );
 };
 
+// â”€â”€â”€ PROJECT COLOR PALETTE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const PROJECT_COLORS = ['#0252AD', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
+
+// â”€â”€â”€ TRANSACTION MODAL (Level 3 â€“ Add Payment) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const TransactionModal = ({ open, onClose, vendorId, defaultVendorName, defaultProjectId, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    amount: '', note: '', vendorName: defaultVendorName || '',
+    projectId: defaultProjectId || '', sectionId: '', file: null,
+  });
+  const [modalLoading, setModalLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [allSections, setAllSections] = useState([]);
+  const [filteredSections, setFilteredSections] = useState([]);
+
+  useEffect(() => {
+    if (open) {
+      setFormData(prev => ({
+        ...prev,
+        vendorName: defaultVendorName || '',
+        projectId: defaultProjectId || '',
+      }));
+    }
+  }, [open, defaultVendorName, defaultProjectId]);
+
+  useEffect(() => {
+    if (!open) return;
+    const fetchData = async () => {
+      try {
+        const [projRes, secRes] = await Promise.all([
+          apiClient.get('/projects'),
+          apiClient.get('/sections'),
+        ]);
+        if (projRes.ok) setProjects(projRes.data.projects || []);
+        if (secRes.ok) setAllSections(secRes.data.sections || []);
+      } catch (e) { console.error('Error fetching projects/sections', e); }
+    };
+    fetchData();
+  }, [open]);
+
+  useEffect(() => {
+    if (formData.projectId) {
+      setFilteredSections(allSections.filter(s => s.projectId === formData.projectId));
+    } else {
+      setFilteredSections([]);
+    }
+    setFormData(prev => ({ ...prev, sectionId: '' }));
+  }, [formData.projectId, allSections]);
+
+  const handleInputChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const handleFileChange = (e) => setFormData(prev => ({ ...prev, file: e.target.files[0] }));
+
+  const handleSubmit = async () => {
+    if (!formData.amount || !formData.note || !formData.vendorName || !formData.projectId || !formData.sectionId) {
+      toast.error('Please fill all required fields'); return;
+    }
+    try {
+      setModalLoading(true);
+      const submitData = new FormData();
+      submitData.append('amount', formData.amount);
+      submitData.append('note', formData.note);
+      submitData.append('vendorName', formData.vendorName);
+      submitData.append('projectId', formData.projectId);
+      submitData.append('sectionId', formData.sectionId);
+      if (formData.file) submitData.append('proofOfPayment', formData.file);
+      const response = await apiClient.post(`/vendor-account/vendors/${vendorId}/payments`, submitData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (response.ok) {
+        toast.success('Payment added successfully!');
+        handleClose();
+        if (onSuccess) onSuccess();
+      } else {
+        toast.error(response.data?.message || 'Failed to add payment');
+      }
+    } catch (error) {
+      console.error('Error adding payment:', error);
+      toast.error('Error adding payment');
+    } finally { setModalLoading(false); }
+  };
+
+  const handleClose = () => {
+    setFormData({ amount: '', note: '', vendorName: defaultVendorName || '', projectId: defaultProjectId || '', sectionId: '', file: null });
+    onClose();
+  };
+
+  const isSubmitDisabled = modalLoading || !formData.amount || !formData.note || !formData.vendorName || !formData.projectId || !formData.sectionId;
+
+  return (
+    <Modal open={open} onClose={handleClose}>
+      <Box sx={style} className="bg-white p-5 overflow-y-auto" style={{ maxHeight: '90vh' }}>
+        <h1 className="text-3xl font-semibold mb-4">Add Payment</h1>
+        <div className="flex flex-col gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CustomTextField
+              label="Amount *" placeholder="Amount" value={formData.amount}
+              onChange={(e) => handleInputChange('amount', e.target.value)}
+              disabled={modalLoading} type="number"
+            />
+            <CustomTextField
+              label="Vendor Name *" placeholder="Enter vendor name" value={formData.vendorName}
+              onChange={(e) => handleInputChange('vendorName', e.target.value)}
+              disabled={modalLoading || !!defaultVendorName}
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Project Name *</label>
+              <select
+                className="border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50 disabled:bg-gray-50"
+                value={formData.projectId}
+                onChange={(e) => handleInputChange('projectId', e.target.value)}
+                disabled={modalLoading || !!defaultProjectId}
+              >
+                <option value="">Select Project</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Section Name *</label>
+              <select
+                className="border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50"
+                value={formData.sectionId}
+                onChange={(e) => handleInputChange('sectionId', e.target.value)}
+                disabled={modalLoading || !formData.projectId}
+              >
+                <option value="">{formData.projectId ? 'Select Section' : 'Select a project first'}</option>
+                {filteredSections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <CustomTextField
+            label="Note *" placeholder="Note" value={formData.note}
+            onChange={(e) => handleInputChange('note', e.target.value)}
+            disabled={modalLoading}
+          />
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Upload Proof of Payment</label>
+            <input type="file" className="border border-gray-300 rounded p-2 w-full" onChange={handleFileChange} disabled={modalLoading} />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            className="bg-[#dddddd] text-[#000000] px-6 py-2 rounded-xl text-lg font-medium hover:bg-[#b0b0b0] transition-colors"
+            onClick={handleClose} disabled={modalLoading}
+          >Cancel</button>
+          <Button buttonText={modalLoading ? 'Submitting...' : 'Add Payment'} onClick={handleSubmit} disabled={isSubmitDisabled} />
+        </div>
+      </Box>
+    </Modal>
+  );
+};
+
+// â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const AccPayables = () => {
+  // â”€â”€ Core data state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [loading, setLoading] = useState(false);
-  const [vendorAccounts, setVendorAccounts] = useState([]);
+  const [drillLoading, setDrillLoading] = useState(false);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [purchaseOrdersWithAmount, setPurchaseOrdersWithAmount] = useState([]);
   const [selectedPOForDetails, setSelectedPOForDetails] = useState(null);
@@ -447,38 +603,32 @@ const AccPayables = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedPOForEdit, setSelectedPOForEdit] = useState(null);
   const [payablesSummary, setPayablesSummary] = useState({
-    totalVendors: 0,
-    totalCredited: 0,
-    totalDebited: 0,
-    totalBalance: 0,
-    vendorsWithOverdue: 0,
-    vendorsWithAdvance: 0
+    totalVendors: 0, totalCredited: 0, totalDebited: 0, totalBalance: 0,
   });
-  const [filter, setFilter] = useState({
-    Status: [],
-    Project: [],
-    Section: [],
-    });
+  const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
   const [projects, setProjects] = useState([]);
-  const [globalProjectFilter, setGlobalProjectFilter] = useState([]);
-  const [poWithAmountFilter, setPoWithAmountFilter] = useState({
-    Project: [],
-  });
-  
-  // Get user role from Redux store
+  const [poWithAmountFilter, setPoWithAmountFilter] = useState({ Project: [] });
+
+  // â”€â”€ Head Accountant drill-down state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const [drillLevel, setDrillLevel] = useState('projects'); // 'projects' | 'vendors' | 'payments'
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [projectSummaries, setProjectSummaries] = useState([]);
+  const [vendorSummaries, setVendorSummaries] = useState([]);
+  const [scopedSummary, setScopedSummary] = useState({});
+  const [vendorTransactions, setVendorTransactions] = useState([]); // raw transactions for Level 3
+  const [addPaymentOpen, setAddPaymentOpen] = useState(false);
+
+  // â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const user = useSelector((state) => {
     if (!state || !state.auth) return null;
     return state.auth.user;
   });
   const userRole = user?.role;
-  
-  // Check if user is head accountant (has permission to view vendor accounts)
-  // Use Boolean() to safely coerce any truthy isHead value (true, 1, "true", etc.)
   const isHeadAccountant = Boolean(user?.isHead);
-  // Section accountant: ACCOUNTANT role without isHead flag
   const isSectionAccountant = userRole === 'ACCOUNTANT' && !isHeadAccountant;
 
-  // Status options for filter
+  // â”€â”€ Status options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const statusOptions = [
     { label: "Order Placed", value: "ORDER_PLACED" },
     { label: "Created", value: "CREATED" },
@@ -495,140 +645,37 @@ const AccPayables = () => {
     { label: "Fulfilled", value: "FULFILLED" },
     { label: "Partial", value: "PARTIAL" },
   ];
-  // Fetch all projects for filter
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await apiClient.get("/projects");
-        if (response.ok) {
-          setProjects(response.data.projects || []);
-        }
-      } catch (e) {
-        // ignore
-      }
-    };
-    fetchProjects();
-  }, []);
 
   const projectOptions = projects.map((p) => ({ label: p.name, value: p.id }));
-
-  // Get unique sections from purchase orders
   const sectionOptions = [...new Set(
-    [...purchaseOrders, ...purchaseOrdersWithAmount]
-      .map(po => po.section)
-      .filter(Boolean)
+    [...purchaseOrders, ...purchaseOrdersWithAmount].map(po => po.section).filter(Boolean)
   )];
-
   const filters = [
     { label: "Status", options: statusOptions.map(o => o.label) },
     { label: "Project", options: projectOptions.map(o => o.label) },
     { label: "Section", options: sectionOptions },
   ];
+  const poWithAmountFilters = [{ label: "Project", options: projectOptions.map(o => o.label) }];
 
-  const poWithAmountFilters = [
-    { label: "Project", options: projectOptions.map(o => o.label) },
-  ];
-
-  // Global project filter options
-  const globalProjectFilters = [
-    { label: "Project", options: projectOptions.map(o => o.label) },
-  ];
-
-  const handleFilterChange = (newSelected) => {
-    setFilter(newSelected);
-  };
+  const handleFilterChange = (newSelected) => setFilter(newSelected);
   const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
-
-  const handlePOWithAmountFilterChange = (newSelected) => {
-    setPoWithAmountFilter(newSelected);
-  };
+  const handlePOWithAmountFilterChange = (newSelected) => setPoWithAmountFilter(newSelected);
   const handlePOWithAmountFilterClear = () => setPoWithAmountFilter({ Project: [] });
 
-    const handleGlobalProjectFilterChange = (newSelected) => {
-    setGlobalProjectFilter(newSelected);
-    
-    // Only apply project filter for head accountants
-    if (!isHeadAccountant) return;
-    
-    // Get the selected project ID
-    const selectedProject = newSelected.Project && newSelected.Project.length > 0 
-      ? newSelected.Project[0] 
-      : null;
-    
-    // Find the project ID from the project name
-    const selectedProjectId = selectedProject 
-      ? projectOptions.find(p => p.label === selectedProject)?.value 
-      : null;
-    
-    // Fetch vendor accounts with project filter
-    fetchVendorAccount(selectedProjectId);
-  };
-
-  const handleGlobalProjectFilterClear = () => {
-    setGlobalProjectFilter([]);
-    // Only fetch vendor accounts for head accountants when filter is cleared
-    if (isHeadAccountant) {
-      fetchVendorAccount();
-    }
-  };
-
-  // Filter purchase orders by status, project, section, and global project filter
+  // â”€â”€ Filtered data (section accountant view) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const filteredPurchaseOrders = purchaseOrders.filter((po) => {
-    // Status filter
-    const statusMatch =
-      !filter.Status ||
-      filter.Status.length === 0 ||
-      filter.Status.includes(
-        statusOptions.find((opt) => opt.value === po.status)?.label || po.status
-      );
-
-    // Project filter
-    const projectMatch =
-      !filter.Project ||
-      filter.Project.length === 0 ||
-      filter.Project.includes(po.project);
-
-    // Section filter
-    const sectionName = po.section || "-";
-    const sectionMatch =
-      !filter.Section ||
-      filter.Section.length === 0 ||
-      filter.Section.includes(sectionName);
-
-    // Global project filter
-    const globalProjectMatch =
-      !globalProjectFilter.Project ||
-      globalProjectFilter.Project.length === 0 ||
-      globalProjectFilter.Project.includes(po.project);
-
-    return statusMatch && projectMatch && sectionMatch && globalProjectMatch;
+    const statusMatch = !filter.Status?.length ||
+      filter.Status.includes(statusOptions.find(opt => opt.value === po.status)?.label || po.status);
+    const projectMatch = !filter.Project?.length || filter.Project.includes(po.project);
+    const sectionMatch = !filter.Section?.length || filter.Section.includes(po.section || "-");
+    return statusMatch && projectMatch && sectionMatch;
   });
-
-  // Filter vendor accounts by global project filter
-  // Note: This filtering is now handled at the API level, so we just return all vendor accounts
-  // The API will return only the vendors for the selected project
-  const filteredVendorAccounts = vendorAccounts;
 
   const filteredPurchaseOrdersWithAmount = purchaseOrdersWithAmount.filter((po) => {
-    const projectMatch =
-      !poWithAmountFilter.Project ||
-      poWithAmountFilter.Project.length === 0 ||
-      poWithAmountFilter.Project.includes(po.project);
-
-    return projectMatch;
+    return !poWithAmountFilter.Project?.length || poWithAmountFilter.Project.includes(po.project);
   });
 
-  // Vendor Accounts columns
-  const vendorColumns = [
-    { headerName: "No.", field: "no" },
-    { headerName: "Vendor Name", field: "vendorName" },
-    { headerName: "Total Amount (PKR)", field: "totalBalance" },
-    { headerName: "Remaining Amount (PKR)", field: "remainingBalance" },
-    { headerName: "Paid Amount (PKR)", field: "paidAmount" },
-    { headerName: "Action", field: "id" },
-  ];
-
-  // Purchase Orders columns — Unit Price and Amount hidden for section accountants
+  // â”€â”€ Column definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const purchaseOrderColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "PO Reference", field: "poReference" },
@@ -638,17 +685,14 @@ const AccPayables = () => {
     { headerName: "Section", field: "section" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    ...(!isSectionAccountant ? [
-      { headerName: "Unit Price", field: "unitPrice" },
-      { headerName: "Amount (PKR)", field: "amount" },
-    ] : [
-      { headerName: "Payment Status", field: "paymentStatus" },
-    ]),
+    ...(!isSectionAccountant
+      ? [{ headerName: "Unit Price", field: "unitPrice" }, { headerName: "Amount (PKR)", field: "amount" }]
+      : [{ headerName: "Payment Status", field: "paymentStatus" }]
+    ),
     { headerName: "Status", field: "status" },
     { headerName: "Action", field: "id" },
   ];
 
-  // Purchase Orders with Amounts columns — Unit Price and Amount hidden for section accountants
   const purchaseOrderWithAmountColumns = [
     { headerName: "No.", field: "no" },
     { headerName: "PO Reference", field: "poReference" },
@@ -658,297 +702,18 @@ const AccPayables = () => {
     { headerName: "Section", field: "section" },
     { headerName: "Quantity", field: "quantity" },
     { headerName: "Unit", field: "unit" },
-    ...(!isSectionAccountant ? [
-      { headerName: "Unit Price", field: "unitPrice" },
-      { headerName: "Amount (PKR)", field: "amount" },
-    ] : [
-      { headerName: "Payment Status", field: "paymentStatus" },
-    ]),
+    ...(!isSectionAccountant
+      ? [{ headerName: "Unit Price", field: "unitPrice" }, { headerName: "Amount (PKR)", field: "amount" }]
+      : [{ headerName: "Payment Status", field: "paymentStatus" }]
+    ),
     { headerName: "Status", field: "status" },
     { headerName: "View Document", field: "proofOfBill" },
     { headerName: "Action", field: "id" },
   ];
 
-  const fetchVendorAccount = async (projectId = null) => {
-    try {
-      setLoading(true);
-      let url = "/vendor-account/vendors";
-      if (projectId) {
-        url += `?projectId=${projectId}`;
-      }
-
-      const response = await apiClient.get(url);
-      if (response.ok) {
-        const vendorData = response.data.data || [];
-        const summary = response.data.summary || {};
-
-        // Map vendor account data to table format
-        const mappedData = vendorData.map((account, index) => {
-          console.log("Vendor account data:", account);
-          return {
-            id: account.vendorId, // Use vendorId for navigation to detail page
-            no: index + 1,
-            vendorName: account.vendor?.name || "-",
-            totalBalance: account.totalCredited ? `${account.totalCredited.toLocaleString()}` : "-",
-            remainingBalance: account.remainingAmount ? `${account.remainingAmount.toLocaleString()}` : "-",
-            paidAmount: account.paidAmount ? `${account.paidAmount.toLocaleString()}` : "-",
-            // Store original numeric values for color coding
-            totalBalanceValue: account.totalCredited || 0,
-            remainingBalanceValue: account.remainingAmount || 0,
-            paidAmountValue: account.paidAmount || 0,
-          };
-        });
-
-        setVendorAccounts(mappedData);
-        setPayablesSummary(summary);
-      } else {
-        toast.error("Failed to fetch vendor accounts");
-      }
-    } catch (error) {
-      console.error("Error fetching vendor accounts:", error);
-      toast.error("Error fetching vendor accounts");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchNewPurchaseOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await apiClient.get("/purchase-orders?hasAmount=false");
-      if (response.ok) {
-        const data = response.data.data.map((po, index) => {
-          // Create rowData with all PO data and display fields
-          const rowData = {
-            // Display fields for table
-            id: po.id,
-            no: index + 1,
-            poReference: po.referenceNumber || po.id || "-",
-            project: po.demand?.section?.project?.name || "-",
-            material: po.material?.name || "-", // Material name for display
-            vendor: po.vendor?.name || "-",
-            section: po.demand?.section?.name || po.section?.name || "-",
-            quantity: po.quantity || "-",
-            unit: po.demand?.unit || "-",
-            unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
-            amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
-            status: po.status || "-",
-            paymentStatus: getPaymentStatus(po.status),
-            // Complete PO data for modal
-            poData: po // Store complete PO data separately
-          };
-          return rowData;
-        });
-        console.log("Mapped purchase orders data:", data); // Debug log
-        setPurchaseOrders(data);
-      } else {
-        toast.error("Failed to fetch purchase orders");
-      }
-    } catch (error) {
-      console.error("Error fetching purchase orders:", error);
-      toast.error("Error fetching purchase orders");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPurchaseOrdersWithAmount = async () => {
-    try {
-      setLoading(true);
-      const response = await apiClient.get("/purchase-orders?hasAmount=true");
-      if (response.ok) {
-        const data = response.data.data.map((po, index) => {
-          // Create rowData with all PO data and display fields
-          const rowData = {
-            // Display fields for table
-            id: po.id,
-            no: index + 1,
-            poReference: po.referenceNumber || po.id || "-",
-            project: po.demand?.section?.project?.name || "-",
-            material: po.material?.name || "-", // Material name for display
-            vendor: po.vendor?.name || "-",
-            section: po.demand?.section?.name || po.section?.name || "-",
-            quantity: po.quantity || "-",
-            unit: po.demand?.unit || "-",
-            unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
-            amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
-            status: po.status || "-",
-            paymentStatus: getPaymentStatus(po.status),
-            proofOfBill: po.proofOfBill || null, // Document URL
-            // Complete PO data for modal
-            poData: po // Store complete PO data separately
-          };
-          return rowData;
-        });
-        console.log("Mapped purchase orders with amount data:", data); // Debug log
-        setPurchaseOrdersWithAmount(data);
-      } else {
-        toast.error("Failed to fetch purchase orders with amounts");
-      }
-    } catch (error) {
-      console.error("Error fetching purchase orders with amounts:", error);
-      toast.error("Error fetching purchase orders with amounts");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Format number with commas
-  const formatAmount = (amount) => {
-    return (amount || 0).toLocaleString('en-US');
-  };
-
-  // Get color for balance remaining: red for zero/positive, green for negative
-  const getBalanceRemainingColor = (balance) => {
-    const numericBalance = balance || 0;
-    if (numericBalance < 0) {
-      return "#22c55e"; // green for negative
-    } else {
-      return "#ef4444"; // red for zero and positive
-    }
-  };
-
-  // Update analytics with real data from API
-  const payablesData = [
-    {
-      label: "Total Payables",
-      icon: IoPeopleSharp,
-      count: formatAmount(payablesSummary.totalCredited),
-      countColor: "#ef4444", // red
-    },
-    {
-      label: "Total Paid",
-      icon: AccountBalance,
-      count: formatAmount(payablesSummary.totalDebited),
-      countColor: "#22c55e", // green
-    },
-    // Only show balance remaining for head accountants
-    ...(isHeadAccountant ? [{
-      label: "Balance Remaining",
-      icon: Balance,
-      count: formatAmount(payablesSummary.totalBalance),
-      countColor: getBalanceRemainingColor(payablesSummary.totalBalance),
-    }] : []),
-  ];
-
-  useEffect(() => {
-    // Fetch vendor accounts for all accountants so payables summary cards populate
-    fetchVendorAccount();
-  }, []);
-
-  useEffect(() => {
-    fetchNewPurchaseOrders();
-    fetchPurchaseOrdersWithAmount();
-  }, []);
-
-  // ActionComforRegPOs component with access to fetchNewPurchaseOrders
-  const ActionComforRegPOs = ({ value: id }) => {
-    const [open, setOpen] = useState(false);
-    const navigate = useNavigate();
-
-
-
-    const handleSuccess = () => {
-      // Refresh both purchase orders lists
-      fetchNewPurchaseOrders();
-      fetchPurchaseOrdersWithAmount();
-    };
-
-    return (
-      <>
-        <DropdownButton
-          items={[
-            { label: "Add Price", onClick: () => setOpen(true) },
-          ]}
-        >
-          <IconButton>
-            <BsThreeDotsVertical />
-          </IconButton>
-        </DropdownButton>
-        <AddPriceModal
-          open={open}
-          onClose={() => setOpen(false)}
-          poId={id}
-          onSuccess={handleSuccess}
-        />
-      </>
-    );
-  };
-
-  // Action component for Purchase Orders with Amounts
-  const ActionForPOsWithAmount = ({ value: id }) => {
-    const handleViewDetails = () => {
-      const po = purchaseOrdersWithAmount.find(p => p.id === id);
-      if (po && po.poData) {
-        setSelectedPOForDetails(po.poData);
-        setDetailsModalOpen(true);
-      }
-    };
-
-    const handleEdit = () => {
-      const po = purchaseOrdersWithAmount.find(p => p.id === id);
-      if (po && po.poData) {
-        setSelectedPOForEdit(po.poData);
-        setEditModalOpen(true);
-        setDetailsModalOpen(false);
-      }
-    };
-
-    // Check if within 24 hours
-    const isWithin24Hours = () => {
-      const po = purchaseOrdersWithAmount.find(p => p.id === id);
-      if (!po?.poData?.amountAddedAt) return false;
-      const now = new Date();
-      const amountAddedAt = new Date(po.poData.amountAddedAt);
-      const hoursDiff = (now.getTime() - amountAddedAt.getTime()) / (1000 * 60 * 60);
-      return hoursDiff <= 24;
-    };
-
-    const canEdit = isWithin24Hours();
-    const items = [{ label: "View Details", onClick: handleViewDetails }];
-    if (canEdit) {
-      items.push({ label: "Edit", onClick: handleEdit });
-    }
-
-    return (
-      <DropdownButton items={items}>
-        <IconButton>
-          <BsThreeDotsVertical />
-        </IconButton>
-      </DropdownButton>
-    );
-  };
-
-  // Status color mapping for PO status
-  const statusColorMap = {
-    APPROVED: "#22c55e", // green
-    REJECTED: "#ef4444", // red
-    PENDING: "#f59e42", // orange
-    PARTIALLY_APPROVED: "#eab308", // yellow
-    PO_CREATED: "#8b5cf6", // purple
-    FULFILLED: "#0ea5e9", // blue
-    COMPLETED: "#22c55e", // green
-    PARTIAL: "#eab308", // yellow
-    ORDER_PLACED: "#f59e42", // orange
-    IN_TRANSIT: "#0ea5e9", // blue
-    IN_STORE: "#8b5cf6", // purple
-    CANCELLED: "#ef4444", // red
-    default: "#0252AD", // fallback blue
-  };
-
-  const StatusChip = ({ value }) => {
-    const status = (value || "PENDING").toUpperCase();
-    const color = statusColorMap[status] || statusColorMap.default;
-    return (
-      <Chip
-        label={status.replace(/_/g, " ")}
-        size="small"
-        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
-      />
-    );
-  };
-
-  // Payment status badge for section accountants (replaces Unit Price / Amount columns)
+  // â”€â”€ Format helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const formatAmount = (amount) => (amount || 0).toLocaleString('en-US');
+  const getBalanceRemainingColor = (balance) => (balance || 0) < 0 ? "#22c55e" : "#ef4444";
   const getPaymentStatus = (status) => {
     const s = (status || '').toUpperCase();
     if (s === 'COMPLETED') return 'Paid';
@@ -956,199 +721,831 @@ const AccPayables = () => {
     return 'Balance';
   };
 
-  const PaymentStatusBadge = ({ value }) => {
-    let bg, color;
-    if (value === 'Paid') {
-      bg = '#4CAF50'; color = '#fff';
-    } else if (value === 'Partially Paid') {
-      bg = '#FFD700'; color = '#333';
-    } else {
-      bg = '#00BCD4'; color = '#fff';
-    }
+  // â”€â”€ Status chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const statusColorMap = {
+    APPROVED: "#22c55e", REJECTED: "#ef4444", PENDING: "#f59e42",
+    PARTIALLY_APPROVED: "#eab308", PO_CREATED: "#8b5cf6", FULFILLED: "#0ea5e9",
+    COMPLETED: "#22c55e", PARTIAL: "#eab308", ORDER_PLACED: "#f59e42",
+    IN_TRANSIT: "#0ea5e9", IN_STORE: "#8b5cf6", CANCELLED: "#ef4444", default: "#0252AD",
+  };
+  const StatusChip = ({ value }) => {
+    const status = (value || "PENDING").toUpperCase();
+    const color = statusColorMap[status] || statusColorMap.default;
     return (
-      <span style={{
-        backgroundColor: bg, color,
-        borderRadius: '12px', padding: '3px 12px',
-        fontWeight: 600, fontSize: '12px',
-        display: 'inline-block', whiteSpace: 'nowrap'
-      }}>
+      <Chip
+        label={status.replace(/_/g, " ")} size="small"
+        sx={{ bgcolor: color, color: "#fff", fontWeight: 600, letterSpacing: 0.5 }}
+      />
+    );
+  };
+
+  const PaymentStatusBadge = ({ value }) => {
+    const bg = value === 'Paid' ? '#4CAF50' : value === 'Partially Paid' ? '#FFD700' : '#00BCD4';
+    const color = value === 'Partially Paid' ? '#333' : '#fff';
+    return (
+      <span style={{ backgroundColor: bg, color, borderRadius: '12px', padding: '3px 12px', fontWeight: 600, fontSize: '12px', display: 'inline-block', whiteSpace: 'nowrap' }}>
         {value || 'Balance'}
       </span>
     );
   };
 
-  // View Document component for Purchase Orders with Amounts
   const ViewDocument = ({ value }) => {
-    if (!value) {
-      return <span className="text-gray-400">-</span>;
-    }
-
-    const handleViewDocument = () => {
-      window.open(value, '_blank');
-    };
-
+    if (!value) return <span className="text-gray-400">-</span>;
     return (
-      <button
-        onClick={handleViewDocument}
-        className="text-orange-500 hover:text-orange-600 underline font-medium cursor-pointer"
-      >
+      <button onClick={() => window.open(value, '_blank')} className="text-orange-500 hover:text-orange-600 underline font-medium cursor-pointer">
         View Document
       </button>
     );
   };
 
-  // Color-coded amount component for vendor accounts
-  const ColorCodedAmount = ({ value, field }) => {
+  const ColorCodedAmount = ({ value }) => {
     if (!value || value === "-") return <span>{value}</span>;
+    const n = parseFloat(value.replace(/,/g, ""));
+    if (isNaN(n)) return <span>{value}</span>;
+    const color = n < 0 ? "#22c55e" : n > 0 ? "#ef4444" : "#222222";
+    return <span style={{ color, fontWeight: "600" }}>{value}</span>;
+  };
 
-    // Remove commas and convert to number
-    const numericValue = parseFloat(value.replace(/,/g, ""));
-
-    if (isNaN(numericValue)) return <span>{value}</span>;
-
-    // Green for negative (overpaid/advance), red for positive > 0 (owe), neutral for zero (balanced)
-    let color = "#222222"; // neutral/black for zero
-    if (numericValue < 0) {
-      color = "#22c55e"; // green for negative (overpaid)
-    } else if (numericValue > 0) {
-      color = "#ef4444"; // red for positive (we owe)
+  // â”€â”€ API fetch functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const fetchVendorAccount = async (projectId = null) => {
+    try {
+      setLoading(true);
+      let url = "/vendor-account/vendors";
+      if (projectId) url += `?projectId=${projectId}`;
+      const response = await apiClient.get(url);
+      if (response.ok) {
+        setPayablesSummary(response.data.summary || {});
+      }
+    } catch (error) {
+      console.error("Error fetching vendor accounts:", error);
+    } finally {
+      setLoading(false);
     }
-    const fontWeight = "font-semibold";
+  };
 
-    return (
-      <span style={{ color, fontWeight }} className={fontWeight}>
-        {value}
-      </span>
+  const fetchNewPurchaseOrders = async () => {
+    try {
+      const response = await apiClient.get("/purchase-orders?hasAmount=false");
+      if (response.ok) {
+        const data = response.data.data.map((po, index) => ({
+          id: po.id, no: index + 1,
+          poReference: po.referenceNumber || po.id || "-",
+          project: po.demand?.section?.project?.name || "-",
+          material: po.material?.name || "-",
+          vendor: po.vendor?.name || "-",
+          section: po.demand?.section?.name || po.section?.name || "-",
+          quantity: po.quantity || "-",
+          unit: po.demand?.unit || "-",
+          unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
+          amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
+          status: po.status || "-",
+          paymentStatus: getPaymentStatus(po.status),
+          hasAmount: false,
+          poData: po,
+        }));
+        setPurchaseOrders(data);
+      }
+    } catch (error) { console.error("Error fetching purchase orders:", error); }
+  };
+
+  const fetchPurchaseOrdersWithAmount = async () => {
+    try {
+      const response = await apiClient.get("/purchase-orders?hasAmount=true");
+      if (response.ok) {
+        const data = response.data.data.map((po, index) => ({
+          id: po.id, no: index + 1,
+          poReference: po.referenceNumber || po.id || "-",
+          project: po.demand?.section?.project?.name || "-",
+          material: po.material?.name || "-",
+          vendor: po.vendor?.name || "-",
+          section: po.demand?.section?.name || po.section?.name || "-",
+          quantity: po.quantity || "-",
+          unit: po.demand?.unit || "-",
+          unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
+          amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
+          status: po.status || "-",
+          paymentStatus: getPaymentStatus(po.status),
+          hasAmount: true,
+          proofOfBill: po.proofOfBill || null,
+          poData: po,
+        }));
+        setPurchaseOrdersWithAmount(data);
+      }
+    } catch (error) { console.error("Error fetching purchase orders with amounts:", error); }
+  };
+
+  // â”€â”€ HEAD ACCOUNTANT: Project summaries (Level 1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const fetchProjectSummaries = async () => {
+    try {
+      setDrillLoading(true);
+      const projRes = await apiClient.get('/projects');
+      if (!projRes.ok) return;
+      const allProjects = projRes.data.projects || [];
+      setProjects(allProjects);
+
+      // Fetch vendor account summary per project in parallel
+      const results = await Promise.all(
+        allProjects.map(async (proj, idx) => {
+          try {
+            const res = await apiClient.get(`/vendor-account/vendors?projectId=${proj.id}`);
+            const summary = res.ok ? (res.data.summary || {}) : {};
+            return {
+              projectId: proj.id,
+              projectName: proj.name,
+              totalPayable: summary.totalCredited || 0,
+              totalPaid: summary.totalDebited || 0,
+              balance: summary.totalBalance || 0,
+              color: PROJECT_COLORS[idx % PROJECT_COLORS.length],
+            };
+          } catch {
+            return { projectId: proj.id, projectName: proj.name, totalPayable: 0, totalPaid: 0, balance: 0, color: PROJECT_COLORS[idx % PROJECT_COLORS.length] };
+          }
+        })
+      );
+      setProjectSummaries(results.filter(r => r.totalPayable > 0 || r.totalPaid > 0));
+    } catch (error) {
+      console.error("Error fetching project summaries:", error);
+      toast.error("Error fetching project data");
+    } finally {
+      setDrillLoading(false);
+    }
+  };
+
+  // â”€â”€ HEAD ACCOUNTANT: Level 1 â†’ 2 (click a project card) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const handleProjectClick = async (project) => {
+    try {
+      setDrillLoading(true);
+      const res = await apiClient.get(`/vendor-account/vendors?projectId=${project.projectId}`);
+      if (res.ok) {
+        const vendorData = res.data.data || [];
+        const summary = res.data.summary || {};
+        setVendorSummaries(vendorData.map(v => ({
+          vendorId: v.vendorId,
+          vendorName: v.vendor?.name || '-',
+          totalPayable: v.totalCredited || 0,
+          totalPaid: v.paidAmount || 0,
+          balance: v.remainingAmount || 0,
+        })));
+        setScopedSummary(summary);
+      }
+      setSelectedProject(project);
+      setDrillLevel('vendors');
+    } catch (error) {
+      console.error("Error loading vendor list:", error);
+      toast.error("Error loading vendors for this project");
+    } finally {
+      setDrillLoading(false);
+    }
+  };
+
+  // â”€â”€ HEAD ACCOUNTANT: Level 2 â†’ 3 (click a vendor card) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const handleVendorClick = async (vendor) => {
+    try {
+      setDrillLoading(true);
+      const res = await apiClient.get(`/vendor-account/vendors/${vendor.vendorId}/statement`);
+      if (res.ok) {
+        const data = res.data.data;
+        setVendorTransactions(data.transactions || []);
+      }
+      // Use project-scoped totals already stored in vendor object (from Level 2 fetch)
+      setScopedSummary({
+        totalCredited: vendor.totalPayable,
+        totalDebited: vendor.totalPaid,
+        totalBalance: vendor.balance,
+      });
+      setSelectedVendor(vendor);
+      setDrillLevel('payments');
+    } catch (error) {
+      console.error("Error loading vendor statement:", error);
+      toast.error("Error loading payment details");
+    } finally {
+      setDrillLoading(false);
+    }
+  };
+
+  // â”€â”€ Breadcrumb navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const goToProjects = () => {
+    setDrillLevel('projects');
+    setSelectedProject(null);
+    setSelectedVendor(null);
+    setVendorSummaries([]);
+    setVendorTransactions([]);
+  };
+
+  const goToVendors = () => {
+    setSelectedVendor(null);
+    setVendorTransactions([]);
+    setDrillLevel('vendors');
+  };
+
+  // â”€â”€ Level 3 computed data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const getVendorProjectPOs = () => {
+    if (!selectedVendor || !selectedProject) return [];
+    return [...purchaseOrders, ...purchaseOrdersWithAmount].filter(
+      po => po.vendor === selectedVendor.vendorName && po.project === selectedProject.projectName
     );
   };
 
-  return (
-    <div className=" ">
-      <TopBar
-        title="Payables"
-        // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        // showFilter={true}
-        // filterOptions={["Assigned", "Not-Assigned"]}
-        // onFilterChange={(selected) =>
-        //   console.log("Selected Filters:", selected)
-        // }
-      />
+  const getVendorProjectPayments = () => {
+    return vendorTransactions.filter(t => {
+      if (t.type !== 'DEBIT') return false;
+      const projName = t.purchaseOrder?.section?.project?.name || t.project?.name;
+      return !selectedProject || projName === selectedProject.projectName;
+    });
+  };
 
+  // â”€â”€ Action components (section accountant table view) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const ActionComforRegPOs = ({ value: id }) => {
+    const [open, setOpen] = useState(false);
+    const handleSuccess = () => { fetchNewPurchaseOrders(); fetchPurchaseOrdersWithAmount(); };
+    return (
+      <>
+        <DropdownButton items={[{ label: "Add Price", onClick: () => setOpen(true) }]}>
+          <IconButton><BsThreeDotsVertical /></IconButton>
+        </DropdownButton>
+        <AddPriceModal open={open} onClose={() => setOpen(false)} poId={id} onSuccess={handleSuccess} />
+      </>
+    );
+  };
+
+  const ActionForPOsWithAmount = ({ value: id }) => {
+    const handleViewDetails = () => {
+      const po = purchaseOrdersWithAmount.find(p => p.id === id);
+      if (po?.poData) { setSelectedPOForDetails(po.poData); setDetailsModalOpen(true); }
+    };
+    const handleEdit = () => {
+      const po = purchaseOrdersWithAmount.find(p => p.id === id);
+      if (po?.poData) { setSelectedPOForEdit(po.poData); setEditModalOpen(true); setDetailsModalOpen(false); }
+    };
+    const isWithin24Hours = () => {
+      const po = purchaseOrdersWithAmount.find(p => p.id === id);
+      if (!po?.poData?.amountAddedAt) return false;
+      return (new Date() - new Date(po.poData.amountAddedAt)) / (1000 * 60 * 60) <= 24;
+    };
+    const items = [{ label: "View Details", onClick: handleViewDetails }];
+    if (isWithin24Hours()) items.push({ label: "Edit", onClick: handleEdit });
+    return (
+      <DropdownButton items={items}>
+        <IconButton><BsThreeDotsVertical /></IconButton>
+      </DropdownButton>
+    );
+  };
+
+  // â”€â”€ Global summary card data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const payablesData = [
+    { label: "Total Payables", icon: IoPeopleSharp, count: formatAmount(payablesSummary.totalCredited), countColor: "#ef4444" },
+    { label: "Total Paid", icon: AccountBalance, count: formatAmount(payablesSummary.totalDebited), countColor: "#22c55e" },
+    ...(isHeadAccountant ? [{
+      label: "Balance Remaining", icon: Balance,
+      count: formatAmount(payablesSummary.totalBalance),
+      countColor: getBalanceRemainingColor(payablesSummary.totalBalance),
+    }] : []),
+  ];
+
+  // â”€â”€ Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  useEffect(() => {
+    fetchVendorAccount();
+    fetchNewPurchaseOrders();
+    fetchPurchaseOrdersWithAmount();
+    if (isHeadAccountant) {
+      fetchProjectSummaries();
+    } else {
+      // For section accountant, still load projects for filter options
+      apiClient.get('/projects').then(r => { if (r.ok) setProjects(r.data.projects || []); }).catch(() => {});
+    }
+  }, []);
+
+  // â”€â”€ HEAD ACCOUNTANT RENDER FUNCTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  // -- HEAD ACCOUNTANT: PO action cell (handles both with/without price) -------
+  const HeadPOActionCell = ({ po }) => {
+    const [addPriceOpen, setAddPriceOpen] = useState(false);
+    const handleSuccess = () => { fetchNewPurchaseOrders(); fetchPurchaseOrdersWithAmount(); };
+
+    if (!po.hasAmount) {
+      return (
+        <>
+          <DropdownButton items={[{ label: "Add Price", onClick: () => setAddPriceOpen(true) }]}>
+            <IconButton><BsThreeDotsVertical /></IconButton>
+          </DropdownButton>
+          <AddPriceModal open={addPriceOpen} onClose={() => setAddPriceOpen(false)} poId={po.id} onSuccess={handleSuccess} />
+        </>
+      );
+    }
+    const isWithin24h = () => {
+      if (!po.poData?.amountAddedAt) return false;
+      return (new Date() - new Date(po.poData.amountAddedAt)) / (1000 * 60 * 60) <= 24;
+    };
+    const items = [{ label: "View Details", onClick: () => { setSelectedPOForDetails(po.poData); setDetailsModalOpen(true); } }];
+    if (isWithin24h()) items.push({ label: "Edit", onClick: () => { setSelectedPOForEdit(po.poData); setEditModalOpen(true); } });
+    return (
+      <DropdownButton items={items}>
+        <IconButton><BsThreeDotsVertical /></IconButton>
+      </DropdownButton>
+    );
+  };
+
+  // -- HEAD ACCOUNTANT: single PO table row ---------------------------------
+  const renderPOTableRow = (po, idx) => (
+    <tr key={po.id || idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+      <td className="px-4 py-3 text-sm text-gray-500">{po.no || idx + 1}</td>
+      <td className="px-4 py-3 text-sm text-gray-800 font-medium whitespace-nowrap">{po.poReference || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{po.project || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">{po.material || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{po.vendor || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">{po.section || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-700 text-center">{po.quantity || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">{po.unit || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{po.unitPrice && po.unitPrice !== '-' ? `PKR ${po.unitPrice}` : '-'}</td>
+      <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap">{po.amount && po.amount !== '-' ? `PKR ${po.amount}` : '-'}</td>
+      <td className="px-4 py-3"><StatusChip value={po.status} /></td>
+      <td className="px-4 py-3"><HeadPOActionCell po={po} /></td>
+    </tr>
+  );
+
+  // -- HEAD ACCOUNTANT: Purchase Orders with project tab navigation ---------
+  const renderHeadAccountantPOs = () => {
+    // Deduplicate and combine both PO lists
+    const seen = new Set();
+    const allPOs = [...purchaseOrders, ...purchaseOrdersWithAmount].filter(po => {
+      if (seen.has(po.id)) return false;
+      seen.add(po.id);
+      return true;
+    });
+
+    // Tab + status filtering
+    const projectObj = projects.find(p => p.id === poProjectTab);
+    const tabFiltered = allPOs
+      .filter(po => poProjectTab === 'all' || po.project === projectObj?.name)
+      .filter(po => !poStatusFilter || po.status === poStatusFilter)
+      .map((po, idx) => ({ ...po, no: idx + 1 }));
+
+    // Vendor grouping (only when a specific project tab is selected)
+    const vendorGroups = poProjectTab !== 'all'
+      ? tabFiltered.reduce((acc, po) => {
+          const key = po.vendor || '-';
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(po);
+          return acc;
+        }, {})
+      : null;
+
+    const colHeaders = ['No.', 'PO Reference', 'Project', 'Material', 'Vendor', 'Section', 'Qty', 'Unit', 'Unit Price', 'Amount (PKR)', 'Status', 'Action'];
+
+    return (
+      <div className="mt-10">
+        <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders</h1>
+
+        {/* Project pill tabs + Status filter */}
+        <div className="flex flex-wrap items-start gap-3 mb-5">
+          {/* Scrollable pill tab bar */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-w-0">
+            {[{ id: 'all', name: 'All' }, ...projects].map(proj => (
+              <button
+                key={proj.id}
+                onClick={() => setPoProjectTab(proj.id)}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition-colors flex-shrink-0 ${
+                  poProjectTab === proj.id
+                    ? 'bg-[#0252AD] text-white border-[#0252AD] shadow-sm'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-[#0252AD] hover:text-[#0252AD]'
+                }`}
+              >
+                {proj.name}
+              </button>
+            ))}
+          </div>
+          {/* Status filter */}
+          <select
+            value={poStatusFilter}
+            onChange={e => setPoStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#0252AD] flex-shrink-0"
+          >
+            <option value="">All Statuses</option>
+            {statusOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Table */}
+        {loading ? (
+          <div className="flex justify-center py-10"><Loader /></div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  {colHeaders.map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tabFiltered.length === 0 ? (
+                  <tr>
+                    <td colSpan={colHeaders.length} className="text-center py-12 text-gray-400 text-sm">
+                      No purchase orders found.
+                    </td>
+                  </tr>
+                ) : vendorGroups ? (
+                  // Grouped by vendor
+                  Object.entries(vendorGroups).map(([vendorName, vendorPOs]) => {
+                    const vendorTotal = vendorPOs.reduce((sum, po) => {
+                      const amt = parseFloat((po.amount || '0').toString().replace(/,/g, ''));
+                      return sum + (isNaN(amt) ? 0 : amt);
+                    }, 0);
+                    return (
+                      <React.Fragment key={vendorName}>
+                        <tr className="bg-gray-100 border-b border-gray-200">
+                          <td colSpan={colHeaders.length} className="px-4 py-2.5">
+                            <span className="font-bold text-gray-700 text-sm">Vendor: {vendorName}</span>
+                            {vendorTotal > 0 && (
+                              <span className="ml-3 text-gray-500 text-sm font-medium">
+                                — Total: PKR {vendorTotal.toLocaleString('en-US')}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                        {vendorPOs.map((po, idx) => renderPOTableRow(po, idx))}
+                      </React.Fragment>
+                    );
+                  })
+                ) : (
+                  // Flat list (All tab)
+                  tabFiltered.map((po, idx) => renderPOTableRow(po, idx))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Level 1: Project cards
+  const renderLevel1 = () => (
+    <div className="mt-6">
+      <h2 className="text-xl md:text-2xl font-bold mb-4 text-gray-800">Projects</h2>
+      {drillLoading ? (
+        <div className="flex justify-center py-16"><Loader /></div>
+      ) : projectSummaries.length === 0 ? (
+        <div className="text-center text-gray-400 py-16 text-lg">No project payables data found.</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {projectSummaries.map((project) => (
+            <button
+              key={project.projectId}
+              onClick={() => handleProjectClick(project)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all duration-200 flex items-center justify-between p-5 text-left w-full group"
+              style={{ borderLeft: `5px solid ${project.color}` }}
+            >
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-lg text-gray-800 truncate group-hover:text-[#0252AD] transition-colors">
+                  {project.projectName}
+                </h3>
+                <div className="flex flex-wrap gap-8 mt-3">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Payable Amount</p>
+                    <p className="text-base font-semibold text-red-500">PKR {formatAmount(project.totalPayable)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Paid Amount</p>
+                    <p className="text-base font-semibold text-green-600">PKR {formatAmount(project.totalPaid)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Balance Remaining</p>
+                    <p className="text-base font-semibold text-blue-600">PKR {formatAmount(project.balance)}</p>
+                  </div>
+                </div>
+              </div>
+              <FiChevronRight className="text-gray-300 group-hover:text-[#0252AD] text-2xl ml-5 flex-shrink-0 transition-colors" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // Level 2: Vendor cards for selected project
+  const renderLevel2 = () => (
+    <div className="mt-4">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-2 flex-wrap">
+        <button onClick={goToProjects} className="hover:text-orange-500 transition-colors font-medium">Payables</button>
+        <FiChevronRight className="text-gray-400 flex-shrink-0" />
+        <span className="text-gray-800 font-semibold">{selectedProject?.projectName}</span>
+      </nav>
+
+      {/* Back button */}
+      <button
+        onClick={goToProjects}
+        className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm font-semibold mb-6 mt-0.5"
+      >
+        <FiChevronLeft /> Back to Projects
+      </button>
+
+      {/* Project-scoped summary cards */}
+      <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+        {[
+          { label: "Total Payables", count: formatAmount(scopedSummary.totalCredited), color: "#ef4444" },
+          { label: "Total Paid", count: formatAmount(scopedSummary.totalDebited), color: "#22c55e" },
+          { label: "Balance Remaining", count: formatAmount(scopedSummary.totalBalance), color: getBalanceRemainingColor(scopedSummary.totalBalance) },
+        ].map((card, i) => (
+          <div key={i} className={i < 2 ? "relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 sm:last:after:hidden" : ""}>
+            <AnalyticsCard label={card.label} icon={i === 0 ? IoPeopleSharp : i === 1 ? AccountBalance : Balance} count={card.count} countColor={card.color} />
+          </div>
+        ))}
+      </div>
+
+      <h2 className="text-xl md:text-2xl font-bold mb-4 text-gray-800">Vendors</h2>
+      {drillLoading ? (
+        <div className="flex justify-center py-16"><Loader /></div>
+      ) : vendorSummaries.length === 0 ? (
+        <div className="text-center text-gray-400 py-16 text-lg">No vendors found for this project.</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {vendorSummaries.map((vendor) => (
+            <button
+              key={vendor.vendorId}
+              onClick={() => handleVendorClick(vendor)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all duration-200 flex items-center justify-between p-5 text-left w-full group"
+              style={{ borderLeft: `5px solid ${selectedProject?.color || '#0252AD'}` }}
+            >
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-lg text-gray-800 truncate group-hover:text-[#0252AD] transition-colors">
+                  {vendor.vendorName}
+                </h3>
+                <div className="flex flex-wrap gap-8 mt-3">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Total PO Amount</p>
+                    <p className="text-base font-semibold text-red-500">PKR {formatAmount(vendor.totalPayable)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Total Paid</p>
+                    <p className="text-base font-semibold text-green-600">PKR {formatAmount(vendor.totalPaid)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Balance</p>
+                    <p className="text-base font-semibold text-blue-600">PKR {formatAmount(vendor.balance)}</p>
+                  </div>
+                </div>
+              </div>
+              <FiChevronRight className="text-gray-300 group-hover:text-[#0252AD] text-2xl ml-5 flex-shrink-0 transition-colors" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // Level 3: Payment detail view for selected vendor in selected project
+  const renderLevel3 = () => {
+    const vendorPOs = getVendorProjectPOs();
+    const payments = getVendorProjectPayments();
+
+    return (
+      <div className="mt-4">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-2 flex-wrap">
+          <button onClick={goToProjects} className="hover:text-orange-500 transition-colors font-medium">Payables</button>
+          <FiChevronRight className="text-gray-400 flex-shrink-0" />
+          <button onClick={goToVendors} className="hover:text-orange-500 transition-colors font-medium">{selectedProject?.projectName}</button>
+          <FiChevronRight className="text-gray-400 flex-shrink-0" />
+          <span className="text-gray-800 font-semibold">{selectedVendor?.vendorName}</span>
+        </nav>
+
+        {/* Back button + Add Payment */}
+        <div className="flex items-center justify-between mt-0.5 mb-6">
+          <button
+            onClick={goToVendors}
+            className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm font-semibold"
+          >
+            <FiChevronLeft /> Back to Vendors
+          </button>
+          <button
+            onClick={() => setAddPaymentOpen(true)}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors shadow-sm"
+          >
+            + Add Payment
+          </button>
+        </div>
+
+        {drillLoading ? (
+          <div className="flex justify-center py-16"><Loader /></div>
+        ) : (
+          <>
+            {/* Credit / Debit / Balance summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div className="bg-blue-600 rounded-xl p-5 text-white shadow-md">
+                <p className="text-xs uppercase tracking-wider opacity-80 font-semibold">Credit (Total Payable)</p>
+                <p className="text-2xl font-bold mt-2">PKR {formatAmount(scopedSummary.totalCredited)}</p>
+              </div>
+              <div className="bg-red-500 rounded-xl p-5 text-white shadow-md">
+                <p className="text-xs uppercase tracking-wider opacity-80 font-semibold">Debit (Total Paid)</p>
+                <p className="text-2xl font-bold mt-2">PKR {formatAmount(scopedSummary.totalDebited)}</p>
+              </div>
+              <div className="bg-green-600 rounded-xl p-5 text-white shadow-md">
+                <p className="text-xs uppercase tracking-wider opacity-80 font-semibold">Balance</p>
+                <p className="text-2xl font-bold mt-2">PKR {formatAmount(scopedSummary.totalBalance)}</p>
+              </div>
+            </div>
+
+            {/* Purchase Orders Table */}
+            <div className="mb-10">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Purchase Orders</h2>
+              {vendorPOs.length === 0 ? (
+                <div className="text-gray-400 text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  No purchase orders found for this vendor in this project.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        {['PO Reference', 'Material', 'Section', 'Qty', 'Unit', 'Unit Price', 'Amount (PKR)', 'Status', 'View Document'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendorPOs.map((po, idx) => (
+                        <tr key={po.id || idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3 text-sm text-gray-800 font-medium whitespace-nowrap">{po.poReference || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{po.material || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{po.section || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 text-center">{po.quantity || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{po.unit || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{po.unitPrice ? `PKR ${po.unitPrice}` : '-'}</td>
+                          <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap">{po.amount ? `PKR ${po.amount}` : '-'}</td>
+                          <td className="px-4 py-3">
+                            <StatusChip value={po.status} />
+                          </td>
+                          <td className="px-4 py-3">
+                            {po.proofOfBill ? (
+                              <button
+                                onClick={() => window.open(po.proofOfBill, '_blank')}
+                                className="text-orange-500 hover:text-orange-600 underline font-medium text-sm"
+                              >
+                                View Document
+                              </button>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Payments Made */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Payments Made</h2>
+              {payments.length === 0 ? (
+                <div className="text-gray-400 text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  No payments recorded yet for this vendor in this project.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        {['Date', 'Amount (PKR)', 'Note', 'Proof'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payments.map((t, idx) => (
+                        <tr key={t.id || idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                            {t.createdAt ? formatDateDMY(t.createdAt) : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-semibold text-green-600 whitespace-nowrap">
+                            {t.amount ? `PKR ${parseFloat(t.amount).toLocaleString('en-US')}` : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{t.note || '-'}</td>
+                          <td className="px-4 py-3">
+                            {t.proofOfPayment ? (
+                              <a
+                                href={t.proofOfPayment} target="_blank" rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-700 underline text-sm font-medium"
+                              >
+                                View Proof
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // â”€â”€â”€ RENDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  return (
+    <div>
+      <TopBar title="Payables" />
+
+      {/* Global summary cards â€” always visible */}
       <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
         {payablesData.map((item, index) => (
           <div
             key={index}
             className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 lg:last:after:hidden"
           >
-            <AnalyticsCard
-              label={item.label}
-              icon={item.icon}
-              count={item.count}
-              countColor={item.countColor}
-            />
+            <AnalyticsCard label={item.label} icon={item.icon} count={item.count} countColor={item.countColor} />
           </div>
         ))}
       </div>
 
-      <div className="mt-10">
-        <h1 className="text-xl md:text-2xl font-bold mb-5">
-          Purchase Orders
-        </h1>
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={filters}
-            selected={filter}
-            onChange={handleFilterChange}
-            onClear={handleFilterClear}
-            placeholder="Filter by status, project or section"
-            dropdownAlign="left"
-          />
-        </div>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <Loader />
-          ) : (
-            <SimpleTable
-              columns={purchaseOrderColumns}
-              data={filteredPurchaseOrders}
-              cellComponents={{
-                id: ActionComforRegPOs,
-                status: StatusChip,
-                ...(isSectionAccountant ? { paymentStatus: PaymentStatusBadge } : {})
-              }}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Purchase Orders with Amounts */}
-      <div className="mt-10">
-        <h1 className="text-xl md:text-2xl font-bold mb-5">
-          Purchase Orders with Amounts
-        </h1>
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={poWithAmountFilters}
-            selected={poWithAmountFilter}
-            onChange={handlePOWithAmountFilterChange}
-            onClear={handlePOWithAmountFilterClear}
-            placeholder="Filter by project"
-            dropdownAlign="right"
-          />
-        </div>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <Loader />
-          ) : (
-            <SimpleTable
-              columns={purchaseOrderWithAmountColumns}
-              data={filteredPurchaseOrdersWithAmount}
-              cellComponents={{
-                id: ActionForPOsWithAmount,
-                status: StatusChip,
-                proofOfBill: ViewDocument,
-                ...(!isSectionAccountant ? {
-                  // unitPrice: ColorCodedAmount,
-                  amount: ColorCodedAmount,
-                } : {
-                  paymentStatus: PaymentStatusBadge,
-                })
-              }}
-            />
-          )}
-        </div>
-      </div>
-      
-      {/* Only show vendor accounts section for head accountants */}
-      {isHeadAccountant && (
-        <div className="mt-10">
-          <h1 className="text-xl md:text-2xl font-bold mb-5">Vendor Accounts</h1>
-          <div className="overflow-x-auto">
-            {loading ? (
-              <Loader />
-            ) : (
-              <SimpleTable
-                columns={vendorColumns}
-                data={filteredVendorAccounts}
-                cellComponents={{ 
-                  id: CustomActionComponent,
-                  totalBalance: ColorCodedAmount,
-                  remainingBalance: ColorCodedAmount,
-                  paidAmount: ColorCodedAmount,
-                }}
+      {/* HEAD ACCOUNTANT: 3-level drill-down */}
+      {isHeadAccountant ? (
+        <>
+          {drillLevel === 'projects' && renderLevel1()}
+          {drillLevel === 'projects' && renderHeadAccountantPOs()}
+          {drillLevel === 'vendors' && renderLevel2()}
+          {drillLevel === 'payments' && renderLevel3()}
+        </>
+      ) : (
+        /* SECTION ACCOUNTANT: flat table views */
+        <>
+          <div className="mt-10">
+            <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders</h1>
+            <div className="my-4 flex justify-end">
+              <CustomFilterDropdown
+                filters={[{ label: "Status", options: statusOptions.map(o => o.label) }]}
+                selected={{ Status: filter.Status }}
+                onChange={(s) => setFilter(prev => ({ ...prev, Status: s.Status || [] }))}
+                onClear={() => setFilter(prev => ({ ...prev, Status: [] }))}
+                placeholder="Filter by status" dropdownAlign="right"
               />
-            )}
+            </div>
+            <div className="overflow-x-auto">
+              {loading ? <Loader /> : (
+                <SimpleTable
+                  columns={purchaseOrderColumns}
+                  data={filteredPurchaseOrders}
+                  cellComponents={{
+                    id: ActionComforRegPOs,
+                    status: StatusChip,
+                    ...(isSectionAccountant ? { paymentStatus: PaymentStatusBadge } : {}),
+                  }}
+                />
+              )}
+            </div>
           </div>
-        </div>
+
+          <div className="mt-10">
+            <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders with Amounts</h1>
+            <div className="my-4 flex justify-end">
+              <CustomFilterDropdown
+                filters={poWithAmountFilters} selected={poWithAmountFilter}
+                onChange={handlePOWithAmountFilterChange} onClear={handlePOWithAmountFilterClear}
+                placeholder="Filter by project" dropdownAlign="right"
+              />
+            </div>
+            <div className="overflow-x-auto">
+              {loading ? <Loader /> : (
+                <SimpleTable
+                  columns={purchaseOrderWithAmountColumns}
+                  data={filteredPurchaseOrdersWithAmount}
+                  cellComponents={{
+                    id: ActionForPOsWithAmount,
+                    status: StatusChip,
+                    proofOfBill: ViewDocument,
+                    ...(isSectionAccountant
+                      ? { paymentStatus: PaymentStatusBadge }
+                      : { amount: ColorCodedAmount }
+                    ),
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Price Details Modal */}
       <ViewPriceDetailsModal
         open={detailsModalOpen}
-        onClose={() => {
-          setDetailsModalOpen(false);
-          setSelectedPOForDetails(null);
-        }}
+        onClose={() => { setDetailsModalOpen(false); setSelectedPOForDetails(null); }}
         poData={selectedPOForDetails}
         onEdit={() => {
           if (selectedPOForDetails) {
@@ -1162,18 +1559,27 @@ const AccPayables = () => {
       {/* Edit Price Modal */}
       <EditPriceModal
         open={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false);
-          setSelectedPOForEdit(null);
-        }}
+        onClose={() => { setEditModalOpen(false); setSelectedPOForEdit(null); }}
         poId={selectedPOForEdit?.id}
         poData={selectedPOForEdit}
-        onSuccess={() => {
-          fetchPurchaseOrdersWithAmount();
-          setEditModalOpen(false);
-          setSelectedPOForEdit(null);
-        }}
+        onSuccess={() => { fetchPurchaseOrdersWithAmount(); setEditModalOpen(false); setSelectedPOForEdit(null); }}
       />
+
+      {/* Level 3: Add Payment Modal */}
+      {isHeadAccountant && selectedVendor && (
+        <TransactionModal
+          open={addPaymentOpen}
+          onClose={() => setAddPaymentOpen(false)}
+          vendorId={selectedVendor.vendorId}
+          defaultVendorName={selectedVendor.vendorName}
+          defaultProjectId={selectedProject?.projectId}
+          onSuccess={() => {
+            setAddPaymentOpen(false);
+            // Re-fetch statement to refresh payment history
+            handleVendorClick(selectedVendor);
+          }}
+        />
+      )}
     </div>
   );
 };
