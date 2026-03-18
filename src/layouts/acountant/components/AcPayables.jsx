@@ -618,6 +618,8 @@ const AccPayables = () => {
   const [scopedSummary, setScopedSummary] = useState({});
   const [vendorTransactions, setVendorTransactions] = useState([]); // raw transactions for Level 3
   const [addPaymentOpen, setAddPaymentOpen] = useState(false);
+  const [poProjectTab, setPoProjectTab] = useState('all');
+  const [poStatusFilter, setPoStatusFilter] = useState('');
 
   // â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const user = useSelector((state) => {
