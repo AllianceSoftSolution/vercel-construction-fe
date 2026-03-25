@@ -865,6 +865,14 @@ const AccPayables = () => {
         })
       );
       setProjectSummaries(results.filter(r => r.totalPayable > 0 || r.totalPaid > 0));
+
+      // Compute combined summary from ONLY the assigned projects for the top-level cards
+      const combined = results.reduce((acc, r) => ({
+        totalCredited: acc.totalCredited + r.totalPayable,
+        totalDebited: acc.totalDebited + r.totalPaid,
+        totalBalance: acc.totalBalance + r.balance,
+      }), { totalCredited: 0, totalDebited: 0, totalBalance: 0 });
+      setPayablesSummary(combined);
     } catch (error) {
       console.error("Error fetching project summaries:", error);
       toast.error("Error fetching project data");
@@ -951,8 +959,15 @@ const AccPayables = () => {
   const getVendorProjectPayments = () => {
     return vendorTransactions.filter(t => {
       if (t.type !== 'DEBIT') return false;
-      const projName = t.purchaseOrder?.section?.project?.name || t.project?.name;
-      return !selectedProject || projName === selectedProject.projectName;
+      // For payment-linked DEBIT transactions, match by stored projectId (set since the schema migration)
+      if (t.vendorPaymentId) {
+        // If projectId is stored, filter precisely; otherwise show all (legacy data before migration)
+        if (t.projectId) return t.projectId === selectedProject?.projectId;
+        return true; // legacy payment without projectId - include it
+      }
+      // For PO-linked DEBIT transactions (rare), match by project via PO path
+      const projId = t.purchaseOrder?.section?.project?.id;
+      return !selectedProject || projId === selectedProject?.projectId;
     });
   };
 
@@ -993,6 +1008,65 @@ const AccPayables = () => {
     );
   };
 
+  // Refresh Level 3 data after a payment is added (updates totals + payment list without leaving the view)
+  const refreshVendorData = async () => {
+    if (!selectedProject || !selectedVendor) return;
+    try {
+      setDrillLoading(true);
+      const [vendorRes, statementRes] = await Promise.all([
+        apiClient.get(`/vendor-account/vendors?projectId=${selectedProject.projectId}`),
+        apiClient.get(`/vendor-account/vendors/${selectedVendor.vendorId}/statement`),
+      ]);
+
+      if (vendorRes.ok) {
+        const vendorData = vendorRes.data.data || [];
+        const updatedVendors = vendorData.map(v => ({
+          vendorId: v.vendorId,
+          vendorName: v.vendor?.name || '-',
+          totalPayable: v.totalCredited || 0,
+          totalPaid: v.paidAmount || 0,
+          balance: v.remainingAmount || 0,
+        }));
+        setVendorSummaries(updatedVendors);
+
+        const freshVendor = updatedVendors.find(v => v.vendorId === selectedVendor.vendorId);
+        if (freshVendor) {
+          setSelectedVendor(freshVendor);
+          setScopedSummary({
+            totalCredited: freshVendor.totalPayable,
+            totalDebited: freshVendor.totalPaid,
+            totalBalance: freshVendor.balance,
+          });
+        }
+
+        // Update projectSummaries and top banner cards from fresh per-project data
+        setProjectSummaries(prev => {
+          const next = prev.map(ps =>
+            ps.projectId === selectedProject.projectId
+              ? { ...ps, totalPaid: vendorRes.data.summary?.totalDebited ?? ps.totalPaid, balance: vendorRes.data.summary?.totalBalance ?? ps.balance }
+              : ps
+          );
+          // Recompute top-level payablesSummary from the updated list
+          const combined = next.reduce((acc, r) => ({
+            totalCredited: acc.totalCredited + r.totalPayable,
+            totalDebited: acc.totalDebited + r.totalPaid,
+            totalBalance: acc.totalBalance + r.balance,
+          }), { totalCredited: 0, totalDebited: 0, totalBalance: 0 });
+          setPayablesSummary(combined);
+          return next;
+        });
+      }
+
+      if (statementRes.ok) {
+        setVendorTransactions(statementRes.data.data?.transactions || []);
+      }
+    } catch (error) {
+      console.error('Error refreshing vendor data:', error);
+    } finally {
+      setDrillLoading(false);
+    }
+  };
+
   // â”€â”€ Global summary card data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const payablesData = [
     { label: "Total Payables", icon: IoPeopleSharp, count: formatAmount(payablesSummary.totalCredited), countColor: "#ef4444" },
@@ -1006,13 +1080,14 @@ const AccPayables = () => {
 
   // â”€â”€ Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
-    fetchVendorAccount();
     fetchNewPurchaseOrders();
     fetchPurchaseOrdersWithAmount();
     if (isHeadAccountant) {
+      // fetchProjectSummaries also computes and sets payablesSummary for assigned projects only
       fetchProjectSummaries();
     } else {
-      // For section accountant, still load projects for filter options
+      // For section accountant, fetch global summary and project list for filters
+      fetchVendorAccount();
       apiClient.get('/projects').then(r => { if (r.ok) setProjects(r.data.projects || []); }).catch(() => {});
     }
   }, []);
@@ -1577,8 +1652,8 @@ const AccPayables = () => {
           defaultProjectId={selectedProject?.projectId}
           onSuccess={() => {
             setAddPaymentOpen(false);
-            // Re-fetch statement to refresh payment history
-            handleVendorClick(selectedVendor);
+            // Re-fetch vendor totals + payment list while staying at Level 3
+            refreshVendorData();
           }}
         />
       )}
