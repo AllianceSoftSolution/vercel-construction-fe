@@ -912,7 +912,8 @@ const AccPayables = () => {
   const handleVendorClick = async (vendor) => {
     try {
       setDrillLoading(true);
-      const res = await apiClient.get(`/vendor-account/vendors/${vendor.vendorId}/statement`);
+      const projectParam = selectedProject?.projectId ? `?projectId=${selectedProject.projectId}` : '';
+      const res = await apiClient.get(`/vendor-account/vendors/${vendor.vendorId}/statement${projectParam}`);
       if (res.ok) {
         const data = res.data.data;
         setVendorTransactions(data.transactions || []);
@@ -957,18 +958,9 @@ const AccPayables = () => {
   };
 
   const getVendorProjectPayments = () => {
-    return vendorTransactions.filter(t => {
-      if (t.type !== 'DEBIT') return false;
-      // For payment-linked DEBIT transactions, match by stored projectId (set since the schema migration)
-      if (t.vendorPaymentId) {
-        // If projectId is stored, filter precisely; otherwise show all (legacy data before migration)
-        if (t.projectId) return t.projectId === selectedProject?.projectId;
-        return true; // legacy payment without projectId - include it
-      }
-      // For PO-linked DEBIT transactions (rare), match by project via PO path
-      const projId = t.purchaseOrder?.section?.project?.id;
-      return !selectedProject || projId === selectedProject?.projectId;
-    });
+    // The backend already returns only project-scoped transactions when projectId is passed.
+    // Only surface DEBIT entries that are payment-linked (vendorPaymentId present).
+    return vendorTransactions.filter(t => t.type === 'DEBIT' && t.vendorPaymentId);
   };
 
   // â”€â”€ Action components (section accountant table view) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1015,7 +1007,7 @@ const AccPayables = () => {
       setDrillLoading(true);
       const [vendorRes, statementRes] = await Promise.all([
         apiClient.get(`/vendor-account/vendors?projectId=${selectedProject.projectId}`),
-        apiClient.get(`/vendor-account/vendors/${selectedVendor.vendorId}/statement`),
+        apiClient.get(`/vendor-account/vendors/${selectedVendor.vendorId}/statement?projectId=${selectedProject.projectId}`),
       ]);
 
       if (vendorRes.ok) {
