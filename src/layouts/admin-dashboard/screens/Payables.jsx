@@ -459,36 +459,38 @@ const Payables = () => {
   const fetchProjectSummaries = async () => {
     try {
       setDrillLoading(true);
-      const projRes = await apiClient.get('/projects');
-      if (!projRes.ok) return;
-      const allProjects = projRes.data.projects || [];
-      setProjects(allProjects);
 
-      const results = await Promise.all(
-        allProjects.map(async (proj, idx) => {
-          try {
-            const res = await apiClient.get(`/vendor-account/vendors?projectId=${proj.id}`);
-            const summary = res.ok ? (res.data.summary || {}) : {};
-            return {
-              projectId: proj.id, projectName: proj.name,
-              totalPayable: summary.totalCredited || 0,
-              totalPaid: summary.totalDebited || 0,
-              balance: summary.totalBalance || 0,
-              color: PROJECT_COLORS[idx % PROJECT_COLORS.length],
-            };
-          } catch {
-            return { projectId: proj.id, projectName: proj.name, totalPayable: 0, totalPaid: 0, balance: 0, color: PROJECT_COLORS[idx % PROJECT_COLORS.length] };
-          }
-        })
-      );
-      setProjectSummaries(results.filter(r => r.totalPayable > 0 || r.totalPaid > 0));
+      // Use dedicated summary endpoints to get accurate totals from PO amounts / payments
+      const [summaryRes, byProjectRes, projRes] = await Promise.all([
+        apiClient.get('/vendor-account/payables-summary'),
+        apiClient.get('/vendor-account/payables-summary/by-project'),
+        apiClient.get('/projects'),
+      ]);
 
-      const combined = results.reduce((acc, r) => ({
-        totalCredited: acc.totalCredited + r.totalPayable,
-        totalDebited: acc.totalDebited + r.totalPaid,
-        totalBalance: acc.totalBalance + r.balance,
-      }), { totalCredited: 0, totalDebited: 0, totalBalance: 0 });
-      setPayablesSummary(combined);
+      if (projRes.ok) setProjects(projRes.data.projects || []);
+
+      if (summaryRes.ok) {
+        const s = summaryRes.data.data || {};
+        setPayablesSummary({
+          totalCredited: s.totalPayables ?? 0,
+          totalDebited: s.totalPaid ?? 0,
+          totalBalance: s.balance ?? 0,
+        });
+      }
+
+      if (byProjectRes.ok) {
+        const rows = byProjectRes.data.data || [];
+        setProjectSummaries(
+          rows.map((r, idx) => ({
+            projectId: r.projectId,
+            projectName: r.projectName,
+            totalPayable: r.totalPayable,
+            totalPaid: r.totalPaid,
+            balance: r.balance,
+            color: PROJECT_COLORS[idx % PROJECT_COLORS.length],
+          }))
+        );
+      }
     } catch (e) {
       toast.error('Error fetching project data');
     } finally { setDrillLoading(false); }
