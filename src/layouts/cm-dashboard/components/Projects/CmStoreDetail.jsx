@@ -30,77 +30,46 @@ const CmStoreDetail = () => {
   const { id } = useParams();
   const [storeData, setStoreData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const data = [
-    {
-      id: 1,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 2,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-    {
-      id: 3,
-      material: "Cement",
-      linkedDemand: "dm-2345",
-      poQuantity: 100,
-      received: 11,
-      issued: 111,
-      balance: 11,
-      lastUpdated: "11-12-25",
-      vendor: "111",
-      status: "In-Store",
-    },
-  ];
 
   const columns = [
-    { headerName: "Material", field: "material" },
-    { headerName: "Linked Demand", field: "linkedDemand" },
-    { headerName: "PO Quantity", field: "poQuantity" },
-    { headerName: "Received", field: "received" },
-    { headerName: "Issued", field: "issued" },
-    { headerName: "Balance", field: "balance" },
-    { headerName: "Last Updated", field: "lastUpdated" },
-    { headerName: "Vendor", field: "vendor" },
-    { headerName: "Status", field: "status" },
-  ];
-
-  const data1 = [
-    {
-      id: 1,
-      date: "12-12-25",
-      material: "Cement",
-      type: "issued",
-      qty: "20bags",
-      handledBy: "John Doe",
-      remarks: "For base pour",
-    },
+    { headerName: "Material", field: "materialName" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "Stock", field: "stock" },
+    { headerName: "Reserved", field: "reserved" },
+    { headerName: "Available", field: "available" },
+    { headerName: "Last Updated", field: "updatedAtFormatted" },
   ];
 
   const columns1 = [
-    { headerName: "Material", field: "material" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Material", field: "materialName" },
     { headerName: "Type", field: "type" },
-    { headerName: "Qty", field: "qty" },
-    { headerName: "Handled By", field: "handledBy" },
-    { headerName: "Remarks", field: "remarks" },
+    { headerName: "Quantity", field: "quantity" },
+    { headerName: "Reference", field: "reference" },
+    { headerName: "Notes", field: "notes" },
+    { headerName: "Date", field: "transactionDateFormatted" },
   ];
+
+  const inventoryTableData = (storeData?.inventory || []).map((item) => ({
+    ...item,
+    materialName: item.material?.name || "-",
+    unit: item.material?.unit || "-",
+    updatedAtFormatted: item.updatedAt
+      ? new Date(item.updatedAt).toLocaleDateString("en-GB")
+      : "-",
+  }));
+
+  const transactionsTableData = (storeData?.transactions || []).map((item) => {
+    const inv = (storeData?.inventory || []).find(
+      (inv) => inv.materialId === item.materialId
+    );
+    return {
+      ...item,
+      materialName: inv?.material?.name || item.materialId || "-",
+      transactionDateFormatted: item.transactionDate
+        ? new Date(item.transactionDate).toLocaleDateString("en-GB")
+        : "-",
+    };
+  });
 
   const fetchStoreDetail = async () => {
     try {
@@ -277,14 +246,14 @@ const CmStoreDetail = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={data} columns={columns} cellComponents={{}} />
+      <SimpleTable data={inventoryTableData} columns={columns} cellComponents={{}} />
 
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
       </h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={data1} columns={columns1} cellComponents={{}} />
+      <SimpleTable data={transactionsTableData} columns={columns1} cellComponents={{}} />
     </div>
   );
 };
