@@ -37,27 +37,54 @@ const StoreDetail = () => {
   const [openAssignStoreInchargeModal, setOpenAssignStoreInchargeModal] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
 
+  // Format date to dd-mm-yyyy
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // Transform inventory data for table display
+  const inventoryTableData = (storeData?.inventory || []).map((item) => ({
+    ...item,
+    materialName: item.material?.name || "-",
+    unit: item.material?.unit || "-",
+    updatedAtFormatted: formatDate(item.updatedAt),
+  }));
+
+  // Transform transactions data for table display
+  const transactionsTableData = (storeData?.transactions || []).map((item) => {
+    const inv = (storeData?.inventory || []).find(
+      (inv) => inv.materialId === item.materialId
+    );
+    return {
+      ...item,
+      materialName: inv?.material?.name || item.materialId || "-",
+      transactionDateFormatted: formatDate(item.transactionDate),
+    };
+  });
 
   const columns = [
-    { headerName: "Material", field: "material" },
-    { headerName: "Linked Demand", field: "linkedDemand" },
-    { headerName: "PO Quantity", field: "poQuantity" },
-    { headerName: "Received", field: "received" },
-    { headerName: "Issued", field: "issued" },
-    { headerName: "Balance", field: "balance" },
-    { headerName: "Last Updated", field: "lastUpdated" },
-    { headerName: "Vendor", field: "vendor" },
-    { headerName: "Status", field: "status" },
+    { headerName: "Material", field: "materialName" },
+    { headerName: "Unit", field: "unit" },
+    { headerName: "Stock", field: "stock" },
+    { headerName: "Reserved", field: "reserved" },
+    { headerName: "Available", field: "available" },
+    { headerName: "Last Updated", field: "updatedAtFormatted" },
   ];
 
 
   const columns1 = [
-    { headerName: "Material", field: "material" },
-    { headerName: "Date", field: "date" },
+    { headerName: "Material", field: "materialName" },
     { headerName: "Type", field: "type" },
-    { headerName: "Qty", field: "qty" },
-    { headerName: "Handled By", field: "handledBy" },
-    { headerName: "Remarks", field: "remarks" },
+    { headerName: "Quantity", field: "quantity" },
+    { headerName: "Reference", field: "reference" },
+    { headerName: "Notes", field: "notes" },
+    { headerName: "Date", field: "transactionDateFormatted" },
   ];
 
 
@@ -279,20 +306,6 @@ const StoreDetail = () => {
       .join(' ');
   };
 
-  // Format date to dd-mm-yyyy
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "-";
-    
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${day}-${month}-${year}`;
-  };
-
   // Handler for adding and assigning a new Store Incharge
   const handleAddStoreIncharge = async (data) => {
     try {
@@ -417,7 +430,7 @@ const StoreDetail = () => {
               <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
               <InfoRow
                 label="Material:"
-                value={storeData?.inventory?.[0]?.material || "N/A"}
+                value={storeData?.inventory?.[0]?.material?.name || "N/A"}
               />{" "}
               <InfoRow
                 label="Store Incharge:"
@@ -456,7 +469,7 @@ const StoreDetail = () => {
           {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
           <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
           <SimpleTable
-            data={storeData?.inventory || []}
+            data={inventoryTableData}
             columns={columns}
             cellComponents={{}} />{" "}
           {/* Stock Movement Table */}
@@ -466,7 +479,7 @@ const StoreDetail = () => {
           {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
           <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
           <SimpleTable
-            data={storeData?.transactions || []}
+            data={transactionsTableData}
             columns={columns1}
             cellComponents={{}}
           />{" "}
