@@ -205,11 +205,7 @@ const CmDashboardLayout = ({ role }) => {
       icon: FaToolbox,
       path: "/construction-manager-dashboard/pos",
     },
-    {
-      label: "Store",
-      icon: IoStorefrontSharp,
-      path: "/construction-manager-dashboard/store",
-    },
+    // Store intentionally removed — CM role has no store access
   ];
 
   return (

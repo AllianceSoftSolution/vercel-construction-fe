@@ -123,12 +123,9 @@ const PmPurchaseOrder = () => {
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
-          unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
-          amount: po.totalAmount ? `${po.totalAmount}PKR` : "-",
           createdAt: po.createdAt ? formatDate(po.createdAt) : "-",
           status: po.status || "-",
           assingedVendors: po.vendorId || "-",
-          proofOfBill: po.proofOfBill || "-",
         }));
         const uniqueSections = [...new Set(data.map((po) => po.section).filter((section) => section && section !== "-"))];
         setSections(uniqueSections);
@@ -217,9 +214,6 @@ const PmPurchaseOrder = () => {
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Unit Price", field: "unitPrice" },
-    { headerName: "Amount", field: "amount" },
-    { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
@@ -292,7 +286,6 @@ const PmPurchaseOrder = () => {
     
     return <span>{value}</span>;
   };
-  console.log(purchaseOrders);
   return (
     <div className="h-full ">
       <TopBar
@@ -318,7 +311,6 @@ const PmPurchaseOrder = () => {
             data={purchaseOrders}
             cellComponents={{ 
               status: StatusChip, 
-              proofOfBill: ProofOfBillComponent,
               createdAt: DateComponent 
             }}
           />

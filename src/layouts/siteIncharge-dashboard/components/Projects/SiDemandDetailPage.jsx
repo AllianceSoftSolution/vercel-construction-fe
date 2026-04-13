@@ -15,6 +15,25 @@ import toast from "react-hot-toast";
 import { HiCheckCircle } from "react-icons/hi";
 import { TiTick } from "react-icons/ti";
 
+const ProofOfBillComponent = ({ value }) => {
+  if (!value || value === "-") return <span>-</span>;
+  try {
+    new URL(value);
+    return (
+      <a
+        href={value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-black hover:text-primary underline cursor-pointer"
+      >
+        View Proof
+      </a>
+    );
+  } catch (_) {
+    return <span>{value}</span>;
+  }
+};
+
 // Status color mapping for purchase order status
 const statusColorMap = {
   COMPLETED: "#22c55e", // green
@@ -107,8 +126,8 @@ const SiDemandDetails = () => {
       const response = await apiClient.get(`/demands/${id}`);
       if (response?.data?.demand) {
         setDemandData(response.data.demand);
-        setStatus(response.data.data.status || "");
-        setStatusLogs(response.data.data.statusLogs || []);
+        setStatus(response.data.demand?.status || "");
+        setStatusLogs(response.data.demand?.approvals || []);
       } else {
         console.error("Failed to fetch details", response?.data?.message);
       }
@@ -413,6 +432,7 @@ const DateComponent = ({ value }) => {
               cellComponents={{
                 createdAt: DateComponent,
                 status: StatusChip,
+                proofOfBill: ProofOfBillComponent,
               }}
             />
           </div>

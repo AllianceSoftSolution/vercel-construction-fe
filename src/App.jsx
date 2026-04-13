@@ -262,9 +262,8 @@ const constructionManagerRoutes = [
       { path: "demands/:id", element: <CmDemandDetailPage /> },
       { path: "pOS", element: <CmPOs /> },
       { path: "pOS/:id", element: <CmPurchaseOrderDetail /> },
-      { path: "store", element: <CmStores /> },
-      { path: "store/addStore", element: <CmAddStore /> },
-      { path: "store/:id", element: <CmStoreDetail /> },
+      // store routes removed — CM has no store access
+      { path: "*", element: <CmDashboard /> },
     ],
   },
 ];

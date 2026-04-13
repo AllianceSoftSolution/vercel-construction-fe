@@ -202,7 +202,7 @@ const PmDashboardLayout = ({ role }) => {
       path: "/project-manager-dashboard",
     },
     {
-      label: "User Management",
+      label: "My Team",
       icon: FaUserTie,
       path: "/project-manager-dashboard/user-management",
     },

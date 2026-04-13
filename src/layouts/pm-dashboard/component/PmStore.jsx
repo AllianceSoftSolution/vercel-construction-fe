@@ -28,9 +28,8 @@ const Stores = () => {
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [filter, setFilter] = useState({ Type: [], Project: [], Section: [] });
 
-  // Store type filter options
+  // Store type filter options — PM should not see HEAD_STORE
   const typeOptions = [
-    { label: "Head Store", value: "HEAD_STORE" },
     { label: "CM Store", value: "CM_STORE" },
   ];
   // Project and Section filter options
@@ -58,7 +57,9 @@ const Stores = () => {
       }
       const response = await apiClient.get(url);
       if (response.status === 200) {
-        const data = response.data.stores.map((store, index) => ({
+        const data = response.data.stores
+          .filter((store) => store.type !== "HEAD_STORE") // PM should not see Head Store
+          .map((store, index) => ({
           storeId: index + 1,
           action: store.id,
           ...store,

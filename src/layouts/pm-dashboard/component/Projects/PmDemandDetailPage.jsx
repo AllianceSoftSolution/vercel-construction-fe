@@ -105,8 +105,8 @@ const PmDemandDetails = () => {
       const response = await apiClient.get(`/demands/${id}`);
       if (response?.data?.demand) {
         setDemandData(response.data.demand);
-        setStatus(response.data.data.status || "");
-        setStatusLogs(response.data.data.statusLogs || []);
+        setStatus(response.data.demand?.status || "");
+        setStatusLogs(response.data.demand?.approvals || []);
       } else {
         console.error("Failed to fetch details", response?.data?.message);
       }
@@ -164,9 +164,6 @@ const DateCellComponent = ({ value }) => {
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Unit Price", field: "unitPrice" },
-    { headerName: "Amount (PKR)", field: "amount" },
-    { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
@@ -415,12 +412,8 @@ const DateCellComponent = ({ value }) => {
                 qty: po.demand?.quantity || "-",
                 unit: po.demand?.unit || "-",
                 poQty: po.quantity || "-",
-                unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
-                amount: po.totalAmount ? `${po.totalAmount}` : "-",
                 createdAt: po.createdAt ? formatDate(po.createdAt) : "-",
                 status: po.status || "-",
-                assingedVendors: po.vendorId || "-",
-                proofOfBill: po.proofOfBill || "-",
                 notes: po.notes || "-",
               }))}
               columns={columnsPurchaseOrder}

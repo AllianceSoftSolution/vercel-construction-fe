@@ -211,8 +211,8 @@ const PurchaseOrder = () => {
     ...(canViewFinancials ? [
       { headerName: "Unit Price", field: "unitPrice" },
       { headerName: "Amount", field: "amount" },
+      { headerName: "Proof of Bill", field: "proofOfBill" },
     ] : []),
-    { headerName: "Proof of Bill", field: "proofOfBill" },
     { headerName: "Status", field: "status" },
     {headerName: "Date" , field:"createdAt"}
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
@@ -285,7 +285,6 @@ const PurchaseOrder = () => {
     
     return <span>{value}</span>;
   };
-  console.log(purchaseOrders);
   return (
     <div className="h-full ">
       <TopBar
@@ -310,8 +309,8 @@ const PurchaseOrder = () => {
             columns={columns}
             data={purchaseOrders}
             cellComponents={{ 
-              status: StatusChip, 
-              proofOfBill: ProofOfBillComponent,
+              status: StatusChip,
+              ...(canViewFinancials ? { proofOfBill: ProofOfBillComponent } : {}),
               createdAt: DateComponent 
             }}
           />

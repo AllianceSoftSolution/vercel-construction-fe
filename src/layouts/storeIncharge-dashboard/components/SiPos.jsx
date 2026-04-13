@@ -14,6 +14,7 @@ import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
+import { useSelector } from "react-redux";
 
 // Status color mapping for purchase order status
 const statusColorMap = {
@@ -38,6 +39,9 @@ const StatusChip = ({ value }) => {
 };
 
 const SiPurchaseOrder = () => {
+  const currentUser = useSelector((state) => state.auth.user);
+  const isStoreRole = currentUser?.role === "STORE_INCHARGE";
+
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const {id} = useParams();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -100,11 +104,14 @@ const SiPurchaseOrder = () => {
           qty: po.demand?.quantity || "-",
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
-          unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
-          amount: po.totalAmount ? `${po.totalAmount}PKR` : "-",
+          // Financial fields — only map for non-store roles
+          ...(!isStoreRole && {
+            unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
+            amount: po.totalAmount ? `${po.totalAmount}PKR` : "-",
+            proofOfBill: po.proofOfBill || "-",
+          }),
           status: po.status || "-",
           assingedVendors: po.vendorId || "-",
-          proofOfBill: po.proofOfBill || "-",
         }));
         const uniqueSections = [...new Set(data.map((po) => po.section).filter((section) => section && section !== "-"))];
         setSections(uniqueSections);
@@ -193,9 +200,11 @@ const SiPurchaseOrder = () => {
     { headerName: "Qty", field: "qty" },
     { headerName: "Unit", field: "unit" },
     { headerName: "PO Qty", field: "poQty" },
-    { headerName: "Unit Price", field: "unitPrice" },
-    { headerName: "Amount", field: "amount" },
-    { headerName: "Proof of Bill", field: "proofOfBill" },
+    ...(!isStoreRole ? [
+      { headerName: "Unit Price", field: "unitPrice" },
+      { headerName: "Amount", field: "amount" },
+      { headerName: "Proof of Bill", field: "proofOfBill" },
+    ] : []),
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
     // { headerName: "Action", field: "id" },
@@ -291,7 +300,10 @@ const SiPurchaseOrder = () => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
-            cellComponents={{ status: StatusChip, proofOfBill: ProofOfBillComponent }}
+            cellComponents={{
+              status: StatusChip,
+              ...(!isStoreRole && { proofOfBill: ProofOfBillComponent }),
+            }}
           />
         )}
       </div>
