@@ -205,23 +205,28 @@ const Demands = () => {
   };
   const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
-  // Project tabs data
-  const projectTabNames = ["All Projects", ...projectOptions];
-
   // Compute displayed demands based on active project tab
   const displayedDemands = activeProjectTab === "All Projects"
     ? demands
     : demands.filter(d => d.section?.projectName === activeProjectTab);
 
-  // Group demands by section when a specific project is selected
-  const groupedBySection = activeProjectTab !== "All Projects"
-    ? displayedDemands.reduce((groups, demand) => {
-        const sectionName = demand.section?.name || "Unknown Section";
-        if (!groups[sectionName]) groups[sectionName] = [];
-        groups[sectionName].push(demand);
-        return groups;
-      }, {})
-    : null;
+  // Always group demands by section for the right panel
+  const groupedBySection = displayedDemands.reduce((groups, demand) => {
+    const sectionName = demand.section?.name || "Unknown Section";
+    if (!groups[sectionName]) groups[sectionName] = [];
+    groups[sectionName].push(demand);
+    return groups;
+  }, {});
+
+  // Count demands per project for the left panel cards
+  const projectDemandCounts = React.useMemo(() => {
+    const counts = {};
+    demands.forEach(d => {
+      const pName = d.section?.projectName;
+      if (pName) counts[pName] = (counts[pName] || 0) + 1;
+    });
+    return counts;
+  }, [demands]);
 
   const CustomActionComponent = ({ value: demandId }) => {
     return (
@@ -255,7 +260,7 @@ const Demands = () => {
       <TopBar
         title="Demands"
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+      <div className="flex justify-end items-center gap-4 mt-2 mb-4">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}
@@ -265,43 +270,51 @@ const Demands = () => {
         />
       </div>
 
-      {/* Project Tabs */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {projectTabNames.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveProjectTab(tab)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-              activeProjectTab === tab
-                ? "bg-[#F97316] text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+      {/* Two-panel layout */}
+      <div className="flex gap-4" style={{ minHeight: 0 }}>
+        {/* LEFT PANEL — Project list */}
+        <div className="w-[220px] flex-shrink-0">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Projects</h3>
+          <div
+            onClick={() => setActiveProjectTab("All Projects")}
+            className={`rounded-lg px-4 py-3 mb-2 cursor-pointer border transition-all ${
+              activeProjectTab === "All Projects"
+                ? "border-l-4 border-l-[#F97316] border-[#F97316] bg-[#FFF7ED]"
+                : "border-gray-200 bg-white hover:bg-[#FFF7ED] hover:border-[#F97316]"
             }`}
           >
-            {tab}
-          </button>
-        ))}
-      </div>
+            <span className={`block text-sm font-bold ${activeProjectTab === "All Projects" ? "text-[#F97316]" : "text-[#111827]"}`}>
+              All Projects
+            </span>
+            <span className="block text-xs text-gray-400 mt-0.5">{demands.length} demand{demands.length !== 1 ? 's' : ''}</span>
+          </div>
+          {projectOptions.map((pName) => (
+            <div
+              key={pName}
+              onClick={() => setActiveProjectTab(pName)}
+              className={`rounded-lg px-4 py-3 mb-2 cursor-pointer border transition-all ${
+                activeProjectTab === pName
+                  ? "border-l-4 border-l-[#F97316] border-[#F97316] bg-[#FFF7ED]"
+                  : "border-gray-200 bg-white hover:bg-[#FFF7ED] hover:border-[#F97316]"
+              }`}
+            >
+              <span className={`block text-sm font-bold ${activeProjectTab === pName ? "text-[#F97316]" : "text-[#111827]"}`}>
+                {pName}
+              </span>
+              <span className="block text-xs text-gray-400 mt-0.5">{projectDemandCounts[pName] || 0} demand{(projectDemandCounts[pName] || 0) !== 1 ? 's' : ''}</span>
+            </div>
+          ))}
+        </div>
 
-      {/* table */}
-      <div className="overflow-x-auto mt-4">
-        {loading ? (
-          <Loader />
-        ) : activeProjectTab === "All Projects" ? (
-          <SimpleTable
-            columns={columns}
-            data={displayedDemands}
-            cellComponents={{ 
-              demandId: CustomActionComponent, 
-              status: StatusChip,
-              createdAt: DateComponent 
-            }}
-          />
-        ) : (
-          groupedBySection && Object.keys(groupedBySection).length > 0 ? (
+        {/* RIGHT PANEL — Section-grouped demands */}
+        <div className="flex-1 min-w-0 overflow-x-auto">
+          {loading ? (
+            <Loader />
+          ) : Object.keys(groupedBySection).length > 0 ? (
             Object.entries(groupedBySection).map(([sectionName, sectionDemands]) => (
               <div key={sectionName} className="mb-6">
-                <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 mb-2 flex justify-between items-center">
-                  <span className="font-bold text-gray-700">{sectionName}</span>
+                <div className="bg-[#F9FAFB] border-l-[3px] border-l-[#F97316] px-4 py-2.5 mb-2 flex justify-between items-center rounded-r-lg">
+                  <span className="font-bold text-[#374151]">{sectionName}</span>
                   <span className="text-sm text-gray-500">{sectionDemands.length} demand{sectionDemands.length !== 1 ? 's' : ''}</span>
                 </div>
                 <SimpleTable
@@ -316,10 +329,11 @@ const Demands = () => {
               </div>
             ))
           ) : (
-            <div className="text-center text-gray-400 py-8">No demands found for this project.</div>
-          )
-        )}
+            <div className="text-center text-gray-400 py-8">No demands found{activeProjectTab !== "All Projects" ? ` for ${activeProjectTab}` : ''}.</div>
+          )}
+        </div>
       </div>
+
       {showDeleteModal && (
         <DeleteModal
           onClose={() => setShowDeleteModal(false)}

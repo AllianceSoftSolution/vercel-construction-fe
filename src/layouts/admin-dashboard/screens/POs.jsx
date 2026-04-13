@@ -199,33 +199,28 @@ const PurchaseOrder = () => {
   };
   const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
-  // Project tabs data
-  const projectTabNames = ["All Projects", ...projectOptions.map(o => o.label)];
-
   // Compute displayed POs based on active project tab
   const displayedPOs = activeProjectTab === "All Projects"
     ? purchaseOrders
     : purchaseOrders.filter(po => po.project === activeProjectTab);
 
-  // Group POs by section when a specific project is selected
-  const groupedBySection = activeProjectTab !== "All Projects"
-    ? displayedPOs.reduce((groups, po) => {
-        const sectionName = po.section || "Unknown Section";
-        if (!groups[sectionName]) groups[sectionName] = [];
-        groups[sectionName].push(po);
-        return groups;
-      }, {})
-    : null;
+  // Always group POs by section for the right panel
+  const groupedBySection = displayedPOs.reduce((groups, po) => {
+    const sectionName = po.section || "Unknown Section";
+    if (!groups[sectionName]) groups[sectionName] = [];
+    groups[sectionName].push(po);
+    return groups;
+  }, {});
 
-  // Pass the filter state directly as selected
-  let selected = null;
-  if (filter.Status && filter.Status.length > 0) {
-    selected = { group: "Status", value: filter.Status.join(", ") };
-  } else if (filter.Project && filter.Project.length > 0) {
-    selected = { group: "Project", value: filter.Project.join(", ") };
-  } else if (filter.Section && filter.Section.length > 0) {
-    selected = { group: "Section", value: filter.Section.join(", ") };
-  }
+  // Count POs per project for the left panel cards
+  const projectPOCounts = React.useMemo(() => {
+    const counts = {};
+    purchaseOrders.forEach(po => {
+      const pName = po.project;
+      if (pName && pName !== "-") counts[pName] = (counts[pName] || 0) + 1;
+    });
+    return counts;
+  }, [purchaseOrders]);
 
   const columns = [
     { headerName: "Demand ID", field: "demandId" },
@@ -319,7 +314,7 @@ const PurchaseOrder = () => {
         title="Purchase Orders"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
+      <div className="flex justify-end items-center gap-4 mt-2 mb-4">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}
@@ -329,43 +324,51 @@ const PurchaseOrder = () => {
         />
       </div>
 
-      {/* Project Tabs */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {projectTabNames.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveProjectTab(tab)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-              activeProjectTab === tab
-                ? "bg-[#F97316] text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+      {/* Two-panel layout */}
+      <div className="flex gap-4" style={{ minHeight: 0 }}>
+        {/* LEFT PANEL — Project list */}
+        <div className="w-[220px] flex-shrink-0">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Projects</h3>
+          <div
+            onClick={() => setActiveProjectTab("All Projects")}
+            className={`rounded-lg px-4 py-3 mb-2 cursor-pointer border transition-all ${
+              activeProjectTab === "All Projects"
+                ? "border-l-4 border-l-[#F97316] border-[#F97316] bg-[#FFF7ED]"
+                : "border-gray-200 bg-white hover:bg-[#FFF7ED] hover:border-[#F97316]"
             }`}
           >
-            {tab}
-          </button>
-        ))}
-      </div>
+            <span className={`block text-sm font-bold ${activeProjectTab === "All Projects" ? "text-[#F97316]" : "text-[#111827]"}`}>
+              All Projects
+            </span>
+            <span className="block text-xs text-gray-400 mt-0.5">{purchaseOrders.length} PO{purchaseOrders.length !== 1 ? 's' : ''}</span>
+          </div>
+          {projectOptions.map((o) => (
+            <div
+              key={o.label}
+              onClick={() => setActiveProjectTab(o.label)}
+              className={`rounded-lg px-4 py-3 mb-2 cursor-pointer border transition-all ${
+                activeProjectTab === o.label
+                  ? "border-l-4 border-l-[#F97316] border-[#F97316] bg-[#FFF7ED]"
+                  : "border-gray-200 bg-white hover:bg-[#FFF7ED] hover:border-[#F97316]"
+              }`}
+            >
+              <span className={`block text-sm font-bold ${activeProjectTab === o.label ? "text-[#F97316]" : "text-[#111827]"}`}>
+                {o.label}
+              </span>
+              <span className="block text-xs text-gray-400 mt-0.5">{projectPOCounts[o.label] || 0} PO{(projectPOCounts[o.label] || 0) !== 1 ? 's' : ''}</span>
+            </div>
+          ))}
+        </div>
 
-      <div className="overflow-x-auto">
-        {loading ? (
-          <Loader />
-        ) : activeProjectTab === "All Projects" ? (
-          <SimpleTable
-            columns={columns}
-            data={displayedPOs}
-            cellComponents={{
-              id: CustomActionComponent,
-              status: StatusChip,
-              proofOfBill: ProofOfBillComponent,
-              createdAt: DateComponent
-            }}
-          />
-        ) : (
-          groupedBySection && Object.keys(groupedBySection).length > 0 ? (
+        {/* RIGHT PANEL — Section-grouped POs */}
+        <div className="flex-1 min-w-0 overflow-x-auto">
+          {loading ? (
+            <Loader />
+          ) : Object.keys(groupedBySection).length > 0 ? (
             Object.entries(groupedBySection).map(([sectionName, sectionPOs]) => (
               <div key={sectionName} className="mb-6">
-                <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 mb-2 flex justify-between items-center">
-                  <span className="font-bold text-gray-700">{sectionName}</span>
+                <div className="bg-[#F9FAFB] border-l-[3px] border-l-[#F97316] px-4 py-2.5 mb-2 flex justify-between items-center rounded-r-lg">
+                  <span className="font-bold text-[#374151]">{sectionName}</span>
                   <span className="text-sm text-gray-500">{sectionPOs.length} PO{sectionPOs.length !== 1 ? 's' : ''}</span>
                 </div>
                 <SimpleTable
@@ -381,9 +384,9 @@ const PurchaseOrder = () => {
               </div>
             ))
           ) : (
-            <div className="text-center text-gray-400 py-8">No purchase orders found for this project.</div>
-          )
-        )}
+            <div className="text-center text-gray-400 py-8">No purchase orders found{activeProjectTab !== "All Projects" ? ` for ${activeProjectTab}` : ''}.</div>
+          )}
+        </div>
       </div>
 
       {/* Modal */}
