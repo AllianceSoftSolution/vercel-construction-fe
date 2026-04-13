@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { useSelector } from "react-redux";
 
@@ -223,21 +223,16 @@ const projectManagerRoutes = [
       { path: "user-Management", element: <PmUserManagement /> },
       { path: "user-Management/addUser", element: <PmAddUser /> },
       { path: "user-Management/:id", element: <PmMemberDetailPage /> },
-      { path: "project-Management", element: <PmProjectManagement /> },
-      { path: "project-Management/addProject", element: <PmAddProject /> },
-      { path: "project-Management/:id", element: <PmProjectDetailPage /> },
-      { path: "project-management/sections", element: <SectionTab /> },
-      {
-        path: "project-management/sections/:id",
-        element: <PmSectionDetailPage />,
-      },
+      { path: "project-Management", element: <Navigate to="/project-manager-dashboard" replace /> },
+      { path: "project-Management/*", element: <Navigate to="/project-manager-dashboard" replace /> },
+      { path: "project-management/sections", element: <Navigate to="/project-manager-dashboard" replace /> },
+      { path: "project-management/sections/:id", element: <Navigate to="/project-manager-dashboard" replace /> },
 
       { path: "demands", element: <PmDemands /> },
       { path: "demands/:id", element: <PmDemandDetails /> },
       { path: "pOS", element: <PmPOs /> },
       { path: "pOS/:id", element: <PmPurchaseOrderDetailPage /> },
       { path: "store", element: <PmStores /> },
-      { path: "store/addStore", element: <PmAddStore /> },
       { path: "store/:id", element: <PmStoreDetail /> },
     ],
   },

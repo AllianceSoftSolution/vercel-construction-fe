@@ -15,7 +15,6 @@ import {
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa";
-import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
 import Profile from "../../assets/construction/profile.png";
@@ -205,11 +204,6 @@ const PmDashboardLayout = ({ role }) => {
       label: "My Team",
       icon: FaUserTie,
       path: "/project-manager-dashboard/user-management",
-    },
-    {
-      label: "Project Management",
-      icon: FaBoxesStacked,
-      path: "/project-manager-dashboard/project-management",
     },
     {
       label: "Demands",
