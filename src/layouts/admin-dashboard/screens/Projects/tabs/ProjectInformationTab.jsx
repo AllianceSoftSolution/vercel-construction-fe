@@ -336,7 +336,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
           data={
             data?.assignedSiteIncharges?.map((i) => ({
               ...i,
-              noOfSection: i.sections.length,
+              noOfSection: i.sections?.map(s => s.name).filter(Boolean).join(', ') || '-',
             })) || []
           }
           cellComponents={{ action: CustomActionComponent }}
@@ -363,7 +363,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
           data={
             data?.assignedAccountants?.map((i) => ({
               ...i,
-              noOfSection: i.sections.length,
+              noOfSection: i.sections?.map(s => s.name).filter(Boolean).join(', ') || '-',
             })) || []
           }
           cellComponents={{ action: CustomActionComponent }}

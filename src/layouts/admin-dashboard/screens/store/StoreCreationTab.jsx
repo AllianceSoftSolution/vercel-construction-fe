@@ -252,7 +252,7 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
 
   useEffect(() => {
     apiClient
-      .get("/auth/users?role=STORE_INCHARGE,SITE_INCHARGE,PROJECT_MANAGER")
+      .get("/auth/users?role=STORE_INCHARGE")
       .then((r) => {
         if (r.ok) setUsers(r.data.users || []);
       });

@@ -70,6 +70,7 @@ const PurchaseOrder = () => {
   const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPOId, setSelectedPOId] = useState(null);
+  const [activeProjectTab, setActiveProjectTab] = useState("All Projects");
   const navigate = useNavigate();
 
   // Fetch all projects for filter
@@ -198,6 +199,24 @@ const PurchaseOrder = () => {
   };
   const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
+  // Project tabs data
+  const projectTabNames = ["All Projects", ...projectOptions.map(o => o.label)];
+
+  // Compute displayed POs based on active project tab
+  const displayedPOs = activeProjectTab === "All Projects"
+    ? purchaseOrders
+    : purchaseOrders.filter(po => po.project === activeProjectTab);
+
+  // Group POs by section when a specific project is selected
+  const groupedBySection = activeProjectTab !== "All Projects"
+    ? displayedPOs.reduce((groups, po) => {
+        const sectionName = po.section || "Unknown Section";
+        if (!groups[sectionName]) groups[sectionName] = [];
+        groups[sectionName].push(po);
+        return groups;
+      }, {})
+    : null;
+
   // Pass the filter state directly as selected
   let selected = null;
   if (filter.Status && filter.Status.length > 0) {
@@ -309,21 +328,61 @@ const PurchaseOrder = () => {
           placeholder="Filter by status, project or section"
         />
       </div>
-      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
+
+      {/* Project Tabs */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {projectTabNames.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveProjectTab(tab)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeProjectTab === tab
+                ? "bg-[#F97316] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
       <div className="overflow-x-auto">
         {loading ? (
           <Loader />
-        ) : (
+        ) : activeProjectTab === "All Projects" ? (
           <SimpleTable
             columns={columns}
-            data={purchaseOrders}
-            cellComponents={{ 
-              id: CustomActionComponent, 
-              status: StatusChip, 
+            data={displayedPOs}
+            cellComponents={{
+              id: CustomActionComponent,
+              status: StatusChip,
               proofOfBill: ProofOfBillComponent,
-              createdAt: DateComponent 
+              createdAt: DateComponent
             }}
           />
+        ) : (
+          groupedBySection && Object.keys(groupedBySection).length > 0 ? (
+            Object.entries(groupedBySection).map(([sectionName, sectionPOs]) => (
+              <div key={sectionName} className="mb-6">
+                <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 mb-2 flex justify-between items-center">
+                  <span className="font-bold text-gray-700">{sectionName}</span>
+                  <span className="text-sm text-gray-500">{sectionPOs.length} PO{sectionPOs.length !== 1 ? 's' : ''}</span>
+                </div>
+                <SimpleTable
+                  columns={columns}
+                  data={sectionPOs}
+                  cellComponents={{
+                    id: CustomActionComponent,
+                    status: StatusChip,
+                    proofOfBill: ProofOfBillComponent,
+                    createdAt: DateComponent
+                  }}
+                />
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-400 py-8">No purchase orders found for this project.</div>
+          )
         )}
       </div>
 

@@ -16,8 +16,8 @@ const AssociatedMembersTab = ({ data }) => {
     email: member.email,
     role: member.role,
     sections: member.assignments
-      ? member.assignments.map(a => a.section?.name).filter(Boolean).join(', ')
-      : ''
+      ? member.assignments.map(a => a.section?.name).filter(Boolean).join(', ') || '-'
+      : '-'
   }));
 
   const columns = [

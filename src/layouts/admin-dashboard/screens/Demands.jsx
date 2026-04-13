@@ -69,6 +69,7 @@ const Demands = () => {
   const [filter, setFilter] = useState({ Status: [], Project: [], Section: [] });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDemandId, setSelectedDemandId] = useState(null);
+  const [activeProjectTab, setActiveProjectTab] = useState("All Projects");
 
   // Status options
   const statusOptions = [
@@ -204,6 +205,24 @@ const Demands = () => {
   };
   const handleFilterClear = () => setFilter({ Status: [], Project: [], Section: [] });
 
+  // Project tabs data
+  const projectTabNames = ["All Projects", ...projectOptions];
+
+  // Compute displayed demands based on active project tab
+  const displayedDemands = activeProjectTab === "All Projects"
+    ? demands
+    : demands.filter(d => d.section?.projectName === activeProjectTab);
+
+  // Group demands by section when a specific project is selected
+  const groupedBySection = activeProjectTab !== "All Projects"
+    ? displayedDemands.reduce((groups, demand) => {
+        const sectionName = demand.section?.name || "Unknown Section";
+        if (!groups[sectionName]) groups[sectionName] = [];
+        groups[sectionName].push(demand);
+        return groups;
+      }, {})
+    : null;
+
   const CustomActionComponent = ({ value: demandId }) => {
     return (
       <DropdownButton
@@ -245,21 +264,60 @@ const Demands = () => {
           placeholder="Filter by status, project or section"
         />
       </div>
-      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
+
+      {/* Project Tabs */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {projectTabNames.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveProjectTab(tab)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeProjectTab === tab
+                ? "bg-[#F97316] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
       {/* table */}
       <div className="overflow-x-auto mt-4">
         {loading ? (
           <Loader />
-        ) : (
+        ) : activeProjectTab === "All Projects" ? (
           <SimpleTable
             columns={columns}
-            data={demands}
+            data={displayedDemands}
             cellComponents={{ 
               demandId: CustomActionComponent, 
               status: StatusChip,
               createdAt: DateComponent 
             }}
           />
+        ) : (
+          groupedBySection && Object.keys(groupedBySection).length > 0 ? (
+            Object.entries(groupedBySection).map(([sectionName, sectionDemands]) => (
+              <div key={sectionName} className="mb-6">
+                <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 mb-2 flex justify-between items-center">
+                  <span className="font-bold text-gray-700">{sectionName}</span>
+                  <span className="text-sm text-gray-500">{sectionDemands.length} demand{sectionDemands.length !== 1 ? 's' : ''}</span>
+                </div>
+                <SimpleTable
+                  columns={columns}
+                  data={sectionDemands}
+                  cellComponents={{ 
+                    demandId: CustomActionComponent, 
+                    status: StatusChip,
+                    createdAt: DateComponent 
+                  }}
+                />
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-400 py-8">No demands found for this project.</div>
+          )
         )}
       </div>
       {showDeleteModal && (

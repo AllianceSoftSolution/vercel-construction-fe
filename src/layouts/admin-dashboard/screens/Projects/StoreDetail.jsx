@@ -442,8 +442,6 @@ const StoreDetail = () => {
           <div className="mt-10">
           <TopBar
             title="Store Incharge "
-            buttonText="Add Store Incharge"
-            onButtonClick={() => setOpenAssignStoreInchargeModal(true)}
             />
                      <SimpleTable
              data={(storeData?.storeInchargeAssignments || []).map(a => ({
@@ -486,14 +484,6 @@ const StoreDetail = () => {
         </>
       )}
 
-      <AssignMemberModal
-        role="Store Incharge"
-        open={openAssignStoreInchargeModal}
-        onClose={() => setOpenAssignStoreInchargeModal(false)}
-        fetchUsers={fetchStoreInchargeUsers}
-        createUser={createStoreInchargeUser}
-        onAssign={handleAssignStoreInchargeGeneric}
-      />
     </>
   );
 };
