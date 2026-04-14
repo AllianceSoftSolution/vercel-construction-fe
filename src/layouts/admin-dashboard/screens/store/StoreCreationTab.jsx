@@ -4,12 +4,11 @@ import toast from "react-hot-toast";
 import Loader from "../../../../components/ui/Loader";
 import SimpleTable from "../../../../components/SimpleTable";
 import { Chip } from "@mui/material";
-import { FaUserEdit, FaUserMinus, FaEye } from "react-icons/fa";
+import { FaUserEdit, FaUserMinus, FaEye, FaTrash, FaUserShield, FaUserTie } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IconButton } from "@mui/material";
-import DeleteModal from "../../../../mui/DeleteModal";
 
 // ─── Type helpers ──────────────────────────────────────────────
 const TYPE_COLORS = {
@@ -357,6 +356,269 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
   );
 };
 
+// ─── Assign Site Incharge Modal ─────────────────────────────────
+const AssignSiteInchargeModal = ({ store, onClose, onSuccess }) => {
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [siteIncharges, setSiteIncharges] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadingSI, setLoadingSI] = useState(false);
+
+  // Pre-select project from store if available
+  useEffect(() => {
+    apiClient.get("/projects").then((r) => {
+      if (r.ok) {
+        const list = r.data.projects || r.data.data || [];
+        setProjects(list);
+        const storeProject = store?.project || store?.section?.project;
+        if (storeProject?.id) {
+          setSelectedProjectId(storeProject.id);
+        }
+      }
+    });
+  }, [store]);
+
+  // Fetch site incharges when project changes
+  useEffect(() => {
+    if (!selectedProjectId) { setSiteIncharges([]); return; }
+    const fetchSI = async () => {
+      try {
+        setLoadingSI(true);
+        const res = await apiClient.get(`/auth/users?role=SITE_INCHARGE`);
+        if (res.ok) {
+          setSiteIncharges(res.data.users || []);
+        }
+      } catch {
+        toast.error("Failed to load site incharges");
+      } finally {
+        setLoadingSI(false);
+      }
+    };
+    fetchSI();
+  }, [selectedProjectId]);
+
+  const handleAssign = async () => {
+    if (!selectedUserId) { toast.error("Please select a Site Incharge"); return; }
+    try {
+      setLoading(true);
+      const res = await apiClient.post(`/stores/${store.id}/assign-site-incharge`, {
+        userId: selectedUserId,
+      });
+      if (res.ok) {
+        toast.success("Site Incharge assigned successfully");
+        onSuccess();
+        onClose();
+      } else {
+        toast.error(res.data?.message || "Assignment failed");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+        <h2 className="text-lg font-bold text-gray-800 mb-1">Assign Store to Site Incharge</h2>
+        <p className="text-sm text-gray-500 mb-4">Store: <strong>{store?.name}</strong></p>
+
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className="text-sm font-medium text-gray-600">Select Project</label>
+            <select
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              value={selectedProjectId}
+              onChange={(e) => { setSelectedProjectId(e.target.value); setSelectedUserId(""); }}
+            >
+              <option value="">Select Project</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Select Site Incharge</label>
+            <select
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              disabled={!selectedProjectId || loadingSI}
+            >
+              <option value="">{loadingSI ? "Loading..." : "Select Site Incharge"}</option>
+              {siteIncharges.map((u) => (
+                <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex gap-3 mt-1">
+            <button
+              onClick={handleAssign}
+              disabled={loading || !selectedUserId}
+              className="flex-1 bg-[#F97316] text-white rounded-lg py-2 font-semibold text-sm hover:bg-orange-600 disabled:opacity-60"
+            >
+              {loading ? "Assigning..." : "Assign"}
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 border border-gray-300 rounded-lg py-2 font-semibold text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Assign PM Modal ────────────────────────────────────────────
+const AssignPMModal = ({ store, onClose, onSuccess }) => {
+  const [projects, setProjects] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedSectionId, setSelectedSectionId] = useState("");
+  const [pms, setPms] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadingPMs, setLoadingPMs] = useState(false);
+
+  // Pre-select project from store
+  useEffect(() => {
+    apiClient.get("/projects").then((r) => {
+      if (r.ok) {
+        const list = r.data.projects || r.data.data || [];
+        setProjects(list);
+        const storeProject = store?.project || store?.section?.project;
+        if (storeProject?.id) setSelectedProjectId(storeProject.id);
+      }
+    });
+  }, [store]);
+
+  // Fetch sections when project changes
+  useEffect(() => {
+    if (!selectedProjectId) { setSections([]); return; }
+    apiClient.get(`/sections?projectId=${selectedProjectId}`).then((r) => {
+      if (r.ok) {
+        const list = r.data.sections || r.data.data || [];
+        setSections(list);
+        // Auto-select store's section
+        if (store?.section?.id) setSelectedSectionId(store.section.id);
+      }
+    });
+  }, [selectedProjectId, store]);
+
+  // Fetch PMs
+  useEffect(() => {
+    if (!selectedProjectId) { setPms([]); return; }
+    const fetchPMs = async () => {
+      try {
+        setLoadingPMs(true);
+        const res = await apiClient.get(`/auth/users?role=PROJECT_MANAGER`);
+        if (res.ok) setPms(res.data.users || []);
+      } catch {
+        toast.error("Failed to load project managers");
+      } finally {
+        setLoadingPMs(false);
+      }
+    };
+    fetchPMs();
+  }, [selectedProjectId]);
+
+  const handleAssign = async () => {
+    if (!selectedUserId) { toast.error("Please select a Project Manager"); return; }
+    try {
+      setLoading(true);
+      const res = await apiClient.post(`/stores/${store.id}/assign-project-manager`, {
+        userId: selectedUserId,
+      });
+      if (res.ok) {
+        toast.success("Project Manager assigned successfully");
+        onSuccess();
+        onClose();
+      } else {
+        toast.error(res.data?.message || "Assignment failed");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+        <h2 className="text-lg font-bold text-gray-800 mb-1">Assign Store to Project Manager</h2>
+        <p className="text-sm text-gray-500 mb-4">Store: <strong>{store?.name}</strong></p>
+
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className="text-sm font-medium text-gray-600">Select Project</label>
+            <select
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              value={selectedProjectId}
+              onChange={(e) => { setSelectedProjectId(e.target.value); setSelectedSectionId(""); setSelectedUserId(""); }}
+            >
+              <option value="">Select Project</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Select Section</label>
+            <select
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              value={selectedSectionId}
+              onChange={(e) => { setSelectedSectionId(e.target.value); setSelectedUserId(""); }}
+              disabled={!selectedProjectId}
+            >
+              <option value="">Select Section</option>
+              {sections.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Select Project Manager</label>
+            <select
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              disabled={!selectedProjectId || loadingPMs}
+            >
+              <option value="">{loadingPMs ? "Loading..." : "Select Project Manager"}</option>
+              {pms.map((u) => (
+                <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex gap-3 mt-1">
+            <button
+              onClick={handleAssign}
+              disabled={loading || !selectedUserId}
+              className="flex-1 bg-[#F97316] text-white rounded-lg py-2 font-semibold text-sm hover:bg-orange-600 disabled:opacity-60"
+            >
+              {loading ? "Assigning..." : "Assign"}
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 border border-gray-300 rounded-lg py-2 font-semibold text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Store Creation Tab (main export) ───────────────────────────
 const StoreCreationTab = () => {
   const navigate = useNavigate();
@@ -365,6 +627,10 @@ const StoreCreationTab = () => {
   const [showSectionModal, setShowSectionModal] = useState(false);
   const [showHeadModal, setShowHeadModal] = useState(false);
   const [assignStore, setAssignStore] = useState(null);
+  const [deleteStore, setDeleteStore] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [assignSIStore, setAssignSIStore] = useState(null);
+  const [assignPMStore, setAssignPMStore] = useState(null);
 
   const fetchStores = useCallback(async () => {
     try {
@@ -389,6 +655,30 @@ const StoreCreationTab = () => {
 
   useEffect(() => { fetchStores(); }, [fetchStores]);
 
+  const handleDeleteStore = async () => {
+    if (!deleteStore) return;
+    try {
+      setDeleting(true);
+      const res = await apiClient.delete(`/stores/${deleteStore.id}`);
+      if (res.ok) {
+        toast.success("Store removed successfully");
+        setStores((prev) => prev.filter((s) => s.id !== deleteStore.id));
+        setDeleteStore(null);
+      } else {
+        const msg = res.data?.message || "";
+        if (msg.toLowerCase().includes("inventory")) {
+          toast.error("Cannot remove store with existing inventory items.");
+        } else {
+          toast.error(msg || "Failed to remove store");
+        }
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const AssignedPersonCell = ({ value: store }) => {
     const person = store?.assignedUser || store?.storeInchargeAssignments?.[0]?.user;
     return person ? (
@@ -410,6 +700,21 @@ const StoreCreationTab = () => {
           label: "Assign Personnel",
           onClick: () => setAssignStore(store),
           icon: <FaUserEdit />,
+        },
+        {
+          label: "Assign to Site Incharge",
+          onClick: () => setAssignSIStore(store),
+          icon: <FaUserShield />,
+        },
+        {
+          label: "Assign to PM",
+          onClick: () => setAssignPMStore(store),
+          icon: <FaUserTie />,
+        },
+        {
+          label: <span style={{ color: '#EF4444' }}>Remove</span>,
+          onClick: () => setDeleteStore(store),
+          icon: <FaTrash style={{ color: '#EF4444' }} />,
         },
       ]}
     >
@@ -518,6 +823,49 @@ const StoreCreationTab = () => {
           onClose={() => setAssignStore(null)}
           onSuccess={fetchStores}
         />
+      )}
+      {assignSIStore && (
+        <AssignSiteInchargeModal
+          store={assignSIStore}
+          onClose={() => setAssignSIStore(null)}
+          onSuccess={fetchStores}
+        />
+      )}
+      {assignPMStore && (
+        <AssignPMModal
+          store={assignPMStore}
+          onClose={() => setAssignPMStore(null)}
+          onSuccess={fetchStores}
+        />
+      )}
+      {deleteStore && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-[90%] max-w-sm">
+            <div className="flex items-center justify-center">
+              <FaTrash className="text-white w-14 h-14 rounded-full p-4" style={{ backgroundColor: '#EF4444' }} />
+            </div>
+            <p className="text-black font-semibold m-4 text-center">
+              Are you sure you want to remove {deleteStore.name}? This action cannot be undone.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleDeleteStore}
+                disabled={deleting}
+                className="w-full px-4 py-2 text-white rounded-lg disabled:opacity-60"
+                style={{ backgroundColor: '#EF4444' }}
+              >
+                {deleting ? "Removing..." : "Remove"}
+              </button>
+              <button
+                onClick={() => setDeleteStore(null)}
+                disabled={deleting}
+                className="w-full px-4 py-2 bg-white text-black rounded-lg border border-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

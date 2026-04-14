@@ -38,27 +38,42 @@ const StatusChip = ({ value }) => {
   );
 };
 
-// Date and time formatting function
-const formatDate = (dateString) => {
+// Date and time formatting functions
+const formatDateOnly = (dateString) => {
   if (!dateString) return "-";
   const d = new Date(dateString);
   if (isNaN(d)) return "-";
-  
-  // Format as "DD MMM YYYY, HH:MM AM/PM" (e.g., "15 Jan 2024, 02:33 PM")
   const day = String(d.getDate()).padStart(2, "0");
   const month = d.toLocaleDateString('en-US', { month: 'short' });
   const year = d.getFullYear();
-  const time = d.toLocaleTimeString('en-US', { 
+  return `${day} ${month} ${year}`;
+};
+
+const formatTimeOnly = (dateString) => {
+  if (!dateString) return "";
+  const d = new Date(dateString);
+  if (isNaN(d)) return "";
+  return d.toLocaleTimeString('en-US', { 
     hour: '2-digit', 
     minute: '2-digit',
     hour12: true 
   });
-  return `${day} ${month} ${year}, ${time}`;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  return `${formatDateOnly(dateString)}, ${formatTimeOnly(dateString)}`;
 };
 
 // Date component for table
 const DateComponent = ({ value }) => {
-  return <span className="text-gray-700 font-medium">{formatDate(value)}</span>;
+  if (!value || value === "-") return <span>-</span>;
+  return (
+    <div style={{ minWidth: '140px' }}>
+      <div className="text-gray-700 font-medium">{formatDateOnly(value)}</div>
+      <div style={{ color: '#6B7280', fontSize: '12px' }}>{formatTimeOnly(value)}</div>
+    </div>
+  );
 };
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
@@ -126,7 +141,7 @@ const PurchaseOrder = () => {
           poQty: po.quantity || "-",
           unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
           amount: po.totalAmount ? `${po.totalAmount}` : "-",
-          createdAt: po.createdAt ? formatDate(po.createdAt) : "-",
+          createdAt: po.createdAt || "-",
           status: po.status || "-",
           assingedVendors: po.vendorId || "-",
           proofOfBill: po.proofOfBill || "-",

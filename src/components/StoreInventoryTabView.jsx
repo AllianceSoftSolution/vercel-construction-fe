@@ -63,9 +63,14 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
         setInventory([]);
         const res = await apiClient.get(`/stores?projectId=${selectedProjectId}`);
         if (res.ok) {
-          setStores(res.data.stores || []);
+          let storeList = res.data.stores || [];
+          // PM only sees SECTION_STORE
+          if (role === "PROJECT_MANAGER") {
+            storeList = storeList.filter((s) => s.type === "SECTION_STORE");
+          }
+          setStores(storeList);
         } else {
-          toast.error("Failed to load stores");
+          setStores([]);
         }
       } catch {
         toast.error("Error loading stores");
@@ -140,7 +145,9 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
         <Loader />
       ) : stores.length === 0 ? (
         <div className="text-center py-8 text-gray-400 text-sm">
-          No stores found for this project.
+          {role === "SITE_INCHARGE" || role === "PROJECT_MANAGER"
+            ? "No section store assigned yet. Contact Admin."
+            : "No stores found for this project."}
         </div>
       ) : (
         <div className="flex flex-wrap gap-3">
