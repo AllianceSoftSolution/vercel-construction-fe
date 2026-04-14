@@ -80,7 +80,7 @@ const DropdownButton = ({
             )}
             <ListItemText
               primary={
-                typeof item.label === "string" ? item.label : item.label()
+                typeof item.label === "function" ? item.label() : item.label
               }
               primaryTypographyProps={{
                 fontSize: 15,

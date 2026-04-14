@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import ProjectInfoCard from "../../../../../components/ui/ProjectInfoCard";
 import ProjectDescriptionCard from "../../../../../components/ui/ProjectDescriptionCard";
-import { Box, IconButton, Modal } from "@mui/material";
+import { Box, IconButton, Modal, FormControl, InputLabel, Select, MenuItem as MuiMenuItem } from "@mui/material";
 import DropdownButton from "@/comments/components/DropdownButton";
-import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserEdit, FaStore } from "react-icons/fa";
 import SimpleTable from "../../../../../components/SimpleTable";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Button from "../../../../../components/Button";
@@ -43,6 +43,14 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
   const [addUserModalLoading, setAddUserModalLoading] = useState(false);
   const [sectionModalLoading, setSectionModalLoading] = useState(false);
   const [initialDataLoading, setInitialDataLoading] = useState(false);
+
+  // Head Store assignment for Site Incharge
+  const [assignHeadStoreUserId, setAssignHeadStoreUserId] = useState(null);
+  const [assignHeadStoreUserName, setAssignHeadStoreUserName] = useState("");
+  const [headStores, setHeadStores] = useState([]);
+  const [selectedHeadStoreId, setSelectedHeadStoreId] = useState("");
+  const [headStoreLoading, setHeadStoreLoading] = useState(false);
+  const [headStoreAssigning, setHeadStoreAssigning] = useState(false);
 
   const handleOpenPM = () => setOpenPM(true);
   const handlePMCreate = () => {
@@ -258,6 +266,52 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     }
   };
 
+  // Open Head Store assignment modal
+  const handleOpenAssignHeadStore = async (userId, userName) => {
+    setAssignHeadStoreUserId(userId);
+    setAssignHeadStoreUserName(userName);
+    setSelectedHeadStoreId("");
+    setHeadStoreLoading(true);
+    try {
+      const response = await apiClient.get(`/stores`, {
+        projectId: data.id,
+        type: "HEAD_STORE",
+      });
+      if (response.ok && response.data?.stores) {
+        setHeadStores(response.data.stores);
+      } else {
+        setHeadStores([]);
+      }
+    } catch {
+      toast.error("Failed to fetch head stores");
+      setHeadStores([]);
+    } finally {
+      setHeadStoreLoading(false);
+    }
+  };
+
+  const handleAssignHeadStore = async () => {
+    if (!selectedHeadStoreId || !assignHeadStoreUserId) return;
+    try {
+      setHeadStoreAssigning(true);
+      const response = await apiClient.post(
+        `/stores/${selectedHeadStoreId}/assign-site-incharge`,
+        { userId: assignHeadStoreUserId }
+      );
+      if (response.ok) {
+        toast.success("Head Store assigned to Site Incharge");
+        setAssignHeadStoreUserId(null);
+        if (typeof onAssignmentSuccess === "function") onAssignmentSuccess();
+      } else {
+        toast.error(response.data?.message || "Failed to assign head store");
+      }
+    } catch {
+      toast.error("Failed to assign head store");
+    } finally {
+      setHeadStoreAssigning(false);
+    }
+  };
+
   const columns = [
     // { headerName: "ID", field: "id" },
     { headerName: "Name", field: "name" },
@@ -268,27 +322,30 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     // { headerName: "Status", field: "status" },
     // { headerName: "Note", field: "note" },
     // { headerName: "Date", field: "date" },
-    { headerName: "Action", field: "action" },
+    { headerName: "Action", field: "id" },
   ];
 
-  const CustomActionComponent = () => (
-    <DropdownButton
-      className="bg-[#FF0000] font-semibold"
-      items={[
-        // {
-        //   label: "View Detail",
-        //   onClick: () => navigate("/admin-dashboard/user-management/123"),
-        //   icon: <FaEye />,
-        // },
-        { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-        // { label: "Delete ", onClick: () => alert("Delete"), icon: <FaTrash /> },
-      ]}
-    >
-      <IconButton>
-        <BsThreeDotsVertical />
-      </IconButton>
-    </DropdownButton>
-  );
+  const CustomActionComponent = ({ value: userId }) => {
+    const siRow = data?.assignedSiteIncharges?.find((i) => i.id === userId);
+    return (
+      <DropdownButton
+        className="bg-[#FF0000] font-semibold"
+        items={[
+          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+          {
+            label: "Assign Head Store",
+            onClick: () =>
+              handleOpenAssignHeadStore(userId, siRow?.name || "Site Incharge"),
+            icon: <FaStore />,
+          },
+        ]}
+      >
+        <IconButton>
+          <BsThreeDotsVertical />
+        </IconButton>
+      </DropdownButton>
+    );
+  };
 
   return (
     <>
@@ -339,7 +396,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
               noOfSection: i.sections?.map(s => s.name).filter(Boolean).join(', ') || '-',
             })) || []
           }
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ id: CustomActionComponent }}
         />
       )}
 
@@ -359,16 +416,70 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
         <Loader />
       ) : (
         <SimpleTable
-          columns={columns}
+          columns={accountantColumns}
           data={
             data?.assignedAccountants?.map((i) => ({
               ...i,
               noOfSection: i.sections?.map(s => s.name).filter(Boolean).join(', ') || '-',
             })) || []
           }
-          cellComponents={{ action: CustomActionComponent }}
+          cellComponents={{ action: AccountantActionComponent }}
         />
       )}
+
+      {/* Assign Head Store Modal */}
+      <Modal
+        open={!!assignHeadStoreUserId}
+        onClose={() => setAssignHeadStoreUserId(null)}
+      >
+        <Box
+          sx={style}
+          className="bg-white p-6 rounded-2xl"
+        >
+          <h2 className="text-lg font-bold mb-4">
+            Assign Head Store to {assignHeadStoreUserName}
+          </h2>
+          {headStoreLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader />
+            </div>
+          ) : headStores.length === 0 ? (
+            <p className="text-gray-500 text-sm mb-4">
+              No head stores found for this project.
+            </p>
+          ) : (
+            <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+              <InputLabel>Select Head Store</InputLabel>
+              <Select
+                value={selectedHeadStoreId}
+                onChange={(e) => setSelectedHeadStoreId(e.target.value)}
+                label="Select Head Store"
+              >
+                {headStores.map((store) => (
+                  <MuiMenuItem key={store.id} value={store.id}>
+                    {store.name}
+                  </MuiMenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setAssignHeadStoreUserId(null)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAssignHeadStore}
+              disabled={!selectedHeadStoreId || headStoreAssigning}
+              className="px-4 py-2 bg-[#FC8908] text-white rounded-lg hover:bg-[#e07c07] transition disabled:opacity-50"
+            >
+              {headStoreAssigning ? "Assigning..." : "Assign"}
+            </button>
+          </div>
+        </Box>
+      </Modal>
 
       <AssignMemberModal
         role={assignRole}

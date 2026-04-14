@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import TopBar from "../../../../components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
 import Loader from "../../../../components/ui/Loader";
-import { Box, IconButton, Modal } from "@mui/material";
+import { Box, IconButton, Modal, FormControl, InputLabel, Select, MenuItem as MuiMenuItem } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaStore, FaTrash, FaUserEdit } from "react-icons/fa";
 import DropdownButton from "../../../../comments/components/DropdownButton";
@@ -40,6 +40,13 @@ const SectionDetailPage = () => {
   const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
   const [selectedPM, setSelectedPM] = useState(null);
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
+
+  // Section Store assignment for PM
+  const [openAssignSectionStoreModal, setOpenAssignSectionStoreModal] = useState(false);
+  const [sectionStores, setSectionStores] = useState([]);
+  const [selectedSectionStoreId, setSelectedSectionStoreId] = useState("");
+  const [sectionStoreLoading, setSectionStoreLoading] = useState(false);
+  const [sectionStoreAssigning, setSectionStoreAssigning] = useState(false);
   const { id } = useParams();
   const [sectionData, setSectionData] = useState({});
   const [capData, setCapData] = useState([]);
@@ -677,6 +684,33 @@ const SectionDetailPage = () => {
                   country={selectedPM.country || "-"}
                   linkedStores={selectedPM.linkedStores || []}
                 />
+                <button
+                  className="mt-3 px-4 py-2 bg-[#FC8908] text-white rounded-lg hover:bg-[#e07c07] transition text-sm font-medium flex items-center gap-2"
+                  onClick={async () => {
+                    setOpenAssignSectionStoreModal(true);
+                    setSelectedSectionStoreId("");
+                    setSectionStoreLoading(true);
+                    try {
+                      const response = await apiClient.get(`/stores`, {
+                        projectId: sectionData?.project?.id,
+                        sectionId: id,
+                        type: "SECTION_STORE",
+                      });
+                      if (response.ok && response.data?.stores) {
+                        setSectionStores(response.data.stores);
+                      } else {
+                        setSectionStores([]);
+                      }
+                    } catch {
+                      toast.error("Failed to fetch section stores");
+                      setSectionStores([]);
+                    } finally {
+                      setSectionStoreLoading(false);
+                    }
+                  }}
+                >
+                  <FaStore /> Assign Section Store
+                </button>
               </div>
             ) : (
               <MembersOverviewCard
@@ -911,6 +945,82 @@ const SectionDetailPage = () => {
         sectionId={id}
         onCapDeleted={fetchCAPData}
       />
+
+      {/* Assign Section Store to PM Modal */}
+      <Modal
+        open={openAssignSectionStoreModal}
+        onClose={() => setOpenAssignSectionStoreModal(false)}
+      >
+        <Box
+          sx={style}
+          className="bg-white p-6 rounded-2xl"
+        >
+          <h2 className="text-lg font-bold mb-4">
+            Assign Section Store to {selectedPM?.name || "Project Manager"}
+          </h2>
+          {sectionStoreLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader />
+            </div>
+          ) : sectionStores.length === 0 ? (
+            <p className="text-gray-500 text-sm mb-4">
+              No section stores found for this section.
+            </p>
+          ) : (
+            <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+              <InputLabel>Select Section Store</InputLabel>
+              <Select
+                value={selectedSectionStoreId}
+                onChange={(e) => setSelectedSectionStoreId(e.target.value)}
+                label="Select Section Store"
+              >
+                {sectionStores.map((store) => (
+                  <MuiMenuItem key={store.id} value={store.id}>
+                    {store.name}
+                  </MuiMenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setOpenAssignSectionStoreModal(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                if (!selectedSectionStoreId || !selectedPM?.id) return;
+                try {
+                  setSectionStoreAssigning(true);
+                  const response = await apiClient.post(
+                    `/stores/${selectedSectionStoreId}/assign-project-manager`,
+                    { userId: selectedPM.id }
+                  );
+                  if (response.ok) {
+                    toast.success("Section Store assigned to PM");
+                    setOpenAssignSectionStoreModal(false);
+                    fetchSectionDetail();
+                  } else {
+                    toast.error(
+                      response.data?.message || "Failed to assign section store"
+                    );
+                  }
+                } catch {
+                  toast.error("Failed to assign section store");
+                } finally {
+                  setSectionStoreAssigning(false);
+                }
+              }}
+              disabled={!selectedSectionStoreId || sectionStoreAssigning}
+              className="px-4 py-2 bg-[#FC8908] text-white rounded-lg hover:bg-[#e07c07] transition disabled:opacity-50"
+            >
+              {sectionStoreAssigning ? "Assigning..." : "Assign"}
+            </button>
+          </div>
+        </Box>
+      </Modal>
     </div>
   );
 };
