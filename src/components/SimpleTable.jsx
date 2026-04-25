@@ -130,7 +130,7 @@ const SimpleTable = ({
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      setSelectedRows(new Set(data.map((row) => row.id)));
+      setSelectedRows(new Set(data.filter(Boolean).map((row) => row.id)));
     } else {
       setSelectedRows(new Set());
     }
@@ -191,8 +191,8 @@ const SimpleTable = ({
             )}
             {config &&
               data.length > 0 &&
-              data?.map((row, rowIndex) => (
-                <React.Fragment key={row.id}>
+              data?.filter(Boolean).map((row, rowIndex) => (
+                <React.Fragment key={row.id ?? rowIndex}>
                   <TableRow>
                     {showCheckbox && (
                       <TableCell padding="checkbox">
@@ -235,8 +235,8 @@ const SimpleTable = ({
 
             {!config &&
               paginatedData.length > 0 &&
-              paginatedData?.map((row, rowIndex) => (
-                <React.Fragment key={row.id}>
+              paginatedData?.filter(Boolean).map((row, rowIndex) => (
+                <React.Fragment key={row.id ?? rowIndex}>
                   <TableRow>
                     {showCheckbox && (
                       <TableCell padding="checkbox">

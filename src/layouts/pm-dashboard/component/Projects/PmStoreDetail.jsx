@@ -68,7 +68,7 @@ const PmStoreDetail = () => {
     { headerName: "Date", field: "transactionDateFormatted" },
   ];
 
-  const inventoryTableData = (storeData?.inventory || []).map((item) => ({
+  const inventoryTableData = (storeData?.inventory || []).filter(Boolean).map((item) => ({
     ...item,
     materialName: item.material?.name || "-",
     unit: item.material?.unit || "-",
@@ -77,8 +77,8 @@ const PmStoreDetail = () => {
       : "-",
   }));
 
-  const transactionsTableData = (storeData?.transactions || []).map((item) => {
-    const inv = (storeData?.inventory || []).find(
+  const transactionsTableData = (storeData?.transactions || []).filter(Boolean).map((item) => {
+    const inv = (storeData?.inventory || []).filter(Boolean).find(
       (inv) => inv.materialId === item.materialId
     );
     return {
@@ -228,7 +228,7 @@ const PmStoreDetail = () => {
       {/* Store Incharge Assignments Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Store Incharge Assignments</h4>
       <SimpleTable
-        data={(storeData.storeInchargeAssignments || []).map(a => ({
+        data={(storeData.storeInchargeAssignments || []).filter(Boolean).map(a => ({
           id: a.id,
           userName: a.user?.name || "-",
           email: a.user?.email || "-",

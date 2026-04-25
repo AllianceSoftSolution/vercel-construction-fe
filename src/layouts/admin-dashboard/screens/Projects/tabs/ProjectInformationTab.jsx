@@ -347,6 +347,26 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     );
   };
 
+  const AccountantActionComponent = () => (
+    <DropdownButton
+      className="bg-[#FF0000] font-semibold"
+      items={[
+        { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+      ]}
+    >
+      <IconButton>
+        <BsThreeDotsVertical />
+      </IconButton>
+    </DropdownButton>
+  );
+
+  const accountantColumns = [
+    { headerName: "Name", field: "name" },
+    { headerName: "Email", field: "email" },
+    { headerName: "Sections", field: "noOfSection" },
+    { headerName: "Action", field: "action" },
+  ];
+
   return (
     <>
       <ProjectInfoCard

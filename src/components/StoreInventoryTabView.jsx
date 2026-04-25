@@ -31,6 +31,7 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
   const [inventory, setInventory] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingStores, setLoadingStores] = useState(false);
   const [loadingInventory, setLoadingInventory] = useState(false);
 
@@ -38,9 +39,10 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
   useEffect(() => {
     const fetchProjects = async () => {
       try {
+        setLoadingProjects(true);
         const res = await apiClient.get("/projects");
         if (res.ok) {
-          const list = res.data.projects || res.data.data || [];
+          const list = (res.data.projects || res.data.data || []).filter(Boolean);
           setProjects(list);
           if (list.length > 0) {
             setSelectedProjectId(list[0].id);
@@ -48,6 +50,8 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
         }
       } catch {
         toast.error("Failed to load projects");
+      } finally {
+        setLoadingProjects(false);
       }
     };
     fetchProjects();
@@ -63,7 +67,7 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
         setInventory([]);
         const res = await apiClient.get(`/stores?projectId=${selectedProjectId}`);
         if (res.ok) {
-          let storeList = res.data.stores || [];
+          let storeList = (res.data.stores || []).filter(Boolean);
           // PM only sees SECTION_STORE
           if (role === "PROJECT_MANAGER") {
             storeList = storeList.filter((s) => s.type === "SECTION_STORE");
@@ -89,7 +93,7 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
         setLoadingInventory(true);
         const res = await apiClient.get(`/stores/${selectedStore.id}/inventory`);
         if (res.ok) {
-          setInventory(res.data.inventory || []);
+          setInventory((res.data.inventory || []).filter(Boolean));
         } else {
           toast.error("Failed to load inventory");
         }
@@ -125,6 +129,9 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
   return (
     <div className="flex flex-col gap-5">
       {/* Project selector */}
+      {loadingProjects ? (
+        <Loader />
+      ) : (
       <div className="flex items-center gap-3">
         <label className="text-sm font-semibold text-gray-600 whitespace-nowrap">Project:</label>
         <select
@@ -132,13 +139,14 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
           value={selectedProjectId}
           onChange={(e) => setSelectedProjectId(e.target.value)}
         >
-          {projects.map((p) => (
+          {projects.filter(Boolean).map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
         </select>
       </div>
+      )}
 
       {/* Store tabs */}
       {loadingStores ? (
@@ -151,7 +159,7 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
         </div>
       ) : (
         <div className="flex flex-wrap gap-3">
-          {stores.map((store) => {
+          {stores.filter(Boolean).map((store) => {
             const colorCls = TYPE_COLORS[store.type] || TYPE_COLORS.SECTION_STORE;
             const isActive = selectedStore?.id === store.id;
             return (
@@ -190,7 +198,7 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
               Inventory — <span className="text-[#F97316]">{selectedStore.name}</span>
             </h3>
             <button
-              onClick={() => navigate(`/${dashboardPrefix}/store/${selectedStore.id}`)}
+              onClick={() => selectedStore?.id && navigate(`/${dashboardPrefix}/store/${selectedStore.id}`)}
               className="flex items-center gap-1.5 text-sm text-[#F97316] hover:underline font-medium"
             >
               <FaEye size={14} /> View Store Details
@@ -206,7 +214,7 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
           ) : (
             <SimpleTable
               columns={inventoryColumns}
-              data={inventory.map((item) => ({
+              data={inventory.filter(Boolean).map((item) => ({
                 ...item,
                 updatedAt: item.updatedAt,
               }))}
