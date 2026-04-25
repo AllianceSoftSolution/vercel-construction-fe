@@ -53,21 +53,27 @@ const SiStoreDetail = () => {
   };
 
   // Preprocess inventory and transactions for flat fields
-  const inventoryTableData = (storeData?.inventory || []).map(item => ({
-    ...item,
-    materialName: item.material?.name || '-',
-    unit: item.material?.unit || '-',
-    updatedAtFormatted: formatDate(item.updatedAt),
-  }));
-
-  const transactionsTableData = (storeData?.transactions || []).map(item => {
-    const inv = (storeData?.inventory || []).find(inv => inv.materialId === item.materialId);
-    return {
+  const inventoryTableData = (storeData?.inventory || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map(item => ({
       ...item,
-      materialName: inv?.material?.name || item.materialId || '-',
-      transactionDateFormatted: formatDate(item.transactionDate),
-    };
-  });
+      materialName: item.material?.name || '-',
+      unit: item.material?.unit || '-',
+      updatedAtFormatted: formatDate(item.updatedAt),
+    }));
+
+  const transactionsTableData = (storeData?.transactions || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map(item => {
+      const inv = (storeData?.inventory || [])
+        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
+        .find(inv => inv.materialId === item.materialId);
+      return {
+        ...item,
+        materialName: inv?.material?.name || item.materialId || '-',
+        transactionDateFormatted: formatDate(item.transactionDate),
+      };
+    });
 
   const columns = [
     { headerName: "Material", field: "materialName" },
@@ -521,7 +527,9 @@ const SiStoreDetail = () => {
       {/* Head Store Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Head Store Assignments</h4>
       <SimpleTable
-        data={(storeData?.storeInchargeAssignments || []).map(a => ({
+        data={(storeData?.storeInchargeAssignments || [])
+          .filter((a) => a && typeof a === "object" && a.id)
+          .map(a => ({
           id: a.id,
           userName: a.user?.name || "-",
           email: a.user?.email || "-",

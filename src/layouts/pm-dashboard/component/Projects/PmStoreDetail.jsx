@@ -68,27 +68,31 @@ const PmStoreDetail = () => {
     { headerName: "Date", field: "transactionDateFormatted" },
   ];
 
-  const inventoryTableData = (storeData?.inventory || []).filter(Boolean).map((item) => ({
-    ...item,
-    materialName: item.material?.name || "-",
-    unit: item.material?.unit || "-",
-    updatedAtFormatted: item.updatedAt
-      ? new Date(item.updatedAt).toLocaleDateString("en-GB")
-      : "-",
-  }));
-
-  const transactionsTableData = (storeData?.transactions || []).filter(Boolean).map((item) => {
-    const inv = (storeData?.inventory || []).filter(Boolean).find(
-      (inv) => inv.materialId === item.materialId
-    );
-    return {
+  const inventoryTableData = (storeData?.inventory || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map((item) => ({
       ...item,
-      materialName: inv?.material?.name || item.materialId || "-",
-      transactionDateFormatted: item.transactionDate
-        ? new Date(item.transactionDate).toLocaleDateString("en-GB")
+      materialName: item.material?.name || "-",
+      unit: item.material?.unit || "-",
+      updatedAtFormatted: item.updatedAt
+        ? new Date(item.updatedAt).toLocaleDateString("en-GB")
         : "-",
-    };
-  });
+    }));
+
+  const transactionsTableData = (storeData?.transactions || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map((item) => {
+      const inv = (storeData?.inventory || [])
+        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
+        .find((inv) => inv.materialId === item.materialId);
+      return {
+        ...item,
+        materialName: inv?.material?.name || item.materialId || "-",
+        transactionDateFormatted: item.transactionDate
+          ? new Date(item.transactionDate).toLocaleDateString("en-GB")
+          : "-",
+      };
+    });
 
 
 
@@ -228,13 +232,15 @@ const PmStoreDetail = () => {
       {/* Store Incharge Assignments Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Store Incharge Assignments</h4>
       <SimpleTable
-        data={(storeData.storeInchargeAssignments || []).filter(Boolean).map(a => ({
-          id: a.id,
-          userName: a.user?.name || "-",
-          email: a.user?.email || "-",
-          role: a.user?.role || "-",
-          createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
-        }))}
+        data={(storeData?.storeInchargeAssignments || [])
+          .filter((a) => a && typeof a === "object" && a.id)
+          .map(a => ({
+            id: a.id,
+            userName: a.user?.name || "-",
+            email: a.user?.email || "-",
+            role: a.user?.role || "-",
+            createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "-",
+          }))}
         columns={[
           { headerName: "Assignment ID", field: "id" },
           { headerName: "Store Incharge Name", field: "userName" },
@@ -242,6 +248,7 @@ const PmStoreDetail = () => {
           { headerName: "Role", field: "role" },
           { headerName: "Assigned At", field: "createdAt" },
         ]}
+        cellComponents={{}}
       />
 
       {/* Inventory Table */}

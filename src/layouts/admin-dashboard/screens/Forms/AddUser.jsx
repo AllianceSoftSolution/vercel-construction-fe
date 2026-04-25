@@ -68,7 +68,11 @@ const AddUser = () => {
         try {
           setLoading(true);
 
-          const payload = { ...values, isHead: isHead ? true : false };
+          const payload = {
+            ...values,
+            isHead:
+              values.role === "STORE_INCHARGE" ? true : isHead ? true : false,
+          };
           const response = await apiClient.post("/auth/register", payload);
 
           if (response.ok) {
@@ -98,7 +102,7 @@ const AddUser = () => {
 
       const payload = {
         newRole: formik.values.role,
-        isHead: isHead
+        isHead: formik.values.role === "STORE_INCHARGE" ? true : isHead,
       };
 
       const response = await apiClient.patch(`/auth/users/${userData.id}/change-role`, payload);
@@ -184,7 +188,8 @@ const AddUser = () => {
               value={formik.values.role}
               onChange={e => {
                 formik.handleChange(e);
-                setIsHead(false); // reset checkbox when role changes
+                const selectedRole = e.target.value;
+                setIsHead(selectedRole === "STORE_INCHARGE");
               }}
               onBlur={formik.handleBlur}
               error={formik.touched.role && Boolean(formik.errors.role)}
@@ -203,8 +208,9 @@ const AddUser = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={isHead}
+                    checked={formik.values.role === "STORE_INCHARGE" ? true : isHead}
                     onChange={e => setIsHead(e.target.checked)}
+                    disabled={formik.values.role === "STORE_INCHARGE"}
                     color="primary"
                   />
                 }

@@ -73,27 +73,31 @@ const SinStoreDetail = () => {
     { headerName: "Date", field: "transactionDateFormatted" },
   ];
 
-  const inventoryTableData = (storeData?.inventory || []).map((item) => ({
-    ...item,
-    materialName: item.material?.name || "-",
-    unit: item.material?.unit || "-",
-    updatedAtFormatted: item.updatedAt
-      ? new Date(item.updatedAt).toLocaleDateString("en-GB")
-      : "-",
-  }));
-
-  const transactionsTableData = (storeData?.transactions || []).map((item) => {
-    const inv = (storeData?.inventory || []).find(
-      (inv) => inv.materialId === item.materialId
-    );
-    return {
+  const inventoryTableData = (storeData?.inventory || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map((item) => ({
       ...item,
-      materialName: inv?.material?.name || item.materialId || "-",
-      transactionDateFormatted: item.transactionDate
-        ? new Date(item.transactionDate).toLocaleDateString("en-GB")
+      materialName: item.material?.name || "-",
+      unit: item.material?.unit || "-",
+      updatedAtFormatted: item.updatedAt
+        ? new Date(item.updatedAt).toLocaleDateString("en-GB")
         : "-",
-    };
-  });
+    }));
+
+  const transactionsTableData = (storeData?.transactions || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map((item) => {
+      const inv = (storeData?.inventory || [])
+        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
+        .find((inv) => inv.materialId === item.materialId);
+      return {
+        ...item,
+        materialName: inv?.material?.name || item.materialId || "-",
+        transactionDateFormatted: item.transactionDate
+          ? new Date(item.transactionDate).toLocaleDateString("en-GB")
+          : "-",
+      };
+    });
 
 
   const [hasMemberInfo, setHasMemberInfo] = useState(false);
@@ -289,7 +293,7 @@ const SinStoreDetail = () => {
           <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
           <SimpleTable data={inventoryTableData} columns={columns} cellComponents={{}} />
 
-          {/* Stock Movement Table */}}
+          {/* Stock Movement Table */}
           <h4 className="mt-8 text-[#444444] font-semibold text-xl ">
             Stock Movement History
           </h4>

@@ -49,24 +49,28 @@ const StoreDetail = () => {
   };
 
   // Transform inventory data for table display
-  const inventoryTableData = (storeData?.inventory || []).map((item) => ({
-    ...item,
-    materialName: item.material?.name || "-",
-    unit: item.material?.unit || "-",
-    updatedAtFormatted: formatDate(item.updatedAt),
-  }));
+  const inventoryTableData = (storeData?.inventory || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map((item) => ({
+      ...item,
+      materialName: item.material?.name || "-",
+      unit: item.material?.unit || "-",
+      updatedAtFormatted: formatDate(item.updatedAt),
+    }));
 
   // Transform transactions data for table display
-  const transactionsTableData = (storeData?.transactions || []).map((item) => {
-    const inv = (storeData?.inventory || []).find(
-      (inv) => inv.materialId === item.materialId
-    );
-    return {
-      ...item,
-      materialName: inv?.material?.name || item.materialId || "-",
-      transactionDateFormatted: formatDate(item.transactionDate),
-    };
-  });
+  const transactionsTableData = (storeData?.transactions || [])
+    .filter((item) => item && typeof item === "object" && item.id)
+    .map((item) => {
+      const inv = (storeData?.inventory || [])
+        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
+        .find((inv) => inv.materialId === item.materialId);
+      return {
+        ...item,
+        materialName: inv?.material?.name || item.materialId || "-",
+        transactionDateFormatted: formatDate(item.transactionDate),
+      };
+    });
 
   const columns = [
     { headerName: "Material", field: "materialName" },

@@ -91,7 +91,7 @@ const SimpleTable = ({
   data,
   columns,
   customStyles,
-  cellComponents,
+  cellComponents = {},
   showCheckbox,
   headBodySpace,
   headerStyles,

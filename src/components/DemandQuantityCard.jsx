@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Button from "./Button";
 import CustomTextField from "../mui/CustomTextField";
 import apiClient from "../api/apiClient";
-import { useSearchParams } from "react-router-dom";
 
 export default function DemandQuantityCard({
   storeName,
@@ -12,12 +11,14 @@ export default function DemandQuantityCard({
   cmStoreId,
   headStoreId,
   id,
+  onFulfilled,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [note, setNote] = useState("");
   const [quantity, setQuantity] = useState("");
   const [loading, setLoading] = useState(false);
   const [demandData, setDemandData] = useState({});
+  const canTransfer = Boolean(headStoreId && cmStoreId);
 
   const fulfillDemand = async () => {
     if (Number(quantity) > totalQty) {
@@ -48,11 +49,15 @@ export default function DemandQuantityCard({
         note,
       });
 
-      if (response?.data?.demand) {
-        setDemandData(response.data.demand);
+      const updatedDemand = response?.data?.data?.demand;
+      if (updatedDemand) {
+        setDemandData(updatedDemand);
         alert(
           `${quantity} units of ${material} assigned from ${storeName} store`
         );
+        if (typeof onFulfilled === "function") {
+          await onFulfilled();
+        }
         setIsOpen(false);
         setQuantity("");
         setNote("");
@@ -72,13 +77,19 @@ export default function DemandQuantityCard({
       <p className="text-gray-600 mt-2">Material: {material}</p>
       <p className="text-gray-600">Available Quantity: {totalQty}</p>
 
-      {showButton && Number(totalQty) > 0 && (
+      {showButton && Number(totalQty) > 0 && canTransfer && (
         <button
           onClick={() => setIsOpen(true)}
           className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium"
         >
           Assign & Approve
         </button>
+      )}
+
+      {showButton && Number(totalQty) > 0 && !canTransfer && (
+        <p className="mt-3 text-sm text-amber-700">
+          Transfer unavailable: CM/Section store is not assigned for this section.
+        </p>
       )}
 
       {isOpen && (

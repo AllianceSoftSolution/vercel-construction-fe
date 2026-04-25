@@ -431,6 +431,7 @@ const DemandDetails = () => {
               cmStoreId={demandData?.cmStoreId}
               showButton
               id={id}
+              onFulfilled={fetchDetails}
             />
             <DemandQuantityCard
               storeName="CM Store"
