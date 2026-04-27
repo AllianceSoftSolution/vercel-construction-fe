@@ -44,6 +44,7 @@ const CreateSectionProject = () => {
   const [step, setStep] = useState(1);
 
   // Step 2 state
+  const [createStore, setCreateStore] = useState(false);
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [storePermissions, setStorePermissions] = useState([]); // [{ userId, name, ...perms }]
@@ -100,12 +101,15 @@ const CreateSectionProject = () => {
         name: formik.values.name,
         description: formik.values.description,
         projectId: pId,
-        storePermissions: storePermissions.map(({ userId, canViewStock, canRequestMaterials, canApproveMaterials, canAddStock, canTransferStock }) => ({
-          userId, canViewStock, canRequestMaterials, canApproveMaterials, canAddStock, canTransferStock,
-        })),
+        createStore,
+        storePermissions: createStore
+          ? storePermissions.map(({ userId, canViewStock, canRequestMaterials, canApproveMaterials, canAddStock, canTransferStock }) => ({
+              userId, canViewStock, canRequestMaterials, canApproveMaterials, canAddStock, canTransferStock,
+            }))
+          : [],
       });
       if (response.ok) {
-        toast.success("Section and store created successfully!");
+        toast.success(createStore ? "Section and store created successfully!" : "Section created successfully!");
         navigate(-1);
       } else {
         toast.error(response.data?.message || "Section creation failed!");
@@ -199,11 +203,41 @@ const CreateSectionProject = () => {
             <div>
               <h3 className="text-xl font-semibold text-[#12141D] mb-1">Configure Store Access</h3>
               <p className="text-sm text-gray-500">
-                A Section Store will be automatically created. Optionally assign users and set their
-                permissions. You can also configure this later.
+                Optionally create a Section Store and configure user access. If you skip this, no store will be created.
               </p>
             </div>
 
+            {/* Create store toggle */}
+            <div className="border border-gray-200 rounded-xl p-4 bg-gray-50">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={createStore}
+                    onChange={(e) => {
+                      setCreateStore(e.target.checked);
+                      if (!e.target.checked) {
+                        setStorePermissions([]);
+                        setSelectedUserId("");
+                      }
+                    }}
+                  />
+                }
+                label={
+                  <span className="font-medium text-[#12141D]">
+                    Create a Section Store for this section
+                  </span>
+                }
+              />
+              {!createStore && (
+                <p className="text-xs text-gray-400 mt-1 ml-8">
+                  Leave unchecked to skip store creation. You can create a store later from the Stores tab.
+                </p>
+              )}
+            </div>
+
+            {/* User selector + permissions — only shown when createStore is checked */}
+            {createStore && (
+              <>
             {/* User selector */}
             <div className="flex gap-3 items-end">
               <FormControl fullWidth size="small">
@@ -264,6 +298,8 @@ const CreateSectionProject = () => {
                 </div>
               </div>
             ))}
+              </>
+            )}
 
             <div className="flex gap-4 justify-center w-full mt-2">
               <button
