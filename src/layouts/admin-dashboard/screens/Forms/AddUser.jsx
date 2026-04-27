@@ -5,7 +5,7 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import CustomButton from "../../../../comments/components/landing-pages/CustomButton";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomSelect from "../../../../mui/CustomSelect";
-import { MenuItem, Checkbox, FormControlLabel } from "@mui/material";
+import { MenuItem, Checkbox, FormControlLabel, ListItemText, OutlinedInput, Select, FormControl, InputLabel, FormHelperText } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import apiClient from "../../../../api/apiClient";
@@ -21,10 +21,21 @@ const AddUser = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [userData, setUserData] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   
   const handleDropdownChange = (event) => {
     setSelectedOption(event.target.value);
   };
+
+  // Fetch projects list for head accountant assignment
+  useEffect(() => {
+    apiClient.get("/projects").then((res) => {
+      if (res.ok && res.data) {
+        setProjects(res.data.projects || res.data.data || res.data || []);
+      }
+    }).catch(() => {});
+  }, []);
 
   // Check if we're in edit mode
   useEffect(() => {
@@ -68,10 +79,19 @@ const AddUser = () => {
         try {
           setLoading(true);
 
+          const effectiveIsHead = values.role === "STORE_INCHARGE" ? true : isHead;
+
+          // Validate project selection for head accountant
+          if (effectiveIsHead && values.role === "ACCOUNTANT" && selectedProjectIds.length === 0) {
+            toast.error("Please assign at least one project for the Head Accountant.");
+            setLoading(false);
+            return;
+          }
+
           const payload = {
             ...values,
-            isHead:
-              values.role === "STORE_INCHARGE" ? true : isHead ? true : false,
+            isHead: effectiveIsHead,
+            ...(effectiveIsHead && values.role === "ACCOUNTANT" && { projectIds: selectedProjectIds }),
           };
           const response = await apiClient.post("/auth/register", payload);
 
@@ -100,9 +120,19 @@ const AddUser = () => {
       setLoading(true);
       setShowConfirmModal(false);
 
+      const effectiveIsHead = formik.values.role === "STORE_INCHARGE" ? true : isHead;
+
+      // Validate project selection for head accountant
+      if (effectiveIsHead && formik.values.role === "ACCOUNTANT" && selectedProjectIds.length === 0) {
+        toast.error("Please assign at least one project for the Head Accountant.");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         newRole: formik.values.role,
-        isHead: formik.values.role === "STORE_INCHARGE" ? true : isHead,
+        isHead: effectiveIsHead,
+        ...(effectiveIsHead && formik.values.role === "ACCOUNTANT" && { projectIds: selectedProjectIds }),
       };
 
       const response = await apiClient.patch(`/auth/users/${userData.id}/change-role`, payload);
@@ -190,6 +220,7 @@ const AddUser = () => {
                 formik.handleChange(e);
                 const selectedRole = e.target.value;
                 setIsHead(selectedRole === "STORE_INCHARGE");
+                setSelectedProjectIds([]);
               }}
               onBlur={formik.handleBlur}
               error={formik.touched.role && Boolean(formik.errors.role)}
@@ -209,13 +240,53 @@ const AddUser = () => {
                 control={
                   <Checkbox
                     checked={formik.values.role === "STORE_INCHARGE" ? true : isHead}
-                    onChange={e => setIsHead(e.target.checked)}
+                    onChange={e => {
+                      setIsHead(e.target.checked);
+                      if (!e.target.checked) setSelectedProjectIds([]);
+                    }}
                     disabled={formik.values.role === "STORE_INCHARGE"}
                     color="primary"
                   />
                 }
                 label="Is Head ?"
               />
+            )}
+            {/* Project assignment — required when isHead Accountant */}
+            {formik.values.role === "ACCOUNTANT" && isHead && (
+              <FormControl fullWidth sx={{ mt: 1 }}>
+                <InputLabel id="head-accountant-projects-label">
+                  Assign Projects (required) *
+                </InputLabel>
+                <Select
+                  labelId="head-accountant-projects-label"
+                  multiple
+                  value={selectedProjectIds}
+                  onChange={(e) => setSelectedProjectIds(e.target.value)}
+                  input={<OutlinedInput label="Assign Projects (required) *" />}
+                  renderValue={(selected) =>
+                    projects
+                      .filter((p) => selected.includes(p.id))
+                      .map((p) => p.name)
+                      .join(", ")
+                  }
+                  error={isHead && formik.values.role === "ACCOUNTANT" && selectedProjectIds.length === 0}
+                >
+                  {projects.map((project) => (
+                    <MenuItem key={project.id} value={project.id}>
+                      <Checkbox checked={selectedProjectIds.includes(project.id)} />
+                      <ListItemText primary={project.name} />
+                    </MenuItem>
+                  ))}
+                </Select>
+                {isHead && formik.values.role === "ACCOUNTANT" && selectedProjectIds.length === 0 && (
+                  <FormHelperText error>
+                    Select at least one project for the Head Accountant
+                  </FormHelperText>
+                )}
+                <FormHelperText>
+                  Assign all projects to create a global Head Accountant who sees all projects.
+                </FormHelperText>
+              </FormControl>
             )}
           </div>
           {isEditMode && (

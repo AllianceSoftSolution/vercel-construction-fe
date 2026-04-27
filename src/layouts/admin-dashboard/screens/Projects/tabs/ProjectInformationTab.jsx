@@ -347,11 +347,38 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     );
   };
 
-  const AccountantActionComponent = () => (
+  const handleUnassignAccountant = async (userId) => {
+    try {
+      setAccountantLoading(true);
+      const response = await apiClient.post("/assignments/accountant", {
+        userId,
+        projectId: data.id,
+        sectionIds: [],
+      });
+      if (response.ok) {
+        toast.success("Accountant unassigned successfully");
+        if (typeof onAssignmentSuccess === "function") {
+          onAssignmentSuccess();
+        }
+      } else {
+        toast.error(response.data?.message || "Failed to unassign accountant");
+      }
+    } catch (e) {
+      toast.error("Failed to unassign accountant");
+    } finally {
+      setAccountantLoading(false);
+    }
+  };
+
+  const AccountantActionComponent = ({ value: userId }) => (
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+        {
+          label: "Unassign",
+          onClick: () => handleUnassignAccountant(userId),
+          icon: <FaTrash />,
+        },
       ]}
     >
       <IconButton>
@@ -441,6 +468,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
             data?.assignedAccountants?.map((i) => ({
               ...i,
               noOfSection: i.sections?.map(s => s.name).filter(Boolean).join(', ') || '-',
+              action: i.id,
             })) || []
           }
           cellComponents={{ action: AccountantActionComponent }}

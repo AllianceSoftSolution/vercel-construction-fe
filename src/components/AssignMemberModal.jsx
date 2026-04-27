@@ -25,6 +25,7 @@ const AssignMemberModal = ({
   fetchUsers,
   createUser,
   fetchSections, // optional
+  fetchStores,   // optional - for store selection step (e.g., CM)
   onAssign,
 }) => {
   const [step, setStep] = useState(1);
@@ -34,9 +35,12 @@ const AssignMemberModal = ({
   const [showAddUser, setShowAddUser] = useState(false);
   const [sections, setSections] = useState([]);
   const [selectedSections, setSelectedSections] = useState([]);
+  const [stores, setStores] = useState([]);
+  const [selectedStores, setSelectedStores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [assignLoading, setAssignLoading] = useState(false);
   const [sectionsLoading, setSectionsLoading] = useState(false);
+  const [storesLoading, setStoresLoading] = useState(false);
   const [createUserLoading, setCreateUserLoading] = useState(false);
   const [note, setNote] = useState("");
 
@@ -46,6 +50,7 @@ const AssignMemberModal = ({
       setSelectedUser(null);
       setShowAddUser(false);
       setSelectedSections([]);
+      setSelectedStores([]);
       fetchUsersList();
     }
     // eslint-disable-next-line
@@ -60,7 +65,19 @@ const AssignMemberModal = ({
 
   const handleUserSelect = async (user) => {
     setSelectedUser(user);
-    if (fetchSections) {
+    if (fetchStores) {
+      setStep(3);
+      setStoresLoading(true);
+      try {
+        const fetchedStores = await fetchStores();
+        setStores(fetchedStores || []);
+        setSelectedStores([]);
+      } catch (error) {
+        console.error("Error fetching stores:", error);
+      } finally {
+        setStoresLoading(false);
+      }
+    } else if (fetchSections) {
       setStep(3);
       setSectionsLoading(true);
       try {
@@ -88,7 +105,19 @@ const AssignMemberModal = ({
       const newUser = await createUser(userData, role);
       if (newUser && newUser.id) {
         setSelectedUser(newUser);
-        if (fetchSections) {
+        if (fetchStores) {
+          setStep(3);
+          setStoresLoading(true);
+          try {
+            const fetchedStores = await fetchStores();
+            setStores(fetchedStores || []);
+            setSelectedStores([]);
+          } catch (error) {
+            console.error("Error fetching stores:", error);
+          } finally {
+            setStoresLoading(false);
+          }
+        } else if (fetchSections) {
           setStep(3);
           setSectionsLoading(true);
           try {
@@ -251,12 +280,51 @@ const AssignMemberModal = ({
     // If result is not true, assume error is shown in toast and keep modal open
   };
 
+  const renderStoreAssignment = () => (
+    <div className="flex flex-col items-center justify-center">
+      <h2 className="text-2xl font-semibold text-[#043b6a] mb-4">
+        Assign Stores
+      </h2>
+      {storesLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader text="Loading stores..." />
+        </div>
+      ) : assignLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader text="Assigning..." />
+        </div>
+      ) : (
+        <AssignStoreStep
+          stores={stores}
+          selectedStores={selectedStores}
+          setSelectedStores={setSelectedStores}
+          onCancel={onClose}
+          onSubmit={handleAssignStores}
+          loading={assignLoading}
+        />
+      )}
+    </div>
+  );
+
+  const handleAssignStores = async () => {
+    setAssignLoading(true);
+    const result = await onAssign({
+      userId: selectedUser.id,
+      storeIds: selectedStores,
+    });
+    setAssignLoading(false);
+    if (result === true) {
+      onClose();
+    }
+  };
+
   return (
     <Modal open={open} onClose={onClose}>
       <Box sx={style}>
         {step === 1 && renderUserSelection()}
         {step === 2 && renderUserCreation()}
-        {step === 3 && fetchSections && renderSectionAssignment()}
+        {step === 3 && fetchSections && !fetchStores && renderSectionAssignment()}
+        {step === 3 && fetchStores && renderStoreAssignment()}
       </Box>
     </Modal>
   );
@@ -403,6 +471,80 @@ function AssignSectionStep({
           disabled={loading}
         >
           {loading ? "Assigning..." : "Submit"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AssignStoreStep({ stores, selectedStores, setSelectedStores, onCancel, onSubmit, loading }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredStores = stores.filter((store) =>
+    store.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCheckboxChange = (id) => {
+    setSelectedStores((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  return (
+    <div className="max-w-3xl w-full mx-auto bg-white rounded-2xl shadow-md p-6 space-y-6">
+      <div className="relative">
+        <Input
+          placeholder="Search stores..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full !rounded-xl !bg-[#f9f9fb] !px-4 !py-3 !h-auto !text-sm placeholder:text-gray-500 pr-12"
+        />
+        <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      </div>
+
+      {filteredStores.length === 0 ? (
+        <p className="text-gray-400 text-sm text-center py-4">
+          No stores found in this section. You can still assign the CM.
+        </p>
+      ) : (
+        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+          {filteredStores.map((store) => (
+            <div
+              key={store.id}
+              onClick={() => handleCheckboxChange(store.id)}
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white cursor-pointer hover:border-[#fc8908] transition"
+            >
+              <input
+                type="checkbox"
+                checked={selectedStores.includes(store.id)}
+                onChange={() => handleCheckboxChange(store.id)}
+                onClick={(e) => e.stopPropagation()}
+                className="accent-[#fc8908]"
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-[#043b6a]">{store.name}</span>
+                <span className="text-xs text-gray-400">
+                  {store.type?.replace(/_/g, " ")}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+        <button
+          onClick={onCancel}
+          className="bg-[#DDDDDD] px-8 py-2 rounded-lg font-medium text-[#000000]"
+          disabled={loading}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onSubmit}
+          className="bg-primary px-8 py-2 rounded-lg font-medium text-white"
+          disabled={loading}
+        >
+          {loading ? "Assigning..." : "Assign"}
         </button>
       </div>
     </div>

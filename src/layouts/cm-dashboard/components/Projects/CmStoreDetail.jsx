@@ -206,7 +206,7 @@ const CmStoreDetail = () => {
           <InfoRow label="Section:" value={storeData?.section?.name || "-"} />
           <InfoRow
             label="Material:"
-            value={storeData?.inventory?.[0]?.material || "N/A"}
+            value={storeData?.inventory?.[0]?.material?.name || "N/A"}
           />{" "}
           <InfoRow
             label="Store Incharge:"

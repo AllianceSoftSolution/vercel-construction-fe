@@ -41,6 +41,8 @@ const SiSectionDetailPage = () => {
   const [openAssignStoreInchargeModal, setOpenAssignStoreInchargeModal] = useState(false);
   const [capData, setCapData] = useState([]);
   const [capDataType, setCapDataType] = useState("analytics"); // "analytics" or "raw"
+  const [unassignCMTarget, setUnassignCMTarget] = useState(null); // { assignmentId, name }
+  const [unassignCMLoading, setUnassignCMLoading] = useState(false);
 
   // Generic function to format text for display (roles, types, etc.)
   const formatText = (text) => {
@@ -380,6 +382,27 @@ const SiSectionDetailPage = () => {
     }
   };
 
+  const handleUnassignCM = async () => {
+    if (!unassignCMTarget) return;
+    try {
+      setUnassignCMLoading(true);
+      const response = await apiClient.patch(
+        `/assignments/construction-manager/${unassignCMTarget.assignmentId}/deactivate`
+      );
+      if (response.ok) {
+        toast.success("Construction Manager unassigned. Stock transferred to head store.");
+        setUnassignCMTarget(null);
+        fetchSectionDetail();
+      } else {
+        toast.error(response.data?.message || "Failed to unassign Construction Manager");
+      }
+    } catch (e) {
+      toast.error("Failed to unassign Construction Manager");
+    } finally {
+      setUnassignCMLoading(false);
+    }
+  };
+
   const handleAssignStoreInchargeGeneric = async ({ userId }) => {
     try {
       setModalLoading(true);
@@ -444,6 +467,18 @@ const SiSectionDetailPage = () => {
     </Link>
   );
 
+  const CMUnassignButton = ({ row }) => {
+    if (!row) return null;
+    return (
+      <button
+        onClick={() => setUnassignCMTarget({ assignmentId: row.id, name: row.user?.name || "this CM" })}
+        className="px-3 py-1 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+      >
+        Unassign
+      </button>
+    );
+  };
+
   const columns = [
     // { headerName: "CM ID", field: "id" },
     { headerName: "Name", field: "user.name" },
@@ -452,7 +487,7 @@ const SiSectionDetailPage = () => {
     // { headerName: "Address", field: "user.address" },
     { headerName: "Created By", field: "user.creator.name" },
     { headerName: "CM Store", field: "cmStore" },
-    // { headerName: "Action", field: "id" },
+    { headerName: "Action", field: "action" },
   ];
 
   const columnsAcc = [
@@ -830,8 +865,8 @@ const SiSectionDetailPage = () => {
                     data={sectionData?.associatedConstructionManagers || []}
                     columns={columns}
                     cellComponents={{
-                      id: CustomActionComponent,
                       cmStore: CustomStoreLinkComponent,
+                      action: CMUnassignButton,
                     }}
                   />
                 )}
@@ -899,6 +934,40 @@ const SiSectionDetailPage = () => {
       ) : (
         <div className="text-center py-8">
           <p className="text-gray-500">Section not found or failed to load.</p>
+        </div>
+      )}
+
+      {/* Unassign CM Confirmation Modal */}
+      {unassignCMTarget && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-[#043b6a] mb-2">
+              Unassign Construction Manager
+            </h3>
+            <p className="text-gray-600 mb-2">
+              Are you sure you want to unassign{" "}
+              <strong>{unassignCMTarget.name}</strong> from this section?
+            </p>
+            <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-5">
+              ⚠️ Any stock in the CM store will be automatically transferred back to the Head Store before unassigning.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setUnassignCMTarget(null)}
+                disabled={unassignCMLoading}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUnassignCM}
+                disabled={unassignCMLoading}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50"
+              >
+                {unassignCMLoading ? "Unassigning..." : "Unassign"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
