@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import AddMemberModal from "../layouts/admin-dashboard/screens/users/modals/AddMemberModal";
-import { Button, Input, CircularProgress } from "@mui/material";
+import { Button, Input, CircularProgress, Checkbox, FormControlLabel } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import Loader from "./ui/Loader";
 
@@ -27,6 +27,7 @@ const AssignMemberModal = ({
   fetchSections, // optional
   fetchStores,   // optional - for store selection step (e.g., CM)
   onAssign,
+  askCreateStore = false, // optional - show Yes/No prompt to create a section store
 }) => {
   const [step, setStep] = useState(1);
   const [users, setUsers] = useState([]);
@@ -43,6 +44,7 @@ const AssignMemberModal = ({
   const [storesLoading, setStoresLoading] = useState(false);
   const [createUserLoading, setCreateUserLoading] = useState(false);
   const [note, setNote] = useState("");
+  const [createStore, setCreateStore] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -51,6 +53,7 @@ const AssignMemberModal = ({
       setShowAddUser(false);
       setSelectedSections([]);
       setSelectedStores([]);
+      setCreateStore(false);
       fetchUsersList();
     }
     // eslint-disable-next-line
@@ -93,6 +96,8 @@ const AssignMemberModal = ({
       } finally {
         setSectionsLoading(false);
       }
+    } else if (askCreateStore) {
+      setStep(4);
     } else {
       onAssign({ userId: user.id });
       onClose();
@@ -134,6 +139,8 @@ const AssignMemberModal = ({
           } finally {
             setSectionsLoading(false);
           }
+        } else if (askCreateStore) {
+          setStep(4);
         } else {
           onAssign({ userId: newUser.id });
           onClose();
@@ -294,14 +301,30 @@ const AssignMemberModal = ({
           <Loader text="Assigning..." />
         </div>
       ) : (
-        <AssignStoreStep
-          stores={stores}
-          selectedStores={selectedStores}
-          setSelectedStores={setSelectedStores}
-          onCancel={onClose}
-          onSubmit={handleAssignStores}
-          loading={assignLoading}
-        />
+        <>
+          <AssignStoreStep
+            stores={stores}
+            selectedStores={selectedStores}
+            setSelectedStores={setSelectedStores}
+            onCancel={onClose}
+            onSubmit={handleAssignStores}
+            loading={assignLoading}
+          />
+          {askCreateStore && (
+            <div className="w-full mt-3 px-2">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={createStore}
+                    onChange={(e) => setCreateStore(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label="Also create a Section Store for this section"
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -311,12 +334,52 @@ const AssignMemberModal = ({
     const result = await onAssign({
       userId: selectedUser.id,
       storeIds: selectedStores,
+      createStore,
     });
     setAssignLoading(false);
     if (result === true) {
       onClose();
     }
   };
+
+  // Step 4: Ask whether to create a section store (when no fetchStores is provided)
+  const handleCreateStoreDecision = async (value) => {
+    setAssignLoading(true);
+    const result = await onAssign({ userId: selectedUser.id, createStore: value });
+    setAssignLoading(false);
+    if (result !== false) {
+      onClose();
+    }
+  };
+
+  const renderCreateStorePrompt = () => (
+    <div className="flex flex-col items-center justify-center gap-6 py-4">
+      <h2 className="text-2xl font-semibold text-[#043b6a] text-center">
+        Create Section Store?
+      </h2>
+      <p className="text-gray-500 text-center text-sm max-w-sm">
+        Would you like to create a Section Store for this section? You can also create one later from the section settings.
+      </p>
+      {assignLoading ? (
+        <Loader text="Assigning..." />
+      ) : (
+        <div className="flex gap-4 w-full justify-center">
+          <button
+            onClick={() => handleCreateStoreDecision(false)}
+            className="flex-1 max-w-[160px] rounded-xl border border-gray-300 px-4 py-3 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+          >
+            No, skip
+          </button>
+          <button
+            onClick={() => handleCreateStoreDecision(true)}
+            className="flex-1 max-w-[160px] rounded-xl bg-[#fc8908] text-white px-4 py-3 font-medium hover:bg-[#e07b07] transition-colors"
+          >
+            Yes, create store
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -325,6 +388,7 @@ const AssignMemberModal = ({
         {step === 2 && renderUserCreation()}
         {step === 3 && fetchSections && !fetchStores && renderSectionAssignment()}
         {step === 3 && fetchStores && renderStoreAssignment()}
+        {step === 4 && renderCreateStorePrompt()}
       </Box>
     </Modal>
   );

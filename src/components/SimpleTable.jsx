@@ -77,9 +77,9 @@ const getNestedValue = (obj, path, showNA) => {
 };
 
 // Component for rendering custom cell content
-const CellContent = ({ value, index, CustomComponent }) => {
+const CellContent = ({ value, index, CustomComponent, row }) => {
   if (CustomComponent) {
-    return <CustomComponent value={value} index={index} />;
+    return <CustomComponent value={value} index={index} row={row} />;
   } else if (typeof value === "object" && value !== null) {
     return <div>{JSON.stringify(value)}</div>;
   } else {

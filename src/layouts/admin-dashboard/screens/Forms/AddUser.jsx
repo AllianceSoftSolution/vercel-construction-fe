@@ -97,6 +97,7 @@ const AddUser = () => {
 
           if (response.ok) {
             resetForm();
+            toast.success(response.data?.message || "User created successfully!");
             navigate(-1);
           } else {
             toast.error("User creation failed!");

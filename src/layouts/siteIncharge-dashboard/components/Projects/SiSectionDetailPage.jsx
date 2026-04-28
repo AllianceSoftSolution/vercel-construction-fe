@@ -356,12 +356,12 @@ const SiSectionDetailPage = () => {
     }
   };
 
-  const handleAssignCMGeneric = async ({ userId }) => {
+  const handleAssignCMGeneric = async ({ userId, createStore = false }) => {
     try {
       setModalLoading(true);
       const response = await apiClient.post(
         `/assignments/construction-manager`,
-        { userId, sectionId: id }
+        { userId, sectionId: id, createStore }
       );
       if (response.ok) {
         toast.success("Construction Manager assigned successfully!");
@@ -918,6 +918,7 @@ const SiSectionDetailPage = () => {
             fetchUsers={fetchCMUsers}
             createUser={createCMUser}
             onAssign={handleAssignCMGeneric}
+            askCreateStore
             loading={modalLoading}
           />
 
