@@ -68,6 +68,7 @@ const SinStoreDetail = () => {
     { headerName: "Material", field: "materialName" },
     { headerName: "Type", field: "type" },
     { headerName: "Quantity", field: "quantity" },
+    { headerName: "Flow (From/To)", field: "flowStore" },
     { headerName: "Reference", field: "reference" },
     { headerName: "Notes", field: "notes" },
     { headerName: "Date", field: "transactionDateFormatted" },
@@ -96,6 +97,11 @@ const SinStoreDetail = () => {
         transactionDateFormatted: item.transactionDate
           ? new Date(item.transactionDate).toLocaleDateString("en-GB")
           : "-",
+        flowStore: item.type === 'OUT'
+          ? (item.toStore ? `→ ${item.toStore.name}` : '—')
+          : item.type === 'IN'
+          ? (item.fromStore ? `← ${item.fromStore.name}` : '—')
+          : '—',
       };
     });
 

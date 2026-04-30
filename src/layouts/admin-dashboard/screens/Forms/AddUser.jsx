@@ -79,11 +79,11 @@ const AddUser = () => {
         try {
           setLoading(true);
 
-          const effectiveIsHead = values.role === "STORE_INCHARGE" ? true : isHead;
+          const effectiveIsHead = isHead;
 
-          // Validate project selection for head accountant
-          if (effectiveIsHead && values.role === "ACCOUNTANT" && selectedProjectIds.length === 0) {
-            toast.error("Please assign at least one project for the Head Accountant.");
+          // Validate project selection for head accountant or head store incharge
+          if (effectiveIsHead && (values.role === "ACCOUNTANT" || values.role === "STORE_INCHARGE") && selectedProjectIds.length === 0) {
+            toast.error("Please assign at least one project for the Head user.");
             setLoading(false);
             return;
           }
@@ -91,7 +91,7 @@ const AddUser = () => {
           const payload = {
             ...values,
             isHead: effectiveIsHead,
-            ...(effectiveIsHead && values.role === "ACCOUNTANT" && { projectIds: selectedProjectIds }),
+            ...(effectiveIsHead && (values.role === "ACCOUNTANT" || values.role === "STORE_INCHARGE") && { projectIds: selectedProjectIds }),
           };
           const response = await apiClient.post("/auth/register", payload);
 
@@ -121,11 +121,11 @@ const AddUser = () => {
       setLoading(true);
       setShowConfirmModal(false);
 
-      const effectiveIsHead = formik.values.role === "STORE_INCHARGE" ? true : isHead;
+      const effectiveIsHead = isHead;
 
-      // Validate project selection for head accountant
-      if (effectiveIsHead && formik.values.role === "ACCOUNTANT" && selectedProjectIds.length === 0) {
-        toast.error("Please assign at least one project for the Head Accountant.");
+      // Validate project selection for head accountant or head store incharge
+      if (effectiveIsHead && (formik.values.role === "ACCOUNTANT" || formik.values.role === "STORE_INCHARGE") && selectedProjectIds.length === 0) {
+        toast.error("Please assign at least one project for the Head user.");
         setLoading(false);
         return;
       }
@@ -133,7 +133,7 @@ const AddUser = () => {
       const payload = {
         newRole: formik.values.role,
         isHead: effectiveIsHead,
-        ...(effectiveIsHead && formik.values.role === "ACCOUNTANT" && { projectIds: selectedProjectIds }),
+        ...(effectiveIsHead && (formik.values.role === "ACCOUNTANT" || formik.values.role === "STORE_INCHARGE") && { projectIds: selectedProjectIds }),
       };
 
       const response = await apiClient.patch(`/auth/users/${userData.id}/change-role`, payload);
@@ -220,7 +220,7 @@ const AddUser = () => {
               onChange={e => {
                 formik.handleChange(e);
                 const selectedRole = e.target.value;
-                setIsHead(selectedRole === "STORE_INCHARGE");
+                setIsHead(false);
                 setSelectedProjectIds([]);
               }}
               onBlur={formik.handleBlur}
@@ -240,20 +240,19 @@ const AddUser = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={formik.values.role === "STORE_INCHARGE" ? true : isHead}
+                    checked={isHead}
                     onChange={e => {
                       setIsHead(e.target.checked);
                       if (!e.target.checked) setSelectedProjectIds([]);
                     }}
-                    disabled={formik.values.role === "STORE_INCHARGE"}
                     color="primary"
                   />
                 }
                 label="Is Head ?"
               />
             )}
-            {/* Project assignment — required when isHead Accountant */}
-            {formik.values.role === "ACCOUNTANT" && isHead && (
+            {/* Project assignment — required when isHead for ACCOUNTANT or STORE_INCHARGE */}
+            {(formik.values.role === "ACCOUNTANT" || formik.values.role === "STORE_INCHARGE") && isHead && (
               <FormControl fullWidth sx={{ mt: 1 }}>
                 <InputLabel id="head-accountant-projects-label">
                   Assign Projects (required) *
@@ -270,7 +269,7 @@ const AddUser = () => {
                       .map((p) => p.name)
                       .join(", ")
                   }
-                  error={isHead && formik.values.role === "ACCOUNTANT" && selectedProjectIds.length === 0}
+                  error={isHead && (formik.values.role === "ACCOUNTANT" || formik.values.role === "STORE_INCHARGE") && selectedProjectIds.length === 0}
                 >
                   {projects.map((project) => (
                     <MenuItem key={project.id} value={project.id}>
@@ -279,13 +278,13 @@ const AddUser = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {isHead && formik.values.role === "ACCOUNTANT" && selectedProjectIds.length === 0 && (
+                {isHead && (formik.values.role === "ACCOUNTANT" || formik.values.role === "STORE_INCHARGE") && selectedProjectIds.length === 0 && (
                   <FormHelperText error>
-                    Select at least one project for the Head Accountant
+                    Select at least one project for the Head user
                   </FormHelperText>
                 )}
                 <FormHelperText>
-                  Assign all projects to create a global Head Accountant who sees all projects.
+                  Head user access is limited to selected project(s) only.
                 </FormHelperText>
               </FormControl>
             )}

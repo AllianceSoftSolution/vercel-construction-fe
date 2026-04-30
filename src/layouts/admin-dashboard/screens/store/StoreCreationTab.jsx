@@ -242,20 +242,38 @@ const CreateHeadStoreModal = ({ onClose, onSuccess }) => {
   );
 };
 
-// ─── Assign Personnel Modal ─────────────────────────────────────
+// ─── Assign Personnel Modal (multi-person) ─────────────────────
 const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
-  const [users, setUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(store?.assignedUserId || "");
+  const [allUsers, setAllUsers] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [roleFilter, setRoleFilter] = useState("STORE_INCHARGE");
   const [loading, setLoading] = useState(false);
-  const [removing, setRemoving] = useState(false);
+  const [removingId, setRemovingId] = useState(null);
 
+  // Build current assignment list from store prop
   useEffect(() => {
-    apiClient
-      .get("/auth/users?role=STORE_INCHARGE")
-      .then((r) => {
-        if (r.ok) setUsers(r.data.users || []);
-      });
-  }, []);
+    const list = store?.storeInchargeAssignments?.filter((a) => a.isActive !== false) || [];
+    const legacyUser = store?.assignedUser;
+    if (list.length > 0) {
+      setAssignments(list.map((a) => a.user).filter(Boolean));
+    } else if (legacyUser) {
+      setAssignments([legacyUser]);
+    } else {
+      setAssignments([]);
+    }
+  }, [store]);
+
+  // Fetch users when role filter changes
+  useEffect(() => {
+    if (!roleFilter) return;
+    apiClient.get(`/auth/users?role=${roleFilter}`).then((r) => {
+      if (r.ok) setAllUsers(r.data.users || []);
+    });
+  }, [roleFilter]);
+
+  const assignedIds = new Set(assignments.map((p) => p?.id));
+  const availableUsers = allUsers.filter((u) => !assignedIds.has(u.id));
 
   const handleAssign = async () => {
     if (!selectedUserId) { toast.error("Please select a user"); return; }
@@ -263,9 +281,12 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
       setLoading(true);
       const res = await apiClient.patch(`/stores/${store.id}/assign`, { userId: selectedUserId });
       if (res.ok) {
-        toast.success("Personnel assigned successfully");
+        toast.success("Person assigned successfully");
+        // Add to local list optimistically
+        const addedUser = allUsers.find((u) => u.id === selectedUserId);
+        if (addedUser) setAssignments((prev) => [...prev, addedUser]);
+        setSelectedUserId("");
         onSuccess();
-        onClose();
       } else {
         toast.error(res.data?.message || "Assignment failed");
       }
@@ -276,61 +297,98 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
     }
   };
 
-  const handleRemove = async () => {
+  const handleRemove = async (userId) => {
     try {
-      setRemoving(true);
-      const res = await apiClient.delete(`/stores/${store.id}/assign`);
+      setRemovingId(userId);
+      const res = await apiClient.delete(`/stores/${store.id}/assign/${userId}`);
       if (res.ok) {
         toast.success("Assignment removed");
+        setAssignments((prev) => prev.filter((p) => p?.id !== userId));
         onSuccess();
-        onClose();
       } else {
         toast.error(res.data?.message || "Failed to remove assignment");
       }
     } catch {
       toast.error("Something went wrong");
     } finally {
-      setRemoving(false);
+      setRemovingId(null);
     }
   };
 
-  const currentPerson = store?.assignedUser || store?.storeInchargeAssignments?.[0]?.user;
+  const ROLE_OPTIONS = [
+    { value: "STORE_INCHARGE", label: "Store Incharge" },
+    { value: "SITE_INCHARGE", label: "Site Incharge" },
+    { value: "PROJECT_MANAGER", label: "Project Manager" },
+    { value: "CONSTRUCTION_MANAGER", label: "Construction Manager" },
+    { value: "ADMIN", label: "Admin" },
+  ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
-        <h2 className="text-lg font-bold text-gray-800 mb-1">Assign Personnel</h2>
+        <h2 className="text-lg font-bold text-gray-800 mb-1">Manage Assigned Personnel</h2>
         <p className="text-sm text-gray-500 mb-4">Store: <strong>{store?.name}</strong></p>
 
-        {currentPerson && (
-          <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-gray-700">{currentPerson.name}</p>
-              <p className="text-xs text-gray-500">{currentPerson.email} · {currentPerson.role?.replace(/_/g, " ")}</p>
+        {/* Current assignments */}
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Currently Assigned ({assignments.length})
+          </p>
+          {assignments.length === 0 ? (
+            <p className="text-sm text-gray-400 italic px-1">No one assigned yet</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {assignments.map((person) => (
+                <div
+                  key={person?.id}
+                  className="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2.5 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">{person?.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {person?.email} · {person?.role?.replace(/_/g, " ")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleRemove(person?.id)}
+                    disabled={removingId === person?.id}
+                    className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium ml-3 flex-shrink-0"
+                  >
+                    <FaUserMinus size={12} />
+                    {removingId === person?.id ? "Removing..." : "Remove"}
+                  </button>
+                </div>
+              ))}
             </div>
-            <button
-              onClick={handleRemove}
-              disabled={removing}
-              className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium"
-            >
-              <FaUserMinus size={12} />
-              {removing ? "Removing..." : "Remove"}
-            </button>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="flex flex-col gap-3">
+        {/* Add new person */}
+        <div className="border-t border-gray-100 pt-4 flex flex-col gap-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Add Another Person</p>
           <div>
-            <label className="text-sm font-medium text-gray-600">Select Personnel</label>
+            <label className="text-sm font-medium text-gray-600">Filter by Role</label>
+            <select
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              value={roleFilter}
+              onChange={(e) => { setRoleFilter(e.target.value); setSelectedUserId(""); }}
+            >
+              {ROLE_OPTIONS.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Select Person</label>
             <select
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
             >
               <option value="">Select User</option>
-              {users.map((u) => (
+              {availableUsers.map((u) => (
                 <option key={u.id} value={u.id}>
-                  {u.name} ({u.role?.replace(/_/g, " ")})
+                  {u.name} ({u.email})
                 </option>
               ))}
             </select>
@@ -338,10 +396,10 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
           <div className="flex gap-3 mt-1">
             <button
               onClick={handleAssign}
-              disabled={loading}
+              disabled={loading || !selectedUserId}
               className="flex-1 bg-[#F97316] text-white rounded-lg py-2 font-semibold text-sm hover:bg-orange-600 disabled:opacity-60"
             >
-              {loading ? "Saving..." : "Assign"}
+              {loading ? "Assigning..." : "Assign"}
             </button>
             <button
               onClick={onClose}
@@ -680,11 +738,29 @@ const StoreCreationTab = () => {
   };
 
   const AssignedPersonCell = ({ value: store }) => {
-    const person = store?.assignedUser || store?.storeInchargeAssignments?.[0]?.user;
-    return person ? (
-      <span className="text-sm text-gray-700 font-medium">{person.name}</span>
-    ) : (
-      <span className="text-sm text-gray-400 italic">Unassigned</span>
+    const assignments = store?.storeInchargeAssignments?.filter((a) => a.isActive !== false) || [];
+    const legacyUser = store?.assignedUser;
+    // Merge: prefer assignments list; fall back to legacyUser if list is empty
+    const people = assignments.length > 0
+      ? assignments.map((a) => a.user)
+      : legacyUser ? [legacyUser] : [];
+
+    if (people.length === 0) {
+      return <span className="text-sm text-gray-400 italic">Unassigned</span>;
+    }
+    return (
+      <div className="flex flex-col gap-0.5">
+        {people.map((p, i) => (
+          <span key={p?.id || i} className="text-sm text-gray-700 font-medium leading-tight">
+            {p?.name}
+            {p?.role && (
+              <span className="ml-1 text-xs text-gray-400 font-normal">
+                ({p.role.replace(/_/g, " ")})
+              </span>
+            )}
+          </span>
+        ))}
+      </div>
     );
   };
 

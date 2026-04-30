@@ -72,6 +72,11 @@ const SiStoreDetail = () => {
         ...item,
         materialName: inv?.material?.name || item.materialId || '-',
         transactionDateFormatted: formatDate(item.transactionDate),
+        flowStore: item.type === 'OUT'
+          ? (item.toStore ? `→ ${item.toStore.name}` : '—')
+          : item.type === 'IN'
+          ? (item.fromStore ? `← ${item.fromStore.name}` : '—')
+          : '—',
       };
     });
 
@@ -88,6 +93,7 @@ const SiStoreDetail = () => {
     { headerName: "Material", field: "materialName" },
     { headerName: "Type", field: "type" },
     { headerName: "Quantity", field: "quantity" },
+    { headerName: "Flow (From/To)", field: "flowStore" },
     { headerName: "Reference", field: "reference" },
     { headerName: "Notes", field: "notes" },
     { headerName: "Date", field: "transactionDateFormatted" },

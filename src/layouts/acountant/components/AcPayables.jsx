@@ -1075,6 +1075,7 @@ const AccPayables = () => {
 
   // â”€â”€ Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
+    if (!user) return; // Wait for auth state to be populated before branching on role
     fetchNewPurchaseOrders();
     fetchPurchaseOrdersWithAmount();
     if (isHeadAccountant) {
@@ -1085,7 +1086,7 @@ const AccPayables = () => {
       fetchVendorAccount();
       apiClient.get('/projects').then(r => { if (r.ok) setProjects(r.data.projects || []); }).catch(() => {});
     }
-  }, []);
+  }, [isHeadAccountant]); // Re-run when the user/role is determined from Redux
 
   // â”€â”€ HEAD ACCOUNTANT RENDER FUNCTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
