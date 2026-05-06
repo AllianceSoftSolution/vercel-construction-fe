@@ -116,49 +116,7 @@ function CmDashboard() {
         setLoading(true);
         const response = await apiClient.get("/sections");
         if (response.ok) {
-          const allSections = response.data.sections;
-          
-          // Get current user ID from Redux store
-          const currentUserId = currentUser?.id;
-          
-          // Debug logs
-          console.log("Current User from Redux:", currentUser);
-          console.log("Current User ID from Redux:", currentUserId);
-          console.log("All sections:", allSections);
-          
-          // Filter sections where current CM is assigned to a CM_STORE
-          const assignedSections = allSections.filter(section => {
-            // Check if section has any stores
-            if (!section.stores || section.stores.length === 0) {
-              console.log(`Section ${section.name} has no stores`);
-              return false;
-            }
-            
-            // Look for CM_STORE assignments
-            const cmStoreAssignments = section.stores.filter(store => {
-              const isCMStore = store.type === "CM_STORE";
-              const isAssignedToCurrentUser = store.cmUserId === currentUserId;
-              const isActive = store.isActive === true;
-              
-              // Debug log for each store
-              console.log(`Section: ${section.name}, Store: ${store.name}, Type: ${store.type}, CM User ID: ${store.cmUserId}, Current User ID: ${currentUserId}, Is Assigned: ${isAssignedToCurrentUser}, Is Active: ${isActive}`);
-              
-              return isCMStore && isAssignedToCurrentUser && isActive;
-            });
-            
-            const hasAssignment = cmStoreAssignments.length > 0;
-            console.log(`Section ${section.name} has ${cmStoreAssignments.length} CM store assignment(s) to current user:`, hasAssignment);
-            
-            if (hasAssignment) {
-              console.log(`CM Store assignments for ${section.name}:`, cmStoreAssignments);
-            }
-            
-            return hasAssignment;
-          });
-          
-          console.log("Final filtered assigned sections:", assignedSections);
-          console.log(`Total sections assigned to CM ${currentUser?.name}: ${assignedSections.length}`);
-          
+          const assignedSections = response.data.sections || [];
           setSections(assignedSections);
         } else {
           toast.error("Failed to fetch sections");
