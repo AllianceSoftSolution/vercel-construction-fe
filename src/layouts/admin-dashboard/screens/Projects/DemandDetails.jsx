@@ -376,17 +376,23 @@ const DemandDetails = () => {
               <div className="flex gap-2 items-center">
                 <p className="text-[#444444] font-semibold">PO Quantity:</p>
                 <p className="text-[#979797]">
-                  {demandData?.poQuantity || "-"}
+                  {demandData?.poQuantity != null
+                    ? demandData.poQuantity
+                    : demandData?.purchaseOrders?.length > 0
+                    ? demandData.purchaseOrders.reduce((s, po) => s + Number(po.quantity || 0), 0)
+                    : "-"}
                 </p>
               </div>
               <div className="flex gap-2 items-center">
                 <p className="text-[#444444] font-semibold">Quantity Remaining:</p>
                 <p className="text-[#979797]">
-                  {demandData?.quantityRemaining || "-"}
+                  {demandData?.quantityRemaining != null ? demandData.quantityRemaining : "-"}
                 </p>
               </div>
               {/* Exceeding Demand Quantity Alert and Checkbox */}
-              {Number(demandData?.poQuantity) >
+              {(demandData?.poQuantity != null
+                ? Number(demandData.poQuantity)
+                : demandData?.purchaseOrders?.reduce((s, po) => s + Number(po.quantity || 0), 0) || 0) >
                 Number(demandData?.quantity) && (
                 <div className="flex flex-col col-span-2">
                   <div className="flex items-center gap-2 mt-1">
@@ -453,7 +459,7 @@ const DemandDetails = () => {
                 section: po.demand?.section?.name || "-",
                 // qty: po.demand?.quantity || "-",
                 unit: po.demand?.unit || "-",
-                poQty: po.quantity || "-",
+                poQty: po.quantity != null ? po.quantity : "-",
                 unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
                 amount: po.totalAmount ? `${po.totalAmount}` : "-",
                 createdAt: po.createdAt ? formatDate(po.createdAt) : "-",

@@ -248,6 +248,7 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
   const [assignments, setAssignments] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [roleFilter, setRoleFilter] = useState("STORE_INCHARGE");
+  const [utilityFile, setUtilityFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [removingId, setRemovingId] = useState(null);
 
@@ -256,7 +257,7 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
     const list = store?.storeInchargeAssignments?.filter((a) => a.isActive !== false) || [];
     const legacyUser = store?.assignedUser;
     if (list.length > 0) {
-      setAssignments(list.map((a) => a.user).filter(Boolean));
+      setAssignments(list.map((a) => ({ ...a.user, utilityFile: a.utilityFile })).filter(Boolean));
     } else if (legacyUser) {
       setAssignments([legacyUser]);
     } else {
@@ -279,13 +280,20 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
     if (!selectedUserId) { toast.error("Please select a user"); return; }
     try {
       setLoading(true);
-      const res = await apiClient.patch(`/stores/${store.id}/assign`, { userId: selectedUserId });
+      // Use FormData so file can be sent alongside userId
+      const formData = new FormData();
+      formData.append("userId", selectedUserId);
+      if (utilityFile) formData.append("utilityFile", utilityFile);
+
+      const res = await apiClient.patch(`/stores/${store.id}/assign`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       if (res.ok) {
         toast.success("Person assigned successfully");
-        // Add to local list optimistically
         const addedUser = allUsers.find((u) => u.id === selectedUserId);
-        if (addedUser) setAssignments((prev) => [...prev, addedUser]);
+        if (addedUser) setAssignments((prev) => [...prev, { ...addedUser, utilityFile: res.data?.store?.storeInchargeAssignments?.find((a) => a.user?.id === selectedUserId)?.utilityFile || null }]);
         setSelectedUserId("");
+        setUtilityFile(null);
         onSuccess();
       } else {
         toast.error(res.data?.message || "Assignment failed");
@@ -325,7 +333,7 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold text-gray-800 mb-1">Manage Assigned Personnel</h2>
         <p className="text-sm text-gray-500 mb-4">Store: <strong>{store?.name}</strong></p>
 
@@ -343,11 +351,21 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
                   key={person?.id}
                   className="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2.5 flex items-center justify-between"
                 >
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-700">{person?.name}</p>
                     <p className="text-xs text-gray-500">
                       {person?.email} · {person?.role?.replace(/_/g, " ")}
                     </p>
+                    {person?.utilityFile && (
+                      <a
+                        href={person.utilityFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-orange-600 underline mt-0.5 inline-block"
+                      >
+                        View Utility File
+                      </a>
+                    )}
                   </div>
                   <button
                     onClick={() => handleRemove(person?.id)}
@@ -392,6 +410,20 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">
+              Utility File <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <input
+              type="file"
+              accept="*/*"
+              onChange={(e) => setUtilityFile(e.target.files?.[0] || null)}
+              className="mt-1 w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
+            />
+            {utilityFile && (
+              <p className="text-xs text-gray-500 mt-1 truncate">{utilityFile.name}</p>
+            )}
           </div>
           <div className="flex gap-3 mt-1">
             <button
