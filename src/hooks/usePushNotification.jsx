@@ -27,6 +27,12 @@ const usePushNotification = (vapidKey = DEFAULT_VAPID_KEY) => {
       setError("No VAPID key provided for push notifications.");
       return;
     }
+    // Also guard against messaging being null (e.g. HTTP environment)
+    if (!messaging) {
+      setError("Push notifications are not supported in this environment.");
+      setPermission("unsupported");
+      return;
+    }
     // Only reference Notification after checks
     window.Notification.requestPermission()
       .then((permission) => {
@@ -68,7 +74,8 @@ const usePushNotification = (vapidKey = DEFAULT_VAPID_KEY) => {
     if (
       typeof window === "undefined" ||
       !("Notification" in window) ||
-      !("serviceWorker" in navigator)
+      !("serviceWorker" in navigator) ||
+      !messaging
     ) {
       return () => {};
     }

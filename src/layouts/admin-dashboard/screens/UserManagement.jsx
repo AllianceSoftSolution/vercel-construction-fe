@@ -33,10 +33,12 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { useReadOnly } from "../../../context/ReadOnlyContext";
 
 const UserManagement = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const isReadOnly = useReadOnly();
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [userAnalytics, setUserAnalytics] = useState({
@@ -267,16 +269,18 @@ const UserManagement = () => {
             onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
-          {
-            label: "Change User Role",
-            onClick: () => handleOpenRoleEdit(user),
-            icon: <FaUserEdit />,
-          },
-          {
-            label: isActive ? "Deactivate Account" : "Activate Account",
-            onClick: () => handleAccountToggle(id, isActive),
-            icon: isActive ? <FaBan /> : <MdOutlineNoAccounts />,
-          },
+          ...(!isReadOnly ? [
+            {
+              label: "Change User Role",
+              onClick: () => handleOpenRoleEdit(user),
+              icon: <FaUserEdit />,
+            },
+            {
+              label: isActive ? "Deactivate Account" : "Activate Account",
+              onClick: () => handleAccountToggle(id, isActive),
+              icon: isActive ? <FaBan /> : <MdOutlineNoAccounts />,
+            },
+          ] : []),
         ]}
       >
         <IconButton>
@@ -319,10 +323,10 @@ const UserManagement = () => {
         title="User Management"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
-        buttonText="Create New User"
-        onButtonClick={() =>
-          navigate("/admin-dashboard/user-management/addUser")
-        }
+        {...(!isReadOnly && {
+          buttonText: "Create New User",
+          onButtonClick: () => navigate("/admin-dashboard/user-management/addUser"),
+        })}
       />
       <div className="flex justify-end items-center gap-4 mt-8 ">
         <CustomFilterDropdown

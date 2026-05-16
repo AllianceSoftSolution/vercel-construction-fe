@@ -10,9 +10,11 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { IconButton } from "@mui/material";
 import DropdownButton from "../../../comments/components/DropdownButton";
 import DeleteModal from '../../../mui/DeleteModal';
+import { useReadOnly } from "../../../context/ReadOnlyContext";
 
 const Materials = () => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -68,19 +70,13 @@ const Materials = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          {
-            label: "Edit",
-            onClick: () => handleEdit(id),
-            icon: <FaUserEdit />,
-          },
-          // {
-          //   label: "Delete ",
-          //   onClick: () => {
-          //     setSelectedMaterialId(id);
-          //     setShowDeleteModal(true);
-          //   },
-          //   icon: <FaTrash />,
-          // },
+          ...(!isReadOnly ? [
+            {
+              label: "Edit",
+              onClick: () => handleEdit(id),
+              icon: <FaUserEdit />,
+            },
+          ] : []),
         ]}
       >
         <IconButton>
@@ -105,8 +101,10 @@ const Materials = () => {
         title="Materials"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
-        buttonText="Add Material"
-        onButtonClick={() => navigate("/admin-dashboard/materials/addProduct")}
+        {...(!isReadOnly && {
+          buttonText: "Add Material",
+          onButtonClick: () => navigate("/admin-dashboard/materials/addProduct"),
+        })}
       />
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
 

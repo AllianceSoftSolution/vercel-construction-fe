@@ -2,6 +2,7 @@ import React from "react";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useSelector } from "react-redux";
+import { ReadOnlyProvider } from "./context/ReadOnlyContext";
 
 // ************************** ADMIN DASHBOARD *******************************************
 import AdminDashboardLayout from "./layouts/admin-dashboard/AdminDashboardLayout";
@@ -296,7 +297,10 @@ const accountantRoutes = [
 ];
 const getRoutesByRole = (role) => {
   switch (role) {
+    case "SUPER_ADMIN":
     case "ADMIN":
+      return [...commonRoutes, ...adminRoutes];
+    case "SUB_ADMIN":
       return [...commonRoutes, ...adminRoutes];
     case "PROJECT_MANAGER":
       return [...commonRoutes, ...projectManagerRoutes];
@@ -327,7 +331,9 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <RouterProvider router={router} />
+      <ReadOnlyProvider isReadOnly={role === "SUB_ADMIN"}>
+        <RouterProvider router={router} />
+      </ReadOnlyProvider>
     </ThemeProvider>
   );
 };

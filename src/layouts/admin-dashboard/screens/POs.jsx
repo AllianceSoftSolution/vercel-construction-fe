@@ -14,6 +14,7 @@ import apiClient from "../../../api/apiClient";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
+import { useReadOnly } from "../../../context/ReadOnlyContext";
 // import { formatDate } from "../../../utils";
 
 // Status color mapping for purchase order status
@@ -78,6 +79,7 @@ const DateComponent = ({ value }) => {
 const PurchaseOrder = () => {
   const [isVendorModalOpen, setVendorModalOpen] = useState(false);
   const {id} = useParams();
+  const isReadOnly = useReadOnly();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -261,28 +263,16 @@ const PurchaseOrder = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          // {
-          //   label: "View",
-          //   onClick: () => navigate(`/admin-dashboard/pOS/${id}`),
-          //   icon: <IoIosEye />,
-          // },
-          // {
-          //   label: "Edit",
-          //   icon: <FaUserEdit />,
-          // },
-          // {  
-          //   label: "Change Vendor",
-          //   onClick: () => setVendorModalOpen(true),
-          //   icon: <RiFileEditFill />,
-          // },
-          {
-            label: "Delete",
-            onClick: () => {
-              setSelectedPOId(id);
-              setShowDeleteModal(true);
+          ...(!isReadOnly ? [
+            {
+              label: "Delete",
+              onClick: () => {
+                setSelectedPOId(id);
+                setShowDeleteModal(true);
+              },
+              icon: <FaTrash />,
             },
-            icon: <FaTrash />,
-          },
+          ] : []),
         ]}
       >
         <IconButton>

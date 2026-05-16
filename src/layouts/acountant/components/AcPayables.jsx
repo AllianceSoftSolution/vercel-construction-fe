@@ -347,12 +347,11 @@ const ViewPriceDetailsModal = ({ open, onClose, poData, onEdit }) => {
     }
   };
 
-  // Check if within 24 hours
+  // Check if within 24 hours (uses last edit time if available, falls back to add time)
   const isWithin24Hours = () => {
-    if (!poData.amountAddedAt) return false;
-    const now = new Date();
-    const amountAddedAt = new Date(poData.amountAddedAt);
-    const hoursDiff = (now.getTime() - amountAddedAt.getTime()) / (1000 * 60 * 60);
+    const refTime = poData.amountLastEditedAt ?? poData.amountAddedAt;
+    if (!refTime) return false;
+    const hoursDiff = (new Date().getTime() - new Date(refTime).getTime()) / (1000 * 60 * 60);
     return hoursDiff <= 24;
   };
 
@@ -412,7 +411,7 @@ const ViewPriceDetailsModal = ({ open, onClose, poData, onEdit }) => {
             </div>
           )}
 
-          {!canEdit && (
+          {!canEdit && !!onEdit && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <p className="text-sm text-yellow-800">
                 Edit window has expired. Amounts can only be edited within 24 hours of being added.
@@ -716,10 +715,10 @@ const AccPayables = () => {
   // â”€â”€ Format helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const formatAmount = (amount) => (amount || 0).toLocaleString('en-US');
   const getBalanceRemainingColor = (balance) => (balance || 0) < 0 ? "#22c55e" : "#ef4444";
-  const getPaymentStatus = (status) => {
-    const s = (status || '').toUpperCase();
-    if (s === 'COMPLETED') return 'Paid';
-    if (s === 'PARTIAL' || s === 'PARTIALLY_APPROVED') return 'Partially Paid';
+  const getPaymentStatus = (paymentStatus) => {
+    const s = (paymentStatus || '').toUpperCase();
+    if (s === 'FULLY_PAID') return 'Paid';
+    if (s === 'PARTIALLY_PAID') return 'Partially Paid';
     return 'Balance';
   };
 
@@ -805,7 +804,7 @@ const AccPayables = () => {
           unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
           amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
           status: po.status || "-",
-          paymentStatus: getPaymentStatus(po.status),
+          paymentStatus: getPaymentStatus(po.paymentStatus),
           hasAmount: false,
           poData: po,
         }));
@@ -830,7 +829,7 @@ const AccPayables = () => {
           unitPrice: po.unitPrice ? parseFloat(po.unitPrice).toLocaleString('en-US') : "-",
           amount: po.totalAmount ? parseFloat(po.totalAmount).toLocaleString('en-US') : "-",
           status: po.status || "-",
-          paymentStatus: getPaymentStatus(po.status),
+          paymentStatus: getPaymentStatus(po.paymentStatus),
           hasAmount: true,
           proofOfBill: po.proofOfBill || null,
           poData: po,
@@ -995,7 +994,6 @@ const AccPayables = () => {
       return (new Date() - new Date(po.poData.amountAddedAt)) / (1000 * 60 * 60) <= 24;
     };
     const items = [{ label: "View Details", onClick: handleViewDetails }];
-    if (isWithin24Hours()) items.push({ label: "Edit", onClick: handleEdit });
     return (
       <DropdownButton items={items}>
         <IconButton><BsThreeDotsVertical /></IconButton>
@@ -1055,6 +1053,9 @@ const AccPayables = () => {
       if (statementRes.ok) {
         setVendorTransactions(statementRes.data.data?.transactions || []);
       }
+
+      // Re-fetch POs so paymentStatus badges reflect the new payment
+      await Promise.all([fetchNewPurchaseOrders(), fetchPurchaseOrdersWithAmount()]);
     } catch (error) {
       console.error('Error refreshing vendor data:', error);
     } finally {
@@ -1106,8 +1107,9 @@ const AccPayables = () => {
       );
     }
     const isWithin24h = () => {
-      if (!po.poData?.amountAddedAt) return false;
-      return (new Date() - new Date(po.poData.amountAddedAt)) / (1000 * 60 * 60) <= 24;
+      const refTime = po.poData?.amountLastEditedAt ?? po.poData?.amountAddedAt;
+      if (!refTime) return false;
+      return (new Date() - new Date(refTime)) / (1000 * 60 * 60) <= 24;
     };
     const items = [{ label: "View Details", onClick: () => { setSelectedPOForDetails(po.poData); setDetailsModalOpen(true); } }];
     if (isWithin24h()) items.push({ label: "Edit", onClick: () => { setSelectedPOForEdit(po.poData); setEditModalOpen(true); } });
@@ -1620,13 +1622,13 @@ const AccPayables = () => {
         open={detailsModalOpen}
         onClose={() => { setDetailsModalOpen(false); setSelectedPOForDetails(null); }}
         poData={selectedPOForDetails}
-        onEdit={() => {
+        onEdit={isHeadAccountant ? () => {
           if (selectedPOForDetails) {
             setSelectedPOForEdit(selectedPOForDetails);
             setEditModalOpen(true);
             setDetailsModalOpen(false);
           }
-        }}
+        } : null}
       />
 
       {/* Edit Price Modal */}

@@ -1,3 +1,4 @@
+import { useReadOnly } from "../../../../context/ReadOnlyContext";
 import React, { useEffect, useState, useCallback } from "react";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
@@ -712,6 +713,7 @@ const AssignPMModal = ({ store, onClose, onSuccess }) => {
 // ─── Store Creation Tab (main export) ───────────────────────────
 const StoreCreationTab = () => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSectionModal, setShowSectionModal] = useState(false);
@@ -804,26 +806,28 @@ const StoreCreationTab = () => {
           onClick: () => navigate(`/admin-dashboard/store/${store.id}`),
           icon: <FaEye />,
         },
-        {
-          label: "Assign Personnel",
-          onClick: () => setAssignStore(store),
-          icon: <FaUserEdit />,
-        },
-        {
-          label: "Assign to Site Incharge",
-          onClick: () => setAssignSIStore(store),
-          icon: <FaUserShield />,
-        },
-        {
-          label: "Assign to PM",
-          onClick: () => setAssignPMStore(store),
-          icon: <FaUserTie />,
-        },
-        {
-          label: <span style={{ color: '#EF4444' }}>Remove</span>,
-          onClick: () => setDeleteStore(store),
-          icon: <FaTrash style={{ color: '#EF4444' }} />,
-        },
+        ...(!isReadOnly ? [
+          {
+            label: "Assign Personnel",
+            onClick: () => setAssignStore(store),
+            icon: <FaUserEdit />,
+          },
+          {
+            label: "Assign to Site Incharge",
+            onClick: () => setAssignSIStore(store),
+            icon: <FaUserShield />,
+          },
+          {
+            label: "Assign to PM",
+            onClick: () => setAssignPMStore(store),
+            icon: <FaUserTie />,
+          },
+          {
+            label: <span style={{ color: '#EF4444' }}>Remove</span>,
+            onClick: () => setDeleteStore(store),
+            icon: <FaTrash style={{ color: '#EF4444' }} />,
+          },
+        ] : []),
       ]}
     >
       <IconButton size="small">
@@ -880,18 +884,22 @@ const StoreCreationTab = () => {
     <div className="flex flex-col gap-4">
       {/* Header row with create buttons */}
       <div className="flex flex-wrap gap-3 justify-end">
-        <button
-          onClick={() => setShowSectionModal(true)}
-          className="flex items-center gap-2 bg-[#2563eb] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
-        >
-          + Create Section Store
-        </button>
-        <button
-          onClick={() => setShowHeadModal(true)}
-          className="flex items-center gap-2 bg-[#16a34a] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition"
-        >
-          + Create Head Store
-        </button>
+        {!isReadOnly && (
+          <>
+            <button
+              onClick={() => setShowSectionModal(true)}
+              className="flex items-center gap-2 bg-[#2563eb] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
+            >
+              + Create Section Store
+            </button>
+            <button
+              onClick={() => setShowHeadModal(true)}
+              className="flex items-center gap-2 bg-[#16a34a] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition"
+            >
+              + Create Head Store
+            </button>
+          </>
+        )}
       </div>
 
       {/* Stores table */}

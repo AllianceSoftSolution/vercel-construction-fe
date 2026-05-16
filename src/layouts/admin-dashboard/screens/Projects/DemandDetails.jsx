@@ -14,6 +14,7 @@ import Loader from "../../../../components/ui/Loader";
 import toast from "react-hot-toast";
 import { HiCheckCircle } from "react-icons/hi";
 import { TiTick } from "react-icons/ti";
+import { useReadOnly } from "../../../../context/ReadOnlyContext";
 
 const style = {
   position: "absolute",
@@ -93,6 +94,7 @@ const RoleComponent = ({ value }) => {
 };
 
 const DemandDetails = () => {
+  const isReadOnly = useReadOnly();
   const [open, setOpen] = useState(false);
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
   const [status, setStatus] = useState("");
@@ -327,7 +329,7 @@ const DemandDetails = () => {
                   {demandData?.status || "PENDING"}
                 </div>
 
-                {(demandData?.status === "APPROVED" || demandData?.status === "PARTIALLY_PO_CREATED") && (
+                {(demandData?.status === "APPROVED" || demandData?.status === "PARTIALLY_PO_CREATED") && !isReadOnly && (
                   <Button
                     onClick={() => setOpenPurchaseModal(true)}
                     className="bg-primary text-white px-4 py-2 text-sm"
@@ -335,7 +337,7 @@ const DemandDetails = () => {
                   />
                 )}
 
-                <CustomActionComponent />
+                {!isReadOnly && <CustomActionComponent />}
               </div>
             </div>
 

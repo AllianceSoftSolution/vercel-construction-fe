@@ -62,7 +62,11 @@ const Login = () => {
       const role = user?.role?.toUpperCase();
 
       switch (role) {
+        case "SUPER_ADMIN":
         case "ADMIN":
+          navigate("/admin-dashboard");
+          break;
+        case "SUB_ADMIN":
           navigate("/admin-dashboard");
           break;
         case "PROJECT_MANAGER":

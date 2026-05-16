@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../../../api/apiClient";
 import AssignMemberModal from "../../../../components/AssignMemberModal";
 import AssignCAPModal from "../../../../components/AssignCAPModal";
+import { useReadOnly } from "../../../../context/ReadOnlyContext";
 
 const style = {
   position: "absolute",
@@ -30,6 +31,7 @@ const style = {
 
 const SectionDetailPage = () => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const [showModal, setShowModal] = useState(false);
   const [openPMModal, setOpenPMModal] = useState(false);
   const [openStoreModal, setOpenStoreModal] = useState(false);
@@ -139,11 +141,13 @@ const SectionDetailPage = () => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          {
-            label: "Delete",
-            onClick: handleDeleteCap,
-            icon: <FaTrash />,
-          },
+          ...(!isReadOnly ? [
+            {
+              label: "Delete",
+              onClick: handleDeleteCap,
+              icon: <FaTrash />,
+            },
+          ] : []),
         ]}
       >
         <IconButton>
@@ -154,7 +158,7 @@ const SectionDetailPage = () => {
   };
 
   const CMUnassignButton = ({ row }) => {
-    if (!row) return null;
+    if (!row || isReadOnly) return null;
     return (
       <button
         onClick={() => setUnassignCMTarget({ assignmentId: row.id, name: row.user?.name || "this CM" })}
@@ -857,12 +861,14 @@ const SectionDetailPage = () => {
                       <span className="text-[#979797]">
                         No Store Incharge assigned.
                       </span>
-                      <button
-                        className="mt-2 px-4 py-2 bg-[#BF1017] text-white rounded hover:bg-[#a00e13] transition"
-                        onClick={() => setOpenAssignStoreInchargeModal(true)}
-                      >
-                        Assign Store Incharge
-                      </button>
+                      {!isReadOnly && (
+                        <button
+                          className="mt-2 px-4 py-2 bg-[#BF1017] text-white rounded hover:bg-[#a00e13] transition"
+                          onClick={() => setOpenAssignStoreInchargeModal(true)}
+                        >
+                          Assign Store Incharge
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -882,6 +888,7 @@ const SectionDetailPage = () => {
         <TopBar title="Accountant" />
 
         <div className="overflow-x-auto mt-4 relative">
+
           {loading ? (
             <div className="border rounded-lg p-8 bg-white flex items-center justify-center min-h-[200px]">
               <Loader />
@@ -898,8 +905,10 @@ const SectionDetailPage = () => {
           <TopBar
             title="Construction Managers"
             // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-            buttonText="Add CM"
-            onButtonClick={() => setOpenAssignCMModal(true)}
+            {...(!isReadOnly && {
+              buttonText: "Add CM",
+              onButtonClick: () => setOpenAssignCMModal(true),
+            })}
           />
 
           <div className="overflow-x-auto mt-4 relative">
@@ -923,8 +932,10 @@ const SectionDetailPage = () => {
         <div className="mt-10">
           <TopBar
             title="Material CAP"
-            buttonText="Add Material Cap"
-            onButtonClick={() => setOpenAssignCAPModal(true)}
+            {...(!isReadOnly && {
+              buttonText: "Add Material Cap",
+              onButtonClick: () => setOpenAssignCAPModal(true),
+            })}
           />
           <div className="overflow-x-auto mt-4 relative">
             {loading ? (

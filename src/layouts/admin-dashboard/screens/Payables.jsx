@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState } from "react";
+﻿import { useReadOnly } from "../../../context/ReadOnlyContext";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
@@ -15,6 +16,7 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import { formatDateDMY } from "../../../utils";
+
 
 const PROJECT_COLORS = ['#0252AD', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
 
@@ -375,6 +377,7 @@ const statusOptions = [
 // â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const Payables = () => {
   const [loading, setLoading] = useState(false);
+  const isReadOnly = useReadOnly();
   const [drillLoading, setDrillLoading] = useState(false);
 
   // PO data (used in drill-down Level 3 PO table & project-tab PO table)
@@ -789,10 +792,12 @@ const Payables = () => {
           <button onClick={goToVendors} className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm font-semibold">
             <FiChevronLeft /> Back to Vendors
           </button>
-          <button onClick={() => setAddPaymentOpen(true)}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors shadow-sm">
-            + Add Payment
-          </button>
+          {!isReadOnly && (
+            <button onClick={() => setAddPaymentOpen(true)}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors shadow-sm">
+              + Add Payment
+            </button>
+          )}
         </div>
         {drillLoading ? <div className="flex justify-center py-16"><Loader /></div> : (
           <>

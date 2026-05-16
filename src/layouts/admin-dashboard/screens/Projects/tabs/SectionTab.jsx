@@ -7,9 +7,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import apiClient from "../../../../../api/apiClient";
 import toast from "react-hot-toast";
 import DeleteModal from "../../../../../mui/DeleteModal";
+import { useReadOnly } from "../../../../../context/ReadOnlyContext";
 
 const SectionTab = ({ data, onSectionDeleted }) => {
   const { id } = useParams();
+  const isReadOnly = useReadOnly();
   const [hasMemberInfo, sethasMemberInfo] = useState(false);
   const navigate = useNavigate();
   const [section, setSection] = useState([]);
@@ -53,10 +55,11 @@ const SectionTab = ({ data, onSectionDeleted }) => {
       <TopBar
         title="Project Sections"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        buttonText="Create Project Section"
-        onButtonClick={() =>
-          navigate(`/admin-dashboard/project-management/createProject?id=${id}`)
-        }
+        {...(!isReadOnly && {
+          buttonText: "Create Project Section",
+          onButtonClick: () =>
+            navigate(`/admin-dashboard/project-management/createProject?id=${id}`),
+        })}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
       <div className="w-full grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
@@ -70,19 +73,16 @@ const SectionTab = ({ data, onSectionDeleted }) => {
                   `/admin-dashboard/project-management/sections/${sec.id}`
                 ),
             },
-            // {
-            //   label: "Edit Project Section",
-            //   icon: <FaUserEdit />,
-            //   onClick: () => console.log(`Edit clicked for section ${sec.id}`),
-            // },
-            {
-              label: "Delete Project Section",
-              icon: <FaTrash />,
-              onClick: () => {
-                setSelectedSectionId(sec.id);
-                setShowDeleteModal(true);
+            ...(!isReadOnly ? [
+              {
+                label: "Delete Project Section",
+                icon: <FaTrash />,
+                onClick: () => {
+                  setSelectedSectionId(sec.id);
+                  setShowDeleteModal(true);
+                },
               },
-            },
+            ] : []),
           ];
 
           return (

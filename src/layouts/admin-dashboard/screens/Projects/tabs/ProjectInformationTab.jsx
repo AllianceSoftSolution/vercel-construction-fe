@@ -16,6 +16,7 @@ import apiClient from "../../../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../../../components/ui/Loader";
 import { formatDateDMY } from "../../../../../utils";
+import { useReadOnly } from "../../../../../context/ReadOnlyContext";
 
 const style = {
   position: "absolute",
@@ -28,6 +29,7 @@ const style = {
 
 const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
 
   const [openPM, setOpenPM] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
@@ -331,13 +333,15 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
-          { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
-          {
-            label: "Assign Head Store",
-            onClick: () =>
-              handleOpenAssignHeadStore(userId, siRow?.name || "Site Incharge"),
-            icon: <FaStore />,
-          },
+          ...(!isReadOnly ? [
+            { label: "Edit", onClick: () => alert("Edit"), icon: <FaUserEdit /> },
+            {
+              label: "Assign Head Store",
+              onClick: () =>
+                handleOpenAssignHeadStore(userId, siRow?.name || "Site Incharge"),
+              icon: <FaStore />,
+            },
+          ] : []),
         ]}
       >
         <IconButton>
@@ -374,11 +378,13 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
     <DropdownButton
       className="bg-[#FF0000] font-semibold"
       items={[
-        {
-          label: "Unassign",
-          onClick: () => handleUnassignAccountant(userId),
-          icon: <FaTrash />,
-        },
+        ...(!isReadOnly ? [
+          {
+            label: "Unassign",
+            onClick: () => handleUnassignAccountant(userId),
+            icon: <FaTrash />,
+          },
+        ] : []),
       ]}
     >
       <IconButton>
@@ -421,15 +427,17 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Site Incharge</h2>
-        <Button
-          buttonText={
-            initialDataLoading && assignRole === "Site Incharge"
-              ? "Loading..."
-              : "Assign Site Incharge"
-          }
-          onClick={() => handleOpenAssignModal("Site Incharge")}
-          disabled={initialDataLoading}
-        />
+        {!isReadOnly && (
+          <Button
+            buttonText={
+              initialDataLoading && assignRole === "Site Incharge"
+                ? "Loading..."
+                : "Assign Site Incharge"
+            }
+            onClick={() => handleOpenAssignModal("Site Incharge")}
+            disabled={initialDataLoading}
+          />
+        )}
       </div>
 
       {siteInchargeLoading ? (
@@ -449,15 +457,17 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 mt-4">Accountant</h2>
-        <Button
-          buttonText={
-            initialDataLoading && assignRole === "Accountant"
-              ? "Loading..."
-              : "Assign Accountant"
-          }
-          onClick={() => handleOpenAssignModal("Accountant")}
-          disabled={initialDataLoading}
-        />
+        {!isReadOnly && (
+          <Button
+            buttonText={
+              initialDataLoading && assignRole === "Accountant"
+                ? "Loading..."
+                : "Assign Accountant"
+            }
+            onClick={() => handleOpenAssignModal("Accountant")}
+            disabled={initialDataLoading}
+          />
+        )}
       </div>
       {accountantLoading ? (
         <Loader />

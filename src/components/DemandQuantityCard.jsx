@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Button from "./Button";
 import CustomTextField from "../mui/CustomTextField";
 import apiClient from "../api/apiClient";
+import { useReadOnly } from "../context/ReadOnlyContext";
 
 export default function DemandQuantityCard({
   storeName,
@@ -19,6 +20,7 @@ export default function DemandQuantityCard({
   const [loading, setLoading] = useState(false);
   const [demandData, setDemandData] = useState({});
   const canTransfer = Boolean(headStoreId && cmStoreId);
+  const isReadOnly = useReadOnly();
 
   const fulfillDemand = async () => {
     if (Number(quantity) > totalQty) {
@@ -77,7 +79,7 @@ export default function DemandQuantityCard({
       <p className="text-gray-600 mt-2">Material: {material}</p>
       <p className="text-gray-600">Available Quantity: {totalQty}</p>
 
-      {showButton && Number(totalQty) > 0 && canTransfer && (
+      {showButton && Number(totalQty) > 0 && canTransfer && !isReadOnly && (
         <button
           onClick={() => setIsOpen(true)}
           className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium"

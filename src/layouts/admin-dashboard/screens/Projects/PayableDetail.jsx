@@ -16,6 +16,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
 import { formatDateDMY } from '../../../../utils';
+import { useReadOnly } from "../../../../context/ReadOnlyContext";
 
 const style = {
   position: "absolute",
@@ -39,6 +40,7 @@ const paymentColumns = [
 
 export default function PayableDetails() {
   const { id } = useParams();
+  const isReadOnly = useReadOnly();
   const [loading, setLoading] = useState(false);
   const [vendorAccount, setVendorAccount] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -354,7 +356,7 @@ export default function PayableDetails() {
           </div>
         </div>
         <div>
-          <TopBar title="Debit Transactions" detail="All debit transactions for this vendor account." buttonText="Add Payment" onButtonClick={() => setOpen(true)}/>
+          <TopBar title="Debit Transactions" detail="All debit transactions for this vendor account." {...(!isReadOnly && { buttonText: "Add Payment", onButtonClick: () => setOpen(true) })} />
           <div className="mt-4 overflow-x-auto relative">
             <SimpleTable
               data={debitTransactions}

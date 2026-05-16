@@ -14,6 +14,7 @@ import DeleteModal from "../../../mui/DeleteModal";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import { formatDateDMY } from '../../../utils';
+import { useReadOnly } from "../../../context/ReadOnlyContext";
 
 // Function to convert date to YYYY-MM-DD format for HTML date input
 function toDateInputValue(dateString) {
@@ -28,6 +29,7 @@ function toDateInputValue(dateString) {
 
 const ProjectManagement = () => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -99,30 +101,32 @@ const ProjectManagement = () => {
           onClick: () =>
             navigate(`/admin-dashboard/project-management/${projectId}`),
         },
-        {
-          label: "Edit",
-          icon: <FaUserEdit />,
-          onClick: () => {
-            const project = projects.find(p => p.id === projectId);
-            // Create a project object with properly formatted dates for editing
-            const projectForEdit = {
-              ...project,
-              startDate: toDateInputValue(project.originalStartDate),
-              endDate: toDateInputValue(project.originalEndDate),
-            };
-            navigate(`/admin-dashboard/project-management/addProject`, {
-              state: { project: projectForEdit }
-            });
+        ...(!isReadOnly ? [
+          {
+            label: "Edit",
+            icon: <FaUserEdit />,
+            onClick: () => {
+              const project = projects.find(p => p.id === projectId);
+              // Create a project object with properly formatted dates for editing
+              const projectForEdit = {
+                ...project,
+                startDate: toDateInputValue(project.originalStartDate),
+                endDate: toDateInputValue(project.originalEndDate),
+              };
+              navigate(`/admin-dashboard/project-management/addProject`, {
+                state: { project: projectForEdit }
+              });
+            },
           },
-        },
-        {
-          label: "Delete",
-          icon: <FaTrash />,
-          onClick: () => {
-            setSelectedProjectId(projectId);
-            setShowDeleteModal(true);
+          {
+            label: "Delete",
+            icon: <FaTrash />,
+            onClick: () => {
+              setSelectedProjectId(projectId);
+              setShowDeleteModal(true);
+            },
           },
-        },
+        ] : []),
       ]}
     >
       <IconButton>
@@ -160,10 +164,10 @@ const ProjectManagement = () => {
       <TopBar
         title="Project Management"
         // detail="Manage all your construction projects in one place."
-        buttonText="Create Project"
-        onButtonClick={() =>
-          navigate("/admin-dashboard/project-management/addProject")
-        }
+        {...(!isReadOnly && {
+          buttonText: "Create Project",
+          onButtonClick: () => navigate("/admin-dashboard/project-management/addProject"),
+        })}
       />
       <div className="flex justify-end items-center gap-4 mt-8 ">
         <CustomFilterDropdown

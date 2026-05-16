@@ -12,6 +12,15 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-const messaging = getMessaging(firebaseApp);
+
+// getMessaging() requires HTTPS + Service Worker support.
+// Wrapping in try-catch prevents a crash on HTTP or unsupported browsers
+// which would otherwise blank out the entire React app.
+let messaging = null;
+try {
+  messaging = getMessaging(firebaseApp);
+} catch (err) {
+  console.warn('Firebase Messaging is not supported in this environment:', err.message);
+}
 
 export { messaging, getToken, onMessage }; 

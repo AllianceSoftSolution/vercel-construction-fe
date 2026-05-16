@@ -10,9 +10,11 @@ import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import DeleteModal from "../../../mui/DeleteModal";
 import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
+import { useReadOnly } from "../../../context/ReadOnlyContext";
 
 const Vendors = () => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const [vendors, setvendors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -89,21 +91,14 @@ const Vendors = () => {
             onClick: () => navigate(`/admin-dashboard/vendors/${id}`),
             icon: <FaEye />,
           },
-          {
-            label: "Edit",
-            onClick: () => navigate(`/admin-dashboard/vendors/addVendor`, { state: { vendor: vendors.find(v => v.id === id) } }),
-            icon: <FaUserEdit />,
-          },
-          // {
-          //   label: "Delete",
-          //   onClick: () => {
-          //     setSelectedVendorId(id);
-          //     setShowDeleteModal(true);
-          //   },
-          //   icon: <FaTrash />,
-          // },
+          ...(!isReadOnly ? [
+            {
+              label: "Edit",
+              onClick: () => navigate(`/admin-dashboard/vendors/addVendor`, { state: { vendor: vendors.find(v => v.id === id) } }),
+              icon: <FaUserEdit />,
+            },
+          ] : []),
         ]}
-        // onClick={handleActionClick}
       >
         <IconButton>
           <BsThreeDotsVertical />
@@ -117,9 +112,10 @@ const Vendors = () => {
         title="Vendors"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
         // showExport={true}
-       
-        buttonText="Add Vendors"
-        onButtonClick={() => navigate("/admin-dashboard/vendors/addVendor")}
+        {...(!isReadOnly && {
+          buttonText: "Add Vendors",
+          onButtonClick: () => navigate("/admin-dashboard/vendors/addVendor"),
+        })}
       />
       {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       {/* table */}
