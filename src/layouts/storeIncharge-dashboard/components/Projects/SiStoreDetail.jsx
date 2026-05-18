@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import MembersOverviewCard from "../../../../mui/MembersOverviewCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -19,6 +19,44 @@ import AddMemberModal from "../users/modals/AddMemberModal";
 import CustomSelect from "../../../../mui/CustomSelect";
 import MenuItem from "@mui/material/MenuItem";
 
+// ─── localStorage helpers for NEW badge ─────────────────────────────────────
+const LS_KEY = "viewed_store_transactions";
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+const getViewedMap = () => {
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
+
+const markTransactionViewed = (transactionId) => {
+  const map = getViewedMap();
+  map[transactionId] = Date.now();
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(map));
+  } catch {}
+};
+
+const isTransactionNew = (transaction, viewedSet) => {
+  if (!transaction?.transactionDate) return false;
+  const isRecent = new Date(transaction.transactionDate) > new Date(Date.now() - TWENTY_FOUR_HOURS);
+  return isRecent && !viewedSet.has(transaction.id);
+};
+
+// Seed viewedSet from localStorage, pruning expired entries
+const buildViewedSet = () => {
+  const map = getViewedMap();
+  const now = Date.now();
+  const set = new Set();
+  for (const [id, ts] of Object.entries(map)) {
+    if (now - ts < TWENTY_FOUR_HOURS) set.add(id);
+  }
+  return set;
+};
+// ────────────────────────────────────────────────────────────────────────────
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -34,7 +72,12 @@ const SiStoreDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedStoreIncharge, setSelectedStoreIncharge] = useState(null);
   const [loading, setLoading] = useState(false);
+  // Track which transactions the user has viewed (for NEW badge)
+  const [viewedSet, setViewedSet] = useState(() => buildViewedSet());
  
+
+  // Is this a HEAD store (can do stock-in/out) vs a section store (view-only)
+  const isHeadStore = storeData?.type === 'HEAD_STORE';
 
   // Helper function to format date to dd-mm-yyyy
   const formatDate = (dateString) => {
@@ -73,11 +116,15 @@ const SiStoreDetail = () => {
         materialName: inv?.material?.name || item.materialId || '-',
         transactionDateFormatted: formatDate(item.transactionDate),
         flowStore: item.type === 'OUT'
-          ? (item.toStore ? `→ ${item.toStore.name}` : '—')
+          ? (item.toStore ? `→ ${item.toStore.name}` : (item.reference || item.notes || '—'))
           : item.type === 'IN'
-          ? (item.fromStore ? `← ${item.fromStore.name}` : '—')
+          ? (item.fromStore ? `← ${item.fromStore.name}` : (item.reference || item.notes || '—'))
           : '—',
         documentUrl: item.documentUrl || null,
+        // NEW badge: only for section stores receiving transfers (IN with a source store)
+        isNew: !isHeadStore && item.type === 'IN' && !!item.fromStoreId
+          ? isTransactionNew(item, viewedSet)
+          : false,
       };
     });
 
@@ -111,6 +158,8 @@ const SiStoreDetail = () => {
     { headerName: "Notes", field: "notes" },
     { headerName: "Date", field: "transactionDateFormatted" },
     { headerName: "Document", field: "documentUrl" },
+    // NEW badge column — only shown for section stores
+    ...(!isHeadStore ? [{ headerName: "", field: "isNew" }] : []),
   ];
 
   const stockIn = [
@@ -145,6 +194,7 @@ const SiStoreDetail = () => {
       qty: "",
       note: "",
       stockOutType: "",
+      toStoreId: "",
       documentFile: null,
     });
     const [loading, setLoading] = useState(false);
@@ -152,6 +202,14 @@ const SiStoreDetail = () => {
     const [materialsLoading, setMaterialsLoading] = useState(false);
     const [purchaseOrders, setPurchaseOrders] = useState([]);
     const [poLoading, setPoLoading] = useState(false);
+    // Section stores for TRANSFER destination
+    const [sectionStores, setSectionStores] = useState([]);
+    const [sectionStoresLoading, setSectionStoresLoading] = useState(false);
+    // Available balance in destination store for selected material
+    const [destBalance, setDestBalance] = useState(null);
+
+    // Get the project ID from the current store
+    const projectId = storeData?.projectId || storeData?.section?.project?.id || null;
 
     const handleOpen = async (type) => {
       setModalType(type);
@@ -159,70 +217,107 @@ const SiStoreDetail = () => {
       setMaterialsLoading(true);
       try {
         const res = await apiClient.get("/materials");
-        if (res.ok) {
-          setMaterials(res.data.materials || []);
-        } else {
-          toast.error("Failed to load materials");
-        }
-      } catch (err) {
+        if (res.ok) setMaterials(res.data.materials || []);
+        else toast.error("Failed to load materials");
+      } catch {
         toast.error("Error loading materials");
       } finally {
         setMaterialsLoading(false);
       }
-      // Always fetch POs for stock in modal (so PO dropdown is ready if needed)
       if (type === "stock-in") {
         setPoLoading(true);
         try {
           const res = await apiClient.get("/purchase-orders");
-          if (res.ok) {
-            console.log("PO API response:", res.data);
-            const poList = res.data.data || [];
-            setPurchaseOrders(poList);
-          } else {
-            toast.error("Failed to load purchase orders");
-          }
-        } catch (err) {
+          if (res.ok) setPurchaseOrders(res.data.data || []);
+          else toast.error("Failed to load purchase orders");
+        } catch {
           toast.error("Error loading purchase orders");
         } finally {
           setPoLoading(false);
         }
       }
+      // For stock-out: always fetch section stores upfront (head store sends to section stores)
+      if (type === "stock-out" && projectId) {
+        setSectionStoresLoading(true);
+        apiClient.get(`/stores?projectId=${projectId}`)
+          .then((res) => {
+            if (res.ok) {
+              const stores = (res.data.stores || []).filter(
+                (s) => s.id !== id && s.type !== 'HEAD_STORE'
+              );
+              setSectionStores(stores);
+            } else {
+              toast.error("Failed to load section stores");
+            }
+          })
+          .catch(() => toast.error("Error loading section stores"))
+          .finally(() => setSectionStoresLoading(false));
+      }
     };
+
     const handleClose = () => {
       setOpen(false);
       setModalType("");
       setStockInForm({ po: "", qty: "", note: "", materialId: "", stockInType: "", documentFile: null });
-      setStockOutForm({ material: "", qty: "", note: "", stockOutType: "", documentFile: null });
+      setStockOutForm({ material: "", qty: "", note: "", stockOutType: "", toStoreId: "", documentFile: null });
+      setSectionStores([]);
+      setDestBalance(null);
     };
 
-    const handleStockInChange = (field, value) => {
-      setStockInForm((prev) => ({ ...prev, [field]: value }));
-    };
-    const handleStockOutChange = (field, value) => {
-      setStockOutForm((prev) => ({ ...prev, [field]: value }));
-    };
+    const handleStockInChange = (field, value) => setStockInForm((p) => ({ ...p, [field]: value }));
+    const handleStockOutChange = (field, value) => setStockOutForm((p) => ({ ...p, [field]: value }));
+
+    // Section stores are now fetched in handleOpen — no need for a reactive useEffect here
+
+    // Fetch destination store balance when toStoreId + material is selected
+    useEffect(() => {
+      if (stockOutForm.toStoreId && stockOutForm.material) {
+        apiClient.get(`/stores/${stockOutForm.toStoreId}/inventory`)
+          .then((res) => {
+            if (res.ok) {
+              const inv = (res.data.inventory || []).find(
+                (i) => i.materialId === stockOutForm.material
+              );
+              setDestBalance(inv ? parseFloat(inv.available) : 0);
+            }
+          })
+          .catch(() => setDestBalance(null));
+      } else {
+        setDestBalance(null);
+      }
+    }, [stockOutForm.toStoreId, stockOutForm.material]);
+
+    // Fetch POs when type changes to PO
+    useEffect(() => {
+      if (open && modalType === "stock-in" && stockInForm.stockInType === "PO" && purchaseOrders.length === 0 && !poLoading) {
+        setPoLoading(true);
+        apiClient.get("/purchase-orders")
+          .then((res) => {
+            if (res.ok) setPurchaseOrders(res.data.data || []);
+            else toast.error("Failed to load purchase orders");
+          })
+          .catch(() => toast.error("Error loading purchase orders"))
+          .finally(() => setPoLoading(false));
+      }
+    }, [open, modalType, stockInForm.stockInType]);
 
     const handleStockInSubmit = async () => {
       setLoading(true);
       try {
         const formData = new FormData();
-        formData.append('materialId', stockInForm.materialId);
-        formData.append('quantity', stockInForm.qty);
-        if (stockInForm.note) formData.append('notes', stockInForm.note);
-        if (stockInForm.stockInType) formData.append('stockInType', stockInForm.stockInType);
-        if (stockInForm.stockInType === 'PO' && stockInForm.po) {
-          formData.append('poReferenceNumber', stockInForm.po);
-        }
-        if (stockInForm.documentFile) {
-          formData.append('document', stockInForm.documentFile);
-        }
+        formData.append("materialId", stockInForm.materialId);
+        formData.append("quantity", stockInForm.qty);
+        if (stockInForm.note) formData.append("notes", stockInForm.note);
+        if (stockInForm.stockInType) formData.append("stockInType", stockInForm.stockInType);
+        if (stockInForm.stockInType === "PO" && stockInForm.po) formData.append("poReferenceNumber", stockInForm.po);
+        if (stockInForm.documentFile) formData.append("document", stockInForm.documentFile);
         const res = await apiClient.post(`/stores/${id}/stock-in`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         if (res.ok) {
           toast.success("Stock In successful!");
           handleClose();
-          if (typeof fetchStoreDetail === 'function') fetchStoreDetail();
+          if (typeof fetchStoreDetail === "function") fetchStoreDetail();
         } else {
           toast.error(res.data?.message || "Stock In failed");
         }
@@ -232,24 +327,33 @@ const SiStoreDetail = () => {
         setLoading(false);
       }
     };
+
     const handleStockOutSubmit = async () => {
+      // If TRANSFER type is selected, a destination store is required
+      if (stockOutForm.stockOutType === "TRANSFER" && !stockOutForm.toStoreId) {
+        toast.error("Please select a destination section store");
+        return;
+      }
       setLoading(true);
       try {
         const formData = new FormData();
-        formData.append('materialId', stockOutForm.material);
-        formData.append('quantity', stockOutForm.qty);
-        if (stockOutForm.note) formData.append('notes', stockOutForm.note);
-        if (stockOutForm.stockOutType) formData.append('stockOutType', stockOutForm.stockOutType);
-        if (stockOutForm.documentFile) {
-          formData.append('document', stockOutForm.documentFile);
+        formData.append("materialId", stockOutForm.material);
+        formData.append("quantity", stockOutForm.qty);
+        if (stockOutForm.note) formData.append("notes", stockOutForm.note);
+        // Use selected type; if toStoreId is set without explicit TRANSFER type, force it
+        const outType = stockOutForm.toStoreId ? "TRANSFER" : (stockOutForm.stockOutType || "MANUAL");
+        formData.append("stockOutType", outType);
+        if (outType === "TRANSFER" && stockOutForm.toStoreId) {
+          formData.append("toStoreId", stockOutForm.toStoreId);
         }
+        if (stockOutForm.documentFile) formData.append("document", stockOutForm.documentFile);
         const res = await apiClient.post(`/stores/${id}/stock-out`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         if (res.ok) {
           toast.success("Stock Out successful!");
           handleClose();
-          if (typeof fetchStoreDetail === 'function') fetchStoreDetail();
+          if (typeof fetchStoreDetail === "function") fetchStoreDetail();
         } else {
           toast.error(res.data?.message || "Stock Out failed");
         }
@@ -259,25 +363,6 @@ const SiStoreDetail = () => {
         setLoading(false);
       }
     };
-
-    // If stockInType changes to 'PO', fetch POs if not already loaded
-    useEffect(() => {
-      if (open && modalType === 'stock-in' && stockInForm.stockInType === 'PO' && purchaseOrders.length === 0 && !poLoading) {
-        setPoLoading(true);
-        apiClient.get('/purchase-orders').then(res => {
-          if (res.ok) {
-            const poList = res.data.data || [];
-            setPurchaseOrders(poList);
-          } else {
-            toast.error('Failed to load purchase orders');
-          }
-        }).catch(() => {
-          toast.error('Error loading purchase orders');
-        }).finally(() => {
-          setPoLoading(false);
-        });
-      }
-    }, [open, modalType, stockInForm.stockInType]);
 
     return (
       <>
@@ -293,26 +378,21 @@ const SiStoreDetail = () => {
           </IconButton>
         </DropdownButton>
 
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
+        <Modal open={open} onClose={handleClose}>
           <Box
             sx={{
               position: "absolute",
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              width: "90%", // Responsive width
-              maxWidth: 500, // Limit max width
+              width: "90%",
+              maxWidth: 500,
               bgcolor: "background.paper",
               boxShadow: 24,
               borderRadius: "12px",
-              p: { xs: 2, sm: 4 }, // Padding varies by screen size
-              maxHeight: '80vh',
-              overflowY: 'auto',
+              p: { xs: 2, sm: 4 },
+              maxHeight: "85vh",
+              overflowY: "auto",
             }}
           >
             <div className="flex flex-col gap-4">
@@ -325,97 +405,37 @@ const SiStoreDetail = () => {
                   <div className="text-center py-4">Loading materials...</div>
                 ) : (
                   <>
-                    <CustomSelect
-                      label="Material"
-                      name="materialId"
-                      value={stockInForm.materialId}
-                      onChange={e => handleStockInChange("materialId", e.target.value)}
-                      fullWidth
-                    >
+                    <CustomSelect label="Material" name="materialId" value={stockInForm.materialId} onChange={(e) => handleStockInChange("materialId", e.target.value)} fullWidth>
                       <MenuItem value="">Select Material</MenuItem>
                       {materials.map((item) => (
-                        <MenuItem key={item.id} value={item.id}>
-                          {item.name}
-                        </MenuItem>
+                        <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
                       ))}
                     </CustomSelect>
-                  
-                    <CustomTextField
-                      fullWidth
-                      margin="normal"
-                      label="QTY ( Quantity )"
-                      value={stockInForm.qty}
-                      type="number"
-                      onChange={e => handleStockInChange("qty", e.target.value)}
-                    />
-                    <CustomTextField
-                      fullWidth
-                      margin="normal"
-                      label="Note"
-                      value={stockInForm.note}
-                      onChange={e => handleStockInChange("note", e.target.value)}
-                    />
+                    <CustomTextField fullWidth margin="normal" label="QTY ( Quantity )" value={stockInForm.qty} type="number" onChange={(e) => handleStockInChange("qty", e.target.value)} />
+                    <CustomTextField fullWidth margin="normal" label="Note" value={stockInForm.note} onChange={(e) => handleStockInChange("note", e.target.value)} />
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Attachment (Optional)</p>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <label
-                          htmlFor="doc-upload-stock-in"
-                          className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition"
-                        >
-                          <span>📎</span>
-                          <span>Choose File</span>
+                        <label htmlFor="doc-upload-stock-in" className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition">
+                          <span>📎</span><span>Choose File</span>
                         </label>
-                        <input
-                          id="doc-upload-stock-in"
-                          type="file"
-                          accept="image/*,.pdf,.doc,.docx"
-                          className="hidden"
-                          onChange={e => handleStockInChange("documentFile", e.target.files?.[0] || null)}
-                        />
-                        <span className="text-sm text-gray-500 truncate max-w-[180px]">
-                          {stockInForm.documentFile ? stockInForm.documentFile.name : "No file chosen"}
-                        </span>
-                        {stockInForm.documentFile && (
-                          <button
-                            type="button"
-                            className="text-red-500 text-xs"
-                            onClick={() => handleStockInChange("documentFile", null)}
-                          >
-                            ✕
-                          </button>
-                        )}
+                        <input id="doc-upload-stock-in" type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={(e) => handleStockInChange("documentFile", e.target.files?.[0] || null)} />
+                        <span className="text-sm text-gray-500 truncate max-w-[180px]">{stockInForm.documentFile ? stockInForm.documentFile.name : "No file chosen"}</span>
+                        {stockInForm.documentFile && <button type="button" className="text-red-500 text-xs" onClick={() => handleStockInChange("documentFile", null)}>✕</button>}
                       </div>
                     </div>
-                    <CustomSelect
-                      label="Type"
-                      name="stockInType"
-                      value={stockInForm.stockInType}
-                      onChange={e => handleStockInChange("stockInType", e.target.value)}
-                      fullWidth
-                    >
-                      <MenuItem value="PO">Po</MenuItem>
+                    <CustomSelect label="Type" name="stockInType" value={stockInForm.stockInType} onChange={(e) => handleStockInChange("stockInType", e.target.value)} fullWidth>
+                      <MenuItem value="PO">PO</MenuItem>
                       <MenuItem value="INITIAL">Initial</MenuItem>
                       <MenuItem value="TRANSFER">Transfer</MenuItem>
-                      <MenuItem value="MANUAL">Manual </MenuItem>
+                      <MenuItem value="MANUAL">Manual</MenuItem>
                     </CustomSelect>
-                    {/* Show PO dropdown if Type is PO */}
-                    {stockInForm.stockInType === 'PO' && (
-                      <CustomSelect
-                        label="PO Reference Number"
-                        name="poReferenceNumber"
-                        value={stockInForm.po}
-                        onChange={e => handleStockInChange("po", e.target.value)}
-                        fullWidth
-                        disabled={poLoading}
-                      >
+                    {stockInForm.stockInType === "PO" && (
+                      <CustomSelect label="PO Reference Number" name="poReferenceNumber" value={stockInForm.po} onChange={(e) => handleStockInChange("po", e.target.value)} fullWidth disabled={poLoading}>
                         <MenuItem value="">Select PO Reference</MenuItem>
-                        {purchaseOrders
-                          .filter(po => po && po.referenceNumber)
-                          .map((po) => (
-                            <MenuItem key={po.referenceNumber} value={po.referenceNumber}>
-                              {po.referenceNumber}
-                            </MenuItem>
-                          ))}
+                        {purchaseOrders.filter((po) => po?.referenceNumber).map((po) => (
+                          <MenuItem key={po.referenceNumber} value={po.referenceNumber}>{po.referenceNumber}</MenuItem>
+                        ))}
                       </CustomSelect>
                     )}
                   </>
@@ -424,94 +444,66 @@ const SiStoreDetail = () => {
                 <div className="text-center py-4">Loading materials...</div>
               ) : (
                 <>
-                  <CustomSelect
-                    label="Material"
-                    name="materialId"
-                    value={stockOutForm.material}
-                    onChange={e => handleStockOutChange("material", e.target.value)}
-                    fullWidth
-                  >
+                  <CustomSelect label="Material" name="materialId" value={stockOutForm.material} onChange={(e) => handleStockOutChange("material", e.target.value)} fullWidth>
                     <MenuItem value="">Select Material</MenuItem>
                     {materials.map((item) => (
-                      <MenuItem key={item.id} value={item.id}>
-                        {item.name}
+                      <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
+                    ))}
+                  </CustomSelect>
+                  <CustomTextField fullWidth margin="normal" label="QTY ( Quantity )" type="number" name="qty" value={stockOutForm.qty} onChange={(e) => handleStockOutChange("qty", e.target.value)} />
+
+                  {/* Destination Section Store — directly below Quantity */}
+                  <CustomSelect
+                    label="Destination Section Store"
+                    name="toStoreId"
+                    value={stockOutForm.toStoreId}
+                    onChange={(e) => handleStockOutChange("toStoreId", e.target.value)}
+                    fullWidth
+                    disabled={sectionStoresLoading}
+                  >
+                    <MenuItem value="">{sectionStoresLoading ? "Loading stores..." : "Select Section Store"}</MenuItem>
+                    {sectionStores.map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.name} ({s.type.replace(/_/g, " ")})
                       </MenuItem>
                     ))}
                   </CustomSelect>
-                  <CustomTextField
-                    fullWidth
-                    margin="normal"
-                    label="QTY ( Quantity )"
-                    type="number"
-                    name="qty"
-                    value={stockOutForm.qty}
-                    onChange={e => handleStockOutChange("qty", e.target.value)}
-                  />
-                  <CustomTextField
-                    fullWidth
-                    margin="normal"
-                    label="Note"
-                    type="text"
-                    name="note"
-                    value={stockOutForm.note}
-                    onChange={e => handleStockOutChange("note", e.target.value)}
-                  />
+
+                  {/* Current balance in destination store for the selected material */}
+                  {stockOutForm.toStoreId && stockOutForm.material && (
+                    <div className={`text-sm px-3 py-2 rounded-lg font-medium ${destBalance === null ? "bg-gray-100 text-gray-500" : destBalance === 0 ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-700"}`}>
+                      {destBalance === null
+                        ? "Checking destination balance…"
+                        : `Destination store current balance: ${destBalance} units`}
+                    </div>
+                  )}
+
+                  <CustomTextField fullWidth margin="normal" label="Note" type="text" name="note" value={stockOutForm.note} onChange={(e) => handleStockOutChange("note", e.target.value)} />
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">Attachment (Optional)</p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <label
-                        htmlFor="doc-upload-stock-out"
-                        className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition"
-                      >
-                        <span>📎</span>
-                        <span>Choose File</span>
+                      <label htmlFor="doc-upload-stock-out" className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition">
+                        <span>📎</span><span>Choose File</span>
                       </label>
-                      <input
-                        id="doc-upload-stock-out"
-                        type="file"
-                        accept="image/*,.pdf,.doc,.docx"
-                        className="hidden"
-                        onChange={e => handleStockOutChange("documentFile", e.target.files?.[0] || null)}
-                      />
-                      <span className="text-sm text-gray-500 truncate max-w-[180px]">
-                        {stockOutForm.documentFile ? stockOutForm.documentFile.name : "No file chosen"}
-                      </span>
-                      {stockOutForm.documentFile && (
-                        <button
-                          type="button"
-                          className="text-red-500 text-xs"
-                          onClick={() => handleStockOutChange("documentFile", null)}
-                        >
-                          ✕
-                        </button>
-                      )}
+                      <input id="doc-upload-stock-out" type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={(e) => handleStockOutChange("documentFile", e.target.files?.[0] || null)} />
+                      <span className="text-sm text-gray-500 truncate max-w-[180px]">{stockOutForm.documentFile ? stockOutForm.documentFile.name : "No file chosen"}</span>
+                      {stockOutForm.documentFile && <button type="button" className="text-red-500 text-xs" onClick={() => handleStockOutChange("documentFile", null)}>✕</button>}
                     </div>
                   </div>
-                     <CustomSelect
-                      label="Type"
-                      name="stockOutType"
-                      value={stockOutForm.stockOutType}
-                      onChange={e => handleStockOutChange("stockOutType", e.target.value)}
-                      fullWidth
-                    >
-                      <MenuItem value="MANUAL">Manual </MenuItem>
-                      <MenuItem value="LOSS">Loss</MenuItem>
-                    </CustomSelect>
+                  {/* TRANSFER is handled via the Destination Section Store dropdown above;
+                      Type here is only for manual adjustments or loss */}
+                  <CustomSelect label="Type" name="stockOutType" value={stockOutForm.stockOutType} onChange={(e) => handleStockOutChange("stockOutType", e.target.value)} fullWidth>
+                    <MenuItem value="MANUAL">Manual</MenuItem>
+                    <MenuItem value="LOSS">Loss</MenuItem>
+                  </CustomSelect>
                 </>
               )}
+
               <div className="mt-4 flex justify-end">
                 {modalType === "stock-in" ? (
-                  <Button
-                    buttonText={loading ? "Saving..." : "Save"}
-                    onClick={handleStockInSubmit}
-                    disabled={loading || materialsLoading}
-                  />
+                  <Button buttonText={loading ? "Saving..." : "Save"} onClick={handleStockInSubmit} disabled={loading || materialsLoading} />
                 ) : (
-                  <Button
-                    buttonText={loading ? "Saving..." : "Save"}
-                    onClick={handleStockOutSubmit}
-                    disabled={loading}
-                  />
+                  <Button buttonText={loading ? "Saving..." : "Save"} onClick={handleStockOutSubmit} disabled={loading} />
                 )}
               </div>
             </div>
@@ -542,6 +534,29 @@ const SiStoreDetail = () => {
   useEffect(() => {
     if (id) fetchStoreDetail();
   }, [id]);
+
+  // Mark a single incoming transaction as viewed
+  const markViewed = useCallback((transactionId) => {
+    markTransactionViewed(transactionId);
+    setViewedSet((prev) => new Set([...prev, transactionId]));
+  }, []);
+
+  // Cell component for blinking NEW badge
+  const NewBadgeCell = useCallback(
+    ({ value, row }) => {
+      if (!value) return null;
+      return (
+        <button
+          onClick={() => markViewed(row.id)}
+          className="inline-flex items-center bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse cursor-pointer hover:bg-red-600 border-0"
+          title="Click to mark as seen"
+        >
+          NEW
+        </button>
+      );
+    },
+    [markViewed]
+  );
 
   if (loading) {
     return (
@@ -592,7 +607,8 @@ const SiStoreDetail = () => {
             <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
               IN-STORE
             </div>
-            <CustomActionComponent />
+            {/* Only HEAD stores can perform Stock In / Stock Out */}
+            {isHeadStore && <CustomActionComponent />}
           </div>
         </div>
 
@@ -650,11 +666,22 @@ const SiStoreDetail = () => {
       </h4>
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable
-        data={transactionsTableData}
-        columns={columns1}
-        cellComponents={{ documentUrl: ViewDocumentCell }}
-      />
+      {isHeadStore ? (
+        // HEAD STORE: paginated (5 rows initially), no NEW badge
+        <SimpleTable
+          data={transactionsTableData}
+          columns={columns1}
+          cellComponents={{ documentUrl: ViewDocumentCell }}
+          recordsPerPage={5}
+        />
+      ) : (
+        // SECTION STORE: full table with NEW badge on incoming transfers
+        <SimpleTable
+          data={transactionsTableData}
+          columns={columns1}
+          cellComponents={{ documentUrl: ViewDocumentCell, isNew: NewBadgeCell }}
+        />
+      )}
     </>
   );
 };
