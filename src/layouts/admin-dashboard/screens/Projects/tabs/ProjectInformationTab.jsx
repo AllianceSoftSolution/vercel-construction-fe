@@ -341,6 +341,11 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
                 handleOpenAssignHeadStore(userId, siRow?.name || "Site Incharge"),
               icon: <FaStore />,
             },
+            {
+              label: "Unassign",
+              onClick: () => handleUnassignSiteIncharge(userId),
+              icon: <FaTrash />,
+            },
           ] : []),
         ]}
       >
@@ -349,6 +354,29 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
         </IconButton>
       </DropdownButton>
     );
+  };
+
+  const handleUnassignSiteIncharge = async (userId) => {
+    try {
+      setSiteInchargeLoading(true);
+      const response = await apiClient.post("/assignments/site-incharge", {
+        userId,
+        projectId: data.id,
+        sectionIds: [],
+      });
+      if (response.ok) {
+        toast.success("Site Incharge unassigned successfully");
+        if (typeof onAssignmentSuccess === "function") {
+          onAssignmentSuccess();
+        }
+      } else {
+        toast.error(response.data?.message || "Failed to unassign site incharge");
+      }
+    } catch (e) {
+      toast.error("Failed to unassign site incharge");
+    } finally {
+      setSiteInchargeLoading(false);
+    }
   };
 
   const handleUnassignAccountant = async (userId) => {

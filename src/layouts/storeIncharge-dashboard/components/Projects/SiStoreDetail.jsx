@@ -74,7 +74,8 @@ const SiStoreDetail = () => {
   const [loading, setLoading] = useState(false);
   // Track which transactions the user has viewed (for NEW badge)
   const [viewedSet, setViewedSet] = useState(() => buildViewedSet());
- 
+  // Section store transactions fetched for HEAD store's combined history view
+  const [sectionStoreTxns, setSectionStoreTxns] = useState([]);
 
   // Is this a HEAD store (can do stock-in/out) vs a section store (view-only)
   const isHeadStore = storeData?.type === 'HEAD_STORE';
@@ -162,6 +163,20 @@ const SiStoreDetail = () => {
     ...(!isHeadStore ? [{ headerName: "", field: "isNew" }] : []),
   ];
 
+  // HEAD store combined history includes section store transactions with a "Store" column
+  const columns1WithStore = [
+    { headerName: "Store", field: "_storeName" },
+    ...columns1,
+  ];
+
+  // For HEAD store: own transactions labelled + section store transactions sorted by date
+  const combinedTransactionsTableData = isHeadStore
+    ? [
+        ...transactionsTableData.map((t) => ({ ...t, _storeName: storeData?.name || 'Head Store' })),
+        ...sectionStoreTxns,
+      ].sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate))
+    : transactionsTableData;
+
   const stockIn = [
     { id: "1", label: "PO ( Purchase Order )" },
     { id: "2", label: "QTY ( Quantity )" },
@@ -236,8 +251,8 @@ const SiStoreDetail = () => {
           setPoLoading(false);
         }
       }
-      // For stock-out: always fetch section stores upfront (head store sends to section stores)
-      if (type === "stock-out" && projectId) {
+      // For stock-out: HEAD store sends to section stores; section stores don't use a destination
+      if (type === "stock-out" && projectId && isHeadStore) {
         setSectionStoresLoading(true);
         apiClient.get(`/stores?projectId=${projectId}`)
           .then((res) => {
@@ -452,30 +467,34 @@ const SiStoreDetail = () => {
                   </CustomSelect>
                   <CustomTextField fullWidth margin="normal" label="QTY ( Quantity )" type="number" name="qty" value={stockOutForm.qty} onChange={(e) => handleStockOutChange("qty", e.target.value)} />
 
-                  {/* Destination Section Store — directly below Quantity */}
-                  <CustomSelect
-                    label="Destination Section Store"
-                    name="toStoreId"
-                    value={stockOutForm.toStoreId}
-                    onChange={(e) => handleStockOutChange("toStoreId", e.target.value)}
-                    fullWidth
-                    disabled={sectionStoresLoading}
-                  >
-                    <MenuItem value="">{sectionStoresLoading ? "Loading stores..." : "Select Section Store"}</MenuItem>
-                    {sectionStores.map((s) => (
-                      <MenuItem key={s.id} value={s.id}>
-                        {s.name} ({s.type.replace(/_/g, " ")})
-                      </MenuItem>
-                    ))}
-                  </CustomSelect>
+                  {/* Destination Section Store — only for HEAD stores sending to section stores */}
+                  {isHeadStore && (
+                    <>
+                      <CustomSelect
+                        label="Destination Section Store"
+                        name="toStoreId"
+                        value={stockOutForm.toStoreId}
+                        onChange={(e) => handleStockOutChange("toStoreId", e.target.value)}
+                        fullWidth
+                        disabled={sectionStoresLoading}
+                      >
+                        <MenuItem value="">{sectionStoresLoading ? "Loading stores..." : "Select Section Store"}</MenuItem>
+                        {sectionStores.map((s) => (
+                          <MenuItem key={s.id} value={s.id}>
+                            {s.name} ({s.type.replace(/_/g, " ")})
+                          </MenuItem>
+                        ))}
+                      </CustomSelect>
 
-                  {/* Current balance in destination store for the selected material */}
-                  {stockOutForm.toStoreId && stockOutForm.material && (
-                    <div className={`text-sm px-3 py-2 rounded-lg font-medium ${destBalance === null ? "bg-gray-100 text-gray-500" : destBalance === 0 ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-700"}`}>
-                      {destBalance === null
-                        ? "Checking destination balance…"
-                        : `Destination store current balance: ${destBalance} units`}
-                    </div>
+                      {/* Current balance in destination store for the selected material */}
+                      {stockOutForm.toStoreId && stockOutForm.material && (
+                        <div className={`text-sm px-3 py-2 rounded-lg font-medium ${destBalance === null ? "bg-gray-100 text-gray-500" : destBalance === 0 ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-700"}`}>
+                          {destBalance === null
+                            ? "Checking destination balance…"
+                            : `Destination store current balance: ${destBalance} units`}
+                        </div>
+                      )}
+                    </>
                   )}
 
                   <CustomTextField fullWidth margin="normal" label="Note" type="text" name="note" value={stockOutForm.note} onChange={(e) => handleStockOutChange("note", e.target.value)} />
@@ -518,8 +537,53 @@ const SiStoreDetail = () => {
       setLoading(true);
       const response = await apiClient.get(`/stores/${id}`);
       if (response.ok) {
-        setStoreData(response.data.store);
-        setSelectedStoreIncharge(response.data.store?.storeInchargeAssignments?.[0]?.user || null);
+        const store = response.data.store;
+        setStoreData(store);
+        setSelectedStoreIncharge(store?.storeInchargeAssignments?.[0]?.user || null);
+        // For HEAD stores: also load section store transactions for the combined history view
+        if (store?.type === 'HEAD_STORE') {
+          const projId = store.projectId;
+          if (projId) {
+            const storesRes = await apiClient.get(`/stores?projectId=${projId}`);
+            if (storesRes.ok) {
+              const secStores = (storesRes.data.stores || []).filter(
+                (s) => s.type === 'SECTION_STORE'
+              );
+              const allSecTxns = [];
+              for (const secStore of secStores) {
+                const secRes = await apiClient.get(`/stores/${secStore.id}`);
+                if (secRes.ok) {
+                  const secDetail = secRes.data.store;
+                  const secInv = secDetail?.inventory || [];
+                  const txns = (secDetail?.transactions || []).map((t) => {
+                    const inv = secInv.find((i) => i.materialId === t.materialId);
+                    return {
+                      ...t,
+                      materialName: inv?.material?.name || t.materialId || '-',
+                      transactionDateFormatted: formatDate(t.transactionDate),
+                      flowStore:
+                        t.type === 'OUT'
+                          ? (t.toStore ? `→ ${t.toStore.name}` : (t.reference || t.notes || '—'))
+                          : t.type === 'IN'
+                          ? (t.fromStore ? `← ${t.fromStore.name}` : (t.reference || t.notes || '—'))
+                          : '—',
+                      documentUrl: t.documentUrl || null,
+                      _storeName: secStore.name,
+                      isNew: false,
+                    };
+                  });
+                  allSecTxns.push(...txns);
+                }
+              }
+              allSecTxns.sort(
+                (a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)
+              );
+              setSectionStoreTxns(allSecTxns);
+            }
+          }
+        } else {
+          setSectionStoreTxns([]);
+        }
       } else {
         toast.error("Failed to fetch Store details.");
       }
@@ -607,8 +671,8 @@ const SiStoreDetail = () => {
             <div className="text-white bg-[#BF1017] px-6 py-1.5 rounded-full text-sm">
               IN-STORE
             </div>
-            {/* Only HEAD stores can perform Stock In / Stock Out */}
-            {isHeadStore && <CustomActionComponent />}
+            {/* HEAD stores and SECTION stores can perform Stock In / Stock Out */}
+            {(isHeadStore || storeData?.type === 'SECTION_STORE') && <CustomActionComponent />}
           </div>
         </div>
 
@@ -667,10 +731,10 @@ const SiStoreDetail = () => {
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
       {isHeadStore ? (
-        // HEAD STORE: paginated (5 rows initially), no NEW badge
+        // HEAD STORE: paginated, combined with section store transactions, no NEW badge
         <SimpleTable
-          data={transactionsTableData}
-          columns={columns1}
+          data={combinedTransactionsTableData}
+          columns={columns1WithStore}
           cellComponents={{ documentUrl: ViewDocumentCell }}
           recordsPerPage={5}
         />

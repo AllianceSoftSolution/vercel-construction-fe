@@ -42,6 +42,7 @@ const SectionDetailPage = () => {
   const [openAssignCAPModal, setOpenAssignCAPModal] = useState(false);
   const [unassignCMTarget, setUnassignCMTarget] = useState(null); // { assignmentId, name }
   const [unassignCMLoading, setUnassignCMLoading] = useState(false);
+  const [unassignPMLoading, setUnassignPMLoading] = useState(false);
   const [selectedPM, setSelectedPM] = useState(null);
   const [selectedStoreHead, setSelectedStoreHead] = useState(null);
 
@@ -473,6 +474,28 @@ const SectionDetailPage = () => {
     }
   };
 
+  const handleUnassignPM = async () => {
+    const assignmentId = sectionData?.associatedProjectManager?.id;
+    if (!assignmentId) return;
+    try {
+      setUnassignPMLoading(true);
+      const response = await apiClient.patch(
+        `/assignments/project-manager/${assignmentId}/deactivate`
+      );
+      if (response.ok) {
+        toast.success("Project Manager unassigned successfully");
+        setSelectedPM(null);
+        fetchSectionDetail();
+      } else {
+        toast.error(response.data?.message || "Failed to unassign Project Manager");
+      }
+    } catch (e) {
+      toast.error("Failed to unassign Project Manager");
+    } finally {
+      setUnassignPMLoading(false);
+    }
+  };
+
   const fetchCMUsers = async () => {
     try {
       const response = await apiClient.get(`/assignments/users-by-role`, {
@@ -736,33 +759,44 @@ const SectionDetailPage = () => {
                   country={selectedPM.country || "-"}
                   linkedStores={selectedPM.linkedStores || []}
                 />
-                <button
-                  className="mt-3 px-4 py-2 bg-[#FC8908] text-white rounded-lg hover:bg-[#e07c07] transition text-sm font-medium flex items-center gap-2"
-                  onClick={async () => {
-                    setOpenAssignSectionStoreModal(true);
-                    setSelectedSectionStoreId("");
-                    setSectionStoreLoading(true);
-                    try {
-                      const response = await apiClient.get(`/stores`, {
-                        projectId: sectionData?.project?.id,
-                        sectionId: id,
-                        type: "SECTION_STORE",
-                      });
-                      if (response.ok && response.data?.stores) {
-                        setSectionStores(response.data.stores);
-                      } else {
+                <div className="mt-3 flex items-center gap-3 flex-wrap">
+                  <button
+                    className="px-4 py-2 bg-[#FC8908] text-white rounded-lg hover:bg-[#e07c07] transition text-sm font-medium flex items-center gap-2"
+                    onClick={async () => {
+                      setOpenAssignSectionStoreModal(true);
+                      setSelectedSectionStoreId("");
+                      setSectionStoreLoading(true);
+                      try {
+                        const response = await apiClient.get(`/stores`, {
+                          projectId: sectionData?.project?.id,
+                          sectionId: id,
+                          type: "SECTION_STORE",
+                        });
+                        if (response.ok && response.data?.stores) {
+                          setSectionStores(response.data.stores);
+                        } else {
+                          setSectionStores([]);
+                        }
+                      } catch {
+                        toast.error("Failed to fetch section stores");
                         setSectionStores([]);
+                      } finally {
+                        setSectionStoreLoading(false);
                       }
-                    } catch {
-                      toast.error("Failed to fetch section stores");
-                      setSectionStores([]);
-                    } finally {
-                      setSectionStoreLoading(false);
-                    }
-                  }}
-                >
-                  <FaStore /> Assign Section Store
-                </button>
+                    }}
+                  >
+                    <FaStore /> Assign Section Store
+                  </button>
+                  {!isReadOnly && (
+                    <button
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium"
+                      onClick={handleUnassignPM}
+                      disabled={unassignPMLoading}
+                    >
+                      {unassignPMLoading ? "Unassigning..." : "Unassign PM"}
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               <MembersOverviewCard
