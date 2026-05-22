@@ -555,7 +555,11 @@ const SiStoreDetail = () => {
                 if (secRes.ok) {
                   const secDetail = secRes.data.store;
                   const secInv = secDetail?.inventory || [];
-                  const txns = (secDetail?.transactions || []).map((t) => {
+                  const txns = (secDetail?.transactions || [])
+                    // Exclude transactions that are TRANSFERS to/from this HEAD store —
+                    // those already appear as the HEAD store's own transaction records.
+                    .filter((t) => t.fromStoreId !== id && t.toStoreId !== id)
+                    .map((t) => {
                     const inv = secInv.find((i) => i.materialId === t.materialId);
                     return {
                       ...t,
