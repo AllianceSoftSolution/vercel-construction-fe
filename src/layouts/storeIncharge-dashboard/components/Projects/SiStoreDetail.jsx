@@ -39,6 +39,42 @@ const markTransactionViewed = (transactionId) => {
   } catch {}
 };
 
+const ACCEPTED_LS_KEY = "accepted_store_transactions";
+const ACCEPTED_TRANSACTION_DATA_KEY = "accepted_store_transaction_data";
+const getAcceptedMap = () => {
+  try {
+    return JSON.parse(localStorage.getItem(ACCEPTED_LS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
+
+const setAcceptedMap = (data) => {
+  try {
+    localStorage.setItem(ACCEPTED_LS_KEY, JSON.stringify(data));
+  } catch {}
+};
+
+const getAcceptedTransactionData = () => {
+  try {
+    return JSON.parse(localStorage.getItem(ACCEPTED_TRANSACTION_DATA_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
+
+const setAcceptedTransactionData = (data) => {
+  try {
+    localStorage.setItem(ACCEPTED_TRANSACTION_DATA_KEY, JSON.stringify(data));
+  } catch {}
+};
+
+const markTransactionAccepted = (transactionId) => {
+  const map = getAcceptedMap();
+  map[transactionId] = Date.now();
+  setAcceptedMap(map);
+};
+
 const isTransactionNew = (transaction, viewedSet) => {
   if (!transaction?.transactionDate) return false;
   const isRecent = new Date(transaction.transactionDate) > new Date(Date.now() - TWENTY_FOUR_HOURS);
@@ -55,6 +91,9 @@ const buildViewedSet = () => {
   }
   return set;
 };
+
+const buildAcceptedData = () => getAcceptedTransactionData();
+const buildAcceptedSet = () => new Set(Object.keys(buildAcceptedData()));
 // ────────────────────────────────────────────────────────────────────────────
 
 const style = {
@@ -74,8 +113,21 @@ const SiStoreDetail = () => {
   const [loading, setLoading] = useState(false);
   // Track which transactions the user has viewed (for NEW badge)
   const [viewedSet, setViewedSet] = useState(() => buildViewedSet());
+  const [acceptedSet, setAcceptedSet] = useState(() => buildAcceptedSet());
+  const [acceptedTransactions, setAcceptedTransactions] = useState(() => buildAcceptedData());
+  const [acceptModalOpen, setAcceptModalOpen] = useState(false);
+  const [acceptTransaction, setAcceptTransaction] = useState(null);
+  const [acceptForm, setAcceptForm] = useState({ note: "", documentFile: null });
+  const [acceptLoading, setAcceptLoading] = useState(false);
+  const noteFieldRef = React.useRef(null);
   // Section store transactions fetched for HEAD store's combined history view
   const [sectionStoreTxns, setSectionStoreTxns] = useState([]);
+
+  React.useEffect(() => {
+    if (acceptModalOpen && noteFieldRef.current) {
+      noteFieldRef.current.focus();
+    }
+  }, [acceptModalOpen]);
 
   // Is this a HEAD store (can do stock-in/out) vs a section store (view-only)
   const isHeadStore = storeData?.type === 'HEAD_STORE';
@@ -112,6 +164,12 @@ const SiStoreDetail = () => {
       const inv = (storeData?.inventory || [])
         .filter((inv) => inv && typeof inv === "object" && inv.materialId)
         .find(inv => inv.materialId === item.materialId);
+      const isIncomingRequest =
+        !isHeadStore &&
+        item.type === 'IN' &&
+        item.fromStoreId &&
+        (item.fromStore?.type === 'HEAD_STORE' || item.reference === 'TRANSFER');
+      const acceptedData = acceptedTransactions[item.id] || {};
       return {
         ...item,
         materialName: inv?.material?.name || item.materialId || '-',
@@ -122,10 +180,17 @@ const SiStoreDetail = () => {
           ? (item.fromStore ? `← ${item.fromStore.name}` : (item.reference || item.notes || '—'))
           : '—',
         documentUrl: item.documentUrl || null,
+        isIncomingRequest,
+        requestStatus: isIncomingRequest
+          ? acceptedSet.has(item.id)
+            ? 'Accepted'
+            : 'Incoming'
+          : '',
+        action: isIncomingRequest ? 'accept' : '',
+        receivingNotes: acceptedData.notes || '',
+        receivedDocuments: acceptedData.documentUrls || [],
         // NEW badge: only for section stores receiving transfers (IN with a source store)
-        isNew: !isHeadStore && item.type === 'IN' && !!item.fromStoreId
-          ? isTransactionNew(item, viewedSet)
-          : false,
+        isNew: isIncomingRequest ? isTransactionNew(item, viewedSet) : false,
       };
     });
 
@@ -150,6 +215,111 @@ const SiStoreDetail = () => {
     );
   };
 
+  const ReceivedDocumentsCell = ({ row }) => {
+    const receivedDocs = row.receivedDocuments || [];
+    if (!receivedDocs.length) return <span className="text-gray-400 text-sm">—</span>;
+    return (
+      <div className="flex flex-col gap-2">
+        {receivedDocs.map((doc, index) => (
+          <button
+            key={index}
+            type="button"
+            onClick={() => window.open(doc.url, "_blank", "noopener,noreferrer")}
+            className="bg-[#0074bd] hover:bg-[#005ea0] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap"
+          >
+            {doc.label || `Receiving Document ${index + 1}`}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const handleOpenAcceptModal = (transaction) => {
+    setAcceptTransaction(transaction);
+    setAcceptForm({ note: transaction.notes || "", documentFile: null });
+    setAcceptModalOpen(true);
+    markViewed(transaction.id);
+  };
+
+  const handleAcceptFormChange = (field, value) => setAcceptForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleConfirmAccept = async () => {
+    if (!acceptTransaction) return;
+    setAcceptLoading(true);
+
+    try {
+      const formData = new FormData();
+      if (acceptForm.note) formData.append("note", acceptForm.note);
+      if (acceptForm.documentFile) {
+        formData.append("document", acceptForm.documentFile);
+      }
+
+      const res = await apiClient.post(
+        `/stores/${id}/transactions/${acceptTransaction.id}/accept`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(res.data?.message || "Failed to accept incoming request");
+      }
+
+      const acceptedDocumentUrl = res.data?.transaction?.documentUrl || null;
+      const fileDocs = acceptedDocumentUrl
+        ? [
+            {
+              url: acceptedDocumentUrl,
+              label: "Receiving Document",
+              name: acceptForm.documentFile?.name || "Receiving Document",
+            },
+          ]
+        : [];
+
+      markTransactionAccepted(acceptTransaction.id);
+      setAcceptedSet((prev) => {
+        const next = new Set(prev);
+        next.add(acceptTransaction.id);
+        return next;
+      });
+
+      setAcceptedTransactions((prev) => {
+        const next = { ...prev };
+        next[acceptTransaction.id] = {
+          notes: acceptForm.note || "",
+          documentUrls: fileDocs,
+        };
+        setAcceptedTransactionData(next);
+        return next;
+      });
+
+      toast.success("Incoming request accepted successfully.");
+      setAcceptModalOpen(false);
+      if (typeof fetchStoreDetail === "function") fetchStoreDetail();
+    } catch (error) {
+      toast.error(error.message || "Failed to accept incoming request");
+    } finally {
+      setAcceptLoading(false);
+    }
+  };
+
+  const ActionCell = ({ row }) => {
+    if (!row?.isIncomingRequest) return null;
+    if (acceptedSet.has(row.id)) {
+      return <span className="text-green-700 text-sm font-semibold">Accepted</span>;
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => handleOpenAcceptModal(row)}
+        className="bg-[#0074bd] hover:bg-[#005ea0] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
+      >
+        Accept
+      </button>
+    );
+  };
+
   const columns1 = [
     { headerName: "Material", field: "materialName" },
     { headerName: "Type", field: "type" },
@@ -159,8 +329,13 @@ const SiStoreDetail = () => {
     { headerName: "Notes", field: "notes" },
     { headerName: "Date", field: "transactionDateFormatted" },
     { headerName: "Document", field: "documentUrl" },
-    // NEW badge column — only shown for section stores
-    ...(!isHeadStore ? [{ headerName: "", field: "isNew" }] : []),
+    // Receiving notes and documents only for section store incoming transfers
+    ...(!isHeadStore ? [
+      { headerName: "Receiving Notes", field: "receivingNotes" },
+      { headerName: "Receiving Documents", field: "receivedDocuments" },
+      { headerName: "Action", field: "action" },
+      { headerName: "", field: "isNew" },
+    ] : []),
   ];
 
   // HEAD store combined history includes section store transactions with a "Store" column
@@ -634,6 +809,67 @@ const SiStoreDetail = () => {
     );
   }
 
+  const acceptModalElement = (
+    <Modal open={acceptModalOpen} onClose={() => setAcceptModalOpen(false)}>
+      <Box sx={style} className="bg-white p-6">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-xl sm:text-2xl font-semibold text-[#222222]">
+            Incoming Transfer Request
+          </h1>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Material</label>
+              <div className="mt-2 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900">
+                {acceptTransaction?.materialName || "N/A"}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Quantity</label>
+              <div className="mt-2 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900">
+                {acceptTransaction?.quantity ?? "-"}
+              </div>
+            </div>
+            <CustomTextField
+              fullWidth
+              margin="normal"
+              label="Note"
+              value={acceptForm.note}
+              onChange={(e) => handleAcceptFormChange("note", e.target.value)}
+              ref={noteFieldRef}
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Attachment (Optional)</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <label htmlFor="doc-upload-accept" className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition">
+                  <span>📎</span><span>Choose File</span>
+                </label>
+                <input id="doc-upload-accept" type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={(e) => handleAcceptFormChange("documentFile", e.target.files?.[0] || null)} />
+                <span className="text-sm text-gray-500 truncate max-w-[180px]">
+                  {acceptForm.documentFile ? acceptForm.documentFile.name : "No file chosen"}
+                </span>
+                {acceptForm.documentFile && (
+                  <button type="button" className="text-red-500 text-xs" onClick={() => handleAcceptFormChange("documentFile", null)}>
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setAcceptModalOpen(false)}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <Button buttonText={acceptLoading ? "Accepting..." : "Accept"} onClick={handleConfirmAccept} disabled={acceptLoading} />
+          </div>
+        </div>
+      </Box>
+    </Modal>
+  );
+
   // Handler for adding and assigning a new Store Incharge
   const handleAddStoreIncharge = async (data) => {
     try {
@@ -747,9 +983,10 @@ const SiStoreDetail = () => {
         <SimpleTable
           data={transactionsTableData}
           columns={columns1}
-          cellComponents={{ documentUrl: ViewDocumentCell, isNew: NewBadgeCell }}
+          cellComponents={{ documentUrl: ViewDocumentCell, receivedDocuments: ReceivedDocumentsCell, isNew: NewBadgeCell, action: ActionCell }}
         />
       )}
+      {acceptModalElement}
     </>
   );
 };
