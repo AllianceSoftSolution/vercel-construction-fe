@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaUserEdit, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
+import { formatStatusLabel } from "../../../utils/statusLabel";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
@@ -124,7 +125,7 @@ const PmPurchaseOrder = () => {
           unit: po.demand?.unit || "-",
           poQty: po.quantity || "-",
           createdAt: po.createdAt ? formatDate(po.createdAt) : "-",
-          status: po.status || "-",
+          status: formatStatusLabel(po.status),
           assingedVendors: po.vendorId || "-",
         }));
         const uniqueSections = [...new Set(data.map((po) => po.section).filter((section) => section && section !== "-"))];
@@ -174,7 +175,7 @@ const PmPurchaseOrder = () => {
     { label: "Created", value: "CREATED" },
     { label: "Confirmed", value: "CONFIRMED" },
     { label: "In Transit", value: "IN_TRANSIT" },
-    { label: "In Store", value: "IN_STORE" },
+    { label: "Partially completed", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
     { label: "Cancelled", value: "CANCELLED" },
   

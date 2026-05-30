@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaUserEdit, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import apiClient from "../../../api/apiClient";
+import { formatStatusLabel } from "../../../utils/statusLabel";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
@@ -144,7 +145,7 @@ const PurchaseOrder = () => {
           unitPrice: po.unitPrice ? `${po.unitPrice}` : "-",
           amount: po.totalAmount ? `${po.totalAmount}` : "-",
           createdAt: po.createdAt || "-",
-          status: po.status || "-",
+          status: formatStatusLabel(po.status),
           assingedVendors: po.vendorId || "-",
           proofOfBill: po.proofOfBill || "-",
         }));
@@ -196,7 +197,7 @@ const PurchaseOrder = () => {
     { label: "Created", value: "CREATED" },
     { label: "Confirmed", value: "CONFIRMED" },
     { label: "In Transit", value: "IN_TRANSIT" },
-    { label: "In Store", value: "IN_STORE" },
+    { label: "Partially completed", value: "IN_STORE" },
     { label: "Completed", value: "COMPLETED" },
     { label: "Cancelled", value: "CANCELLED" },
   
