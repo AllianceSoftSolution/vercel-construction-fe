@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import AddMemberModal from "../users/modals/AddMemberModal";
 import CustomSelect from "../../../../mui/CustomSelect";
 import MenuItem from "@mui/material/MenuItem";
+import { useSelector } from "react-redux";
 
 // ─── localStorage helpers for NEW badge ─────────────────────────────────────
 const LS_KEY = "viewed_store_transactions";
@@ -94,6 +95,90 @@ const buildViewedSet = () => {
 
 const buildAcceptedData = () => getAcceptedTransactionData();
 const buildAcceptedSet = () => new Set(Object.keys(buildAcceptedData()));
+
+const getStoreFlowLabel = (store) => {
+  if (!store) return null;
+  if (store.type === "HEAD_STORE") return "Head Store";
+  return store.name || "—";
+};
+
+const getCurrentStoreFlowLabel = (store) => {
+  if (!store) return "—";
+  if (store.type === "HEAD_STORE") return "Head Store";
+  return store.name || "—";
+};
+
+const formatTransactionFlow = (transaction, currentStore) => {
+  const ref = (transaction.reference || "").toUpperCase();
+
+  if (ref === "MANUAL") {
+    return "MANUALLY USED";
+  }
+
+  const currentLabel = getCurrentStoreFlowLabel(currentStore);
+
+  if (transaction.type === "OUT") {
+    const toLabel = getStoreFlowLabel(transaction.toStore);
+    if (toLabel) {
+      return `FROM ${currentLabel} TO ${toLabel}`;
+    }
+    if (ref === "LOSS") return "RECORDED AS LOSS";
+    return transaction.reference || transaction.notes || "—";
+  }
+
+  if (transaction.type === "IN") {
+    const fromLabel = getStoreFlowLabel(transaction.fromStore);
+    if (fromLabel) {
+      return `FROM ${fromLabel} TO ${currentLabel}`;
+    }
+    if (ref === "INITIAL") return "INITIAL STOCK";
+    if (ref === "PO") return "PURCHASE ORDER";
+    return transaction.reference || transaction.notes || "—";
+  }
+
+  return "—";
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+const isIncomingTransfer = (transaction) =>
+  transaction?.type === "IN" && !!transaction?.fromStoreId;
+
+const buildTransactionRow = (
+  item,
+  currentStore,
+  { inventory = [], acceptedTransactions = {}, acceptedSet = new Set(), viewedSet = new Set(), extra = {} } = {}
+) => {
+  const inv = inventory.find((i) => i?.materialId === item.materialId);
+  const isIncomingRequest = isIncomingTransfer(item);
+  const acceptedData = acceptedTransactions[item.id] || {};
+
+  return {
+    ...item,
+    ...extra,
+    materialName: inv?.material?.name || item.materialId || "-",
+    transactionDateFormatted: formatDate(item.transactionDate),
+    flowStore: formatTransactionFlow(item, currentStore),
+    documentUrl: item.documentUrl || null,
+    isIncomingRequest,
+    requestStatus: isIncomingRequest
+      ? acceptedSet.has(item.id)
+        ? "Accepted"
+        : "Incoming"
+      : "",
+    action: isIncomingRequest ? "accept" : "",
+    receivingNotes: acceptedData.notes || "",
+    receivedDocuments: acceptedData.documentUrls || [],
+    isNew: isIncomingRequest ? isTransactionNew(item, viewedSet) : false,
+  };
+};
 // ────────────────────────────────────────────────────────────────────────────
 
 const style = {
@@ -129,18 +214,11 @@ const SiStoreDetail = () => {
     }
   }, [acceptModalOpen]);
 
-  // Is this a HEAD store (can do stock-in/out) vs a section store (view-only)
-  const isHeadStore = storeData?.type === 'HEAD_STORE';
-
-  // Helper function to format date to dd-mm-yyyy
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
+  const currentUser = useSelector((state) => state.auth.user);
+  const isHeadStoreIncharge =
+    currentUser?.role === "STORE_INCHARGE" && currentUser?.isHead;
+  // Store type — used for table layout and incoming-transfer badges
+  const isHeadStore = storeData?.type === "HEAD_STORE";
 
   // Helper function to format role display
   const formatRole = (role) => {
@@ -158,41 +236,22 @@ const SiStoreDetail = () => {
       updatedAtFormatted: formatDate(item.updatedAt),
     }));
 
+  const transactionRowOptions = {
+    acceptedTransactions,
+    acceptedSet,
+    viewedSet,
+  };
+
   const transactionsTableData = (storeData?.transactions || [])
     .filter((item) => item && typeof item === "object" && item.id)
-    .map(item => {
-      const inv = (storeData?.inventory || [])
-        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
-        .find(inv => inv.materialId === item.materialId);
-      const isIncomingRequest =
-        !isHeadStore &&
-        item.type === 'IN' &&
-        item.fromStoreId &&
-        (item.fromStore?.type === 'HEAD_STORE' || item.reference === 'TRANSFER');
-      const acceptedData = acceptedTransactions[item.id] || {};
-      return {
-        ...item,
-        materialName: inv?.material?.name || item.materialId || '-',
-        transactionDateFormatted: formatDate(item.transactionDate),
-        flowStore: item.type === 'OUT'
-          ? (item.toStore ? `→ ${item.toStore.name}` : (item.reference || item.notes || '—'))
-          : item.type === 'IN'
-          ? (item.fromStore ? `← ${item.fromStore.name}` : (item.reference || item.notes || '—'))
-          : '—',
-        documentUrl: item.documentUrl || null,
-        isIncomingRequest,
-        requestStatus: isIncomingRequest
-          ? acceptedSet.has(item.id)
-            ? 'Accepted'
-            : 'Incoming'
-          : '',
-        action: isIncomingRequest ? 'accept' : '',
-        receivingNotes: acceptedData.notes || '',
-        receivedDocuments: acceptedData.documentUrls || [],
-        // NEW badge: only for section stores receiving transfers (IN with a source store)
-        isNew: isIncomingRequest ? isTransactionNew(item, viewedSet) : false,
-      };
-    });
+    .map((item) =>
+      buildTransactionRow(item, storeData, {
+        ...transactionRowOptions,
+        inventory: (storeData?.inventory || []).filter(
+          (inv) => inv && typeof inv === "object" && inv.materialId
+        ),
+      })
+    );
 
   const columns = [
     { headerName: "Material", field: "materialName" },
@@ -202,6 +261,22 @@ const SiStoreDetail = () => {
     { headerName: "Available", field: "available" },
     { headerName: "Last Updated", field: "updatedAtFormatted" },
   ];
+
+  const FlowCell = ({ value }) => {
+    if (!value || value === "—") return <span>—</span>;
+
+    const transferMatch = String(value).match(/^FROM (.+) TO (.+)$/);
+    if (transferMatch) {
+      return (
+        <span>
+          <span className="font-bold">FROM</span> {transferMatch[1]}{" "}
+          <span className="font-bold">TO</span> {transferMatch[2]}
+        </span>
+      );
+    }
+
+    return <span>{value}</span>;
+  };
 
   const ViewDocumentCell = ({ value }) => {
     if (!value) return <span className="text-gray-400 text-sm">—</span>;
@@ -254,8 +329,9 @@ const SiStoreDetail = () => {
         formData.append("document", acceptForm.documentFile);
       }
 
+      const acceptStoreId = acceptTransaction.storeId || id;
       const res = await apiClient.post(
-        `/stores/${id}/transactions/${acceptTransaction.id}/accept`,
+        `/stores/${acceptStoreId}/transactions/${acceptTransaction.id}/accept`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -324,18 +400,15 @@ const SiStoreDetail = () => {
     { headerName: "Material", field: "materialName" },
     { headerName: "Type", field: "type" },
     { headerName: "Quantity", field: "quantity" },
-    { headerName: "Flow (From/To)", field: "flowStore" },
+    { headerName: "Flow", field: "flowStore" },
     { headerName: "Reference", field: "reference" },
     { headerName: "Notes", field: "notes" },
     { headerName: "Date", field: "transactionDateFormatted" },
     { headerName: "Document", field: "documentUrl" },
-    // Receiving notes and documents only for section store incoming transfers
-    ...(!isHeadStore ? [
-      { headerName: "Receiving Notes", field: "receivingNotes" },
-      { headerName: "Receiving Documents", field: "receivedDocuments" },
-      { headerName: "Action", field: "action" },
-      { headerName: "", field: "isNew" },
-    ] : []),
+    { headerName: "Receiving Notes", field: "receivingNotes" },
+    { headerName: "Receiving Documents", field: "receivedDocuments" },
+    { headerName: "Action", field: "action" },
+    { headerName: "", field: "isNew" },
   ];
 
   // HEAD store combined history includes section store transactions with a "Store" column
@@ -344,11 +417,20 @@ const SiStoreDetail = () => {
     ...columns1,
   ];
 
-  // For HEAD store: own transactions labelled + section store transactions sorted by date
+  // For HEAD store: own transactions + section store transactions, all with accept/new support
   const combinedTransactionsTableData = isHeadStore
     ? [
-        ...transactionsTableData.map((t) => ({ ...t, _storeName: storeData?.name || 'Head Store' })),
-        ...sectionStoreTxns,
+        ...transactionsTableData.map((t) => ({
+          ...t,
+          _storeName: storeData?.name || "Head Store",
+        })),
+        ...sectionStoreTxns.map((entry) =>
+          buildTransactionRow(entry.transaction, entry.store, {
+            ...transactionRowOptions,
+            inventory: entry.inventory || [],
+            extra: { _storeName: entry.storeName },
+          })
+        ),
       ].sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate))
     : transactionsTableData;
 
@@ -426,14 +508,16 @@ const SiStoreDetail = () => {
           setPoLoading(false);
         }
       }
-      // For stock-out: HEAD store sends to section stores; section stores don't use a destination
-      if (type === "stock-out" && projectId && isHeadStore) {
+      // Head store incharge can transfer between head/section stores in the project
+      if (type === "stock-out" && projectId && isHeadStoreIncharge) {
         setSectionStoresLoading(true);
         apiClient.get(`/stores?projectId=${projectId}`)
           .then((res) => {
             if (res.ok) {
               const stores = (res.data.stores || []).filter(
-                (s) => s.id !== id && s.type !== 'HEAD_STORE'
+                (s) =>
+                  s.id !== id &&
+                  (s.type === "SECTION_STORE" || s.type === "HEAD_STORE")
               );
               setSectionStores(stores);
             } else {
@@ -455,7 +539,14 @@ const SiStoreDetail = () => {
     };
 
     const handleStockInChange = (field, value) => setStockInForm((p) => ({ ...p, [field]: value }));
-    const handleStockOutChange = (field, value) => setStockOutForm((p) => ({ ...p, [field]: value }));
+    const handleStockOutChange = (field, value) =>
+      setStockOutForm((p) => {
+        const next = { ...p, [field]: value };
+        if (field === "stockOutType" && value !== "TRANSFER") {
+          next.toStoreId = "";
+        }
+        return next;
+      });
 
     // Section stores are now fetched in handleOpen — no need for a reactive useEffect here
 
@@ -519,9 +610,8 @@ const SiStoreDetail = () => {
     };
 
     const handleStockOutSubmit = async () => {
-      // If TRANSFER type is selected, a destination store is required
       if (stockOutForm.stockOutType === "TRANSFER" && !stockOutForm.toStoreId) {
-        toast.error("Please select a destination section store");
+        toast.error("Please select a destination store");
         return;
       }
       setLoading(true);
@@ -530,8 +620,7 @@ const SiStoreDetail = () => {
         formData.append("materialId", stockOutForm.material);
         formData.append("quantity", stockOutForm.qty);
         if (stockOutForm.note) formData.append("notes", stockOutForm.note);
-        // Use selected type; if toStoreId is set without explicit TRANSFER type, force it
-        const outType = stockOutForm.toStoreId ? "TRANSFER" : (stockOutForm.stockOutType || "MANUAL");
+        const outType = stockOutForm.stockOutType || "MANUAL";
         formData.append("stockOutType", outType);
         if (outType === "TRANSFER" && stockOutForm.toStoreId) {
           formData.append("toStoreId", stockOutForm.toStoreId);
@@ -642,18 +731,30 @@ const SiStoreDetail = () => {
                   </CustomSelect>
                   <CustomTextField fullWidth margin="normal" label="QTY ( Quantity )" type="number" name="qty" value={stockOutForm.qty} onChange={(e) => handleStockOutChange("qty", e.target.value)} />
 
-                  {/* Destination Section Store — only for HEAD stores sending to section stores */}
-                  {isHeadStore && (
+                  <CustomSelect
+                    label="Type"
+                    name="stockOutType"
+                    value={stockOutForm.stockOutType}
+                    onChange={(e) => handleStockOutChange("stockOutType", e.target.value)}
+                    fullWidth
+                  >
+                    {isHeadStoreIncharge && <MenuItem value="TRANSFER">Transfer</MenuItem>}
+                    <MenuItem value="MANUAL">Manual</MenuItem>
+                    <MenuItem value="LOSS">Loss</MenuItem>
+                  </CustomSelect>
+
+                  {/* Head store incharge: pick destination when type is Transfer */}
+                  {isHeadStoreIncharge && stockOutForm.stockOutType === "TRANSFER" && (
                     <>
                       <CustomSelect
-                        label="Destination Section Store"
+                        label="Destination Store"
                         name="toStoreId"
                         value={stockOutForm.toStoreId}
                         onChange={(e) => handleStockOutChange("toStoreId", e.target.value)}
                         fullWidth
                         disabled={sectionStoresLoading}
                       >
-                        <MenuItem value="">{sectionStoresLoading ? "Loading stores..." : "Select Section Store"}</MenuItem>
+                        <MenuItem value="">{sectionStoresLoading ? "Loading stores..." : "Select Destination Store"}</MenuItem>
                         {sectionStores.map((s) => (
                           <MenuItem key={s.id} value={s.id}>
                             {s.name} ({s.type.replace(/_/g, " ")})
@@ -661,7 +762,6 @@ const SiStoreDetail = () => {
                         ))}
                       </CustomSelect>
 
-                      {/* Current balance in destination store for the selected material */}
                       {stockOutForm.toStoreId && stockOutForm.material && (
                         <div className={`text-sm px-3 py-2 rounded-lg font-medium ${destBalance === null ? "bg-gray-100 text-gray-500" : destBalance === 0 ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-700"}`}>
                           {destBalance === null
@@ -684,12 +784,6 @@ const SiStoreDetail = () => {
                       {stockOutForm.documentFile && <button type="button" className="text-red-500 text-xs" onClick={() => handleStockOutChange("documentFile", null)}>✕</button>}
                     </div>
                   </div>
-                  {/* TRANSFER is handled via the Destination Section Store dropdown above;
-                      Type here is only for manual adjustments or loss */}
-                  <CustomSelect label="Type" name="stockOutType" value={stockOutForm.stockOutType} onChange={(e) => handleStockOutChange("stockOutType", e.target.value)} fullWidth>
-                    <MenuItem value="MANUAL">Manual</MenuItem>
-                    <MenuItem value="LOSS">Loss</MenuItem>
-                  </CustomSelect>
                 </>
               )}
 
@@ -731,26 +825,14 @@ const SiStoreDetail = () => {
                   const secDetail = secRes.data.store;
                   const secInv = secDetail?.inventory || [];
                   const txns = (secDetail?.transactions || [])
-                    // Exclude transactions that are TRANSFERS to/from this HEAD store —
-                    // those already appear as the HEAD store's own transaction records.
+                    // Exclude transfers to/from this HEAD store — shown on head store's own rows.
                     .filter((t) => t.fromStoreId !== id && t.toStoreId !== id)
-                    .map((t) => {
-                    const inv = secInv.find((i) => i.materialId === t.materialId);
-                    return {
-                      ...t,
-                      materialName: inv?.material?.name || t.materialId || '-',
-                      transactionDateFormatted: formatDate(t.transactionDate),
-                      flowStore:
-                        t.type === 'OUT'
-                          ? (t.toStore ? `→ ${t.toStore.name}` : (t.reference || t.notes || '—'))
-                          : t.type === 'IN'
-                          ? (t.fromStore ? `← ${t.fromStore.name}` : (t.reference || t.notes || '—'))
-                          : '—',
-                      documentUrl: t.documentUrl || null,
-                      _storeName: secStore.name,
-                      isNew: false,
-                    };
-                  });
+                    .map((t) => ({
+                      transaction: t,
+                      store: secStore,
+                      storeName: secStore.name,
+                      inventory: secInv,
+                    }));
                   allSecTxns.push(...txns);
                 }
               }
@@ -970,22 +1052,18 @@ const SiStoreDetail = () => {
       </h4>
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      {isHeadStore ? (
-        // HEAD STORE: paginated, combined with section store transactions, no NEW badge
-        <SimpleTable
-          data={combinedTransactionsTableData}
-          columns={columns1WithStore}
-          cellComponents={{ documentUrl: ViewDocumentCell }}
-          recordsPerPage={5}
-        />
-      ) : (
-        // SECTION STORE: full table with NEW badge on incoming transfers
-        <SimpleTable
-          data={transactionsTableData}
-          columns={columns1}
-          cellComponents={{ documentUrl: ViewDocumentCell, receivedDocuments: ReceivedDocumentsCell, isNew: NewBadgeCell, action: ActionCell }}
-        />
-      )}
+      <SimpleTable
+        data={isHeadStore ? combinedTransactionsTableData : transactionsTableData}
+        columns={isHeadStore ? columns1WithStore : columns1}
+        cellComponents={{
+          flowStore: FlowCell,
+          documentUrl: ViewDocumentCell,
+          receivedDocuments: ReceivedDocumentsCell,
+          isNew: NewBadgeCell,
+          action: ActionCell,
+        }}
+        recordsPerPage={isHeadStore ? 5 : undefined}
+      />
       {acceptModalElement}
     </>
   );
