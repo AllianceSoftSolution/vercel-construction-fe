@@ -1,4 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { isHeadUser } from "../utils/userHelpers";
+
+const normalizeUser = (user) => {
+  if (!user) return null;
+  return { ...user, isHead: isHeadUser(user) };
+};
 
 const initialState = {
   token: null,
@@ -15,7 +21,7 @@ export const authSlice = createSlice({
   reducers: {
     login: (state, { payload }) => {
       state.token = payload.token;
-      state.user = payload.user;
+      state.user = normalizeUser(payload.user);
       state.isLoggedIn = true;
 
       // Optional: Extract role or userType if needed in future
@@ -31,7 +37,7 @@ export const authSlice = createSlice({
       state.businessName = null;
     },
     setUser: (state, { payload }) => {
-      state.user = payload;
+      state.user = normalizeUser(payload);
     },
     setBusinessName: (state, { payload }) => {
       console.log(payload, "qwertyu111");

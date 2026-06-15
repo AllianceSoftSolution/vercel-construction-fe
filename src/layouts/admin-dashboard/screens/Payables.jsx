@@ -18,6 +18,11 @@ import Loader from "../../../components/ui/Loader";
 import { formatDateDMY } from "../../../utils";
 import Pagination from "../../../components/Pagination";
 import ExportToExcelButton from "../../../components/ExportToExcelButton";
+import {
+  PO_EXPORT_COLUMNS,
+  VENDOR_PO_EXPORT_COLUMNS,
+  PAYMENT_EXPORT_COLUMNS,
+} from "../../../utils/payablesExportHelpers";
 import { useClientPagination } from "../../../hooks/useClientPagination";
 
 
@@ -375,38 +380,6 @@ const statusOptions = [
   { label: 'In Store', value: 'IN_STORE' }, { label: 'Completed', value: 'COMPLETED' },
   { label: 'Cancelled', value: 'CANCELLED' }, { label: 'Approved', value: 'APPROVED' },
   { label: 'PO Created', value: 'PO_CREATED' },
-];
-
-const PO_EXPORT_COLUMNS = [
-  { headerName: "No.", field: "no" },
-  { headerName: "PO Reference", field: "poReference" },
-  { headerName: "Project", field: "project" },
-  { headerName: "Material", field: "material" },
-  { headerName: "Vendor", field: "vendor" },
-  { headerName: "Section", field: "section" },
-  { headerName: "Qty", field: "quantity" },
-  { headerName: "Unit", field: "unit" },
-  { headerName: "Unit Price", field: "unitPrice" },
-  { headerName: "Amount (PKR)", field: "amount" },
-  { headerName: "Status", field: "status" },
-];
-
-const VENDOR_PO_EXPORT_COLUMNS = [
-  { headerName: "PO Reference", field: "poReference" },
-  { headerName: "Material", field: "material" },
-  { headerName: "Section", field: "section" },
-  { headerName: "Qty", field: "quantity" },
-  { headerName: "Unit", field: "unit" },
-  { headerName: "Unit Price", field: "unitPrice" },
-  { headerName: "Amount (PKR)", field: "amount" },
-  { headerName: "Status", field: "status" },
-];
-
-const PAYMENT_EXPORT_COLUMNS = [
-  { headerName: "Date", field: "date" },
-  { headerName: "Amount (PKR)", field: "amount" },
-  { headerName: "Note", field: "note" },
-  { headerName: "Proof", field: "proofOfPayment", getExportValue: (row) => row.proofOfPayment ? "View Proof" : "-" },
 ];
 
 // â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

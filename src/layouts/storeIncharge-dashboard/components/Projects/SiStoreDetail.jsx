@@ -21,6 +21,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { useSelector } from "react-redux";
 import StoreMovementHistoryTable from "../../../../components/store/StoreMovementHistoryTable";
 import { formatStoreDate } from "../../../../utils/storeTransactionHelpers";
+import { isHeadUser } from "../../../../utils/userHelpers";
 
 const style = {
   position: "absolute",
@@ -41,7 +42,7 @@ const SiStoreDetail = () => {
 
   const currentUser = useSelector((state) => state.auth.user);
   const isHeadStoreIncharge =
-    currentUser?.role === "STORE_INCHARGE" && currentUser?.isHead;
+    currentUser?.role === "STORE_INCHARGE" && isHeadUser(currentUser);
   // Store type — used for table layout and incoming-transfer badges
   const isHeadStore = storeData?.type === "HEAD_STORE";
 

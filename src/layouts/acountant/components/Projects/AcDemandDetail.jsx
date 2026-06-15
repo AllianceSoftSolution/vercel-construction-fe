@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
 import toast from "react-hot-toast";
+import { isHeadUser } from "../../../../utils/userHelpers";
 
 
 const style = {
@@ -87,7 +88,7 @@ const DemandDetails = () => {
   const { id } = useParams();
   const [modalLoading, setModalLoading] = useState(false);
   const user = useSelector((state) => state?.auth?.user ?? null);
-  const isHeadAccountant = Boolean(user?.isHead);
+  const isHeadAccountant = isHeadUser(user);
 
 //   const handleActionClick = (newStatus) => {
 //     if (newStatus === "Approved") {

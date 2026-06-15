@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useState, useRef } from "react";
+﻿import React, { useEffect, useState, useRef, useMemo } from "react";
 import TopBar from "../../../components/ui/TopBar";
 import SimpleTable from "../../../components/SimpleTable";
+import ExportToExcelButton from "../../../components/ExportToExcelButton";
 import AnalyticsCard from "../../../mui/AnalyticsCard";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
@@ -18,6 +19,13 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import { useSelector } from "react-redux";
 import { formatDateDMY } from '../../../utils';
+import { isHeadUser } from "../../../utils/userHelpers";
+import {
+  PO_EXPORT_COLUMNS,
+  VENDOR_PO_EXPORT_COLUMNS,
+  PAYMENT_EXPORT_COLUMNS,
+} from "../../../utils/payablesExportHelpers";
+import { buildExportFileName } from "../../../modules/tableExportHelpers";
 
 const style = {
   position: "absolute",
@@ -626,7 +634,7 @@ const AccPayables = () => {
     return state.auth.user;
   });
   const userRole = user?.role;
-  const isHeadAccountant = Boolean(user?.isHead);
+  const isHeadAccountant = isHeadUser(user);
   const isSectionAccountant = userRole === 'ACCOUNTANT' && !isHeadAccountant;
 
   // â”€â”€ Status options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -965,6 +973,62 @@ const AccPayables = () => {
     return vendorTransactions.filter(t => t.type === 'DEBIT' && t.vendorPaymentId);
   };
 
+  const allMergedPOs = useMemo(() => {
+    const seen = new Set();
+    return [...purchaseOrders, ...purchaseOrdersWithAmount].filter((po) => {
+      if (seen.has(po.id)) return false;
+      seen.add(po.id);
+      return true;
+    });
+  }, [purchaseOrders, purchaseOrdersWithAmount]);
+
+  const poProjectObj = projects.find((p) => p.id === poProjectTab);
+
+  const headAccountantFilteredPOs = useMemo(
+    () =>
+      allMergedPOs
+        .filter(
+          (po) => poProjectTab === "all" || po.project === poProjectObj?.name,
+        )
+        .filter((po) => !poStatusFilter || po.status === poStatusFilter)
+        .map((po, idx) => ({ ...po, no: idx + 1 })),
+    [allMergedPOs, poProjectTab, poProjectObj, poStatusFilter],
+  );
+
+  const headPoExportFileName = useMemo(
+    () =>
+      buildExportFileName("purchase-orders", {
+        projectName:
+          poProjectTab !== "all" ? poProjectObj?.name : undefined,
+      }),
+    [poProjectTab, poProjectObj],
+  );
+
+  const vendorPOsForLevel3 = useMemo(() => {
+    if (!selectedVendor || !selectedProject) return [];
+    return allMergedPOs.filter(
+      (po) =>
+        po.vendor === selectedVendor.vendorName &&
+        po.project === selectedProject.projectName,
+    );
+  }, [allMergedPOs, selectedVendor, selectedProject]);
+
+  const paymentsForLevel3 = useMemo(
+    () =>
+      vendorTransactions
+        .filter((t) => t.type === "DEBIT" && t.vendorPaymentId)
+        .map((t) => ({
+          id: t.id,
+          date: t.createdAt ? formatDateDMY(t.createdAt) : "-",
+          amount: t.amount
+            ? `PKR ${parseFloat(t.amount).toLocaleString("en-US")}`
+            : "-",
+          note: t.note || "-",
+          proofOfPayment: t.proofOfPayment || null,
+        })),
+    [vendorTransactions],
+  );
+
   // â”€â”€ Action components (section accountant table view) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const ActionComforRegPOs = ({ value: id }) => {
     const [open, setOpen] = useState(false);
@@ -1140,20 +1204,7 @@ const AccPayables = () => {
 
   // -- HEAD ACCOUNTANT: Purchase Orders with project tab navigation ---------
   const renderHeadAccountantPOs = () => {
-    // Deduplicate and combine both PO lists
-    const seen = new Set();
-    const allPOs = [...purchaseOrders, ...purchaseOrdersWithAmount].filter(po => {
-      if (seen.has(po.id)) return false;
-      seen.add(po.id);
-      return true;
-    });
-
-    // Tab + status filtering
-    const projectObj = projects.find(p => p.id === poProjectTab);
-    const tabFiltered = allPOs
-      .filter(po => poProjectTab === 'all' || po.project === projectObj?.name)
-      .filter(po => !poStatusFilter || po.status === poStatusFilter)
-      .map((po, idx) => ({ ...po, no: idx + 1 }));
+    const tabFiltered = headAccountantFilteredPOs;
 
     // Vendor grouping (only when a specific project tab is selected)
     const vendorGroups = poProjectTab !== 'all'
@@ -1171,9 +1222,8 @@ const AccPayables = () => {
       <div className="mt-10">
         <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders</h1>
 
-        {/* Project pill tabs + Status filter */}
-        <div className="flex flex-wrap items-start gap-3 mb-5">
-          {/* Scrollable pill tab bar */}
+        {/* Project pill tabs + Status filter + Export */}
+        <div className="flex flex-row flex-wrap items-center justify-end gap-2 sm:gap-3 mb-5">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-w-0">
             {[{ id: 'all', name: 'All' }, ...projects].map(proj => (
               <button
@@ -1189,7 +1239,6 @@ const AccPayables = () => {
               </button>
             ))}
           </div>
-          {/* Status filter */}
           <select
             value={poStatusFilter}
             onChange={e => setPoStatusFilter(e.target.value)}
@@ -1200,6 +1249,11 @@ const AccPayables = () => {
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
+          <ExportToExcelButton
+            data={tabFiltered}
+            columns={PO_EXPORT_COLUMNS}
+            fileName={headPoExportFileName}
+          />
         </div>
 
         {/* Table */}
@@ -1429,7 +1483,14 @@ const AccPayables = () => {
 
             {/* Purchase Orders Table */}
             <div className="mb-10">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Purchase Orders</h2>
+              <div className="flex flex-row flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 className="text-xl font-bold text-gray-800">Purchase Orders</h2>
+                <ExportToExcelButton
+                  data={vendorPOsForLevel3}
+                  columns={VENDOR_PO_EXPORT_COLUMNS}
+                  fileName="vendor-purchase-orders"
+                />
+              </div>
               {vendorPOs.length === 0 ? (
                 <div className="text-gray-400 text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm">
                   No purchase orders found for this vendor in this project.
@@ -1481,7 +1542,14 @@ const AccPayables = () => {
 
             {/* Payments Made */}
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Payments Made</h2>
+              <div className="flex flex-row flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 className="text-xl font-bold text-gray-800">Payments Made</h2>
+                <ExportToExcelButton
+                  data={paymentsForLevel3}
+                  columns={PAYMENT_EXPORT_COLUMNS}
+                  fileName="vendor-payments"
+                />
+              </div>
               {payments.length === 0 ? (
                 <div className="text-gray-400 text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm">
                   No payments recorded yet for this vendor in this project.
