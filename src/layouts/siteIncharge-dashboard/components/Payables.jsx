@@ -195,12 +195,14 @@ const Payables = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
 
       {/* <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{action: ActionComForPayableDetails}} />
+        <SimpleTable
+              tableTitle="payables-1" columns={columns} data={data} cellComponents={{action: ActionComForPayableDetails}} />
       </div> */}
 
       <div className="mt-16">
         <h1 className="text-2xl mb-5 font-bold">New Purchase Orders</h1>
         <SimpleTable
+              tableTitle="new-purchase-orders"
           columns={columns}
           data={data}
           cellComponents={{ action: CustomActionComponent }}
@@ -210,9 +212,7 @@ const Payables = () => {
       <div className="mt-16">
         <h1 className="text-2xl mb-5 font-bold">Regular POs</h1>
         <SimpleTable
-          columns={columns}
-          data={data}
-          cellComponents={{ action: ActionComforRegPOs }}
+          tableTitle="regular-purchase-orders"
         />
       </div>
     </div>

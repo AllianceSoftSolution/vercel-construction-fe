@@ -402,6 +402,7 @@ const DateCellComponent = ({ value }) => {
           <div className="mt-6">
             <TopBar title="Purchase Order" />
             <SimpleTable
+              tableTitle="purchase-order"
               data={demandData?.purchaseOrders?.map((po, index) => ({
                 id: po.id,
                 demandId: po.demand?.referenceNumber || "-",
@@ -427,6 +428,7 @@ const DateCellComponent = ({ value }) => {
             Status Logs
           </h4>
           <SimpleTable
+              tableTitle="status-logs"
             data={demandData?.approvals || []}
             columns={columns}
             cellComponents={{ createdAt: DateCellComponent }}

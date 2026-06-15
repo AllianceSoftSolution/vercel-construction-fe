@@ -841,6 +841,7 @@ const SiSectionDetailPage = () => {
                 </div>
               ) : (
                 <SimpleTable
+              tableTitle="accountant"
                   data={sectionData?.associatedAccountants || []}
                   columns={columnsAcc}
                   cellComponents={{}}
@@ -862,6 +863,7 @@ const SiSectionDetailPage = () => {
                   </div>
                 ) : (
                   <SimpleTable
+              tableTitle="construction-managers"
                     data={sectionData?.associatedConstructionManagers || []}
                     columns={columns}
                     cellComponents={{
@@ -887,6 +889,7 @@ const SiSectionDetailPage = () => {
               </div>
             ) : (
               <SimpleTable
+              tableTitle="cap"
                 data={capData}
                 columns={capDataType === "analytics" ? capColumns : rawCapColumns}
                 cellComponents={{ 

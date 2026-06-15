@@ -929,6 +929,7 @@ const SectionDetailPage = () => {
             </div>
           ) : (
             <SimpleTable
+              tableTitle="accountant"
               data={sectionData?.associatedAccountants || []}
               columns={columnsAcc}
               cellComponents={{}}
@@ -952,6 +953,7 @@ const SectionDetailPage = () => {
               </div>
             ) : (
               <SimpleTable
+              tableTitle="construction-managers"
                 data={sectionData?.associatedConstructionManagers || []}
                 columns={columns}
                 cellComponents={{
@@ -978,6 +980,7 @@ const SectionDetailPage = () => {
               </div>
             ) : (
               <SimpleTable
+              tableTitle="cap"
                 data={capData}
                 columns={capColumns}
                 cellComponents={{

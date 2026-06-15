@@ -270,6 +270,7 @@ const CmSectionDetailPage = () => {
                 </div>
               ) : (
                 <SimpleTable
+              tableTitle="cap"
                   data={capData}
                   columns={capColumns}
                   cellComponents={{ 

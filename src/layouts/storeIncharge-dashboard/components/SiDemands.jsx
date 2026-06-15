@@ -138,22 +138,18 @@ const SiDemands = () => {
         detail="Lorem Ipsumis simply dummy text of the printing and typesetting industry."
         // showExport={true}
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
-        <CustomFilterDropdown
-          filters={filters}
-          selected={filter}
-          onChange={handleFilterChange}
-          onClear={handleFilterClear}
-          placeholder="Filter by project or section"
-          dropdownAlign="right"
-        />
-      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      {/* table */}
       <div className="overflow-x-auto">
         <SimpleTable
           columns={columns}
           data={filteredData}
+          tableFilters={filters}
+          filterSelected={filter}
+          onFilterChange={handleFilterChange}
+          onFilterClear={handleFilterClear}
+          filterPlaceholder="Filter by project or section"
+          filterDropdownAlign="right"
+          exportFileName="demands"
           cellComponents={{ action: CustomActionComponent }}
         />
       </div>

@@ -43,7 +43,8 @@ const CmMaterials = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+              tableTitle="materials" columns={columns} data={data} cellComponents={{}} />
       </div>
     </div>
   );

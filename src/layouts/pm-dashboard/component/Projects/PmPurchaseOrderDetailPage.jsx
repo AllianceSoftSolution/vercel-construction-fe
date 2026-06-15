@@ -144,6 +144,7 @@ const PmPurchaseOrderDetailPage = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl mb-4">Store Sync Status</h4>
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
       <SimpleTable
+              tableTitle="store-sync-status"
         data={[]}
         columns={columns}
         cellComponents={{ id: CustomActionComponent }}
@@ -151,6 +152,7 @@ const PmPurchaseOrderDetailPage = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl mb-4">Finance</h4>
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
       <SimpleTable
+              tableTitle="finance"
         data={[]}
         columns={columns}
         cellComponents={{ id: CustomActionComponent }}

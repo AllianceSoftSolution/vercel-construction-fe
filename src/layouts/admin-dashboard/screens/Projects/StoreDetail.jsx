@@ -18,6 +18,7 @@ import AssignMemberModal from "../../../../components/AssignMemberModal";
 import CustomSelect from "../../../../mui/CustomSelect";
 import MenuItem from "@mui/material/MenuItem";
 import Loader from "../../../../components/ui/Loader";
+import StoreMovementHistoryTable from "../../../../components/store/StoreMovementHistoryTable";
 
 const style = {
   position: "absolute",
@@ -58,25 +59,6 @@ const StoreDetail = () => {
       updatedAtFormatted: formatDate(item.updatedAt),
     }));
 
-  // Transform transactions data for table display
-  const transactionsTableData = (storeData?.transactions || [])
-    .filter((item) => item && typeof item === "object" && item.id)
-    .map((item) => {
-      const inv = (storeData?.inventory || [])
-        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
-        .find((inv) => inv.materialId === item.materialId);
-      return {
-        ...item,
-        materialName: inv?.material?.name || item.materialId || "-",
-        transactionDateFormatted: formatDate(item.transactionDate),
-        flowStore: item.type === 'OUT'
-          ? (item.toStore ? `→ ${item.toStore.name}` : '—')
-          : item.type === 'IN'
-          ? (item.fromStore ? `← ${item.fromStore.name}` : '—')
-          : '—',
-      };
-    });
-
   const columns = [
     { headerName: "Material", field: "materialName" },
     { headerName: "Unit", field: "unit" },
@@ -84,17 +66,6 @@ const StoreDetail = () => {
     { headerName: "Reserved", field: "reserved" },
     { headerName: "Available", field: "available" },
     { headerName: "Last Updated", field: "updatedAtFormatted" },
-  ];
-
-
-  const columns1 = [
-    { headerName: "Material", field: "materialName" },
-    { headerName: "Type", field: "type" },
-    { headerName: "Quantity", field: "quantity" },
-    { headerName: "Flow (From/To)", field: "flowStore" },
-    { headerName: "Reference", field: "reference" },
-    { headerName: "Notes", field: "notes" },
-    { headerName: "Date", field: "transactionDateFormatted" },
   ];
 
 
@@ -454,6 +425,7 @@ const StoreDetail = () => {
             title="Store Incharge "
             />
                      <SimpleTable
+              tableTitle="store-incharge"
              data={(storeData?.storeInchargeAssignments || []).map(a => ({
                id: a.id,
                userName: a.user?.name || "-",
@@ -477,6 +449,7 @@ const StoreDetail = () => {
           {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
           <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
           <SimpleTable
+            tableTitle="store-inventory"
             data={inventoryTableData}
             columns={columns}
             cellComponents={{}} />{" "}
@@ -486,11 +459,11 @@ const StoreDetail = () => {
           </h4>
           {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
           <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-          <SimpleTable
-            data={transactionsTableData}
-            columns={columns1}
-            cellComponents={{}}
-          />{" "}
+          <StoreMovementHistoryTable
+            storeData={storeData}
+            storeId={id}
+            onRefresh={fetchStoreDetail}
+          />
         </>
       )}
 

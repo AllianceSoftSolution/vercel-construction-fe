@@ -172,6 +172,7 @@ const CmUserManagement = () => {
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
         <SimpleTable
+              tableTitle="users"
           columns={columns}
           data={data}
           cellComponents={{ action: CustomActionComponent }}

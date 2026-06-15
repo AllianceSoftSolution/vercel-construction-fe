@@ -16,6 +16,9 @@ import apiClient from "../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import { formatDateDMY } from "../../../utils";
+import Pagination from "../../../components/Pagination";
+import ExportToExcelButton from "../../../components/ExportToExcelButton";
+import { useClientPagination } from "../../../hooks/useClientPagination";
 
 
 const PROJECT_COLORS = ['#0252AD', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
@@ -374,6 +377,38 @@ const statusOptions = [
   { label: 'PO Created', value: 'PO_CREATED' },
 ];
 
+const PO_EXPORT_COLUMNS = [
+  { headerName: "No.", field: "no" },
+  { headerName: "PO Reference", field: "poReference" },
+  { headerName: "Project", field: "project" },
+  { headerName: "Material", field: "material" },
+  { headerName: "Vendor", field: "vendor" },
+  { headerName: "Section", field: "section" },
+  { headerName: "Qty", field: "quantity" },
+  { headerName: "Unit", field: "unit" },
+  { headerName: "Unit Price", field: "unitPrice" },
+  { headerName: "Amount (PKR)", field: "amount" },
+  { headerName: "Status", field: "status" },
+];
+
+const VENDOR_PO_EXPORT_COLUMNS = [
+  { headerName: "PO Reference", field: "poReference" },
+  { headerName: "Material", field: "material" },
+  { headerName: "Section", field: "section" },
+  { headerName: "Qty", field: "quantity" },
+  { headerName: "Unit", field: "unit" },
+  { headerName: "Unit Price", field: "unitPrice" },
+  { headerName: "Amount (PKR)", field: "amount" },
+  { headerName: "Status", field: "status" },
+];
+
+const PAYMENT_EXPORT_COLUMNS = [
+  { headerName: "Date", field: "date" },
+  { headerName: "Amount (PKR)", field: "amount" },
+  { headerName: "Note", field: "note" },
+  { headerName: "Proof", field: "proofOfPayment", getExportValue: (row) => row.proofOfPayment ? "View Proof" : "-" },
+];
+
 // â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const Payables = () => {
   const [loading, setLoading] = useState(false);
@@ -590,6 +625,57 @@ const Payables = () => {
   const getVendorProjectPayments = () =>
     vendorTransactions.filter(t => t.type === 'DEBIT' && t.vendorPaymentId);
 
+  const allMergedPOs = React.useMemo(() => {
+    const seen = new Set();
+    return [...purchaseOrders, ...purchaseOrdersWithAmount].filter((po) => {
+      if (seen.has(po.id)) return false;
+      seen.add(po.id);
+      return true;
+    });
+  }, [purchaseOrders, purchaseOrdersWithAmount]);
+
+  const poProjectObj = projects.find((p) => p.id === poProjectTab);
+
+  const filteredPOsForTable = React.useMemo(
+    () =>
+      allMergedPOs
+        .filter((po) => poProjectTab === "all" || po.project === poProjectObj?.name)
+        .filter((po) => !poStatusFilter || po.status === poStatusFilter)
+        .map((po, idx) => ({ ...po, no: idx + 1 })),
+    [allMergedPOs, poProjectTab, poProjectObj, poStatusFilter],
+  );
+
+  const poTablePagination = useClientPagination(filteredPOsForTable, 10);
+
+  const vendorPOsForLevel3 = React.useMemo(() => {
+    if (!selectedVendor || !selectedProject) return [];
+    return allMergedPOs.filter(
+      (po) =>
+        po.vendor === selectedVendor.vendorName &&
+        po.project === selectedProject.projectName,
+    );
+  }, [allMergedPOs, selectedVendor, selectedProject]);
+
+  const vendorPOPagination = useClientPagination(vendorPOsForLevel3, 10);
+
+  const paymentsForLevel3 = React.useMemo(
+    () =>
+      vendorTransactions
+        .filter((t) => t.type === "DEBIT" && t.vendorPaymentId)
+        .map((t) => ({
+          id: t.id,
+          date: t.createdAt ? formatDateDMY(t.createdAt) : "-",
+          amount: t.amount
+            ? `PKR ${parseFloat(t.amount).toLocaleString("en-US")}`
+            : "-",
+          note: t.note || "-",
+          proofOfPayment: t.proofOfPayment || null,
+        })),
+    [vendorTransactions],
+  );
+
+  const paymentsPagination = useClientPagination(paymentsForLevel3, 10);
+
   // â”€â”€ PO action cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const POActionCell = ({ po }) => {
     const [addPriceOpen, setAddPriceOpen] = useState(false);
@@ -630,27 +716,13 @@ const Payables = () => {
 
   // â”€â”€ Project-tab PO section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderPOSection = () => {
-    const seen = new Set();
-    const allPOs = [...purchaseOrders, ...purchaseOrdersWithAmount].filter(po => {
-      if (seen.has(po.id)) return false;
-      seen.add(po.id); return true;
-    });
-    const projectObj = projects.find(p => p.id === poProjectTab);
-    const tabFiltered = allPOs
-      .filter(po => poProjectTab === 'all' || po.project === projectObj?.name)
-      .filter(po => !poStatusFilter || po.status === poStatusFilter)
-      .map((po, idx) => ({ ...po, no: idx + 1 }));
-
-    const vendorGroups = poProjectTab !== 'all'
-      ? tabFiltered.reduce((acc, po) => { const k = po.vendor || '-'; if (!acc[k]) acc[k] = []; acc[k].push(po); return acc; }, {})
-      : null;
-
+    const tabFiltered = poTablePagination.paginatedData;
     const colHeaders = ['No.', 'PO Reference', 'Project', 'Material', 'Vendor', 'Section', 'Qty', 'Unit', 'Unit Price', 'Amount (PKR)', 'Status', 'Action'];
 
     return (
       <div className="mt-10">
         <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders</h1>
-        <div className="flex flex-wrap items-start gap-3 mb-5">
+        <div className="flex flex-row flex-wrap items-center justify-end gap-2 sm:gap-3 mb-5">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-w-0">
             {[{ id: 'all', name: 'All' }, ...projects].map(proj => (
               <button key={proj.id} onClick={() => setPoProjectTab(proj.id)}
@@ -664,37 +736,38 @@ const Payables = () => {
             <option value="">All Statuses</option>
             {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
+          <ExportToExcelButton
+            data={filteredPOsForTable}
+            columns={PO_EXPORT_COLUMNS}
+            fileName="payables-purchase-orders"
+          />
         </div>
         {loading ? <div className="flex justify-center py-10"><Loader /></div> : (
-          <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  {colHeaders.map(h => <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {tabFiltered.length === 0 ? (
-                  <tr><td colSpan={colHeaders.length} className="text-center py-12 text-gray-400 text-sm">No purchase orders found.</td></tr>
-                ) : vendorGroups ? (
-                  Object.entries(vendorGroups).map(([vendorName, vPOs]) => {
-                    const total = vPOs.reduce((s, po) => { const n = parseFloat((po.amount || '0').replace(/,/g, '')); return s + (isNaN(n) ? 0 : n); }, 0);
-                    return (
-                      <React.Fragment key={vendorName}>
-                        <tr className="bg-gray-100 border-b">
-                          <td colSpan={colHeaders.length} className="px-4 py-2.5">
-                            <span className="font-bold text-gray-700 text-sm">Vendor: {vendorName}</span>
-                            {total > 0 && <span className="ml-3 text-gray-500 text-sm">â€” Total: PKR {total.toLocaleString('en-US')}</span>}
-                          </td>
-                        </tr>
-                        {vPOs.map((po, idx) => renderPORow(po, idx))}
-                      </React.Fragment>
-                    );
-                  })
-                ) : tabFiltered.map((po, idx) => renderPORow(po, idx))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    {colHeaders.map(h => <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {tabFiltered.length === 0 ? (
+                    <tr><td colSpan={colHeaders.length} className="text-center py-12 text-gray-400 text-sm">No purchase orders found.</td></tr>
+                  ) : (
+                    tabFiltered.map((po, idx) => renderPORow(po, idx))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {filteredPOsForTable.length > 0 && poTablePagination.totalPages > 0 && (
+              <Pagination
+                currentPage={poTablePagination.page}
+                totalPages={poTablePagination.totalPages}
+                onPageChange={poTablePagination.setPage}
+              />
+            )}
+          </>
         )}
       </div>
     );
@@ -777,8 +850,8 @@ const Payables = () => {
 
   // â”€â”€ Level 3: Payment detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderLevel3 = () => {
-    const vendorPOs = getVendorProjectPOs();
-    const payments = getVendorProjectPayments();
+    const vendorPOs = vendorPOPagination.paginatedData;
+    const payments = paymentsPagination.paginatedData;
     return (
       <div className="mt-4">
         <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-2 flex-wrap">
@@ -807,72 +880,104 @@ const Payables = () => {
               <div className="bg-green-600 rounded-xl p-5 text-white shadow-md"><p className="text-xs uppercase tracking-wider opacity-80 font-semibold">Balance</p><p className="text-2xl font-bold mt-2">PKR {formatAmount(scopedSummary.totalBalance)}</p></div>
             </div>
             <div className="mb-10">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Purchase Orders</h2>
-              {vendorPOs.length === 0
+              <div className="flex flex-row flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 className="text-xl font-bold text-gray-800">Purchase Orders</h2>
+                <ExportToExcelButton
+                  data={vendorPOsForLevel3}
+                  columns={VENDOR_PO_EXPORT_COLUMNS}
+                  fileName="vendor-purchase-orders"
+                />
+              </div>
+              {vendorPOsForLevel3.length === 0
                 ? <div className="text-gray-400 text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm">No purchase orders found for this vendor in this project.</div>
                 : (
-                  <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
-                    <table className="min-w-full bg-white">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                          {['PO Reference', 'Material', 'Section', 'Qty', 'Unit', 'Unit Price', 'Amount (PKR)', 'Status', 'View Document'].map(h => (
-                            <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {vendorPOs.map((po, idx) => (
-                          <tr key={po.id || idx} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-800 whitespace-nowrap">{po.poReference || '-'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-700">{po.material || '-'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-700">{po.section || '-'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-700 text-center">{po.quantity || '-'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-700">{po.unit || '-'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{po.unitPrice ? `PKR ${po.unitPrice}` : '-'}</td>
-                            <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap">{po.amount ? `PKR ${po.amount}` : '-'}</td>
-                            <td className="px-4 py-3"><StatusChip value={po.status} /></td>
-                            <td className="px-4 py-3">
-                              {po.proofOfBill
-                                ? <button onClick={() => window.open(po.proofOfBill, '_blank')} className="text-orange-500 hover:text-orange-600 underline font-medium text-sm">View Document</button>
-                                : <span className="text-gray-400 text-sm">-</span>}
-                            </td>
+                  <>
+                    <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                      <table className="min-w-full bg-white">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-200">
+                            {['PO Reference', 'Material', 'Section', 'Qty', 'Unit', 'Unit Price', 'Amount (PKR)', 'Status', 'View Document'].map(h => (
+                              <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                            ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {vendorPOs.map((po, idx) => (
+                            <tr key={po.id || idx} className="border-b border-gray-100 hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm font-medium text-gray-800 whitespace-nowrap">{po.poReference || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{po.material || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{po.section || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700 text-center">{po.quantity || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{po.unit || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{po.unitPrice ? `PKR ${po.unitPrice}` : '-'}</td>
+                              <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap">{po.amount ? `PKR ${po.amount}` : '-'}</td>
+                              <td className="px-4 py-3"><StatusChip value={po.status} /></td>
+                              <td className="px-4 py-3">
+                                {po.proofOfBill
+                                  ? <button onClick={() => window.open(po.proofOfBill, '_blank')} className="text-orange-500 hover:text-orange-600 underline font-medium text-sm">View Document</button>
+                                  : <span className="text-gray-400 text-sm">-</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {vendorPOsForLevel3.length > 0 && vendorPOPagination.totalPages > 0 && (
+                      <Pagination
+                        currentPage={vendorPOPagination.page}
+                        totalPages={vendorPOPagination.totalPages}
+                        onPageChange={vendorPOPagination.setPage}
+                      />
+                    )}
+                  </>
                 )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Payments Made</h2>
-              {payments.length === 0
+              <div className="flex flex-row flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 className="text-xl font-bold text-gray-800">Payments Made</h2>
+                <ExportToExcelButton
+                  data={paymentsForLevel3}
+                  columns={PAYMENT_EXPORT_COLUMNS}
+                  fileName="vendor-payments"
+                />
+              </div>
+              {paymentsForLevel3.length === 0
                 ? <div className="text-gray-400 text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm">No payments recorded yet for this vendor in this project.</div>
                 : (
-                  <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
-                    <table className="min-w-full bg-white">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                          {['Date', 'Amount (PKR)', 'Note', 'Proof'].map(h => (
-                            <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {payments.map((t, idx) => (
-                          <tr key={t.id || idx} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{t.createdAt ? formatDateDMY(t.createdAt) : '-'}</td>
-                            <td className="px-4 py-3 text-sm font-semibold text-green-600 whitespace-nowrap">{t.amount ? `PKR ${parseFloat(t.amount).toLocaleString('en-US')}` : '-'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-700">{t.note || '-'}</td>
-                            <td className="px-4 py-3">
-                              {t.proofOfPayment
-                                ? <a href={t.proofOfPayment} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline text-sm font-medium">View Proof</a>
-                                : <span className="text-gray-400 text-sm">-</span>}
-                            </td>
+                  <>
+                    <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                      <table className="min-w-full bg-white">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-200">
+                            {['Date', 'Amount (PKR)', 'Note', 'Proof'].map(h => (
+                              <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                            ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {payments.map((t, idx) => (
+                            <tr key={t.id || idx} className="border-b border-gray-100 hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{t.date}</td>
+                              <td className="px-4 py-3 text-sm font-semibold text-green-600 whitespace-nowrap">{t.amount}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{t.note}</td>
+                              <td className="px-4 py-3">
+                                {t.proofOfPayment
+                                  ? <a href={t.proofOfPayment} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline text-sm font-medium">View Proof</a>
+                                  : <span className="text-gray-400 text-sm">-</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {paymentsForLevel3.length > 0 && paymentsPagination.totalPages > 0 && (
+                      <Pagination
+                        currentPage={paymentsPagination.page}
+                        totalPages={paymentsPagination.totalPages}
+                        onPageChange={paymentsPagination.setPage}
+                      />
+                    )}
+                  </>
                 )}
             </div>
           </>

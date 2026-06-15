@@ -35,7 +35,6 @@ const Materials = () => {
       <TopBar
         title="Materials"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
         // showFilter={true}
         buttonText="Add Product"
         onButtonClick={() => navigate("/admin-dashboard/materials/addProduct")}
@@ -43,7 +42,8 @@ const Materials = () => {
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       {/* table */}
       <div className="overflow-x-auto">
-        <SimpleTable columns={columns} data={data} cellComponents={{}} />
+        <SimpleTable
+              tableTitle="materials" columns={columns} data={data} cellComponents={{}} />
       </div>
     </div>
   );

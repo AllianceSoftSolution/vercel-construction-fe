@@ -174,6 +174,7 @@ const ProjectInformationTab = () => {
         </Modal>
       </div>
       <SimpleTable
+              tableTitle="project-information-1"
         columns={columns}
         data={data}
         cellComponents={{ action: CustomActionComponent }}
@@ -183,6 +184,7 @@ const ProjectInformationTab = () => {
         <Button buttonText={"Create An Accountant"} onClick={handleLinkClick} />
       </div>
       <SimpleTable
+              tableTitle="accountant"
         columns={columns}
         data={data}
         cellComponents={{ action: CustomActionComponent }}

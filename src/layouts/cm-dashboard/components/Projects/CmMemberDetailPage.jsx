@@ -124,7 +124,8 @@ const CmMemberDetailPage = () => {
             <h3 className="text-lg sm:text-xl font-semibold text-[#BF1017] mt-4 mb-2">
               Projects History
             </h3>
-            <SimpleTable data={data} columns={columns} cellComponents={{}} />
+            <SimpleTable
+              tableTitle="projects-history" data={data} columns={columns} cellComponents={{}} />
           </div>
         </div>
       </div>

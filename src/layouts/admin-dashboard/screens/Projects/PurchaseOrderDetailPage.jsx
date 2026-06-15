@@ -172,6 +172,7 @@ const PurchaseOrderDetailPage = () => {
             </div>
           ) : (
             <SimpleTable
+              tableTitle="store-sync-status"
               data={storeSyncData}
               columns={columns}
               cellComponents={{ action: CustomActionComponent }}

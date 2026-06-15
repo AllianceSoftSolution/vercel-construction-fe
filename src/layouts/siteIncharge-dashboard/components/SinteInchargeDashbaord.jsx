@@ -318,41 +318,38 @@ function SinteInchargeDashbaord() {
 
       <div className="overflow-x-auto mt-8">  
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={demandFilters}
-            selected={demandsFilter}
-            onChange={handleDemandFilterChange}
-            onClear={handleDemandFilterClear}
-            placeholder="Filter by project or section"
-            dropdownAlign="right"
-          />
-        </div>
         {loadingDemands ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns} data={filteredDemands} cellComponents={{ status: StatusChip }} />
+          <SimpleTable
+            columns={columns}
+            data={filteredDemands}
+            tableFilters={demandFilters}
+            filterSelected={demandsFilter}
+            onFilterChange={handleDemandFilterChange}
+            onFilterClear={handleDemandFilterClear}
+            filterPlaceholder="Filter by project or section"
+            filterDropdownAlign="right"
+            exportFileName="demands"
+            cellComponents={{ status: StatusChip }}
+          />
         )}
       </div>
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent POs</h2>
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={poFilters}
-            selected={poFilter}
-            onChange={handlePOFilterChange}
-            onClear={handlePOFilterClear}
-            placeholder="Filter by project or section"
-            dropdownAlign="right"
-          />
-        </div>
-
         {loadingPurchaseOrders ? (
           <Loader />
         ) : (
-          <SimpleTable 
-            columns={columns2} 
-            data={filteredPOs} 
+          <SimpleTable
+            columns={columns2}
+            data={filteredPOs}
+            tableFilters={poFilters}
+            filterSelected={poFilter}
+            onFilterChange={handlePOFilterChange}
+            onFilterClear={handlePOFilterClear}
+            filterPlaceholder="Filter by project or section"
+            filterDropdownAlign="right"
+            exportFileName="purchase-orders"
             cellComponents={{ 
               status: StatusChip, 
               proofOfBill: ProofOfBillComponent 

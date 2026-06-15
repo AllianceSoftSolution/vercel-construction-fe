@@ -258,16 +258,6 @@ const Demands = () => {
         </div>
       )}
 
-      <div className="flex justify-end items-center gap-4 mt-4 mb-2">
-        <CustomFilterDropdown
-          filters={filters}
-          selected={filter}
-          onChange={handleFilterChange}
-          onClear={handleFilterClear}
-          placeholder="Filter by status or project"
-        />
-      </div>
-
       <div className="overflow-x-auto mt-2">
         {loading ? (
           <Loader />
@@ -275,6 +265,12 @@ const Demands = () => {
           <SimpleTable
             columns={columns}
             data={demands}
+            tableFilters={filters}
+            filterSelected={filter}
+            onFilterChange={handleFilterChange}
+            onFilterClear={handleFilterClear}
+            filterPlaceholder="Filter by status or project"
+            exportFileName="demands"
             cellComponents={{
               demandId: CustomActionComponent,
               status: StatusChip,

@@ -179,7 +179,8 @@ const VendorDetailPage = () => {
         </h3>
         <div className="overflow-x-auto">
           {purchaseOrders.length > 0 ? (
-            <SimpleTable data={transformedPurchaseOrders} columns={columns} cellComponents={{status: StatusChip}} />
+            <SimpleTable
+              tableTitle="purchase-orders" data={transformedPurchaseOrders} columns={columns} cellComponents={{status: StatusChip}} />
           ) : (
             <div className="text-center py-8 text-gray-500">
               No purchase orders found for this vendor.

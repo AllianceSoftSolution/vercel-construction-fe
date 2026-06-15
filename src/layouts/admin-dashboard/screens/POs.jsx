@@ -16,6 +16,7 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { useReadOnly } from "../../../context/ReadOnlyContext";
+import { buildExportFileName } from "../../../modules/tableExportHelpers";
 // import { formatDate } from "../../../utils";
 
 // Status color mapping for purchase order status
@@ -223,6 +224,14 @@ const PurchaseOrder = () => {
     : purchaseOrders.filter(po => po.project === activeProjectTab);
 
   // Always group POs by section for the right panel
+  const purchaseOrdersExportFileName = React.useMemo(
+    () =>
+      buildExportFileName("purchase-orders", {
+        projectName: activeProjectTab,
+      }),
+    [activeProjectTab],
+  );
+
   const groupedBySection = displayedPOs.reduce((groups, po) => {
     const sectionName = po.section || "Unknown Section";
     if (!groups[sectionName]) groups[sectionName] = [];
@@ -320,13 +329,16 @@ const PurchaseOrder = () => {
         title="Purchase Orders"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-4">
+      <div className="flex flex-row flex-wrap items-center justify-end gap-2 sm:gap-3 mt-2 mb-4">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
           placeholder="Filter by status, project or section"
+          exportData={displayedPOs}
+          exportColumns={columns}
+          exportFileName={purchaseOrdersExportFileName}
         />
       </div>
 
@@ -380,6 +392,7 @@ const PurchaseOrder = () => {
                 <SimpleTable
                   columns={columns}
                   data={sectionPOs}
+                  exportable={false}
                   cellComponents={{
                     id: CustomActionComponent,
                     status: StatusChip,

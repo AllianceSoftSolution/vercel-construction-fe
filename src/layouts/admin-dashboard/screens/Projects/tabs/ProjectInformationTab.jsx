@@ -472,6 +472,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
         <Loader />
       ) : (
         <SimpleTable
+              tableTitle="site-incharge"
           columns={columns}
           data={
             data?.assignedSiteIncharges?.map((i) => ({
@@ -501,6 +502,7 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
         <Loader />
       ) : (
         <SimpleTable
+              tableTitle="accountant"
           columns={accountantColumns}
           data={
             data?.assignedAccountants?.map((i) => ({

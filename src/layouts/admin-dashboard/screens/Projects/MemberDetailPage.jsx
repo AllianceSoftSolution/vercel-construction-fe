@@ -130,7 +130,8 @@ const MemberDetailPage = () => {
             <h3 className="text-xl font-semibold text-[#BF1017] mt-4">
               Projects History
             </h3>
-            <SimpleTable data={data} columns={columns} cellComponents={{}} />
+            <SimpleTable
+              tableTitle="projects-history" data={data} columns={columns} cellComponents={{}} />
           </div> */}
         </div>
       </div>

@@ -153,17 +153,6 @@ const PmProjectManagement = () => {
         //       navigate("/siteincharge-dashboard/project-management/addProject")
         // }
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
-        <CustomFilterDropdown
-          filters={filters}
-          selected={filter}
-          onChange={handleFilterChange}
-          onClear={handleFilterClear}
-          placeholder="Filter by name or code"
-        />
-      </div>
-      <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
-      
       <div className="overflow-x-auto">
         {loading ? (
           <div className="text-center py-8">
@@ -174,6 +163,12 @@ const PmProjectManagement = () => {
           <SimpleTable
             columns={columns}
             data={filteredProjects}
+            tableFilters={filters}
+            filterSelected={filter}
+            onFilterChange={handleFilterChange}
+            onFilterClear={handleFilterClear}
+            filterPlaceholder="Filter by name or code"
+            exportFileName="projects"
             cellComponents={{ id: CustomActionComponent }}
           />
         )}

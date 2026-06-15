@@ -1,7 +1,30 @@
 import React from "react";
+import ExportToExcelButton from "../components/ExportToExcelButton";
 
-const CustomTable = ({ columns = [], data = [] }) => {
+const CustomTable = ({
+  columns = [],
+  data = [],
+  exportable = true,
+  exportFileName = "table-export",
+}) => {
+  const exportColumns = columns.map((col) => ({
+    headerName: col.header,
+    field: col.accessor,
+    getExportValue: col.getExportValue,
+    exportable: col.exportable,
+  }));
+
   return (
+    <div>
+      {exportable && (
+        <div className="flex justify-end mb-2">
+          <ExportToExcelButton
+            data={data}
+            columns={exportColumns}
+            fileName={exportFileName}
+          />
+        </div>
+      )}
     <table className="w-full text-left border-separate border-spacing-y-3 overflow-x-hidden">
       <thead>
         <tr className="text-gray-700">
@@ -39,6 +62,7 @@ const CustomTable = ({ columns = [], data = [] }) => {
         ))}
       </tbody>
     </table>
+    </div>
   );
 };
 

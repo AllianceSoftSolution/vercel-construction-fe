@@ -161,6 +161,7 @@ const CAPTab = ({ data, projectId }) => {
         </div>
       ) : (
         <SimpleTable
+              tableTitle="cap"
           data={transformedData}
           columns={columns}
           cellComponents={{

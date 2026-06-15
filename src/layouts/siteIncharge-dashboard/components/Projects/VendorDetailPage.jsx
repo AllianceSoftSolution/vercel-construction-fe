@@ -117,7 +117,8 @@ const MemberDetailPage = () => {
         <h3 className="text-xl font-semibold text-[#BF1017] mt-4">
           Recent Purchase Order{" "}
         </h3>
-        <SimpleTable data={data} columns={columns} cellComponents={{}} />
+        <SimpleTable
+              tableTitle="recent-purchase-order" data={data} columns={columns} cellComponents={{}} />
       </div>
     </div>
   );

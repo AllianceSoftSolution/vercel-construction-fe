@@ -299,16 +299,6 @@ const DateComponent = ({ value }) => {
         title="Purchase Orders"
         // detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
-        <CustomFilterDropdown
-          filters={filters}
-          selected={filter}
-          onChange={handleFilterChange}
-          onClear={handleFilterClear}
-          placeholder="Filter by status, project or section"
-        />
-      </div>
-      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
       <div className="overflow-x-auto">
         {loading ? (
           <Loader />
@@ -316,6 +306,12 @@ const DateComponent = ({ value }) => {
           <SimpleTable
             columns={columns}
             data={purchaseOrders}
+            tableFilters={filters}
+            filterSelected={filter}
+            onFilterChange={handleFilterChange}
+            onFilterClear={handleFilterClear}
+            filterPlaceholder="Filter by status, project or section"
+            exportFileName="purchase-orders"
             cellComponents={{ 
               status: StatusChip, 
               proofOfBill: ProofOfBillComponent,

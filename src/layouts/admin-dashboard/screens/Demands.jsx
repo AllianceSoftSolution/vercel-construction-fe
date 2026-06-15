@@ -13,6 +13,7 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { formatDateDMY } from '../../../utils';
+import { buildExportFileName } from "../../../modules/tableExportHelpers";
 
 // Status color mapping
 const statusColorMap = {
@@ -211,6 +212,14 @@ const Demands = () => {
     : demands.filter(d => d.section?.projectName === activeProjectTab);
 
   // Always group demands by section for the right panel
+  const demandsExportFileName = React.useMemo(
+    () =>
+      buildExportFileName("demands", {
+        projectName: activeProjectTab,
+      }),
+    [activeProjectTab],
+  );
+
   const groupedBySection = displayedDemands.reduce((groups, demand) => {
     const sectionName = demand.section?.name || "Unknown Section";
     if (!groups[sectionName]) groups[sectionName] = [];
@@ -260,13 +269,16 @@ const Demands = () => {
       <TopBar
         title="Demands"
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-4">
+      <div className="flex flex-row flex-wrap items-center justify-end gap-2 sm:gap-3 mt-2 mb-4">
         <CustomFilterDropdown
           filters={filters}
           selected={filter}
           onChange={handleFilterChange}
           onClear={handleFilterClear}
           placeholder="Filter by status, project or section"
+          exportData={displayedDemands}
+          exportColumns={columns}
+          exportFileName={demandsExportFileName}
         />
       </div>
 
@@ -320,6 +332,7 @@ const Demands = () => {
                 <SimpleTable
                   columns={columns}
                   data={sectionDemands}
+                  exportable={false}
                   cellComponents={{ 
                     demandId: CustomActionComponent, 
                     status: StatusChip,

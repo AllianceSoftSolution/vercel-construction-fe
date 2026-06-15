@@ -114,6 +114,7 @@ const Materials = () => {
           <Loader />
         ) : (
           <SimpleTable
+              tableTitle="materials"
             columns={columns}
             data={materials}
             cellComponents={{ id: CustomActionComponent }}

@@ -14,6 +14,7 @@ import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../../components/ui/Loader";
+import StoreMovementHistoryTable from "../../../../components/store/StoreMovementHistoryTable";
 
 const style = {
   position: "absolute",
@@ -40,15 +41,6 @@ const CmStoreDetail = () => {
     { headerName: "Last Updated", field: "updatedAtFormatted" },
   ];
 
-  const columns1 = [
-    { headerName: "Material", field: "materialName" },
-    { headerName: "Type", field: "type" },
-    { headerName: "Quantity", field: "quantity" },
-    { headerName: "Reference", field: "reference" },
-    { headerName: "Notes", field: "notes" },
-    { headerName: "Date", field: "transactionDateFormatted" },
-  ];
-
   const inventoryTableData = (storeData?.inventory || [])
     .filter((item) => item && typeof item === "object" && item.id)
     .map((item) => ({
@@ -59,21 +51,6 @@ const CmStoreDetail = () => {
         ? new Date(item.updatedAt).toLocaleDateString("en-GB")
         : "-",
     }));
-
-  const transactionsTableData = (storeData?.transactions || [])
-    .filter((item) => item && typeof item === "object" && item.id)
-    .map((item) => {
-      const inv = (storeData?.inventory || [])
-        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
-        .find((inv) => inv.materialId === item.materialId);
-      return {
-        ...item,
-        materialName: inv?.material?.name || item.materialId || "-",
-        transactionDateFormatted: item.transactionDate
-          ? new Date(item.transactionDate).toLocaleDateString("en-GB")
-          : "-",
-      };
-    });
 
   const fetchStoreDetail = async () => {
     try {
@@ -250,14 +227,19 @@ const CmStoreDetail = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={inventoryTableData} columns={columns} cellComponents={{}} />
+      <SimpleTable
+              tableTitle="store-inventory" data={inventoryTableData} columns={columns} cellComponents={{}} />
 
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">
         Stock Movement History
       </h4>
       <p className="text-[#979797]">lorem ipsum dolor sit amet</p>
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={transactionsTableData} columns={columns1} cellComponents={{}} />
+      <StoreMovementHistoryTable
+        storeData={storeData}
+        storeId={id}
+        onRefresh={fetchStoreDetail}
+      />
     </div>
   );
 };

@@ -115,7 +115,8 @@ const SinMemberDetailPage = () => {
               Project History
             </h3>
             <div className="overflow-x-auto mt-2">
-              <SimpleTable data={data} columns={columns} cellComponents={{}} />
+              <SimpleTable
+              tableTitle="project-history" data={data} columns={columns} cellComponents={{}} />
             </div>
           </div> */}
         </div>

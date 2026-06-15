@@ -96,6 +96,7 @@ const Vendors = () => {
       {/* table */}
       <div className="overflow-x-auto">
         <SimpleTable
+              tableTitle="vendors"
           columns={columns}
           data={data}
           cellComponents={{ action: CustomActionComponent }}

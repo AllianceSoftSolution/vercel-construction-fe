@@ -1563,20 +1563,18 @@ const AccPayables = () => {
         <>
           <div className="mt-10">
             <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders</h1>
-            <div className="my-4 flex justify-end">
-              <CustomFilterDropdown
-                filters={[{ label: "Status", options: statusOptions.map(o => o.label) }]}
-                selected={{ Status: filter.Status }}
-                onChange={(s) => setFilter(prev => ({ ...prev, Status: s.Status || [] }))}
-                onClear={() => setFilter(prev => ({ ...prev, Status: [] }))}
-                placeholder="Filter by status" dropdownAlign="right"
-              />
-            </div>
             <div className="overflow-x-auto">
               {loading ? <Loader /> : (
                 <SimpleTable
                   columns={purchaseOrderColumns}
                   data={filteredPurchaseOrders}
+                  tableFilters={[{ label: "Status", options: statusOptions.map(o => o.label) }]}
+                  filterSelected={{ Status: filter.Status }}
+                  onFilterChange={(s) => setFilter(prev => ({ ...prev, Status: s.Status || [] }))}
+                  onFilterClear={() => setFilter(prev => ({ ...prev, Status: [] }))}
+                  filterPlaceholder="Filter by status"
+                  filterDropdownAlign="right"
+                  exportFileName="purchase-orders"
                   cellComponents={{
                     id: ActionComforRegPOs,
                     status: StatusChip,
@@ -1589,18 +1587,18 @@ const AccPayables = () => {
 
           <div className="mt-10">
             <h1 className="text-xl md:text-2xl font-bold mb-5">Purchase Orders with Amounts</h1>
-            <div className="my-4 flex justify-end">
-              <CustomFilterDropdown
-                filters={poWithAmountFilters} selected={poWithAmountFilter}
-                onChange={handlePOWithAmountFilterChange} onClear={handlePOWithAmountFilterClear}
-                placeholder="Filter by project" dropdownAlign="right"
-              />
-            </div>
             <div className="overflow-x-auto">
               {loading ? <Loader /> : (
                 <SimpleTable
                   columns={purchaseOrderWithAmountColumns}
                   data={filteredPurchaseOrdersWithAmount}
+                  tableFilters={poWithAmountFilters}
+                  filterSelected={poWithAmountFilter}
+                  onFilterChange={handlePOWithAmountFilterChange}
+                  onFilterClear={handlePOWithAmountFilterClear}
+                  filterPlaceholder="Filter by project"
+                  filterDropdownAlign="right"
+                  exportFileName="purchase-orders-with-amount"
                   cellComponents={{
                     id: ActionForPOsWithAmount,
                     status: StatusChip,

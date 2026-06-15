@@ -346,17 +346,18 @@ function CmDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={demandFilters}
-            selected={demandsFilter}
-            onChange={handleDemandFilterChange}
-            onClear={handleDemandFilterClear}
-            placeholder="Filter by status, project or section"
-            dropdownAlign="right"
-          />
-        </div>
-        <SimpleTable columns={columns} data={filteredDemands} loading={loading} cellComponents={{ status: StatusChip }} />
+        <SimpleTable
+          columns={columns}
+          data={filteredDemands}
+          tableFilters={demandFilters}
+          filterSelected={demandsFilter}
+          onFilterChange={handleDemandFilterChange}
+          onFilterClear={handleDemandFilterClear}
+          filterPlaceholder="Filter by status, project or section"
+          filterDropdownAlign="right"
+          exportFileName="demands"
+          cellComponents={{ status: StatusChip }}
+        />
       </div>
     </div>
   );

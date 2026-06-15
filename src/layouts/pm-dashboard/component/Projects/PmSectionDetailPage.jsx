@@ -427,6 +427,7 @@ const PmSectionDetailPage = () => {
                 </div>
               ) : (
                 <SimpleTable
+              tableTitle="accountant"
                   data={sectionData?.associatedAccountants || []}
                   columns={columnsAcc}
                   cellComponents={{}}
@@ -458,6 +459,7 @@ const PmSectionDetailPage = () => {
 
             <div className="overflow-x-auto mt-4">
               <SimpleTable
+              tableTitle="construction-managers"
                 data={sectionData?.associatedConstructionManagers || []}
                 columns={columns}
                 cellComponents={{
@@ -477,6 +479,7 @@ const PmSectionDetailPage = () => {
             />
             <div className="overflow-x-auto mt-4 relative">
               <SimpleTable
+              tableTitle="cap"
                 data={capData}
                 columns={capColumns}
                 cellComponents={{

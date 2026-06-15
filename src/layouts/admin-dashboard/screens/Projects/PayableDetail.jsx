@@ -349,6 +349,7 @@ export default function PayableDetails() {
           <TopBar title="Credit Transactions" detail="All credit transactions for this vendor account." />
           <div className="mt-4 overflow-x-auto relative">
             <SimpleTable
+              tableTitle="credit-transactions"
               data={creditTransactions}
               columns={paymentColumns}
               cellComponents={{ proof: ProofCell }}
@@ -359,6 +360,7 @@ export default function PayableDetails() {
           <TopBar title="Debit Transactions" detail="All debit transactions for this vendor account." {...(!isReadOnly && { buttonText: "Add Payment", onButtonClick: () => setOpen(true) })} />
           <div className="mt-4 overflow-x-auto relative">
             <SimpleTable
+              tableTitle="debit-transactions"
               data={debitTransactions}
               columns={paymentColumns}
               cellComponents={{ proof: ProofCell }}

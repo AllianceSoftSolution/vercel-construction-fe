@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FiFilter } from "react-icons/fi";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { IoMdClose } from "react-icons/io";
-
+import ExportToExcelButton from "../ExportToExcelButton";
 
 const CustomFilterDropdown = ({
   filters = [],
@@ -11,6 +11,10 @@ const CustomFilterDropdown = ({
   onClear,
   placeholder = "Filter",
   dropdownAlign = "right",
+  exportData = [],
+  exportColumns = [],
+  exportFileName = "export",
+  exportCellComponents = {},
 }) => {
   const [open, setOpen] = useState(false);
   const filterRef = useRef(null);
@@ -154,6 +158,7 @@ const CustomFilterDropdown = ({
   });
 
   return (
+    <div className="flex flex-row items-center gap-2 flex-shrink-0">
     <div className="relative" ref={filterRef}>
       <div
         className="flex items-center border-[0.5px] border-[#CDC9C9] rounded-lg p-2 bg-[#FFFFFF] gap-x-2 whitespace-nowrap cursor-pointer min-w-[120px] w-fit"
@@ -221,6 +226,15 @@ const CustomFilterDropdown = ({
           )}
         </div>
       )}
+    </div>
+    {exportColumns.length > 0 && (
+      <ExportToExcelButton
+        data={exportData}
+        columns={exportColumns}
+        fileName={exportFileName}
+        cellComponents={exportCellComponents}
+      />
+    )}
     </div>
   );
 };

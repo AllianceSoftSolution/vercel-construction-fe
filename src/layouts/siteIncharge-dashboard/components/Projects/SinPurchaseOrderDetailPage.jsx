@@ -188,6 +188,7 @@ const SinPurchaseOrderDetailPage = () => {
         <p className="text-[#979797] text-sm">Track the approval process for this purchase order</p>
         {approvalsData.length > 0 ? (
           <SimpleTable
+              tableTitle="approval-history"
             data={approvalsData}
             columns={columns}
             cellComponents={{ action: CustomActionComponent }}

@@ -498,6 +498,7 @@ export default function AcPayableDetails() {
           <TopBar title="Credit Transactions" detail="All credit transactions for this vendor account." />
           <div className="mt-4 overflow-x-auto relative">
             <SimpleTable
+              tableTitle="credit-transactions"
               data={creditTransactions}
               columns={paymentColumns}
             cellComponents={{ proof: ProofCell, amount: ColorCodedAmount }}
@@ -540,6 +541,7 @@ export default function AcPayableDetails() {
           </div>
           <div className="mt-4 overflow-x-auto relative">
             <SimpleTable
+              tableTitle="debit-transactions"
               data={sortedDebitTransactions}
               columns={paymentColumns}
               cellComponents={{ proof: ProofCell, amount: ColorCodedAmount }}

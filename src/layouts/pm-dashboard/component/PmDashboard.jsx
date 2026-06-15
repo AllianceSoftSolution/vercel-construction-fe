@@ -199,20 +199,21 @@ function PmDashboard() {
 
       <div className="overflow-x-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Recent Demands</h2>
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={demandFilters}
-            selected={demandsFilter}
-            onChange={handleDemandFilterChange}
-            onClear={handleDemandFilterClear}
-            placeholder="Filter by project or status"
-            dropdownAlign="right"
-          />
-        </div>
         {loading ? (
           <Loader />
         ) : (
-          <SimpleTable columns={columns} data={filteredDemands} cellComponents={{ status: StatusChip }} />
+          <SimpleTable
+            columns={columns}
+            data={filteredDemands}
+            tableFilters={demandFilters}
+            filterSelected={demandsFilter}
+            onFilterChange={handleDemandFilterChange}
+            onFilterClear={handleDemandFilterClear}
+            filterPlaceholder="Filter by project or status"
+            filterDropdownAlign="right"
+            exportFileName="demands"
+            cellComponents={{ status: StatusChip }}
+          />
         )}
       </div>
     </div>

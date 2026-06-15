@@ -14,6 +14,7 @@ import Button from "../../../../components/Button";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
+import StoreMovementHistoryTable from "../../../../components/store/StoreMovementHistoryTable";
 
 const style = {
   position: "absolute",
@@ -59,16 +60,6 @@ const PmStoreDetail = () => {
     { headerName: "Last Updated", field: "updatedAtFormatted" },
   ];
 
-  const columns1 = [
-    { headerName: "Material", field: "materialName" },
-    { headerName: "Type", field: "type" },
-    { headerName: "Quantity", field: "quantity" },
-    { headerName: "Flow (From/To)", field: "flowStore" },
-    { headerName: "Reference", field: "reference" },
-    { headerName: "Notes", field: "notes" },
-    { headerName: "Date", field: "transactionDateFormatted" },
-  ];
-
   const inventoryTableData = (storeData?.inventory || [])
     .filter((item) => item && typeof item === "object" && item.id)
     .map((item) => ({
@@ -79,28 +70,6 @@ const PmStoreDetail = () => {
         ? new Date(item.updatedAt).toLocaleDateString("en-GB")
         : "-",
     }));
-
-  const transactionsTableData = (storeData?.transactions || [])
-    .filter((item) => item && typeof item === "object" && item.id)
-    .map((item) => {
-      const inv = (storeData?.inventory || [])
-        .filter((inv) => inv && typeof inv === "object" && inv.materialId)
-        .find((inv) => inv.materialId === item.materialId);
-      return {
-        ...item,
-        materialName: inv?.material?.name || item.materialId || "-",
-        transactionDateFormatted: item.transactionDate
-          ? new Date(item.transactionDate).toLocaleDateString("en-GB")
-          : "-",
-        flowStore: item.type === 'OUT'
-          ? (item.toStore ? `→ ${item.toStore.name}` : '—')
-          : item.type === 'IN'
-          ? (item.fromStore ? `← ${item.fromStore.name}` : '—')
-          : '—',
-      };
-    });
-
-
 
   const CustomActionComponent = () => {
     const [open, setOpen] = useState(false);
@@ -238,6 +207,7 @@ const PmStoreDetail = () => {
       {/* Store Incharge Assignments Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Store Incharge Assignments</h4>
       <SimpleTable
+              tableTitle="store-incharge"
         data={(storeData?.storeInchargeAssignments || [])
           .filter((a) => a && typeof a === "object" && a.id)
           .map(a => ({
@@ -262,8 +232,9 @@ const PmStoreDetail = () => {
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
 
-      <SimpleTable
-        data={inventoryTableData}
+          <SimpleTable
+            tableTitle="store-inventory"
+            data={inventoryTableData}
         columns={columns}
         cellComponents={{}}
       />
@@ -274,10 +245,10 @@ const PmStoreDetail = () => {
       </h4>
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable
-        data={transactionsTableData}
-        columns={columns1}
-        cellComponents={{}}
+      <StoreMovementHistoryTable
+        storeData={storeData}
+        storeId={id}
+        onRefresh={fetchStoreDetails}
       />
         </>
       )}

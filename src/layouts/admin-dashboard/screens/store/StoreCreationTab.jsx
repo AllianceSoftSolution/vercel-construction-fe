@@ -907,6 +907,7 @@ const StoreCreationTab = () => {
         <Loader />
       ) : (
         <SimpleTable
+              tableTitle="store-creation"
           columns={columns}
           data={tableData}
           cellComponents={{

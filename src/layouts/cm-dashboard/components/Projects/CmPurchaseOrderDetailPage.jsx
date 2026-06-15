@@ -113,6 +113,7 @@ const CmPurchaseOrderDetail = () => {
         {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
         <div className="overflow-x-auto">
           <SimpleTable
+              tableTitle="store-sync-status"
             data={[]}
             columns={columns}
             cellComponents={{ id: CustomActionComponent }}
@@ -124,6 +125,7 @@ const CmPurchaseOrderDetail = () => {
         {/* <p className="text-[#979797]">lorem ipsum dolor sit amet </p> */}
         <div className="overflow-x-auto">
           <SimpleTable
+              tableTitle="finance"
             data={[]}
             columns={columns}
             cellComponents={{ id: CustomActionComponent }}

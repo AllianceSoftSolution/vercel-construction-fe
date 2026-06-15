@@ -448,31 +448,33 @@ function AdminDashboard() {
 
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent Demands" />
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={demandFiltersConfig}
-            selected={demandsFilter}
-            onChange={handleDemandsFilterChange}
-            onClear={handleDemandsFilterClear}
-            placeholder="Filter by project or section"
-            dropdownAlign="right"
-          />
-        </div>
-        <SimpleTable columns={demandsColumns} data={filteredDemands} cellComponents={{ status: StatusChip, createdAt: DateCell }} />
+        <SimpleTable
+          columns={demandsColumns}
+          data={filteredDemands}
+          tableFilters={demandFiltersConfig}
+          filterSelected={demandsFilter}
+          onFilterChange={handleDemandsFilterChange}
+          onFilterClear={handleDemandsFilterClear}
+          filterPlaceholder="Filter by project or section"
+          filterDropdownAlign="right"
+          exportFileName="demands"
+          cellComponents={{ status: StatusChip, createdAt: DateCell }}
+        />
       </div>
       <div className="overflow-x-auto mt-8">
         <TopBar title="Recent POs" />
-        <div className="my-4 flex justify-end">
-          <CustomFilterDropdown
-            filters={poFiltersConfig}
-            selected={purchaseOrdersFilter}
-            onChange={handlePOFilterChange}
-            onClear={handlePOFilterClear}
-            placeholder="Filter by project or section"
-            dropdownAlign="right"
-          />
-        </div>
-        <SimpleTable columns={purchaseOrdersColumns} data={filteredPurchaseOrders} cellComponents={{ status: StatusChip }} />
+        <SimpleTable
+          columns={purchaseOrdersColumns}
+          data={filteredPurchaseOrders}
+          tableFilters={poFiltersConfig}
+          filterSelected={purchaseOrdersFilter}
+          onFilterChange={handlePOFilterChange}
+          onFilterClear={handlePOFilterClear}
+          filterPlaceholder="Filter by project or section"
+          filterDropdownAlign="right"
+          exportFileName="purchase-orders"
+          cellComponents={{ status: StatusChip }}
+        />
       </div>
     </div>
   );

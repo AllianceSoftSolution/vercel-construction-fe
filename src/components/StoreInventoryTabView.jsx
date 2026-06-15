@@ -213,6 +213,7 @@ const StoreInventoryTabView = ({ role, dashboardPrefix = "admin-dashboard" }) =>
             </div>
           ) : (
             <SimpleTable
+              tableTitle="store-inventory"
               columns={inventoryColumns}
               data={inventory.filter(Boolean).map((item) => ({
                 ...item,

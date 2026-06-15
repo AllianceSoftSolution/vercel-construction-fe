@@ -216,15 +216,6 @@ const SInchargeUserManagement = () => {
         //   navigate("/siteincharge-dashboard/user-management/addUser")
         // }
       />
-      <div className="flex justify-end items-center gap-4 mt-2 mb-6">
-        <CustomFilterDropdown
-          filters={filters}
-          selected={filter}
-          onChange={handleFilterChange}
-          onClear={handleFilterClear}
-          placeholder="Filter by role"
-        />
-      </div>
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
       <h2 className="text-2xl font-semibold text-primary">
         Total Users Overview
@@ -253,6 +244,12 @@ const SInchargeUserManagement = () => {
           <SimpleTable
             columns={columns}
             data={users}
+            tableFilters={filters}
+            filterSelected={filter}
+            onFilterChange={handleFilterChange}
+            onFilterClear={handleFilterClear}
+            filterPlaceholder="Filter by role"
+            exportFileName="users"
             cellComponents={{ id: CustomActionComponent, role: RoleCell }}
             loading={loading}
           />

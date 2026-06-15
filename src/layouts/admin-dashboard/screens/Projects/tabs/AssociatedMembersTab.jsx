@@ -77,6 +77,7 @@ const AssociatedMembersTab = ({ data }) => {
   return (
     <div>
       <SimpleTable
+              tableTitle="associated-members"
         data={associatedMembersTableData}
         columns={columns}
         cellComponents={{ action: CustomActionComponent, role: RoleCell }}

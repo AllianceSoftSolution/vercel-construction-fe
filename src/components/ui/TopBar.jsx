@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { CiExport } from "react-icons/ci";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import Button from "../Button";
-import { useNavigate } from "react-router-dom"; 
+import ExportToExcelButton from "../ExportToExcelButton";
+import { useNavigate } from "react-router-dom";
 
 const TopBar = ({
   title = "",
@@ -12,6 +12,10 @@ const TopBar = ({
   buttonText = "",
   onButtonClick,
   showExport = false,
+  exportData = [],
+  exportColumns = [],
+  exportFileName = "export",
+  exportCellComponents = {},
   showFilter = false,
   filterOptions = [],
   showIcon = false, 
@@ -57,17 +61,9 @@ const TopBar = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 relative">
-        {showExport && (
-          <div className="flex items-center border-[0.5px] border-[#CDC9C9] rounded-lg p-2 bg-[#FFFFFF] gap-x-2 whitespace-nowrap">
-            <CiExport className="text-[#979797]" />
-            <p className="text-[#979797]">Export</p>
-            <IoMdArrowDropdown className="text-[#979797] border-[0.5px] border-[#979797] rounded-full" />
-          </div>
-        )}
-
+      <div className="flex flex-row flex-nowrap items-center gap-2 shrink-0">
         {showFilter && (
-          <div className="relative" ref={filterRef}>
+          <div className="relative shrink-0" ref={filterRef}>
             <div
               className="flex items-center border-[0.5px] border-[#CDC9C9] rounded-lg p-2 bg-[#FFFFFF] gap-x-2 whitespace-nowrap cursor-pointer"
               onClick={toggleFilter}
@@ -128,6 +124,15 @@ const TopBar = ({
               </div>
             )}
           </div>
+        )}
+
+        {exportColumns.length > 0 && (
+          <ExportToExcelButton
+            data={exportData}
+            columns={exportColumns}
+            fileName={exportFileName}
+            cellComponents={exportCellComponents}
+          />
         )}
 
         {buttonText && (

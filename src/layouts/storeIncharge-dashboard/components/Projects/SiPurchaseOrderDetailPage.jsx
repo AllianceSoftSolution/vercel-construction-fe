@@ -173,7 +173,8 @@ const SectionTable = ({ title, description, columns, data, action }) => (
   <div className="mt-8 w-full overflow-x-auto">
     <h4 className="text-[#444444] font-semibold text-xl">{title}</h4>
     <p className="text-[#979797] mb-2">{description}</p>
-    <SimpleTable data={data} columns={columns} cellComponents={{ action }} />
+    <SimpleTable
+              tableTitle="title" data={data} columns={columns} cellComponents={{ action }} />
   </div>
 );
 

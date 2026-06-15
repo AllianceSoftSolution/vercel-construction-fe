@@ -115,7 +115,8 @@ const PmMemberDetailPage = () => {
               Projects History
             </h3>
             <div className="overflow-x-auto mt-2">
-              <SimpleTable data={data} columns={columns} cellComponents={{}} />
+              <SimpleTable
+              tableTitle="projects-history" data={data} columns={columns} cellComponents={{}} />
             </div>
           </div> */}
         </div>

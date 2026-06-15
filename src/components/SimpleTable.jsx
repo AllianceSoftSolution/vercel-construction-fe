@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,6 +14,9 @@ import { styled } from "@mui/material/styles";
 import DashedLineSVG from "./DashedLineSVG";
 import Pagination from "./Pagination";
 import NoTableDataFound from "./NoTableDataFound";
+import ExportToExcelButton from "./ExportToExcelButton";
+import CustomFilterDropdown from "./ui/CustomFilterDropdown";
+import { resolveExportFileName } from "../modules/tableExportHelpers";
 
 // Custom styling for the Table component
 const StyledTable = styled(Table)(({ theme }) => ({
@@ -95,42 +98,81 @@ const SimpleTable = ({
   showCheckbox,
   headBodySpace,
   headerStyles,
-  showNA, // New prop to control "N/A" display
+  showNA,
   config,
   recordsPerPage = 10,
+  exportable = true,
+  exportFileName = "table-export",
+  tableTitle,
+  exportContext,
+  tableFilters = null,
+  filterSelected = {},
+  onFilterChange,
+  onFilterClear,
+  filterPlaceholder = "Filter",
+  filterDropdownAlign = "right",
 }) => {
-  console.log("Data ssstttt", data);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const rowsPerPage = recordsPerPage;
-  let totalPages = 0;
-  let paginatedData =
-    data?.length > 0 &&
-    data?.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-  if (config?.totalPages) {
-    totalPages = config.totalPages;
-  } else {
-    totalPages = Math.ceil((data?.length || 0) / rowsPerPage);
-  }
-  useEffect(() => {
-    console.log("i am current page from , simple table", config?.currentPage);
-    if (config) {
-      setCurrentPage(config?.currentPage);
+  const isServerPaginated = Boolean(config);
+
+  const safeData = useMemo(() => (data || []).filter(Boolean), [data]);
+
+  const resolvedExportFileName = useMemo(
+    () =>
+      resolveExportFileName({
+        exportFileName,
+        tableTitle,
+        exportContext,
+      }),
+    [exportFileName, tableTitle, exportContext],
+  );
+
+  const totalPages = useMemo(() => {
+    if (isServerPaginated && config?.totalPages) {
+      return config.totalPages;
     }
-    paginatedData = data;
-  }, [data]);
+    if (!safeData.length) return 0;
+    return Math.max(1, Math.ceil(safeData.length / rowsPerPage));
+  }, [isServerPaginated, config?.totalPages, safeData.length, rowsPerPage]);
+
+  const displayData = useMemo(() => {
+    if (!safeData.length) return [];
+    if (isServerPaginated) return safeData;
+    const start = (currentPage - 1) * rowsPerPage;
+    return safeData.slice(start, start + rowsPerPage);
+  }, [safeData, isServerPaginated, currentPage, rowsPerPage]);
+
+  useEffect(() => {
+    if (isServerPaginated && config?.currentPage) {
+      setCurrentPage(config.currentPage);
+    }
+  }, [isServerPaginated, config?.currentPage]);
+
+  useEffect(() => {
+    if (!isServerPaginated) {
+      setCurrentPage(1);
+    }
+  }, [safeData.length, isServerPaginated]);
+
+  useEffect(() => {
+    if (!isServerPaginated && currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages, isServerPaginated]);
 
   const handlePageChange = async (page) => {
     setCurrentPage(page);
     if (config?.onPageChange) {
       await config.onPageChange(page);
-      config?.setPage(page);
+      config?.setPage?.(page);
     }
   };
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      setSelectedRows(new Set(data.filter(Boolean).map((row) => row.id)));
+      setSelectedRows(new Set(safeData.map((row) => row.id)));
     } else {
       setSelectedRows(new Set());
     }
@@ -150,17 +192,87 @@ const SimpleTable = ({
 
   const isAllSelected =
     showCheckbox &&
-    paginatedData?.length > 0 &&
-    paginatedData?.every((row) => selectedRows.has(row.id));
+    displayData.length > 0 &&
+    displayData.every((row) => selectedRows.has(row.id));
 
   const isIndeterminate =
     showCheckbox &&
-    paginatedData?.length > 0 &&
-    paginatedData?.some((row) => selectedRows.has(row.id)) &&
+    displayData.length > 0 &&
+    displayData.some((row) => selectedRows.has(row.id)) &&
     !isAllSelected;
+
+  const showFilter = tableFilters && tableFilters.length > 0;
+  const showToolbar = exportable || showFilter;
+
+  const renderRow = (row, rowIndex) => (
+    <React.Fragment key={row.id ?? rowIndex}>
+      <TableRow>
+        {showCheckbox && (
+          <TableCell padding="checkbox">
+            <CustomCheckbox
+              checked={selectedRows.has(row.id)}
+              onChange={() => handleSelectRow(row.id)}
+            />
+          </TableCell>
+        )}
+        {columns.map((column) => (
+          <TableCell key={column.field}>
+            <CellContent
+              index={rowIndex}
+              value={getNestedValue(row, column.field, showNA)}
+              CustomComponent={cellComponents[column.field]}
+              row={row}
+            />
+          </TableCell>
+        ))}
+      </TableRow>
+      <TableRow>
+        <TableCell
+          colSpan={columns.length + (showCheckbox ? 1 : 0)}
+          padding="none"
+        >
+          {headBodySpace || !isServerPaginated ? (
+            <DashedLineSVG
+              width="100%"
+              height="0.8px"
+              dashWidth="7"
+              spaceWidth="5"
+            />
+          ) : null}
+        </TableCell>
+      </TableRow>
+    </React.Fragment>
+  );
 
   return (
     <Box sx={{ ...customStyles }}>
+      {showToolbar && (
+        <div className="flex flex-row flex-wrap items-center justify-end gap-2 sm:gap-3 mb-2">
+          {showFilter && (
+            <CustomFilterDropdown
+              filters={tableFilters}
+              selected={filterSelected}
+              onChange={onFilterChange}
+              onClear={onFilterClear}
+              placeholder={filterPlaceholder}
+              dropdownAlign={filterDropdownAlign}
+              exportData={exportable ? safeData : []}
+              exportColumns={exportable ? columns : []}
+              exportFileName={resolvedExportFileName}
+              exportCellComponents={cellComponents}
+            />
+          )}
+          {exportable && !showFilter && (
+            <ExportToExcelButton
+              data={safeData}
+              columns={columns}
+              fileName={resolvedExportFileName}
+              cellComponents={cellComponents}
+              showNA={showNA}
+            />
+          )}
+        </div>
+      )}
       <CustomTableContainer component={Paper} elevation={0}>
         <StyledTable
           sx={{
@@ -189,98 +301,13 @@ const SimpleTable = ({
                 sx={{ height: "25px", backgroundColor: "transparent" }}
               ></TableRow>
             )}
-            {config &&
-              data.length > 0 &&
-              data?.filter(Boolean).map((row, rowIndex) => (
-                <React.Fragment key={row.id ?? rowIndex}>
-                  <TableRow>
-                    {showCheckbox && (
-                      <TableCell padding="checkbox">
-                        <CustomCheckbox
-                          checked={selectedRows.has(row.id)}
-                          onChange={() => handleSelectRow(row.id)}
-                        />
-                      </TableCell>
-                    )}
-                    {columns.map((column) => (
-                      <TableCell key={column.field}>
-                        <CellContent
-                          index={rowIndex}
-                          value={getNestedValue(
-                            row,
-                            column.field,
-                            showNA // Pass showNA prop to getNestedValue
-                          )}
-                          CustomComponent={cellComponents[column.field]}
-                          row={row}
-                        />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length + (showCheckbox ? 1 : 0)}
-                      padding="none"
-                    >
-                      <DashedLineSVG
-                        width="100%"
-                        height="0.8px"
-                        dashWidth="7"
-                        spaceWidth="5"
-                      />
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              ))}
-
-            {!config &&
-              paginatedData.length > 0 &&
-              paginatedData?.filter(Boolean).map((row, rowIndex) => (
-                <React.Fragment key={row.id ?? rowIndex}>
-                  <TableRow>
-                    {showCheckbox && (
-                      <TableCell padding="checkbox">
-                        <CustomCheckbox
-                          checked={selectedRows.has(row.id)}
-                          onChange={() => handleSelectRow(row.id)}
-                        />
-                      </TableCell>
-                    )}
-                    {columns.map((column) => (
-                      <TableCell key={column.field}>
-                        <CellContent
-                          index={rowIndex}
-                          value={getNestedValue(
-                            row,
-                            column.field,
-                            showNA // Pass showNA prop to getNestedValue
-                          )}
-                          CustomComponent={cellComponents[column.field]}
-                          row={row}
-                        />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length + (showCheckbox ? 1 : 0)}
-                      padding="none"
-                    >
-                      {/* <DashedLineSVG
-                        width="100%"
-                        height="0.8px"
-                        dashWidth="7"
-                        spaceWidth="5"
-                      /> */}
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              ))}
+            {displayData.length > 0 &&
+              displayData.map((row, rowIndex) => renderRow(row, rowIndex))}
           </TableBody>
         </StyledTable>
       </CustomTableContainer>
-      {totalPages === 0 && <NoTableDataFound />}
-      {totalPages > 1 && (
+      {safeData.length === 0 && <NoTableDataFound />}
+      {safeData.length > 0 && totalPages > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

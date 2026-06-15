@@ -182,18 +182,6 @@ const SiStores = () => {
         // buttonText="Add New Store"
         // onButtonClick={() => navigate("/admin-dashboard/store/addStore")}
       />
-      <div className="my-4 flex justify-end">
-        <CustomFilterDropdown
-          filters={filters}
-          selected={filter}
-          onChange={handleFilterChange}
-          onClear={handleFilterClear}
-          placeholder="Filter by type, project or section"
-          dropdownAlign="right"
-        />
-      </div>
-      {/* <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div> */}
-      {/* table */}
       <div className="overflow-x-auto mt-4  ">
         {loading ? (
           <Loader />
@@ -201,6 +189,13 @@ const SiStores = () => {
           <SimpleTable
             columns={columns}
             data={store}
+            tableFilters={filters}
+            filterSelected={filter}
+            onFilterChange={handleFilterChange}
+            onFilterClear={handleFilterClear}
+            filterPlaceholder="Filter by type, project or section"
+            filterDropdownAlign="right"
+            exportFileName="stores"
             cellComponents={{ id: CustomActionComponent, type: TypeChip }}
           />
         )}

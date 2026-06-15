@@ -258,6 +258,7 @@ const SectionDetailPage = () => {
           </Modal>
         </div>
         <SimpleTable
+              tableTitle="construction-managers"
           data={data}
           columns={columns}
           cellComponents={{ 

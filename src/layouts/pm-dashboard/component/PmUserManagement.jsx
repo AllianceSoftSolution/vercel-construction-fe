@@ -88,6 +88,7 @@ const PmUserManagement = () => {
         <Loader />
       ) : (
         <SimpleTable
+              tableTitle="users"
           columns={columns}
           data={users}
           cellComponents={{ id: CustomActionComponent }}

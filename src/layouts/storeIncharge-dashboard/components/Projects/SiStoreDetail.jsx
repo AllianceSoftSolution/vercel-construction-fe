@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import MembersOverviewCard from "../../../../mui/MembersOverviewCard";
 import TopBar from "@/components/ui/TopBar";
 import SimpleTable from "../../../../components/SimpleTable";
@@ -19,167 +19,8 @@ import AddMemberModal from "../users/modals/AddMemberModal";
 import CustomSelect from "../../../../mui/CustomSelect";
 import MenuItem from "@mui/material/MenuItem";
 import { useSelector } from "react-redux";
-
-// ─── localStorage helpers for NEW badge ─────────────────────────────────────
-const LS_KEY = "viewed_store_transactions";
-const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-
-const getViewedMap = () => {
-  try {
-    return JSON.parse(localStorage.getItem(LS_KEY) || "{}");
-  } catch {
-    return {};
-  }
-};
-
-const markTransactionViewed = (transactionId) => {
-  const map = getViewedMap();
-  map[transactionId] = Date.now();
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(map));
-  } catch {}
-};
-
-const ACCEPTED_LS_KEY = "accepted_store_transactions";
-const ACCEPTED_TRANSACTION_DATA_KEY = "accepted_store_transaction_data";
-const getAcceptedMap = () => {
-  try {
-    return JSON.parse(localStorage.getItem(ACCEPTED_LS_KEY) || "{}");
-  } catch {
-    return {};
-  }
-};
-
-const setAcceptedMap = (data) => {
-  try {
-    localStorage.setItem(ACCEPTED_LS_KEY, JSON.stringify(data));
-  } catch {}
-};
-
-const getAcceptedTransactionData = () => {
-  try {
-    return JSON.parse(localStorage.getItem(ACCEPTED_TRANSACTION_DATA_KEY) || "{}");
-  } catch {
-    return {};
-  }
-};
-
-const setAcceptedTransactionData = (data) => {
-  try {
-    localStorage.setItem(ACCEPTED_TRANSACTION_DATA_KEY, JSON.stringify(data));
-  } catch {}
-};
-
-const markTransactionAccepted = (transactionId) => {
-  const map = getAcceptedMap();
-  map[transactionId] = Date.now();
-  setAcceptedMap(map);
-};
-
-const isTransactionNew = (transaction, viewedSet) => {
-  if (!transaction?.transactionDate) return false;
-  const isRecent = new Date(transaction.transactionDate) > new Date(Date.now() - TWENTY_FOUR_HOURS);
-  return isRecent && !viewedSet.has(transaction.id);
-};
-
-// Seed viewedSet from localStorage, pruning expired entries
-const buildViewedSet = () => {
-  const map = getViewedMap();
-  const now = Date.now();
-  const set = new Set();
-  for (const [id, ts] of Object.entries(map)) {
-    if (now - ts < TWENTY_FOUR_HOURS) set.add(id);
-  }
-  return set;
-};
-
-const buildAcceptedData = () => getAcceptedTransactionData();
-const buildAcceptedSet = () => new Set(Object.keys(buildAcceptedData()));
-
-const getStoreFlowLabel = (store) => {
-  if (!store) return null;
-  if (store.type === "HEAD_STORE") return "Head Store";
-  return store.name || "—";
-};
-
-const getCurrentStoreFlowLabel = (store) => {
-  if (!store) return "—";
-  if (store.type === "HEAD_STORE") return "Head Store";
-  return store.name || "—";
-};
-
-const formatTransactionFlow = (transaction, currentStore) => {
-  const ref = (transaction.reference || "").toUpperCase();
-
-  if (ref === "MANUAL") {
-    return "MANUALLY USED";
-  }
-
-  const currentLabel = getCurrentStoreFlowLabel(currentStore);
-
-  if (transaction.type === "OUT") {
-    const toLabel = getStoreFlowLabel(transaction.toStore);
-    if (toLabel) {
-      return `FROM ${currentLabel} TO ${toLabel}`;
-    }
-    if (ref === "LOSS") return "RECORDED AS LOSS";
-    return transaction.reference || transaction.notes || "—";
-  }
-
-  if (transaction.type === "IN") {
-    const fromLabel = getStoreFlowLabel(transaction.fromStore);
-    if (fromLabel) {
-      return `FROM ${fromLabel} TO ${currentLabel}`;
-    }
-    if (ref === "INITIAL") return "INITIAL STOCK";
-    if (ref === "PO") return "PURCHASE ORDER";
-    return transaction.reference || transaction.notes || "—";
-  }
-
-  return "—";
-};
-
-const formatDate = (dateString) => {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-};
-
-const isIncomingTransfer = (transaction) =>
-  transaction?.type === "IN" && !!transaction?.fromStoreId;
-
-const buildTransactionRow = (
-  item,
-  currentStore,
-  { inventory = [], acceptedTransactions = {}, acceptedSet = new Set(), viewedSet = new Set(), extra = {} } = {}
-) => {
-  const inv = inventory.find((i) => i?.materialId === item.materialId);
-  const isIncomingRequest = isIncomingTransfer(item);
-  const acceptedData = acceptedTransactions[item.id] || {};
-
-  return {
-    ...item,
-    ...extra,
-    materialName: inv?.material?.name || item.materialId || "-",
-    transactionDateFormatted: formatDate(item.transactionDate),
-    flowStore: formatTransactionFlow(item, currentStore),
-    documentUrl: item.documentUrl || null,
-    isIncomingRequest,
-    requestStatus: isIncomingRequest
-      ? acceptedSet.has(item.id)
-        ? "Accepted"
-        : "Incoming"
-      : "",
-    action: isIncomingRequest ? "accept" : "",
-    receivingNotes: acceptedData.notes || "",
-    receivedDocuments: acceptedData.documentUrls || [],
-    isNew: isIncomingRequest ? isTransactionNew(item, viewedSet) : false,
-  };
-};
-// ────────────────────────────────────────────────────────────────────────────
+import StoreMovementHistoryTable from "../../../../components/store/StoreMovementHistoryTable";
+import { formatStoreDate } from "../../../../utils/storeTransactionHelpers";
 
 const style = {
   position: "absolute",
@@ -196,23 +37,7 @@ const SiStoreDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedStoreIncharge, setSelectedStoreIncharge] = useState(null);
   const [loading, setLoading] = useState(false);
-  // Track which transactions the user has viewed (for NEW badge)
-  const [viewedSet, setViewedSet] = useState(() => buildViewedSet());
-  const [acceptedSet, setAcceptedSet] = useState(() => buildAcceptedSet());
-  const [acceptedTransactions, setAcceptedTransactions] = useState(() => buildAcceptedData());
-  const [acceptModalOpen, setAcceptModalOpen] = useState(false);
-  const [acceptTransaction, setAcceptTransaction] = useState(null);
-  const [acceptForm, setAcceptForm] = useState({ note: "", documentFile: null });
-  const [acceptLoading, setAcceptLoading] = useState(false);
-  const noteFieldRef = React.useRef(null);
-  // Section store transactions fetched for HEAD store's combined history view
   const [sectionStoreTxns, setSectionStoreTxns] = useState([]);
-
-  React.useEffect(() => {
-    if (acceptModalOpen && noteFieldRef.current) {
-      noteFieldRef.current.focus();
-    }
-  }, [acceptModalOpen]);
 
   const currentUser = useSelector((state) => state.auth.user);
   const isHeadStoreIncharge =
@@ -233,25 +58,8 @@ const SiStoreDetail = () => {
       ...item,
       materialName: item.material?.name || '-',
       unit: item.material?.unit || '-',
-      updatedAtFormatted: formatDate(item.updatedAt),
+      updatedAtFormatted: formatStoreDate(item.updatedAt),
     }));
-
-  const transactionRowOptions = {
-    acceptedTransactions,
-    acceptedSet,
-    viewedSet,
-  };
-
-  const transactionsTableData = (storeData?.transactions || [])
-    .filter((item) => item && typeof item === "object" && item.id)
-    .map((item) =>
-      buildTransactionRow(item, storeData, {
-        ...transactionRowOptions,
-        inventory: (storeData?.inventory || []).filter(
-          (inv) => inv && typeof inv === "object" && inv.materialId
-        ),
-      })
-    );
 
   const columns = [
     { headerName: "Material", field: "materialName" },
@@ -261,178 +69,6 @@ const SiStoreDetail = () => {
     { headerName: "Available", field: "available" },
     { headerName: "Last Updated", field: "updatedAtFormatted" },
   ];
-
-  const FlowCell = ({ value }) => {
-    if (!value || value === "—") return <span>—</span>;
-
-    const transferMatch = String(value).match(/^FROM (.+) TO (.+)$/);
-    if (transferMatch) {
-      return (
-        <span>
-          <span className="font-bold">FROM</span> {transferMatch[1]}{" "}
-          <span className="font-bold">TO</span> {transferMatch[2]}
-        </span>
-      );
-    }
-
-    return <span>{value}</span>;
-  };
-
-  const ViewDocumentCell = ({ value }) => {
-    if (!value) return <span className="text-gray-400 text-sm">—</span>;
-    return (
-      <button
-        onClick={() => window.open(value, "_blank", "noopener,noreferrer")}
-        className="bg-[#BF1017] hover:bg-[#a00e14] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap"
-      >
-        View Document
-      </button>
-    );
-  };
-
-  const ReceivedDocumentsCell = ({ row }) => {
-    const receivedDocs = row.receivedDocuments || [];
-    if (!receivedDocs.length) return <span className="text-gray-400 text-sm">—</span>;
-    return (
-      <div className="flex flex-col gap-2">
-        {receivedDocs.map((doc, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => window.open(doc.url, "_blank", "noopener,noreferrer")}
-            className="bg-[#0074bd] hover:bg-[#005ea0] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap"
-          >
-            {doc.label || `Receiving Document ${index + 1}`}
-          </button>
-        ))}
-      </div>
-    );
-  };
-
-  const handleOpenAcceptModal = (transaction) => {
-    setAcceptTransaction(transaction);
-    setAcceptForm({ note: transaction.notes || "", documentFile: null });
-    setAcceptModalOpen(true);
-    markViewed(transaction.id);
-  };
-
-  const handleAcceptFormChange = (field, value) => setAcceptForm((prev) => ({ ...prev, [field]: value }));
-
-  const handleConfirmAccept = async () => {
-    if (!acceptTransaction) return;
-    setAcceptLoading(true);
-
-    try {
-      const formData = new FormData();
-      if (acceptForm.note) formData.append("note", acceptForm.note);
-      if (acceptForm.documentFile) {
-        formData.append("document", acceptForm.documentFile);
-      }
-
-      const acceptStoreId = acceptTransaction.storeId || id;
-      const res = await apiClient.post(
-        `/stores/${acceptStoreId}/transactions/${acceptTransaction.id}/accept`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error(res.data?.message || "Failed to accept incoming request");
-      }
-
-      const acceptedDocumentUrl = res.data?.transaction?.documentUrl || null;
-      const fileDocs = acceptedDocumentUrl
-        ? [
-            {
-              url: acceptedDocumentUrl,
-              label: "Receiving Document",
-              name: acceptForm.documentFile?.name || "Receiving Document",
-            },
-          ]
-        : [];
-
-      markTransactionAccepted(acceptTransaction.id);
-      setAcceptedSet((prev) => {
-        const next = new Set(prev);
-        next.add(acceptTransaction.id);
-        return next;
-      });
-
-      setAcceptedTransactions((prev) => {
-        const next = { ...prev };
-        next[acceptTransaction.id] = {
-          notes: acceptForm.note || "",
-          documentUrls: fileDocs,
-        };
-        setAcceptedTransactionData(next);
-        return next;
-      });
-
-      toast.success("Incoming request accepted successfully.");
-      setAcceptModalOpen(false);
-      if (typeof fetchStoreDetail === "function") fetchStoreDetail();
-    } catch (error) {
-      toast.error(error.message || "Failed to accept incoming request");
-    } finally {
-      setAcceptLoading(false);
-    }
-  };
-
-  const ActionCell = ({ row }) => {
-    if (!row?.isIncomingRequest) return null;
-    if (acceptedSet.has(row.id)) {
-      return <span className="text-green-700 text-sm font-semibold">Accepted</span>;
-    }
-    return (
-      <button
-        type="button"
-        onClick={() => handleOpenAcceptModal(row)}
-        className="bg-[#0074bd] hover:bg-[#005ea0] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
-      >
-        Accept
-      </button>
-    );
-  };
-
-  const columns1 = [
-    { headerName: "Material", field: "materialName" },
-    { headerName: "Type", field: "type" },
-    { headerName: "Quantity", field: "quantity" },
-    { headerName: "Flow", field: "flowStore" },
-    { headerName: "Reference", field: "reference" },
-    { headerName: "Notes", field: "notes" },
-    { headerName: "Date", field: "transactionDateFormatted" },
-    { headerName: "Document", field: "documentUrl" },
-    { headerName: "Receiving Notes", field: "receivingNotes" },
-    { headerName: "Receiving Documents", field: "receivedDocuments" },
-    { headerName: "Action", field: "action" },
-    { headerName: "", field: "isNew" },
-  ];
-
-  // HEAD store combined history includes section store transactions with a "Store" column
-  const columns1WithStore = [
-    { headerName: "Store", field: "_storeName" },
-    ...columns1,
-  ];
-
-  // For HEAD store: own transactions + section store transactions, all with accept/new support
-  const combinedTransactionsTableData = isHeadStore
-    ? [
-        ...transactionsTableData.map((t) => ({
-          ...t,
-          _storeName: storeData?.name || "Head Store",
-        })),
-        ...sectionStoreTxns.map((entry) =>
-          buildTransactionRow(entry.transaction, entry.store, {
-            ...transactionRowOptions,
-            inventory: entry.inventory || [],
-            extra: { _storeName: entry.storeName },
-          })
-        ),
-      ].sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate))
-    : transactionsTableData;
 
   const stockIn = [
     { id: "1", label: "PO ( Purchase Order )" },
@@ -837,7 +473,9 @@ const SiStoreDetail = () => {
                 }
               }
               allSecTxns.sort(
-                (a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)
+                (a, b) =>
+                  new Date(b.transaction.transactionDate) -
+                  new Date(a.transaction.transactionDate)
               );
               setSectionStoreTxns(allSecTxns);
             }
@@ -860,29 +498,6 @@ const SiStoreDetail = () => {
     if (id) fetchStoreDetail();
   }, [id]);
 
-  // Mark a single incoming transaction as viewed
-  const markViewed = useCallback((transactionId) => {
-    markTransactionViewed(transactionId);
-    setViewedSet((prev) => new Set([...prev, transactionId]));
-  }, []);
-
-  // Cell component for blinking NEW badge
-  const NewBadgeCell = useCallback(
-    ({ value, row }) => {
-      if (!value) return null;
-      return (
-        <button
-          onClick={() => markViewed(row.id)}
-          className="inline-flex items-center bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse cursor-pointer hover:bg-red-600 border-0"
-          title="Click to mark as seen"
-        >
-          NEW
-        </button>
-      );
-    },
-    [markViewed]
-  );
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full min-h-[400px]">
@@ -890,67 +505,6 @@ const SiStoreDetail = () => {
       </div>
     );
   }
-
-  const acceptModalElement = (
-    <Modal open={acceptModalOpen} onClose={() => setAcceptModalOpen(false)}>
-      <Box sx={style} className="bg-white p-6">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-xl sm:text-2xl font-semibold text-[#222222]">
-            Incoming Transfer Request
-          </h1>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Material</label>
-              <div className="mt-2 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900">
-                {acceptTransaction?.materialName || "N/A"}
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Quantity</label>
-              <div className="mt-2 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900">
-                {acceptTransaction?.quantity ?? "-"}
-              </div>
-            </div>
-            <CustomTextField
-              fullWidth
-              margin="normal"
-              label="Note"
-              value={acceptForm.note}
-              onChange={(e) => handleAcceptFormChange("note", e.target.value)}
-              ref={noteFieldRef}
-            />
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Attachment (Optional)</p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <label htmlFor="doc-upload-accept" className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition">
-                  <span>📎</span><span>Choose File</span>
-                </label>
-                <input id="doc-upload-accept" type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={(e) => handleAcceptFormChange("documentFile", e.target.files?.[0] || null)} />
-                <span className="text-sm text-gray-500 truncate max-w-[180px]">
-                  {acceptForm.documentFile ? acceptForm.documentFile.name : "No file chosen"}
-                </span>
-                {acceptForm.documentFile && (
-                  <button type="button" className="text-red-500 text-xs" onClick={() => handleAcceptFormChange("documentFile", null)}>
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setAcceptModalOpen(false)}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <Button buttonText={acceptLoading ? "Accepting..." : "Accept"} onClick={handleConfirmAccept} disabled={acceptLoading} />
-          </div>
-        </div>
-      </Box>
-    </Modal>
-  );
 
   // Handler for adding and assigning a new Store Incharge
   const handleAddStoreIncharge = async (data) => {
@@ -1021,6 +575,7 @@ const SiStoreDetail = () => {
       {/* Head Store Table */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Head Store Assignments</h4>
       <SimpleTable
+              tableTitle="store-incharge"
         data={(storeData?.storeInchargeAssignments || [])
           .filter((a) => a && typeof a === "object" && a.id)
           .map(a => ({
@@ -1028,7 +583,7 @@ const SiStoreDetail = () => {
           userName: a.user?.name || "-",
           email: a.user?.email || "-",
           role: formatRole(a.user?.role),
-          createdAt: formatDate(a.createdAt),
+          createdAt: formatStoreDate(a.createdAt),
         }))}
         columns={[
           // { headerName: "Assignment ID", field: "id" },
@@ -1043,7 +598,9 @@ const SiStoreDetail = () => {
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Inventory</h4>
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable data={inventoryTableData} 
+      <SimpleTable
+        tableTitle="store-inventory"
+        data={inventoryTableData} 
         columns={columns}
         cellComponents={{}}/>
       {/* Stock Movement Table */}
@@ -1052,19 +609,13 @@ const SiStoreDetail = () => {
       </h4>
       {/* <p className="text-[#979797]">lorem ipsum dolor sit amet</p> */}
       <div className="h-[1px] bg-[#CDCDCD] w-full mt-2"></div>
-      <SimpleTable
-        data={isHeadStore ? combinedTransactionsTableData : transactionsTableData}
-        columns={isHeadStore ? columns1WithStore : columns1}
-        cellComponents={{
-          flowStore: FlowCell,
-          documentUrl: ViewDocumentCell,
-          receivedDocuments: ReceivedDocumentsCell,
-          isNew: NewBadgeCell,
-          action: ActionCell,
-        }}
+      <StoreMovementHistoryTable
+        storeData={storeData}
+        storeId={id}
+        sectionStoreTxns={sectionStoreTxns}
         recordsPerPage={isHeadStore ? 5 : undefined}
+        onRefresh={fetchStoreDetail}
       />
-      {acceptModalElement}
     </>
   );
 };

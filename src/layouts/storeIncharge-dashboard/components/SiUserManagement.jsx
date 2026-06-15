@@ -125,7 +125,6 @@ const SiUserManagement = () => {
       <TopBar
         title="User Management"
         detail="Lorem Ipsum is simply dummy text of the printing and typesetting industry."
-        showExport={true}
         showFilter={true}
         filterOptions={[
           "Project Manager",
@@ -169,6 +168,7 @@ const SiUserManagement = () => {
       <div>
         <h2 className="text-xl font-bold mb-4 mt-4">Recent Demands</h2>
         <SimpleTable
+              tableTitle="users"
           columns={columns}
           data={data}
           cellComponents={{ action: CustomActionComponent }}

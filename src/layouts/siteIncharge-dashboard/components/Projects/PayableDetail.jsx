@@ -96,7 +96,8 @@ export default function PayableDetails() {
           detail="Detailed view of material stock movement transactions for selected Purchase Order."
         />
         <div className="mt-3">
-          <SimpleTable data={data} columns={columns} cellComponents={{}}/>
+          <SimpleTable
+              tableTitle="transaction-details" data={data} columns={columns} cellComponents={{}}/>
         </div>
       </div>
     </Box>

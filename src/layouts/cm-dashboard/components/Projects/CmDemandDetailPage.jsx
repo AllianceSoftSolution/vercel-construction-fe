@@ -272,6 +272,7 @@ const CmDemandDetailPage = () => {
       </div> */}
       <h4 className="mt-8 text-[#444444] font-semibold text-xl">Status Logs</h4>
       <SimpleTable
+              tableTitle="status-logs"
         data={demandData?.approvals || []}
         columns={columns}
         cellComponents={{ createdAt: DateCellComponent }}

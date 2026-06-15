@@ -99,6 +99,7 @@ const CmProjectManagement = () => {
       {/* table */}
       <div className="overflow-x-auto">
         <SimpleTable
+              tableTitle="project-management"
           columns={columns}
           data={data}
           cellComponents={{ action: CustomActionComponent }}

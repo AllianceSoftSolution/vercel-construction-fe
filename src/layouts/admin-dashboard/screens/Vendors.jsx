@@ -124,6 +124,7 @@ const Vendors = () => {
           <Loader />
         ) : (
           <SimpleTable
+              tableTitle="vendors"
             columns={columns}
             data={vendors}
             cellComponents={{ id: CustomActionComponent }}
