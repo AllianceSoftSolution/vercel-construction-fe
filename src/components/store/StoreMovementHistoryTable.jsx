@@ -221,6 +221,7 @@ const StoreMovementHistoryTable = ({
           [acceptTransaction.id]: {
             notes: acceptForm.note || "",
             documentUrls: fileDocs,
+            acceptedAt: res.data?.transaction?.acceptedAt || new Date().toISOString(),
           },
         };
         setAcceptedTransactionData(next);

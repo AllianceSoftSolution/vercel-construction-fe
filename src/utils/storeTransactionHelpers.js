@@ -145,6 +145,7 @@ export const isIncomingTransfer = (transaction) =>
   transaction?.type === "IN" && !!transaction?.fromStoreId;
 
 export const isTransferAcceptedOnServer = (transaction) =>
+  !!transaction?.acceptedAt ||
   (transaction?.notes || "").includes("Received:");
 
 export const isTransferAccepted = (transaction, acceptedSet = new Set()) =>
