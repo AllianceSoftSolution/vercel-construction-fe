@@ -1,11 +1,8 @@
 import { create } from "apisauce";
 import { store } from "../redux/store";
-// const baseURL = import.meta.env.VITE_BASE_URL;
-// const baseURL = "https://app.rustumdynamic.com/api/";
-const baseURL = "/api/";
-
-// const baseURL = "http://localhost:5000/api/";  
-// const baseURL = "http://radc-be-env.eba-emmvfm8c.eu-north-1.elasticbeanstalk.com/api/";
+// Vercel: set VITE_BASE_URL to https://<be>.vercel.app/api/
+// Local: omit and use Vite proxy (/api → localhost:3000)
+const baseURL = import.meta.env.VITE_BASE_URL || "/api/";
 
 const apiClient = create({
   baseURL: baseURL,
