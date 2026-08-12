@@ -5,7 +5,7 @@ import { useMediaQuery, useTheme, Avatar } from "@mui/material";
 import { MdSpaceDashboard } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
-import { FaBars, FaSearch, FaEye, FaEyeSlash, FaHandHoldingHeart } from "react-icons/fa";
+import { FaBars, FaSearch, FaEye, FaEyeSlash, FaHandHoldingHeart, FaMoneyBillWave } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import LogOutModal from "../../mui/LogOutModal";
@@ -207,6 +207,11 @@ const AccountantDashboardLayout = ({ role }) => {
       label: "Payables",
       icon: IoStorefrontSharp,
       path: "/accountant-dashboard/payables",
+    },
+    {
+      label: "Petty Cash",
+      icon: FaMoneyBillWave,
+      path: "/accountant-dashboard/petty-cash",
     },
   ];
 

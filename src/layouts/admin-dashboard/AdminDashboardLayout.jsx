@@ -12,16 +12,7 @@ import {
 import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoPeopleSharp, IoStorefrontSharp } from "react-icons/io5";
-import {
-  FaBars,
-  FaDiceD6,
-  FaHandHoldingHeart,
-  FaSearch,
-  FaToolbox,
-  FaUserTie,
-  FaEye,
-  FaEyeSlash,
-} from "react-icons/fa";
+import { FaBars, FaDiceD6, FaHandHoldingHeart, FaMoneyBillWave, FaSearch, FaToolbox, FaUserTie, FaEye, FaEyeSlash } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
@@ -253,6 +244,11 @@ const AdminDashboardLayout = ({ role }) => {
       label: "Payables",
       icon: IoPeopleSharp,
       path: "/admin-dashboard/payables",
+    },
+    {
+      label: "Petty Cash",
+      icon: FaMoneyBillWave,
+      path: "/admin-dashboard/petty-cash",
     },
     {
       label: "Vendors",

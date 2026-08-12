@@ -39,6 +39,7 @@ import SectionDetailPage from "./layouts/admin-dashboard/screens/Projects/Sectio
 import VendorDetailPage from "./layouts/admin-dashboard/screens/Projects/VendorDetailPage";
 import Payables from "./layouts/admin-dashboard/screens/Payables";
 import PayableDetails from "./layouts/admin-dashboard/screens/Projects/PayableDetail";
+import PettyCash from "./layouts/admin-dashboard/screens/PettyCash";
 // site incharge
 import SiteInchargeDashboardLayout from "./layouts/siteIncharge-dashboard/SiteInchargeDashboardLayout";
 import SiteInchargeDashbaord from "./layouts/siteIncharge-dashboard/components/SinteInchargeDashbaord";
@@ -94,6 +95,7 @@ import StoreInchargeDashboardLayout from "./layouts/storeIncharge-dashboard/Stor
 import StoreInchargeDashboard from "./layouts/storeIncharge-dashboard/components/StoreInchargeDashboard";
 // accountant
 import AcPayables from "./layouts/acountant/components/AcPayables";
+import AcPettyCash from "./layouts/acountant/components/AcPettyCash";
 import AcPayableDetails from "./layouts/acountant/components/Projects/AcPayableDetail";
 import AcProjectDetailPage from "./layouts/acountant/components/Projects/AcProjectDetailPage";
 import AcProjectManagement from "./layouts/acountant/components/AcProjectManagement";
@@ -178,6 +180,7 @@ const adminRoutes = [
       { path: "materials/addProduct", element: <AddProduct /> },
       { path: "payables", element: <Payables /> },
       { path: "payables/details/:id", element: <PayableDetails /> },
+      { path: "petty-cash", element: <PettyCash /> },
       { path: "vendors", element: <Vendors /> },
       { path: "vendors/addVendor", element: <AddVendor /> },
       { path: "vendors/:id", element: <VendorDetailPage /> },
@@ -290,6 +293,7 @@ const accountantRoutes = [
       { path: "sections/:id", element: <SectionDetailPage /> },
       { path: "payables", element: <AcPayables /> },
       { path: "payables/details/:id", element: <AcPayableDetails /> },
+      { path: "petty-cash", element: <AcPettyCash /> },
       { path: "demands", element: <AcDemands /> },
       { path: "demands/:id", element: <AcDemandDetail /> },
     ],
