@@ -41,6 +41,10 @@ const TYPE_LABELS = {
   SECTION_EXPENSE: "Section Expense",
 };
 
+const TYPE_LABEL_TO_API = Object.fromEntries(
+  Object.entries(TYPE_LABELS).map(([k, v]) => [v, k])
+);
+
 const TYPE_CHIP_COLOR = {
   FUNDING: "success",
   DISTRIBUTION: "info",
@@ -50,6 +54,32 @@ const TYPE_CHIP_COLOR = {
 
 const formatCurrency = (n) =>
   `Rs. ${Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 0 })}`;
+
+const TypeChip = ({ value }) => {
+  const label = TYPE_LABELS[value] || value || "-";
+  return (
+    <Chip
+      label={label}
+      size="small"
+      color={TYPE_CHIP_COLOR[value] || "default"}
+      sx={{ fontWeight: 600 }}
+    />
+  );
+};
+
+const ProofLink = ({ value }) =>
+  value ? (
+    <a
+      href={value}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline text-sm"
+    >
+      View
+    </a>
+  ) : (
+    <span className="text-gray-400">-</span>
+  );
 
 const PettyCashModule = () => {
   const user = useSelector((s) => s.auth.user);
@@ -71,7 +101,8 @@ const PettyCashModule = () => {
   const [expenseHeads, setExpenseHeads] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [projectBalance, setProjectBalance] = useState(null);
-  const [filters, setFilters] = useState({});
+  const [apiFilters, setApiFilters] = useState({});
+  const [filter, setFilter] = useState({ Type: [], Project: [], Section: [] });
   const [activeTab, setActiveTab] = useState(0);
 
   const [modal, setModal] = useState(null);
@@ -102,7 +133,7 @@ const PettyCashModule = () => {
           apiClient.get("/petty-cash/summary/by-project"),
           apiClient.get("/petty-cash/transactions", {
             projectId: selectedProject?.id,
-            ...filters,
+            ...apiFilters,
           }),
           apiClient.get("/petty-cash/expense-heads"),
           apiClient.get("/projects"),
@@ -131,7 +162,7 @@ const PettyCashModule = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedProject?.id, filters]);
+  }, [selectedProject?.id, apiFilters]);
 
   const fetchProjectBalance = useCallback(async (projectId) => {
     const res = await apiClient.get(`/petty-cash/projects/${projectId}/balance`);
@@ -318,44 +349,59 @@ const PettyCashModule = () => {
   }));
 
   const columns = [
-    { key: "date", label: "Date" },
-    { key: "type", label: "Type" },
-    { key: "project", label: "Project" },
-    { key: "section", label: "Section" },
-    { key: "head", label: "Expense Head" },
-    { key: "amount", label: "Amount" },
-    { key: "recipient", label: "Recipient" },
-    { key: "createdBy", label: "By" },
-    { key: "description", label: "Note" },
+    { headerName: "Date", field: "date" },
+    { headerName: "Type", field: "typeRaw" },
+    { headerName: "Project", field: "project" },
+    { headerName: "Section", field: "section" },
+    { headerName: "Expense Head", field: "head" },
+    { headerName: "Amount", field: "amount" },
+    { headerName: "Recipient", field: "recipient" },
+    { headerName: "By", field: "createdBy" },
+    { headerName: "Note", field: "description" },
+    { headerName: "Proof", field: "proof" },
   ];
 
-  const filterGroups = [
-    {
-      group: "Type",
-      options: Object.entries(TYPE_LABELS).map(([value, label]) => ({
-        label,
-        value,
-      })),
-    },
-    {
-      group: "Project",
-      options: allProjects.map((p) => ({ label: p.name, value: p.id })),
-    },
+  const cellComponents = {
+    typeRaw: TypeChip,
+    proof: ProofLink,
+  };
+
+  const sectionOptions = useMemo(
+    () => [...new Set(allSections.map((s) => s.name).filter(Boolean))],
+    [allSections]
+  );
+
+  const projectOptions = useMemo(
+    () => [...new Set(allProjects.map((p) => p.name).filter(Boolean))],
+    [allProjects]
+  );
+
+  const filterConfig = [
+    { label: "Type", options: Object.values(TYPE_LABELS) },
+    { label: "Project", options: projectOptions },
+    { label: "Section", options: sectionOptions },
   ];
 
-  const handleFilterChange = (group, value) => {
-    setFilters((prev) => {
-      const next = { ...prev };
-      if (group === "Type") {
-        if (value) next.type = value;
-        else delete next.type;
-      }
-      if (group === "Project") {
-        if (value) next.projectId = value;
-        else delete next.projectId;
-      }
-      return next;
-    });
+  const handleFilterChange = (newSelected) => {
+    setFilter(newSelected);
+    const next = {};
+    if (newSelected.Type?.length) {
+      next.type = TYPE_LABEL_TO_API[newSelected.Type[0]];
+    }
+    if (newSelected.Project?.length) {
+      const proj = allProjects.find((p) => p.name === newSelected.Project[0]);
+      if (proj) next.projectId = proj.id;
+    }
+    if (newSelected.Section?.length) {
+      const sec = allSections.find((s) => s.name === newSelected.Section[0]);
+      if (sec) next.sectionId = sec.id;
+    }
+    setApiFilters(next);
+  };
+
+  const handleFilterClear = () => {
+    setFilter({ Type: [], Project: [], Section: [] });
+    setApiFilters({});
   };
 
   if (loading && !summary && projects.length === 0) return <Loader />;
@@ -371,6 +417,17 @@ const PettyCashModule = () => {
           openModal("add", { projectId: selectedProject?.id })
         }
       />
+
+      <div className="flex flex-row flex-wrap items-center justify-end gap-2 sm:gap-3 mt-2 mb-4">
+        <CustomFilterDropdown
+          filters={filterConfig}
+          selected={filter}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+          placeholder="Filter by type, project or section"
+          dropdownAlign="right"
+        />
+      </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6">
@@ -431,28 +488,10 @@ const PettyCashModule = () => {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
-          <Tab label="By Project" />
-          <Tab label="All Transactions" />
-        </Tabs>
-        <div className="flex justify-end shrink-0">
-          <CustomFilterDropdown
-            filters={filterGroups}
-            selected={{
-              Type: filters.type ? [filters.type] : [],
-              Project: filters.projectId
-                ? allProjects
-                    .filter((p) => p.id === filters.projectId)
-                    .map((p) => ({ label: p.name, value: p.id }))
-                : [],
-            }}
-            onChange={handleFilterChange}
-            onClear={() => setFilters({})}
-            dropdownAlign="right"
-          />
-        </div>
-      </div>
+      <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} className="mb-4">
+        <Tab label="By Project" />
+        <Tab label="All Transactions" />
+      </Tabs>
 
       {activeTab === 0 && (
         <div>
@@ -530,6 +569,7 @@ const PettyCashModule = () => {
                   (r) => r.project === selectedProject.name
                 )}
                 columns={columns}
+                cellComponents={cellComponents}
               />
             </div>
           ) : (
@@ -580,7 +620,11 @@ const PettyCashModule = () => {
       )}
 
       {activeTab === 1 && (
-        <SimpleTable data={tableData} columns={columns} />
+        <SimpleTable
+          data={tableData}
+          columns={columns}
+          cellComponents={cellComponents}
+        />
       )}
 
       {/* Unified Add Petty Cash Modal */}
