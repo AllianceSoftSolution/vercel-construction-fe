@@ -107,6 +107,7 @@ import CmSectionDetailPage from "./layouts/cm-dashboard/components/Projects/CmSe
 import CmPurchaseOrderDetail from "./layouts/cm-dashboard/components/Projects/CmPurchaseOrderDetailPage";
 import PmSectionDetailPage from "./layouts/admin-dashboard/screens/Projects/SectionDetailPage";
 import PmPOs from "./layouts/pm-dashboard/component/PmPOs";
+import PmPettyCash from "./layouts/pm-dashboard/component/PmPettyCash";
 import PmPurchaseOrderDetailPage from "./layouts/pm-dashboard/component/Projects/PmPurchaseOrderDetailPage";
 import SiSectionDetailPage from "./layouts/siteIncharge-dashboard/components/Projects/SiSectionDetailPage";
 import SiDemandDetails from "./layouts/siteIncharge-dashboard/components/Projects/SiDemandDetailPage";
@@ -236,6 +237,7 @@ const projectManagerRoutes = [
       { path: "demands/:id", element: <PmDemandDetails /> },
       { path: "pOS", element: <PmPOs /> },
       { path: "pOS/:id", element: <PmPurchaseOrderDetailPage /> },
+      { path: "petty-cash", element: <PmPettyCash /> },
       { path: "store", element: <PmStores /> },
       { path: "store/:id", element: <PmStoreDetail /> },
     ],
