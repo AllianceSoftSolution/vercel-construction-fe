@@ -1714,7 +1714,10 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     },
     {
       icon: AccountBalance,
-      label: "Remaining Balance",
+      label:
+        summary?.roleScope === "HEAD_OFFICE_ACCOUNTANT"
+          ? "Remaining Balance In All Projects"
+          : "Remaining Balance",
       count: formatCurrency(summary?.remainingBalance),
       countColor: "#22c55e",
     },
