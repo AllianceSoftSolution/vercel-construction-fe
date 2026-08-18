@@ -12,7 +12,6 @@ import {
   FaSearch,
   FaToolbox,
   FaUserTie,
-  FaWallet,
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa";
@@ -215,11 +214,6 @@ const PmDashboardLayout = ({ role }) => {
       label: "Purchase Orders",
       icon: FaToolbox,
       path: "/project-manager-dashboard/pos",
-    },
-    {
-      label: "Petty Cash",
-      icon: FaWallet,
-      path: "/project-manager-dashboard/petty-cash",
     },
     {
       label: "Store",

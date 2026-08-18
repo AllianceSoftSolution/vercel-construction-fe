@@ -44,9 +44,21 @@ const TYPE_LABELS = {
   SECTION_EXPENSE: "Section Expense",
 };
 
+const HO_PA_TYPE_LABELS = {
+  ...TYPE_LABELS,
+  INTERNAL_EXPENSE: "Project Internal Expense",
+  SECTION_EXPENSE: "Section Internal Expense",
+};
+
 const PETTY_CASH_TYPES_BY_ROLE = {
   SECTION_ACCOUNTANT: ["DISTRIBUTION", "SECTION_EXPENSE"],
   PROJECT_MANAGER: [
+    "FUNDING",
+    "DISTRIBUTION",
+    "INTERNAL_EXPENSE",
+    "SECTION_EXPENSE",
+  ],
+  PROJECT_ACCOUNTANT: [
     "FUNDING",
     "DISTRIBUTION",
     "INTERNAL_EXPENSE",
@@ -75,23 +87,28 @@ const PETTY_CASH_TYPES_BY_SCOPE = {
 const PROJECT_LEVEL_TX_TYPES = new Set(["FUNDING", "INTERNAL_EXPENSE"]);
 const SECTION_LEVEL_TX_TYPES = new Set(["DISTRIBUTION", "SECTION_EXPENSE"]);
 
-const mapTypeOptions = (types) =>
-  types.map((value) => ({ value, label: TYPE_LABELS[value] }));
+const mapTypeOptions = (types, labels = TYPE_LABELS) =>
+  types.map((value) => ({ value, label: labels[value] || value }));
 
 const PETTY_CASH_ACTORS_BY_ROLE = {
   SECTION_ACCOUNTANT: [
     "Head Office Accountant",
-    "Project Manager",
+    "Project Accountant",
     "Section Accountant",
   ],
   PROJECT_MANAGER: [
     "Head Office Accountant",
-    "Project Manager",
+    "Project Accountant",
+    "Section Accountant",
+  ],
+  PROJECT_ACCOUNTANT: [
+    "Head Office Accountant",
+    "Project Accountant",
     "Section Accountant",
   ],
   HEAD_OFFICE: [
     "Head Office Accountant",
-    "Project Manager",
+    "Project Accountant",
     "Section Accountant",
   ],
 };
@@ -137,8 +154,8 @@ const TYPE_CHIP_COLOR = {
 const formatCurrency = (n) =>
   `Rs. ${Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 0 })}`;
 
-const TypeChip = ({ value }) => {
-  const label = TYPE_LABELS[value] || value || "-";
+const TypeChip = ({ value, labels = TYPE_LABELS }) => {
+  const label = labels[value] || value || "-";
   return (
     <Chip
       label={label}
@@ -304,7 +321,7 @@ const getPettyCashActorLabel = (creator) => {
   }
   if (creator.role === "ACCOUNTANT") {
     return isHeadUser(creator)
-      ? "Head Office Accountant"
+      ? "Project Accountant"
       : "Section Accountant";
   }
   return formatRole(creator.role);
@@ -504,7 +521,7 @@ const ProjectListCard = ({
           </div>
           <div>
             <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
-              Pool Remaining
+              Remaining Balance
             </p>
             <p className="text-sm font-semibold text-[#22c55e]">
               {formatCurrency(clampNonNegative(project.projectPoolRemaining))}
@@ -669,10 +686,8 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const isReadOnly = useReadOnly();
   const [summary, setSummary] = useState(null);
 
-  const isHeadOffice = useMemo(
-    () =>
-      ["ADMIN", "SUPER_ADMIN", "SUB_ADMIN"].includes(user?.role) ||
-      (user?.role === "ACCOUNTANT" && isHeadUser(user)),
+  const isAdminRoleUser = useMemo(
+    () => ["ADMIN", "SUPER_ADMIN", "SUB_ADMIN"].includes(user?.role),
     [user]
   );
 
@@ -681,20 +696,42 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     [user]
   );
 
+  const isProjectAccountant = useMemo(
+    () =>
+      summary?.roleScope === "PROJECT_ACCOUNTANT" ||
+      (user?.role === "ACCOUNTANT" &&
+        isHeadUser(user) &&
+        summary?.roleScope !== "HEAD_OFFICE_ACCOUNTANT"),
+    [user, summary?.roleScope]
+  );
+
+  const isHeadOffice = useMemo(
+    () =>
+      isAdminRoleUser || summary?.roleScope === "HEAD_OFFICE_ACCOUNTANT",
+    [isAdminRoleUser, summary?.roleScope]
+  );
+
   const isSectionAccountant = useMemo(
-    () => user?.role === "ACCOUNTANT" && !isHeadUser(user),
-    [user]
+    () =>
+      summary?.roleScope === "SECTION_ACCOUNTANT" ||
+      (user?.role === "ACCOUNTANT" && !isHeadUser(user)),
+    [user, summary?.roleScope]
   );
 
   const isProjectManager = user?.role === "PROJECT_MANAGER";
 
   const usesSectionScopedMetrics = summary?.viewMode === "section";
+  const usesDetailedExpenseNames = isHeadOffice || isProjectAccountant;
+  const expenseTypeLabels = usesDetailedExpenseNames
+    ? HO_PA_TYPE_LABELS
+    : TYPE_LABELS;
 
   const pettyCashRoleKey = useMemo(() => {
     if (isSectionAccountant) return "SECTION_ACCOUNTANT";
     if (isProjectManager) return "PROJECT_MANAGER";
+    if (isProjectAccountant) return "PROJECT_ACCOUNTANT";
     return "HEAD_OFFICE";
-  }, [isSectionAccountant, isProjectManager]);
+  }, [isSectionAccountant, isProjectManager, isProjectAccountant]);
 
   const [pageLoading, setPageLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
@@ -716,6 +753,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const [txSearch, setTxSearch] = useState("");
   const [txTypeFilter, setTxTypeFilter] = useState("all");
   const [txByFilter, setTxByFilter] = useState("all");
+  const [txHeadFilter, setTxHeadFilter] = useState("all");
   const [detailTransactionScope, setDetailTransactionScope] =
     useState("all_sections");
 
@@ -768,13 +806,16 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   );
   const permissions = useMemo(
     () => ({
-      canAddFunding: summary?.canAddFunding ?? isHeadOffice,
+      canAddFunding: summary?.canAddFunding ?? isAdminRoleUser,
       canManageHeads: summary?.canManageHeads ?? isAdmin,
-      canDistribute: summary?.canDistribute ?? isHeadOffice,
-      canAddInternalExpense: summary?.canAddInternalExpense ?? false,
+      canDistribute:
+        summary?.canDistribute ?? (isHeadOffice || isProjectAccountant),
+      canAddInternalExpense:
+        summary?.canAddInternalExpense ??
+        (isHeadOffice || isProjectAccountant || isProjectManager),
       canAddSectionExpense: summary?.canAddSectionExpense ?? false,
     }),
-    [summary, isHeadOffice, isAdmin]
+    [summary, isAdminRoleUser, isAdmin, isHeadOffice, isProjectAccountant]
   );
 
   const projectOptionsForModal = useMemo(() => {
@@ -799,13 +840,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       };
 
       if (isSectionAccountant) {
-        const [sumRes, secRes, txRes, headsRes, allSecRes] =
+        const [sumRes, secRes, txRes, headsRes] =
           await Promise.all([
             apiClient.get("/petty-cash/summary", summaryQuery),
             apiClient.get("/petty-cash/summary/by-section", summaryQuery),
             apiClient.get("/petty-cash/transactions", txQuery),
             apiClient.get("/petty-cash/expense-heads"),
-            apiClient.get("/sections"),
           ]);
 
         if (sumRes.ok) {
@@ -820,20 +860,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         if (secRes.ok) setAssignedSections(secRes.data?.data || []);
         if (txRes.ok) setTransactions(txRes.data?.data || []);
         if (headsRes.ok) setExpenseHeads(headsRes.data?.data || []);
-        if (allSecRes.ok) {
-          setAllSections(
-            allSecRes.data?.sections || allSecRes.data?.data || []
-          );
+        if (secRes.ok) {
+          setAllSections(secRes.data?.data || []);
         }
       } else {
-        const [sumRes, projRes, txRes, headsRes, allProjRes, allSecRes] =
+        const [sumRes, projRes, txRes, headsRes, secRes] =
           await Promise.all([
             apiClient.get("/petty-cash/summary", apiFilters),
             apiClient.get("/petty-cash/summary/by-project", apiFilters),
             apiClient.get("/petty-cash/transactions", txQuery),
             apiClient.get("/petty-cash/expense-heads"),
-            apiClient.get("/projects"),
-            apiClient.get("/sections"),
+            apiClient.get("/petty-cash/summary/by-section", apiFilters),
           ]);
 
         if (sumRes.ok) {
@@ -848,15 +885,11 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         if (projRes.ok) setProjects(projRes.data?.data || []);
         if (txRes.ok) setTransactions(txRes.data?.data || []);
         if (headsRes.ok) setExpenseHeads(headsRes.data?.data || []);
-        if (allProjRes.ok) {
-          setAllProjects(
-            allProjRes.data?.projects || allProjRes.data?.data || []
-          );
+        if (projRes.ok) {
+          setAllProjects(projRes.data?.data || []);
         }
-        if (allSecRes.ok) {
-          setAllSections(
-            allSecRes.data?.sections || allSecRes.data?.data || []
-          );
+        if (secRes.ok) {
+          setAllSections(secRes.data?.data || []);
         }
       }
     } catch (e) {
@@ -1008,7 +1041,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       !validateAmountWithinBalance(
         form.amount,
         availablePool,
-        "project pool balance"
+        "project balance"
       )
     ) {
       return;
@@ -1053,7 +1086,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       !validateAmountWithinBalance(
         form.amount,
         availablePool,
-        "project pool balance"
+        "project balance"
       )
     ) {
       return;
@@ -1159,11 +1192,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const tableData = transactions.map((tx) => ({
     id: tx.id,
     date: formatDateDMY(tx.createdAt),
-    type: TYPE_LABELS[tx.type] || tx.type,
+    type: expenseTypeLabels[tx.type] || tx.type,
     typeRaw: tx.type,
     project: tx.project?.name || "-",
+    projectId: tx.project?.id || tx.projectId,
     section: tx.section?.name || "-",
+    sectionId: tx.section?.id || tx.sectionId,
     head: tx.expenseHead?.name || "-",
+    expenseHeadId: tx.expenseHead?.id || "",
     amount: formatCurrency(tx.amount),
     sectionAccountant: getDistributionSectionAccountantName(tx),
     createdBy: tx.creator?.name || "-",
@@ -1191,10 +1227,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     return base;
   }, [isSectionAccountant]);
 
-  const cellComponents = {
-    typeRaw: TypeChip,
-    proof: ProofLink,
-  };
+  const cellComponents = useMemo(
+    () => ({
+      typeRaw: (props) => <TypeChip {...props} labels={expenseTypeLabels} />,
+      proof: ProofLink,
+    }),
+    [expenseTypeLabels]
+  );
 
   const txCountByProjectId = useMemo(() => {
     const map = {};
@@ -1263,19 +1302,31 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const typeFilterOptions = useMemo(() => {
     if (activeTypeFilterScope === "project") {
-      return mapTypeOptions(PETTY_CASH_TYPES_BY_SCOPE.project);
+      return mapTypeOptions(PETTY_CASH_TYPES_BY_SCOPE.project, expenseTypeLabels);
     }
     if (activeTypeFilterScope === "pm_project") {
-      return mapTypeOptions(PETTY_CASH_TYPES_BY_SCOPE.pm_project);
+      return mapTypeOptions(
+        PETTY_CASH_TYPES_BY_SCOPE.pm_project,
+        expenseTypeLabels
+      );
     }
     if (activeTypeFilterScope === "sections") {
-      return mapTypeOptions(PETTY_CASH_TYPES_BY_SCOPE.sections);
+      return mapTypeOptions(
+        PETTY_CASH_TYPES_BY_SCOPE.sections,
+        expenseTypeLabels
+      );
     }
     if (activeTypeFilterScope === "all_project") {
-      return mapTypeOptions(PETTY_CASH_TYPES_BY_SCOPE.all_project);
+      return mapTypeOptions(
+        PETTY_CASH_TYPES_BY_SCOPE.all_project,
+        expenseTypeLabels
+      );
     }
-    return mapTypeOptions(PETTY_CASH_TYPES_BY_ROLE[activeTypeFilterScope] || []);
-  }, [activeTypeFilterScope]);
+    return mapTypeOptions(
+      PETTY_CASH_TYPES_BY_ROLE[activeTypeFilterScope] || [],
+      expenseTypeLabels
+    );
+  }, [activeTypeFilterScope, expenseTypeLabels]);
 
   const filterProjectTransactionsByScope = useCallback(
     (rows, scope) => {
@@ -1294,7 +1345,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       } else {
         const section = projectBalance?.sections?.find((s) => s.id === scope);
         if (section) {
-          filtered = filtered.filter((r) => r.section === section.name);
+          filtered = filtered.filter((r) => r.sectionId === section.id);
         }
       }
 
@@ -1311,7 +1362,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (detailTransactionScope === "project") {
       return isProjectManager
         ? "Project-level transactions (internal expenses only)"
-        : "Project-level transactions (funding & internal expenses)";
+        : "Project-level transactions (funding & project internal expenses)";
     }
     if (detailTransactionScope === "all_sections") {
       return "All section transactions in this project";
@@ -1333,6 +1384,18 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     [pettyCashRoleKey]
   );
 
+  const expenseHeadFilterOptions = useMemo(() => {
+    const names = new Set(
+      expenseHeads.map((h) => h.name).filter(Boolean)
+    );
+    tableData.forEach((row) => {
+      if (row.head && row.head !== "-") names.add(row.head);
+    });
+    return [...names]
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ value: name, label: name }));
+  }, [expenseHeads, tableData]);
+
   useEffect(() => {
     if (
       txTypeFilter !== "all" &&
@@ -1351,6 +1414,15 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     }
   }, [roleFilterOptions, txByFilter]);
 
+  useEffect(() => {
+    if (
+      txHeadFilter !== "all" &&
+      !expenseHeadFilterOptions.some((option) => option.value === txHeadFilter)
+    ) {
+      setTxHeadFilter("all");
+    }
+  }, [expenseHeadFilterOptions, txHeadFilter]);
+
   const filterTransactions = useCallback(
     (rows) => {
       const q = txSearch.trim().toLowerCase();
@@ -1359,7 +1431,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
           txTypeFilter === "all" || row.typeRaw === txTypeFilter;
         const matchesBy =
           txByFilter === "all" || row.actorLabel === txByFilter;
-        if (!matchesType || !matchesBy) return false;
+        const matchesHead =
+          txHeadFilter === "all" || row.head === txHeadFilter;
+        if (!matchesType || !matchesBy || !matchesHead) return false;
         if (!q) return true;
         return [
           row.date,
@@ -1375,12 +1449,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         ].some((v) => String(v || "").toLowerCase().includes(q));
       });
     },
-    [txSearch, txTypeFilter, txByFilter]
+    [txSearch, txTypeFilter, txByFilter, txHeadFilter]
   );
 
   const selectedProjectTransactions = useMemo(() => {
     if (!selectedProject) return [];
-    let rows = tableData.filter((r) => r.project === selectedProject.name);
+    let rows = tableData.filter((r) => r.projectId === selectedProject.id);
     rows = filterProjectTransactionsByScope(rows, detailTransactionScope);
     return filterTransactions(rows);
   }, [
@@ -1393,7 +1467,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const selectedSectionTransactions = useMemo(() => {
     if (!selectedSection) return [];
-    const rows = tableData.filter((r) => r.section === selectedSection.name);
+    const rows = tableData.filter((r) => r.sectionId === selectedSection.id);
     return filterTransactions(rows);
   }, [tableData, selectedSection, filterTransactions]);
 
@@ -1411,20 +1485,23 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       if (txByFilter !== "all") {
         next = next.filter((r) => r.actorLabel === txByFilter);
       }
+      if (txHeadFilter !== "all") {
+        next = next.filter((r) => r.head === txHeadFilter);
+      }
       return next;
     },
-    [txTypeFilter, txByFilter]
+    [txTypeFilter, txByFilter, txHeadFilter]
   );
 
   const sectionExportData = useMemo(() => {
     if (!selectedSection) return [];
-    const rows = tableData.filter((r) => r.section === selectedSection.name);
+    const rows = tableData.filter((r) => r.sectionId === selectedSection.id);
     return applyTableFilters(rows);
   }, [tableData, selectedSection, applyTableFilters]);
 
   const projectExportData = useMemo(() => {
     if (!selectedProject) return [];
-    let rows = tableData.filter((r) => r.project === selectedProject.name);
+    let rows = tableData.filter((r) => r.projectId === selectedProject.id);
     rows = filterProjectTransactionsByScope(rows, detailTransactionScope);
     return applyTableFilters(rows);
   }, [
@@ -1444,6 +1521,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     setTxSearch("");
     setTxTypeFilter("all");
     setTxByFilter("all");
+    setTxHeadFilter("all");
   }, []);
 
   const pettyCashTabs = useMemo(() => {
@@ -1580,7 +1658,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (permissions.canAddInternalExpense) {
       items.push({
         key: "internalExpense",
-        label: "Internal Expense",
+        label: usesDetailedExpenseNames
+          ? "Project Internal Expense"
+          : "Internal Expense",
         styleKey: "internalExpense",
         onClick: () =>
           openModal("internalExpense", { projectId: selectedProject?.id }),
@@ -1589,7 +1669,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (permissions.canAddSectionExpense) {
       items.push({
         key: "sectionExpense",
-        label: "Section Expense",
+        label: usesDetailedExpenseNames
+          ? "Section Internal Expense"
+          : "Section Expense",
         styleKey: "sectionExpense",
         onClick: () =>
           openModal("sectionExpense", {
@@ -1609,7 +1691,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       });
     }
     return items;
-  }, [permissions, selectedProject?.id, selectedSection, isSectionAccountant]);
+  }, [
+    permissions,
+    selectedProject?.id,
+    selectedSection,
+    isSectionAccountant,
+    usesDetailedExpenseNames,
+  ]);
 
   const overviewCards = [
     {
@@ -1844,6 +1932,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txByFilter}
                       onChange={setTxByFilter}
                     />
+                    <TableFilterSelect
+                      allLabel="Expense Head: All"
+                      options={expenseHeadFilterOptions}
+                      value={txHeadFilter}
+                      onChange={setTxHeadFilter}
+                    />
                     <SearchField
                       value={txSearch}
                       onChange={setTxSearch}
@@ -1983,7 +2077,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     Transaction scope
                   </h3>
                   <p className="text-xs text-gray-500">
-                    Filter project pool activity or section-level transactions
+                    Filter project balance activity or section-level transactions
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -2056,6 +2150,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txByFilter}
                       onChange={setTxByFilter}
                     />
+                    <TableFilterSelect
+                      allLabel="Expense Head: All"
+                      options={expenseHeadFilterOptions}
+                      value={txHeadFilter}
+                      onChange={setTxHeadFilter}
+                    />
                     <SearchField
                       value={txSearch}
                       onChange={setTxSearch}
@@ -2110,6 +2210,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     options={roleFilterOptions}
                     value={txByFilter}
                     onChange={setTxByFilter}
+                  />
+                  <TableFilterSelect
+                    allLabel="Expense Head: All"
+                    options={expenseHeadFilterOptions}
+                    value={txHeadFilter}
+                    onChange={setTxHeadFilter}
                   />
                   <SearchField
                     value={txSearch}
@@ -2286,7 +2392,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
             {form.projectId && (
               <p className="text-xs text-gray-600">
-                Available project pool:{" "}
+                Available project balance:{" "}
                 <span className="font-semibold text-[#22c55e]">
                   {formatCurrency(getProjectPoolAvailable(form.projectId))}
                 </span>
@@ -2345,7 +2451,11 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       {/* Internal Expense Modal */}
       <Modal open={modal === "internalExpense"} onClose={closeModal}>
         <Box sx={modalStyle} className="bg-white p-6">
-          <h2 className="text-2xl font-bold mb-4">Internal Expense</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            {usesDetailedExpenseNames
+              ? "Project Internal Expense"
+              : "Internal Expense"}
+          </h2>
           <div className="flex flex-col gap-4">
             <label className="text-sm font-medium">Project *</label>
             <select
@@ -2384,7 +2494,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
             {form.projectId && (
               <p className="text-xs text-gray-600">
-                Available project pool:{" "}
+                Available project balance:{" "}
                 <span className="font-semibold text-[#22c55e]">
                   {formatCurrency(getProjectPoolAvailable(form.projectId))}
                 </span>
@@ -2439,7 +2549,11 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       {/* Section Expense Modal */}
       <Modal open={modal === "sectionExpense"} onClose={closeModal}>
         <Box sx={modalStyle} className="bg-white p-6">
-          <h2 className="text-2xl font-bold mb-4">Section Expense</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            {usesDetailedExpenseNames
+              ? "Section Internal Expense"
+              : "Section Expense"}
+          </h2>
           <div className="flex flex-col gap-4">
             {isSectionAccountant ? (
               <>
