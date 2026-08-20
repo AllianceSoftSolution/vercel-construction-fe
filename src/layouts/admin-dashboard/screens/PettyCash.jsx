@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, Chip, Modal } from "@mui/material";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import { FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiSearch, FiX } from "react-icons/fi";
 import {
   AccountBalance,
   FolderOpen,
@@ -291,7 +291,7 @@ const PillTabs = ({ tabs, active, onChange }) => (
 );
 
 const SearchField = ({ value, onChange, placeholder }) => (
-  <div className="relative w-full sm:w-64">
+  <div className="relative w-56 shrink-0">
     <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
     <input
       type="text"
@@ -339,7 +339,7 @@ const TableFilterSelect = ({ allLabel, options, value, onChange }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="w-full sm:w-52 px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
+    className="w-52 shrink-0 px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
   >
     <option value="all">{allLabel}</option>
     {options.map((option) => (
@@ -348,6 +348,59 @@ const TableFilterSelect = ({ allLabel, options, value, onChange }) => (
       </option>
     ))}
   </select>
+);
+
+const isTransactionInDateRange = (createdAt, from, to) => {
+  if (!from && !to) return true;
+  if (!createdAt) return false;
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return false;
+  if (from) {
+    const start = new Date(from);
+    start.setHours(0, 0, 0, 0);
+    if (date < start) return false;
+  }
+  if (to) {
+    const end = new Date(to);
+    end.setHours(23, 59, 59, 999);
+    if (date > end) return false;
+  }
+  return true;
+};
+
+const TableDateRangeFilter = ({ from, to, onFromChange, onToChange, onClear }) => (
+  <div className="inline-flex items-center gap-2 shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 shadow-sm">
+    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0252AD] shrink-0">
+      Date
+    </span>
+    <input
+      type="date"
+      value={from}
+      max={to || undefined}
+      onChange={(e) => onFromChange(e.target.value)}
+      aria-label="Transaction date from"
+      className="w-[8.75rem] shrink-0 px-2 py-2 border border-gray-200 rounded-md text-sm bg-[#FAFAFA] focus:outline-none focus:ring-2 focus:ring-[#0252AD]/25 focus:border-[#0252AD]/40"
+    />
+    <span className="text-[11px] font-medium text-gray-400 shrink-0">to</span>
+    <input
+      type="date"
+      value={to}
+      min={from || undefined}
+      onChange={(e) => onToChange(e.target.value)}
+      aria-label="Transaction date to"
+      className="w-[8.75rem] shrink-0 px-2 py-2 border border-gray-200 rounded-md text-sm bg-[#FAFAFA] focus:outline-none focus:ring-2 focus:ring-[#0252AD]/25 focus:border-[#0252AD]/40"
+    />
+    {(from || to) && (
+      <button
+        type="button"
+        onClick={onClear}
+        className="inline-flex items-center gap-1 shrink-0 px-2.5 py-1.5 rounded-md text-xs font-semibold border border-[#FC8908] text-[#FC8908] bg-[#FFF7ED] hover:bg-[#FC8908] hover:text-white transition-colors duration-200"
+      >
+        <FiX className="text-sm" />
+        Clear
+      </button>
+    )}
+  </div>
 );
 
 const EmptyState = ({ icon: Icon, title, description, action }) => (
@@ -363,21 +416,27 @@ const EmptyState = ({ icon: Icon, title, description, action }) => (
 
 const TablePanel = ({ title, subtitle, count, search, children }) => (
   <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-4 py-4 border-b border-gray-100 bg-[#FAFAFA]">
-      <div className="min-w-0">
-        <h3 className="font-bold text-gray-800 truncate">{title}</h3>
-        {subtitle && (
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{subtitle}</p>
-        )}
-      </div>
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 shrink-0">
+    <div className="px-4 py-4 border-b border-gray-100 bg-[#FAFAFA] space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-gray-800 truncate">{title}</h3>
+          {subtitle && (
+            <p className="text-xs text-gray-500 mt-0.5 truncate">{subtitle}</p>
+          )}
+        </div>
         {count != null && (
-          <span className="inline-flex items-center justify-center text-xs font-semibold text-[#0252AD] bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full whitespace-nowrap">
+          <span className="inline-flex items-center justify-center text-xs font-semibold text-[#0252AD] bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full whitespace-nowrap shrink-0">
             {count} record{count === 1 ? "" : "s"}
           </span>
         )}
-        {search}
       </div>
+      {search && (
+        <div className="w-full min-w-0 overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]">
+          <div className="flex items-center gap-2 flex-nowrap w-max pr-1">
+            {search}
+          </div>
+        </div>
+      )}
     </div>
     <div className="p-3 sm:p-4">{children}</div>
   </div>
@@ -754,6 +813,8 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const [txTypeFilter, setTxTypeFilter] = useState("all");
   const [txByFilter, setTxByFilter] = useState("all");
   const [txHeadFilter, setTxHeadFilter] = useState("all");
+  const [txDateFrom, setTxDateFrom] = useState("");
+  const [txDateTo, setTxDateTo] = useState("");
   const [detailTransactionScope, setDetailTransactionScope] =
     useState("all_sections");
 
@@ -837,6 +898,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       const txQuery = {
         ...summaryQuery,
         ...(selectedProject?.id ? { projectId: selectedProject.id } : {}),
+        ...(txDateFrom ? { dateFrom: txDateFrom } : {}),
+        ...(txDateTo ? { dateTo: txDateTo } : {}),
+        limit: 500,
       };
 
       if (isSectionAccountant) {
@@ -905,6 +969,8 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     selectedSection?.id,
     apiFilters,
     isSectionAccountant,
+    txDateFrom,
+    txDateTo,
   ]);
 
   const fetchProjectBalance = useCallback(
@@ -1191,6 +1257,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const tableData = transactions.map((tx) => ({
     id: tx.id,
+    createdAt: tx.createdAt,
     date: formatDateDMY(tx.createdAt),
     type: expenseTypeLabels[tx.type] || tx.type,
     typeRaw: tx.type,
@@ -1433,7 +1500,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
           txByFilter === "all" || row.actorLabel === txByFilter;
         const matchesHead =
           txHeadFilter === "all" || row.head === txHeadFilter;
-        if (!matchesType || !matchesBy || !matchesHead) return false;
+        const matchesDate = isTransactionInDateRange(
+          row.createdAt,
+          txDateFrom,
+          txDateTo
+        );
+        if (!matchesType || !matchesBy || !matchesHead || !matchesDate) {
+          return false;
+        }
         if (!q) return true;
         return [
           row.date,
@@ -1449,7 +1523,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         ].some((v) => String(v || "").toLowerCase().includes(q));
       });
     },
-    [txSearch, txTypeFilter, txByFilter, txHeadFilter]
+    [txSearch, txTypeFilter, txByFilter, txHeadFilter, txDateFrom, txDateTo]
   );
 
   const selectedProjectTransactions = useMemo(() => {
@@ -1488,9 +1562,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       if (txHeadFilter !== "all") {
         next = next.filter((r) => r.head === txHeadFilter);
       }
+      if (txDateFrom || txDateTo) {
+        next = next.filter((r) =>
+          isTransactionInDateRange(r.createdAt, txDateFrom, txDateTo)
+        );
+      }
       return next;
     },
-    [txTypeFilter, txByFilter, txHeadFilter]
+    [txTypeFilter, txByFilter, txHeadFilter, txDateFrom, txDateTo]
   );
 
   const sectionExportData = useMemo(() => {
@@ -1522,6 +1601,35 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     setTxTypeFilter("all");
     setTxByFilter("all");
     setTxHeadFilter("all");
+    setTxDateFrom("");
+    setTxDateTo("");
+  }, []);
+
+  const handleTxDateFromChange = useCallback(
+    (value) => {
+      if (txDateTo && value && value > txDateTo) {
+        toast.error("Start date cannot be after end date");
+        return;
+      }
+      setTxDateFrom(value);
+    },
+    [txDateTo]
+  );
+
+  const handleTxDateToChange = useCallback(
+    (value) => {
+      if (txDateFrom && value && value < txDateFrom) {
+        toast.error("End date cannot be before start date");
+        return;
+      }
+      setTxDateTo(value);
+    },
+    [txDateFrom]
+  );
+
+  const clearTxDateRange = useCallback(() => {
+    setTxDateFrom("");
+    setTxDateTo("");
   }, []);
 
   const pettyCashTabs = useMemo(() => {
@@ -1941,6 +2049,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txHeadFilter}
                       onChange={setTxHeadFilter}
                     />
+                    <TableDateRangeFilter
+                      from={txDateFrom}
+                      to={txDateTo}
+                      onFromChange={handleTxDateFromChange}
+                      onToChange={handleTxDateToChange}
+                      onClear={clearTxDateRange}
+                    />
                     <SearchField
                       value={txSearch}
                       onChange={setTxSearch}
@@ -2159,6 +2274,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txHeadFilter}
                       onChange={setTxHeadFilter}
                     />
+                    <TableDateRangeFilter
+                      from={txDateFrom}
+                      to={txDateTo}
+                      onFromChange={handleTxDateFromChange}
+                      onToChange={handleTxDateToChange}
+                      onClear={clearTxDateRange}
+                    />
                     <SearchField
                       value={txSearch}
                       onChange={setTxSearch}
@@ -2219,6 +2341,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     options={expenseHeadFilterOptions}
                     value={txHeadFilter}
                     onChange={setTxHeadFilter}
+                  />
+                  <TableDateRangeFilter
+                    from={txDateFrom}
+                    to={txDateTo}
+                    onFromChange={handleTxDateFromChange}
+                    onToChange={handleTxDateToChange}
+                    onClear={clearTxDateRange}
                   />
                   <SearchField
                     value={txSearch}
