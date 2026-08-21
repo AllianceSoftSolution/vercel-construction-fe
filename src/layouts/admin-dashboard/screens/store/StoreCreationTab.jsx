@@ -10,6 +10,10 @@ import { useNavigate } from "react-router-dom";
 import DropdownButton from "../../../../comments/components/DropdownButton";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IconButton } from "@mui/material";
+import FileUploadField from "../../../../components/ui/FileUploadField";
+import AttachmentLinks from "../../../../components/ui/AttachmentLinks";
+import useS3MultiUpload from "../../../../hooks/useS3MultiUpload";
+import { UPLOAD_FOLDERS } from "../../../../constants/fileUpload";
 
 // ─── Type helpers ──────────────────────────────────────────────
 const TYPE_COLORS = {
@@ -249,9 +253,10 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
   const [assignments, setAssignments] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [roleFilter, setRoleFilter] = useState("STORE_INCHARGE");
-  const [utilityFile, setUtilityFile] = useState(null);
+  const [utilityFiles, setUtilityFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [removingId, setRemovingId] = useState(null);
+  const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
 
   // Build current assignment list from store prop
   useEffect(() => {
@@ -281,20 +286,22 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
     if (!selectedUserId) { toast.error("Please select a user"); return; }
     try {
       setLoading(true);
-      // Use FormData so file can be sent alongside userId
-      const formData = new FormData();
-      formData.append("userId", selectedUserId);
-      if (utilityFile) formData.append("utilityFile", utilityFile);
+      const payload = { userId: selectedUserId };
+      if (utilityFiles.length) {
+        payload.utilityFileUrls = await uploadFiles(
+          utilityFiles,
+          UPLOAD_FOLDERS.utilityFile,
+          { multiple: false }
+        );
+      }
 
-      const res = await apiClient.patch(`/stores/${store.id}/assign`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await apiClient.patch(`/stores/${store.id}/assign`, payload);
       if (res.ok) {
         toast.success("Person assigned successfully");
         const addedUser = allUsers.find((u) => u.id === selectedUserId);
         if (addedUser) setAssignments((prev) => [...prev, { ...addedUser, utilityFile: res.data?.store?.storeInchargeAssignments?.find((a) => a.user?.id === selectedUserId)?.utilityFile || null }]);
         setSelectedUserId("");
-        setUtilityFile(null);
+        setUtilityFiles([]);
         onSuccess();
       } else {
         toast.error(res.data?.message || "Assignment failed");
@@ -357,16 +364,10 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
                     <p className="text-xs text-gray-500">
                       {person?.email} · {person?.role?.replace(/_/g, " ")}
                     </p>
-                    {person?.utilityFile && (
-                      <a
-                        href={person.utilityFile}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-orange-600 underline mt-0.5 inline-block"
-                      >
-                        View Utility File
-                      </a>
-                    )}
+                    <AttachmentLinks
+                      urls={person.utilityFile}
+                      linkClassName="text-xs text-orange-600 underline mt-0.5 inline-block"
+                    />
                   </div>
                   <button
                     onClick={() => handleRemove(person?.id)}
@@ -412,24 +413,18 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
               ))}
             </select>
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">
-              Utility File <span className="text-gray-400 font-normal">(optional)</span>
-            </label>
-            <input
-              type="file"
-              accept="*/*"
-              onChange={(e) => setUtilityFile(e.target.files?.[0] || null)}
-              className="mt-1 w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
-            />
-            {utilityFile && (
-              <p className="text-xs text-gray-500 mt-1 truncate">{utilityFile.name}</p>
-            )}
-          </div>
+          <FileUploadField
+            label="Utility File"
+            multiple={false}
+            files={utilityFiles}
+            onChange={setUtilityFiles}
+            disabled={loading || fileUploading}
+            helperText="Optional supporting document for this assignment"
+          />
           <div className="flex gap-3 mt-1">
             <button
               onClick={handleAssign}
-              disabled={loading || !selectedUserId}
+              disabled={loading || fileUploading || !selectedUserId}
               className="flex-1 bg-[#F97316] text-white rounded-lg py-2 font-semibold text-sm hover:bg-orange-600 disabled:opacity-60"
             >
               {loading ? "Assigning..." : "Assign"}

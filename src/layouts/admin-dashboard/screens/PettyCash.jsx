@@ -23,6 +23,10 @@ import apiClient from "../../../api/apiClient";
 import { formatDateDMY } from "../../../utils";
 import { useReadOnly } from "../../../context/ReadOnlyContext";
 import { isHeadUser } from "../../../utils/userHelpers";
+import FileUploadField from "../../../components/ui/FileUploadField";
+import AttachmentLinks from "../../../components/ui/AttachmentLinks";
+import useS3MultiUpload from "../../../hooks/useS3MultiUpload";
+import { UPLOAD_FOLDERS } from "../../../constants/fileUpload";
 
 const modalStyle = {
   position: "absolute",
@@ -166,19 +170,9 @@ const TypeChip = ({ value, labels = TYPE_LABELS }) => {
   );
 };
 
-const ProofLink = ({ value }) =>
-  value ? (
-    <a
-      href={value}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-primary underline text-sm"
-    >
-      View
-    </a>
-  ) : (
-    <span className="text-gray-400">-</span>
-  );
+const ProofLink = ({ value }) => (
+  <AttachmentLinks urls={value} linkClassName="text-primary underline text-sm" />
+);
 
 /** Theme-aligned action button styles (consistent across all roles) */
 const ACTION_BTN_BASE =
@@ -820,7 +814,8 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
   const [submitting, setSubmitting] = useState(false);
   const [headForm, setHeadForm] = useState({ name: "", description: "" });
   const [formSections, setFormSections] = useState([]);
@@ -1017,7 +1012,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const openModal = async (type, defaults = {}) => {
     setForm(defaults);
-    setFile(null);
+    setFiles([]);
     setFormSections([]);
     setModal(type);
     if (defaults.projectId) {
@@ -1039,7 +1034,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const closeModal = () => {
     setModal(null);
     setForm({});
-    setFile(null);
+    setFiles([]);
     setFormSections([]);
     setSectionsLoading(false);
     setHeadForm({ name: "", description: "" });
@@ -1049,18 +1044,16 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (!form.projectId) return toast.error("Select a project");
     if (!form.amount || Number(form.amount) <= 0)
       return toast.error("Enter a valid amount");
-    if (!file) return toast.error("Proof is required");
+    if (!files.length) return toast.error("Proof is required");
 
     setSubmitting(true);
     try {
-      const fd = new FormData();
-      fd.append("projectId", form.projectId);
-      fd.append("amount", form.amount);
-      if (form.description) fd.append("description", form.description);
-      fd.append("proofOfExpense", file);
-
-      const res = await apiClient.post("/petty-cash/funding", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const proofUrls = await uploadFiles(files, UPLOAD_FOLDERS.proofOfExpense);
+      const res = await apiClient.post("/petty-cash/funding", {
+        projectId: form.projectId,
+        amount: form.amount,
+        description: form.description || undefined,
+        proofUrls,
       });
 
       if (res.ok) {
@@ -1099,7 +1092,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const handleSubmitInternalExpense = async () => {
     if (!form.projectId) return toast.error("Select a project");
     if (!form.expenseHeadId) return toast.error("Select expense head");
-    if (!file) return toast.error("Proof is required");
+    if (!files.length) return toast.error("Proof is required");
 
     const availablePool = getProjectPoolAvailable(form.projectId);
 
@@ -1115,15 +1108,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
     setSubmitting(true);
     try {
-      const fd = new FormData();
-      fd.append("projectId", form.projectId);
-      fd.append("expenseHeadId", form.expenseHeadId);
-      fd.append("amount", form.amount);
-      if (form.description) fd.append("description", form.description);
-      fd.append("proofOfExpense", file);
-
-      const res = await apiClient.post("/petty-cash/internal-expense", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const proofUrls = await uploadFiles(files, UPLOAD_FOLDERS.proofOfExpense);
+      const res = await apiClient.post("/petty-cash/internal-expense", {
+        projectId: form.projectId,
+        expenseHeadId: form.expenseHeadId,
+        amount: form.amount,
+        description: form.description || undefined,
+        proofUrls,
       });
 
       if (res.ok) {
@@ -1144,7 +1135,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const handleSubmitDistribution = async () => {
     if (!form.projectId) return toast.error("Select a project");
     if (!form.sectionId) return toast.error("Select a section");
-    if (!file) return toast.error("Proof is required");
+    if (!files.length) return toast.error("Proof is required");
 
     const availablePool = getProjectPoolAvailable(form.projectId);
 
@@ -1160,15 +1151,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
     setSubmitting(true);
     try {
-      const fd = new FormData();
-      fd.append("projectId", form.projectId);
-      fd.append("sectionId", form.sectionId);
-      fd.append("amount", form.amount);
-      if (form.description) fd.append("description", form.description);
-      fd.append("proofOfExpense", file);
-
-      const res = await apiClient.post("/petty-cash/distribution", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const proofUrls = await uploadFiles(files, UPLOAD_FOLDERS.proofOfExpense);
+      const res = await apiClient.post("/petty-cash/distribution", {
+        projectId: form.projectId,
+        sectionId: form.sectionId,
+        amount: form.amount,
+        description: form.description || undefined,
+        proofUrls,
       });
       if (res.ok) {
         toast.success("Distribution recorded");
@@ -1187,7 +1176,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (!form.projectId || !form.sectionId)
       return toast.error("Select project and section");
     if (!form.expenseHeadId) return toast.error("Select expense head");
-    if (!file) return toast.error("Proof is required");
+    if (!files.length) return toast.error("Proof is required");
 
     const availableSectionBalance =
       assignedSections.find((s) => s.id === form.sectionId)?.remaining ??
@@ -1207,15 +1196,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
     setSubmitting(true);
     try {
-      const fd = new FormData();
-      fd.append("projectId", form.projectId);
-      fd.append("sectionId", form.sectionId);
-      fd.append("expenseHeadId", form.expenseHeadId);
-      fd.append("amount", form.amount);
-      if (form.description) fd.append("description", form.description);
-      fd.append("proofOfExpense", file);
-      const res = await apiClient.post("/petty-cash/section-expense", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const proofUrls = await uploadFiles(files, UPLOAD_FOLDERS.proofOfExpense);
+      const res = await apiClient.post("/petty-cash/section-expense", {
+        projectId: form.projectId,
+        sectionId: form.sectionId,
+        expenseHeadId: form.expenseHeadId,
+        amount: form.amount,
+        description: form.description || undefined,
+        proofUrls,
       });
       if (res.ok) {
         toast.success("Section expense recorded");
@@ -2420,15 +2408,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 setForm({ ...form, description: e.target.value })
               }
             />
-            <div>
-              <label className="text-sm font-medium">Proof *</label>
-              <input
-                type="file"
-                className="border rounded-lg p-2 w-full mt-1 border-gray-300"
-                onChange={(e) => setFile(e.target.files[0])}
-                accept=".pdf,.jpg,.jpeg,.png"
-              />
-            </div>
+            <FileUploadField
+              label="Proof"
+              required
+              files={files}
+              onChange={setFiles}
+              disabled={submitting || fileUploading}
+            />
             <p className="text-xs text-gray-400">Date is recorded automatically.</p>
             <div className="flex gap-3">
               <Button
@@ -2544,15 +2530,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 setForm({ ...form, description: e.target.value })
               }
             />
-            <div>
-              <label className="text-sm font-medium">Proof *</label>
-              <input
-                type="file"
-                className="border rounded p-2 w-full mt-1"
-                onChange={(e) => setFile(e.target.files[0])}
-                accept=".pdf,.jpg,.jpeg,.png"
-              />
-            </div>
+            <FileUploadField
+              label="Proof"
+              required
+              files={files}
+              onChange={setFiles}
+              disabled={submitting || fileUploading}
+            />
             <div className="flex gap-3">
               <Button
                 buttonText="Cancel"
@@ -2646,15 +2630,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 setForm({ ...form, description: e.target.value })
               }
             />
-            <div>
-              <label className="text-sm font-medium">Proof *</label>
-              <input
-                type="file"
-                className="border rounded p-2 w-full mt-1"
-                onChange={(e) => setFile(e.target.files[0])}
-                accept=".pdf,.jpg,.jpeg,.png"
-              />
-            </div>
+            <FileUploadField
+              label="Proof"
+              required
+              files={files}
+              onChange={setFiles}
+              disabled={submitting || fileUploading}
+            />
             <div className="flex gap-3">
               <Button
                 buttonText="Cancel"
@@ -2770,15 +2752,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 setForm({ ...form, description: e.target.value })
               }
             />
-            <div>
-              <label className="text-sm font-medium">Proof *</label>
-              <input
-                type="file"
-                className="border rounded p-2 w-full mt-1"
-                onChange={(e) => setFile(e.target.files[0])}
-                accept=".pdf,.jpg,.jpeg,.png"
-              />
-            </div>
+            <FileUploadField
+              label="Proof"
+              required
+              files={files}
+              onChange={setFiles}
+              disabled={submitting || fileUploading}
+            />
             <div className="flex gap-3">
               <Button
                 buttonText="Cancel"

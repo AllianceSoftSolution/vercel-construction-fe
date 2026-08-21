@@ -15,6 +15,11 @@ import {
   setAcceptedTransactionData,
   shouldShowActionColumn,
 } from "../../utils/storeTransactionHelpers";
+import FileUploadField from "../ui/FileUploadField";
+import AttachmentLinks from "../ui/AttachmentLinks";
+import useS3MultiUpload from "../../hooks/useS3MultiUpload";
+import { UPLOAD_FOLDERS } from "../../constants/fileUpload";
+import { normalizeAttachmentUrls } from "../../utils/fileUpload";
 
 const FlowCell = ({ value }) => {
   if (!value || value === "—") return <span>—</span>;
@@ -42,15 +47,21 @@ const FlowCell = ({ value }) => {
 };
 
 const ViewDocumentCell = ({ value }) => {
-  if (!value) return <span className="text-gray-400 text-sm">—</span>;
+  const urls = normalizeAttachmentUrls(value);
+  if (!urls.length) return <span className="text-gray-400 text-sm">—</span>;
   return (
-    <button
-      type="button"
-      onClick={() => window.open(value, "_blank", "noopener,noreferrer")}
-      className="bg-[#BF1017] hover:bg-[#a00e14] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap"
-    >
-      View Document
-    </button>
+    <div className="flex flex-col gap-1">
+      {urls.map((url, index) => (
+        <button
+          key={`${url}-${index}`}
+          type="button"
+          onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+          className="bg-[#BF1017] hover:bg-[#a00e14] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap"
+        >
+          View Document{urls.length > 1 ? ` ${index + 1}` : ""}
+        </button>
+      ))}
+    </div>
   );
 };
 
@@ -91,8 +102,9 @@ const StoreMovementHistoryTable = ({
   );
   const [acceptModalOpen, setAcceptModalOpen] = useState(false);
   const [acceptTransaction, setAcceptTransaction] = useState(null);
-  const [acceptForm, setAcceptForm] = useState({ note: "", documentFile: null });
+  const [acceptForm, setAcceptForm] = useState({ note: "", documentFiles: [] });
   const [acceptLoading, setAcceptLoading] = useState(false);
+  const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
 
   const isHeadStore = storeData?.type === "HEAD_STORE";
 
@@ -173,7 +185,7 @@ const StoreMovementHistoryTable = ({
   const handleOpenAcceptModal = useCallback(
     (transaction) => {
       setAcceptTransaction(transaction);
-      setAcceptForm({ note: transaction.notes || "", documentFile: null });
+      setAcceptForm({ note: transaction.notes || "", documentFiles: [] });
       setAcceptModalOpen(true);
       markViewed(transaction.id);
     },
@@ -185,33 +197,33 @@ const StoreMovementHistoryTable = ({
     setAcceptLoading(true);
 
     try {
-      const formData = new FormData();
-      if (acceptForm.note) formData.append("note", acceptForm.note);
-      if (acceptForm.documentFile) {
-        formData.append("document", acceptForm.documentFile);
+      const payload = {};
+      if (acceptForm.note) payload.note = acceptForm.note;
+      if (acceptForm.documentFiles.length) {
+        payload.documentUrls = await uploadFiles(
+          acceptForm.documentFiles,
+          UPLOAD_FOLDERS.document
+        );
       }
 
       const acceptStoreId = acceptTransaction.storeId || storeId;
       const res = await apiClient.post(
         `/stores/${acceptStoreId}/transactions/${acceptTransaction.id}/accept`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        payload
       );
 
       if (!res.ok) {
         throw new Error(res.data?.message || "Failed to accept incoming request");
       }
 
-      const acceptedDocumentUrl = res.data?.transaction?.documentUrl || null;
-      const fileDocs = acceptedDocumentUrl
-        ? [
-            {
-              url: acceptedDocumentUrl,
-              label: "Receiving Document",
-              name: acceptForm.documentFile?.name || "Receiving Document",
-            },
-          ]
-        : [];
+      const acceptedDocumentUrls = normalizeAttachmentUrls(
+        res.data?.transaction?.documentUrl
+      );
+      const fileDocs = acceptedDocumentUrls.map((url, index) => ({
+        url,
+        label: `Receiving Document ${index + 1}`,
+        name: acceptForm.documentFiles[index]?.name || `Receiving Document ${index + 1}`,
+      }));
 
       markTransactionAccepted(acceptTransaction.id);
       setAcceptedSet((prev) => new Set([...prev, acceptTransaction.id]));
@@ -334,46 +346,14 @@ const StoreMovementHistoryTable = ({
                   setAcceptForm((prev) => ({ ...prev, note: e.target.value }))
                 }
               />
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Attachment (Optional)</p>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <label
-                    htmlFor="doc-upload-accept-shared"
-                    className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition"
-                  >
-                    <span>📎</span>
-                    <span>Choose File</span>
-                  </label>
-                  <input
-                    id="doc-upload-accept-shared"
-                    type="file"
-                    accept="image/*,.pdf,.doc,.docx"
-                    className="hidden"
-                    onChange={(e) =>
-                      setAcceptForm((prev) => ({
-                        ...prev,
-                        documentFile: e.target.files?.[0] || null,
-                      }))
-                    }
-                  />
-                  <span className="text-sm text-gray-500 truncate max-w-[180px]">
-                    {acceptForm.documentFile
-                      ? acceptForm.documentFile.name
-                      : "No file chosen"}
-                  </span>
-                  {acceptForm.documentFile && (
-                    <button
-                      type="button"
-                      className="text-red-500 text-xs"
-                      onClick={() =>
-                        setAcceptForm((prev) => ({ ...prev, documentFile: null }))
-                      }
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
+              <FileUploadField
+                label="Attachment (Optional)"
+                files={acceptForm.documentFiles}
+                onChange={(documentFiles) =>
+                  setAcceptForm((prev) => ({ ...prev, documentFiles }))
+                }
+                disabled={acceptLoading || fileUploading}
+              />
             </div>
             <div className="mt-4 flex justify-end gap-3">
               <button
@@ -386,7 +366,7 @@ const StoreMovementHistoryTable = ({
               <Button
                 buttonText={acceptLoading ? "Accepting..." : "Accept"}
                 onClick={handleConfirmAccept}
-                disabled={acceptLoading}
+                disabled={acceptLoading || fileUploading}
               />
             </div>
           </div>

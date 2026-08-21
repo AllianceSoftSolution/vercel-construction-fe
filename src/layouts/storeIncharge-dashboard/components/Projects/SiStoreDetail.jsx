@@ -22,6 +22,9 @@ import { useSelector } from "react-redux";
 import StoreMovementHistoryTable from "../../../../components/store/StoreMovementHistoryTable";
 import { formatStoreDate } from "../../../../utils/storeTransactionHelpers";
 import { isHeadUser } from "../../../../utils/userHelpers";
+import FileUploadField from "../../../../components/ui/FileUploadField";
+import useS3MultiUpload from "../../../../hooks/useS3MultiUpload";
+import { UPLOAD_FOLDERS } from "../../../../constants/fileUpload";
 
 const style = {
   position: "absolute",
@@ -95,7 +98,7 @@ const SiStoreDetail = () => {
       note: "",
       materialId: "",
       stockInType: "",
-      documentFile: null,
+      documentFiles: [],
     });
     // Stock Out form state
     const [stockOutForm, setStockOutForm] = useState({
@@ -104,9 +107,10 @@ const SiStoreDetail = () => {
       note: "",
       stockOutType: "",
       toStoreId: "",
-      documentFile: null,
+      documentFiles: [],
     });
     const [loading, setLoading] = useState(false);
+    const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
     const [materials, setMaterials] = useState([]);
     const [materialsLoading, setMaterialsLoading] = useState(false);
     const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -169,8 +173,8 @@ const SiStoreDetail = () => {
     const handleClose = () => {
       setOpen(false);
       setModalType("");
-      setStockInForm({ po: "", qty: "", note: "", materialId: "", stockInType: "", documentFile: null });
-      setStockOutForm({ material: "", qty: "", note: "", stockOutType: "", toStoreId: "", documentFile: null });
+      setStockInForm({ po: "", qty: "", note: "", materialId: "", stockInType: "", documentFiles: [] });
+      setStockOutForm({ material: "", qty: "", note: "", stockOutType: "", toStoreId: "", documentFiles: [] });
       setSectionStores([]);
       setDestBalance(null);
     };
@@ -222,16 +226,23 @@ const SiStoreDetail = () => {
     const handleStockInSubmit = async () => {
       setLoading(true);
       try {
-        const formData = new FormData();
-        formData.append("materialId", stockInForm.materialId);
-        formData.append("quantity", stockInForm.qty);
-        if (stockInForm.note) formData.append("notes", stockInForm.note);
-        if (stockInForm.stockInType) formData.append("stockInType", stockInForm.stockInType);
-        if (stockInForm.stockInType === "PO" && stockInForm.po) formData.append("poReferenceNumber", stockInForm.po);
-        if (stockInForm.documentFile) formData.append("document", stockInForm.documentFile);
-        const res = await apiClient.post(`/stores/${id}/stock-in`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const payload = {
+          materialId: stockInForm.materialId,
+          quantity: stockInForm.qty,
+          notes: stockInForm.note || undefined,
+          stockInType: stockInForm.stockInType || undefined,
+          poReferenceNumber:
+            stockInForm.stockInType === "PO" && stockInForm.po
+              ? stockInForm.po
+              : undefined,
+        };
+        if (stockInForm.documentFiles.length) {
+          payload.documentUrls = await uploadFiles(
+            stockInForm.documentFiles,
+            UPLOAD_FOLDERS.document
+          );
+        }
+        const res = await apiClient.post(`/stores/${id}/stock-in`, payload);
         if (res.ok) {
           toast.success("Stock In successful!");
           handleClose();
@@ -253,19 +264,24 @@ const SiStoreDetail = () => {
       }
       setLoading(true);
       try {
-        const formData = new FormData();
-        formData.append("materialId", stockOutForm.material);
-        formData.append("quantity", stockOutForm.qty);
-        if (stockOutForm.note) formData.append("notes", stockOutForm.note);
         const outType = stockOutForm.stockOutType || "MANUAL";
-        formData.append("stockOutType", outType);
-        if (outType === "TRANSFER" && stockOutForm.toStoreId) {
-          formData.append("toStoreId", stockOutForm.toStoreId);
+        const payload = {
+          materialId: stockOutForm.material,
+          quantity: stockOutForm.qty,
+          notes: stockOutForm.note || undefined,
+          stockOutType: outType,
+          toStoreId:
+            outType === "TRANSFER" && stockOutForm.toStoreId
+              ? stockOutForm.toStoreId
+              : undefined,
+        };
+        if (stockOutForm.documentFiles.length) {
+          payload.documentUrls = await uploadFiles(
+            stockOutForm.documentFiles,
+            UPLOAD_FOLDERS.document
+          );
         }
-        if (stockOutForm.documentFile) formData.append("document", stockOutForm.documentFile);
-        const res = await apiClient.post(`/stores/${id}/stock-out`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await apiClient.post(`/stores/${id}/stock-out`, payload);
         if (res.ok) {
           toast.success("Stock Out successful!");
           handleClose();
@@ -329,17 +345,14 @@ const SiStoreDetail = () => {
                     </CustomSelect>
                     <CustomTextField fullWidth margin="normal" label="QTY ( Quantity )" value={stockInForm.qty} type="number" onChange={(e) => handleStockInChange("qty", e.target.value)} />
                     <CustomTextField fullWidth margin="normal" label="Note" value={stockInForm.note} onChange={(e) => handleStockInChange("note", e.target.value)} />
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Attachment (Optional)</p>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <label htmlFor="doc-upload-stock-in" className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition">
-                          <span>📎</span><span>Choose File</span>
-                        </label>
-                        <input id="doc-upload-stock-in" type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={(e) => handleStockInChange("documentFile", e.target.files?.[0] || null)} />
-                        <span className="text-sm text-gray-500 truncate max-w-[180px]">{stockInForm.documentFile ? stockInForm.documentFile.name : "No file chosen"}</span>
-                        {stockInForm.documentFile && <button type="button" className="text-red-500 text-xs" onClick={() => handleStockInChange("documentFile", null)}>✕</button>}
-                      </div>
-                    </div>
+                    <FileUploadField
+                      label="Attachment (Optional)"
+                      files={stockInForm.documentFiles}
+                      onChange={(documentFiles) =>
+                        setStockInForm((prev) => ({ ...prev, documentFiles }))
+                      }
+                      disabled={loading || fileUploading}
+                    />
                     <CustomSelect label="Type" name="stockInType" value={stockInForm.stockInType} onChange={(e) => handleStockInChange("stockInType", e.target.value)} fullWidth>
                       <MenuItem value="PO">PO</MenuItem>
                       <MenuItem value="INITIAL">Initial</MenuItem>
@@ -410,17 +423,14 @@ const SiStoreDetail = () => {
                   )}
 
                   <CustomTextField fullWidth margin="normal" label="Note" type="text" name="note" value={stockOutForm.note} onChange={(e) => handleStockOutChange("note", e.target.value)} />
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Attachment (Optional)</p>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <label htmlFor="doc-upload-stock-out" className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 flex items-center gap-2 transition">
-                        <span>📎</span><span>Choose File</span>
-                      </label>
-                      <input id="doc-upload-stock-out" type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={(e) => handleStockOutChange("documentFile", e.target.files?.[0] || null)} />
-                      <span className="text-sm text-gray-500 truncate max-w-[180px]">{stockOutForm.documentFile ? stockOutForm.documentFile.name : "No file chosen"}</span>
-                      {stockOutForm.documentFile && <button type="button" className="text-red-500 text-xs" onClick={() => handleStockOutChange("documentFile", null)}>✕</button>}
-                    </div>
-                  </div>
+                  <FileUploadField
+                    label="Attachment (Optional)"
+                    files={stockOutForm.documentFiles}
+                    onChange={(documentFiles) =>
+                      setStockOutForm((prev) => ({ ...prev, documentFiles }))
+                    }
+                    disabled={loading || fileUploading}
+                  />
                 </>
               )}
 

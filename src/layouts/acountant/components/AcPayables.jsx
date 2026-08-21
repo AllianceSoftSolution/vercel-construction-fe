@@ -26,6 +26,10 @@ import {
   PAYMENT_EXPORT_COLUMNS,
 } from "../../../utils/payablesExportHelpers";
 import { buildExportFileName } from "../../../modules/tableExportHelpers";
+import FileUploadField from "../../../components/ui/FileUploadField";
+import AttachmentLinks from "../../../components/ui/AttachmentLinks";
+import useS3MultiUpload from "../../../hooks/useS3MultiUpload";
+import { UPLOAD_FOLDERS } from "../../../constants/fileUpload";
 
 const style = {
   position: "absolute",
@@ -43,8 +47,9 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
     unitPrice: '',
     notes: ''
   });
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -53,47 +58,33 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
     }));
   };
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
   const handleSubmit = async () => {
-    // Validation
     if (!formData.unitPrice || parseFloat(formData.unitPrice) <= 0) {
       toast.error('Please enter a valid unit price');
       return;
     }
-
     if (!formData.notes || formData.notes.trim() === '') {
       toast.error('Please enter notes');
       return;
     }
-
+    if (!files.length) {
+      toast.error('Please upload at least one bill/invoice document');
+      return;
+    }
 
     try {
       setLoading(true);
-
-      // Create form data for file upload
-      const submitData = new FormData();
-      submitData.append('unitPrice', formData.unitPrice);
-      submitData.append('notes', formData.notes.trim());
-      if (file) {
-        submitData.append('proofOfBill', file);
-      }
-
-      const response = await apiClient.patch(`/purchase-orders/${poId}/amount`, submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const proofOfBillUrls = await uploadFiles(files, UPLOAD_FOLDERS.proofOfBill);
+      const response = await apiClient.patch(`/purchase-orders/${poId}/amount`, {
+        unitPrice: formData.unitPrice,
+        notes: formData.notes.trim(),
+        proofOfBillUrls,
       });
 
       if (response.ok) {
         toast.success('Price added successfully!');
         handleClose();
-        // Call onSuccess callback to refresh data
-        if (onSuccess) {
-          onSuccess();
-        }
+        if (onSuccess) onSuccess();
       } else {
         toast.error(response.data?.message || 'Failed to add price');
       }
@@ -107,7 +98,7 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
 
   const handleClose = () => {
     setFormData({ unitPrice: '', notes: '' });
-    setFile(null);
+    setFiles([]);
     onClose();
   };
 
@@ -126,21 +117,14 @@ const AddPriceModal = ({ open, onClose, poId, onSuccess }) => {
             required
           />
 
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
-              Upload Document <span className="text-gray-500">(Optional)</span>
-            </label>
-            <input
-              type="file"
-              className="border border-gray-300 rounded p-2 w-full"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              onChange={handleFileChange}
-              disabled={loading}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG
-            </p>
-          </div>
+          <FileUploadField
+            label="Upload Document"
+            required
+            files={files}
+            onChange={setFiles}
+            disabled={loading || fileUploading}
+            helperText="Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG"
+          />
 
           <CustomTextField
             label="Notes"
@@ -198,8 +182,9 @@ const EditPriceModal = ({ open, onClose, poId, poData, onSuccess }) => {
     unitPrice: poData?.unitPrice?.toString() || '',
     notes: poData?.notes || ''
   });
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
 
   useEffect(() => {
     if (poData) {
@@ -217,12 +202,7 @@ const EditPriceModal = ({ open, onClose, poId, poData, onSuccess }) => {
     }));
   };
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
   const handleSubmit = async () => {
-    // Validation
     if (!formData.unitPrice || parseFloat(formData.unitPrice) <= 0) {
       toast.error('Please enter a valid unit price');
       return;
@@ -230,30 +210,19 @@ const EditPriceModal = ({ open, onClose, poId, poData, onSuccess }) => {
 
     try {
       setLoading(true);
-
-      // Create form data for file upload
-      const submitData = new FormData();
-      submitData.append('unitPrice', formData.unitPrice);
-      if (formData.notes.trim()) {
-        submitData.append('notes', formData.notes.trim());
+      const payload = {
+        unitPrice: formData.unitPrice,
+        notes: formData.notes.trim() || undefined,
+      };
+      if (files.length) {
+        payload.proofOfBillUrls = await uploadFiles(files, UPLOAD_FOLDERS.proofOfBill);
       }
-      if (file) {
-        submitData.append('proofOfBill', file);
-      }
-
-      const response = await apiClient.put(`/purchase-orders/${poId}/amount`, submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await apiClient.put(`/purchase-orders/${poId}/amount`, payload);
 
       if (response.ok) {
         toast.success('Price updated successfully!');
         handleClose();
-        // Call onSuccess callback to refresh data
-        if (onSuccess) {
-          onSuccess();
-        }
+        if (onSuccess) onSuccess();
       } else {
         toast.error(response.data?.message || 'Failed to update price');
       }
@@ -267,7 +236,7 @@ const EditPriceModal = ({ open, onClose, poId, poData, onSuccess }) => {
 
   const handleClose = () => {
     setFormData({ unitPrice: '', notes: '' });
-    setFile(null);
+    setFiles([]);
     onClose();
   };
 
@@ -286,21 +255,13 @@ const EditPriceModal = ({ open, onClose, poId, poData, onSuccess }) => {
             required
           />
 
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
-              Upload New Document <span className="text-gray-500">(Optional)</span>
-            </label>
-            <input
-              type="file"
-              className="border border-gray-300 rounded p-2 w-full"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              onChange={handleFileChange}
-              disabled={loading}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG. Leave empty to keep existing document.
-            </p>
-          </div>
+          <FileUploadField
+            label="Upload New Document"
+            files={files}
+            onChange={setFiles}
+            disabled={loading || fileUploading}
+            helperText="Optional — replaces bill documents when provided"
+          />
 
           <CustomTextField
             label="Notes"
@@ -407,17 +368,12 @@ const ViewPriceDetailsModal = ({ open, onClose, poData, onEdit }) => {
             </div>
           </div>
 
-          {poData.proofOfBill && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Proof of Bill</label>
-              <button
-                onClick={handleViewProof}
-                className="mt-2 text-blue-600 hover:text-blue-800 underline"
-              >
-                View Document
-              </button>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Proof of Bill</label>
+            <div className="mt-2">
+              <AttachmentLinks urls={poData.proofOfBill} />
             </div>
-          )}
+          </div>
 
           {!canEdit && !!onEdit && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
@@ -453,9 +409,11 @@ const PROJECT_COLORS = ['#0252AD', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '
 const TransactionModal = ({ open, onClose, vendorId, defaultVendorName, defaultProjectId, onSuccess }) => {
   const [formData, setFormData] = useState({
     amount: '', note: '', vendorName: defaultVendorName || '',
-    projectId: defaultProjectId || '', sectionId: '', file: null,
+    projectId: defaultProjectId || '', sectionId: '',
   });
+  const [paymentFiles, setPaymentFiles] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
+  const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
   const [projects, setProjects] = useState([]);
   const [allSections, setAllSections] = useState([]);
   const [filteredSections, setFilteredSections] = useState([]);
@@ -495,7 +453,6 @@ const TransactionModal = ({ open, onClose, vendorId, defaultVendorName, defaultP
   }, [formData.projectId, allSections]);
 
   const handleInputChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
-  const handleFileChange = (e) => setFormData(prev => ({ ...prev, file: e.target.files[0] }));
 
   const handleSubmit = async () => {
     if (!formData.amount || !formData.note || !formData.vendorName || !formData.projectId || !formData.sectionId) {
@@ -503,16 +460,17 @@ const TransactionModal = ({ open, onClose, vendorId, defaultVendorName, defaultP
     }
     try {
       setModalLoading(true);
-      const submitData = new FormData();
-      submitData.append('amount', formData.amount);
-      submitData.append('note', formData.note);
-      submitData.append('vendorName', formData.vendorName);
-      submitData.append('projectId', formData.projectId);
-      submitData.append('sectionId', formData.sectionId);
-      if (formData.file) submitData.append('proofOfPayment', formData.file);
-      const response = await apiClient.post(`/vendor-account/vendors/${vendorId}/payments`, submitData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const payload = {
+        amount: formData.amount,
+        note: formData.note,
+        vendorName: formData.vendorName,
+        projectId: formData.projectId,
+        sectionId: formData.sectionId,
+      };
+      if (paymentFiles.length) {
+        payload.proofOfPaymentUrls = await uploadFiles(paymentFiles, UPLOAD_FOLDERS.proofOfPayment);
+      }
+      const response = await apiClient.post(`/vendor-account/vendors/${vendorId}/payments`, payload);
       if (response.ok) {
         toast.success('Payment added successfully!');
         handleClose();
@@ -527,11 +485,12 @@ const TransactionModal = ({ open, onClose, vendorId, defaultVendorName, defaultP
   };
 
   const handleClose = () => {
-    setFormData({ amount: '', note: '', vendorName: defaultVendorName || '', projectId: defaultProjectId || '', sectionId: '', file: null });
+    setFormData({ amount: '', note: '', vendorName: defaultVendorName || '', projectId: defaultProjectId || '', sectionId: '' });
+    setPaymentFiles([]);
     onClose();
   };
 
-  const isSubmitDisabled = modalLoading || !formData.amount || !formData.note || !formData.vendorName || !formData.projectId || !formData.sectionId;
+  const isSubmitDisabled = modalLoading || fileUploading || !formData.amount || !formData.note || !formData.vendorName || !formData.projectId || !formData.sectionId;
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -581,10 +540,12 @@ const TransactionModal = ({ open, onClose, vendorId, defaultVendorName, defaultP
             onChange={(e) => handleInputChange('note', e.target.value)}
             disabled={modalLoading}
           />
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Upload Proof of Payment</label>
-            <input type="file" className="border border-gray-300 rounded p-2 w-full" onChange={handleFileChange} disabled={modalLoading} />
-          </div>
+          <FileUploadField
+            label="Upload Proof of Payment"
+            files={paymentFiles}
+            onChange={setPaymentFiles}
+            disabled={modalLoading || fileUploading}
+          />
         </div>
         <div className="flex justify-end gap-3 mt-6">
           <button
@@ -758,14 +719,12 @@ const AccPayables = () => {
     );
   };
 
-  const ViewDocument = ({ value }) => {
-    if (!value) return <span className="text-gray-400">-</span>;
-    return (
-      <button onClick={() => window.open(value, '_blank')} className="text-orange-500 hover:text-orange-600 underline font-medium cursor-pointer">
-        View Document
-      </button>
-    );
-  };
+  const ViewDocument = ({ value }) => (
+    <AttachmentLinks
+      urls={value}
+      linkClassName="text-orange-500 hover:text-orange-600 underline font-medium cursor-pointer"
+    />
+  );
 
   const ColorCodedAmount = ({ value }) => {
     if (!value || value === "-") return <span>{value}</span>;
@@ -1521,16 +1480,10 @@ const AccPayables = () => {
                             <StatusChip value={po.status} />
                           </td>
                           <td className="px-4 py-3">
-                            {po.proofOfBill ? (
-                              <button
-                                onClick={() => window.open(po.proofOfBill, '_blank')}
-                                className="text-orange-500 hover:text-orange-600 underline font-medium text-sm"
-                              >
-                                View Document
-                              </button>
-                            ) : (
-                              <span className="text-gray-400 text-sm">-</span>
-                            )}
+                            <AttachmentLinks
+                              urls={po.proofOfBill}
+                              linkClassName="text-orange-500 hover:text-orange-600 underline font-medium text-sm"
+                            />
                           </td>
                         </tr>
                       ))}
@@ -1577,16 +1530,10 @@ const AccPayables = () => {
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700">{t.note || '-'}</td>
                           <td className="px-4 py-3">
-                            {t.proofOfPayment ? (
-                              <a
-                                href={t.proofOfPayment} target="_blank" rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-700 underline text-sm font-medium"
-                              >
-                                View Proof
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 text-sm">-</span>
-                            )}
+                            <AttachmentLinks
+                              urls={t.proofOfPayment}
+                              linkClassName="text-blue-600 hover:text-blue-700 underline text-sm font-medium"
+                            />
                           </td>
                         </tr>
                       ))}

@@ -17,6 +17,11 @@ import CustomTextField from "../../../../mui/CustomTextField";
 import Button from "../../../../components/Button";
 import { formatDateDMY } from '../../../../utils';
 import { useReadOnly } from "../../../../context/ReadOnlyContext";
+import FileUploadField from "../../../../components/ui/FileUploadField";
+import AttachmentLinks from "../../../../components/ui/AttachmentLinks";
+import useS3MultiUpload from "../../../../hooks/useS3MultiUpload";
+import { UPLOAD_FOLDERS } from "../../../../constants/fileUpload";
+import { normalizeAttachmentUrls } from "../../../../utils/fileUpload";
 
 const style = {
   position: "absolute",
@@ -62,11 +67,10 @@ export default function PayableDetails() {
       console.log("Download receipt clicked for transaction:", transactionId);
       // Find the transaction data to get the proofOfPayment URL
       const transaction = transactions.find(t => t.id === transactionId);
-      console.log("Found transaction:", transaction);
-      if (transaction && transaction.proofOfPayment) {
-        // Create a temporary link to download the file
+      const proofUrls = normalizeAttachmentUrls(transaction?.proofRaw);
+      if (proofUrls.length > 0) {
         const link = document.createElement('a');
-        link.href = transaction.proofOfPayment;
+        link.href = proofUrls[0];
         link.download = `receipt-${transactionId}.pdf`; // or extract filename from URL
         link.target = '_blank';
         document.body.appendChild(link);
@@ -105,9 +109,10 @@ export default function PayableDetails() {
     const [formData, setFormData] = useState({
       amount: '',
       note: '',
-      file: null
     });
+    const [paymentFiles, setPaymentFiles] = useState([]);
     const [modalLoading, setModalLoading] = useState(false);
+    const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
   
     const handleInputChange = (field, value) => {
       setFormData(prev => ({
@@ -116,37 +121,27 @@ export default function PayableDetails() {
       }));
     };
   
-    const handleFileChange = (e) => {
-      setFormData(prev => ({
-        ...prev,
-        file: e.target.files[0]
-      }));
-    };
-  
     const handleSubmit = async () => {
       try {
         setModalLoading(true);
-        
-        // Create form data for file upload
-        const submitData = new FormData();
-        submitData.append('amount', formData.amount);
-        submitData.append('note', formData.note);
-        if (formData.file) {
-          submitData.append('proofOfPayment', formData.file);
+        const payload = {
+          amount: formData.amount,
+          note: formData.note,
+        };
+        if (paymentFiles.length) {
+          payload.proofOfPaymentUrls = await uploadFiles(
+            paymentFiles,
+            UPLOAD_FOLDERS.proofOfPayment
+          );
         }
 
-        const response = await apiClient.post(`/vendor-account/vendors/${id}/payments`, submitData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        const response = await apiClient.post(`/vendor-account/vendors/${id}/payments`, payload);
 
         if (response.ok) {
           toast.success('Payment added successfully!');
           onClose();
-          // Reset form
-          setFormData({ amount: '', note: '', file: null });
-          // Refresh the transaction data
+          setFormData({ amount: '', note: '' });
+          setPaymentFiles([]);
           fetchDetails();
         } else {
           toast.error(response.data?.message || 'Failed to add payment');
@@ -160,7 +155,8 @@ export default function PayableDetails() {
     };
 
     const handleClose = () => {
-      setFormData({ amount: '', note: '', file: null });
+      setFormData({ amount: '', note: '' });
+      setPaymentFiles([]);
       onClose();
     };
   
@@ -184,15 +180,12 @@ export default function PayableDetails() {
               onChange={(e) => handleInputChange('note', e.target.value)}
               disabled={modalLoading}
             />
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Upload File</label>
-              <input 
-                type="file" 
-                className="border border-gray-300 rounded p-2 w-full" 
-                onChange={handleFileChange}
-                disabled={modalLoading}
-              />
-            </div>
+            <FileUploadField
+              label="Upload File"
+              files={paymentFiles}
+              onChange={setPaymentFiles}
+              disabled={modalLoading || fileUploading}
+            />
           </div>
           <div className="flex justify-end gap-3 mt-6">
             <button
@@ -233,6 +226,7 @@ export default function PayableDetails() {
           type: transaction.type,
           amount: transaction.amount ? `${parseFloat(transaction.amount).toLocaleString()}` : "-",
           proof: transaction.proofOfPayment,
+          proofRaw: transaction.proofOfPayment,
         })) || [];
         
         setTransactions(transactionData);
@@ -285,20 +279,9 @@ export default function PayableDetails() {
     },
   ];
 
-  // Custom cell renderer for Proof link
-  const ProofCell = ({ value }) => {
-    if (!value) return <span>-</span>;
-    return (
-      <a
-        href={value}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-black underline hover:text-primary"
-      >
-        View Proof
-      </a>
-    );
-  };
+  const ProofCell = ({ value }) => (
+    <AttachmentLinks urls={value} linkClassName="text-black underline hover:text-primary text-sm" />
+  );
 
   if (!vendorAccount && !loading) {
     return (
