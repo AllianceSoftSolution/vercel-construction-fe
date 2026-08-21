@@ -284,16 +284,20 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
 
   const handleAssign = async () => {
     if (!selectedUserId) { toast.error("Please select a user"); return; }
+    if (!utilityFiles.length) {
+      toast.error("Utility file is required");
+      return;
+    }
     try {
       setLoading(true);
-      const payload = { userId: selectedUserId };
-      if (utilityFiles.length) {
-        payload.utilityFileUrls = await uploadFiles(
+      const payload = {
+        userId: selectedUserId,
+        utilityFileUrls: await uploadFiles(
           utilityFiles,
           UPLOAD_FOLDERS.utilityFile,
           { multiple: false }
-        );
-      }
+        ),
+      };
 
       const res = await apiClient.patch(`/stores/${store.id}/assign`, payload);
       if (res.ok) {
@@ -415,16 +419,17 @@ const AssignPersonnelModal = ({ store, onClose, onSuccess }) => {
           </div>
           <FileUploadField
             label="Utility File"
+            required
             multiple={false}
             files={utilityFiles}
             onChange={setUtilityFiles}
             disabled={loading || fileUploading}
-            helperText="Optional supporting document for this assignment"
+            helperText="Supporting document is required for this assignment"
           />
           <div className="flex gap-3 mt-1">
             <button
               onClick={handleAssign}
-              disabled={loading || fileUploading || !selectedUserId}
+              disabled={loading || fileUploading || !selectedUserId || !utilityFiles.length}
               className="flex-1 bg-[#F97316] text-white rounded-lg py-2 font-semibold text-sm hover:bg-orange-600 disabled:opacity-60"
             >
               {loading ? "Assigning..." : "Assign"}

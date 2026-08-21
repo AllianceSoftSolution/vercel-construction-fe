@@ -194,17 +194,20 @@ const StoreMovementHistoryTable = ({
 
   const handleConfirmAccept = async () => {
     if (!acceptTransaction) return;
+    if (!acceptForm.documentFiles.length) {
+      toast.error("Attachment is required");
+      return;
+    }
     setAcceptLoading(true);
 
     try {
-      const payload = {};
-      if (acceptForm.note) payload.note = acceptForm.note;
-      if (acceptForm.documentFiles.length) {
-        payload.documentUrls = await uploadFiles(
+      const payload = {
+        ...(acceptForm.note ? { note: acceptForm.note } : {}),
+        documentUrls: await uploadFiles(
           acceptForm.documentFiles,
           UPLOAD_FOLDERS.document
-        );
-      }
+        ),
+      };
 
       const acceptStoreId = acceptTransaction.storeId || storeId;
       const res = await apiClient.post(
@@ -347,7 +350,8 @@ const StoreMovementHistoryTable = ({
                 }
               />
               <FileUploadField
-                label="Attachment (Optional)"
+                label="Attachment"
+                required
                 files={acceptForm.documentFiles}
                 onChange={(documentFiles) =>
                   setAcceptForm((prev) => ({ ...prev, documentFiles }))

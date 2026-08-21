@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Box, Chip, Modal } from "@mui/material";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import { FiChevronLeft, FiChevronRight, FiSearch, FiX } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiChevronDown, FiSearch, FiX } from "react-icons/fi";
 import {
   AccountBalance,
   FolderOpen,
@@ -19,6 +20,7 @@ import CustomTextField from "../../../mui/CustomTextField";
 import Button from "../../../components/Button";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import DeleteModal from "../../../mui/DeleteModal";
 import apiClient from "../../../api/apiClient";
 import { formatDateDMY } from "../../../utils";
 import { useReadOnly } from "../../../context/ReadOnlyContext";
@@ -343,6 +345,263 @@ const TableFilterSelect = ({ allLabel, options, value, onChange }) => (
     ))}
   </select>
 );
+
+const PETTY_CASH_SELECT_MENU_ATTR = "data-petty-cash-searchable-select-menu";
+
+const SearchableSelect = ({
+  options = [],
+  value,
+  onChange,
+  placeholder = "Select...",
+  clearOption = null,
+  searchPlaceholder = "Search expense heads...",
+  emptySearchMessage = "No expense heads match your search.",
+  disabled = false,
+  className = "",
+  triggerClassName = "w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-left flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40",
+  menuZIndex = 1400,
+  getOptionSearchText = (option) => option.label,
+}) => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [menuStyle, setMenuStyle] = useState(null);
+  const containerRef = useRef(null);
+  const triggerRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const selectedLabel = useMemo(() => {
+    if (clearOption && value === clearOption.value) return clearOption.label;
+    if (!value) return placeholder;
+    return options.find((option) => option.value === value)?.label || placeholder;
+  }, [clearOption, options, placeholder, value]);
+
+  const filteredOptions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return options;
+    return options.filter((option) =>
+      getOptionSearchText(option).toLowerCase().includes(q)
+    );
+  }, [getOptionSearchText, options, query]);
+
+  const closeMenu = useCallback(() => {
+    setOpen(false);
+    setQuery("");
+    setMenuStyle(null);
+  }, []);
+
+  const handleSelect = useCallback(
+    (nextValue) => {
+      onChange(nextValue);
+      closeMenu();
+    },
+    [closeMenu, onChange]
+  );
+
+  useEffect(() => {
+    if (!open || disabled) return undefined;
+
+    const updateMenuPosition = () => {
+      if (!triggerRef.current) return;
+      const rect = triggerRef.current.getBoundingClientRect();
+      setMenuStyle({
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: Math.max(rect.width, 208),
+        zIndex: menuZIndex,
+      });
+    };
+
+    updateMenuPosition();
+
+    const handlePointerDown = (event) => {
+      if (
+        containerRef.current?.contains(event.target) ||
+        event.target.closest(`[${PETTY_CASH_SELECT_MENU_ATTR}]`)
+      ) {
+        return;
+      }
+      closeMenu();
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") closeMenu();
+    };
+
+    const handleReposition = () => updateMenuPosition();
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+    window.addEventListener("resize", handleReposition);
+    window.addEventListener("scroll", handleReposition, true);
+    searchInputRef.current?.focus();
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("resize", handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
+    };
+  }, [closeMenu, disabled, menuZIndex, open]);
+
+  const menu = open && menuStyle
+    ? createPortal(
+        <div
+          {...{ [PETTY_CASH_SELECT_MENU_ATTR]: true }}
+          style={menuStyle}
+          className="rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"
+        >
+          <div className="p-2 border-b border-gray-100 bg-[#FAFAFA]">
+            <div className="relative">
+              <FiSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
+                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#0252AD]/25 focus:border-[#0252AD]/40"
+              />
+            </div>
+          </div>
+          <ul role="listbox" className="max-h-52 overflow-y-auto py-1">
+            {clearOption && (
+              <li>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={value === clearOption.value}
+                  onClick={() => handleSelect(clearOption.value)}
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-[#FFF7ED] ${
+                    value === clearOption.value
+                      ? "bg-[#FFF7ED] text-[#FC8908] font-semibold"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {clearOption.label}
+                </button>
+              </li>
+            )}
+            {filteredOptions.length === 0 ? (
+              <li className="px-3 py-3 text-xs text-gray-500 text-center">
+                {emptySearchMessage}
+              </li>
+            ) : (
+              filteredOptions.map((option) => (
+                <li key={option.value}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={value === option.value}
+                    onClick={() => handleSelect(option.value)}
+                    className={`w-full px-3 py-2 text-left text-sm hover:bg-[#FFF7ED] ${
+                      value === option.value
+                        ? "bg-[#FFF7ED] text-[#FC8908] font-semibold"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    <span className="block truncate">{option.label}</span>
+                    {option.description ? (
+                      <span className="block truncate text-xs text-gray-500 mt-0.5">
+                        {option.description}
+                      </span>
+                    ) : null}
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>,
+        document.body
+      )
+    : null;
+
+  return (
+    <div ref={containerRef} className={className}>
+      <button
+        ref={triggerRef}
+        type="button"
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) setOpen((prev) => !prev);
+        }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`${triggerClassName} ${
+          disabled ? "opacity-60 cursor-not-allowed" : ""
+        } ${!value && !clearOption ? "text-gray-500" : "text-gray-800"}`}
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <FiChevronDown
+          className={`shrink-0 text-gray-400 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {menu}
+    </div>
+  );
+};
+
+const SearchableTableFilterSelect = ({
+  allLabel,
+  options,
+  value,
+  onChange,
+  searchPlaceholder = "Search expense heads...",
+}) => (
+  <SearchableSelect
+    options={options}
+    value={value}
+    onChange={onChange}
+    clearOption={{ value: "all", label: allLabel }}
+    searchPlaceholder={searchPlaceholder}
+    className="relative w-52 shrink-0"
+    menuZIndex={1400}
+  />
+);
+
+const SearchableExpenseHeadField = ({
+  heads,
+  value,
+  onChange,
+  placeholder = "Select expense head",
+  disabled = false,
+  emptyMessage = "No expense heads available. Contact an administrator to add expense heads.",
+  menuZIndex = 1500,
+}) => {
+  const options = useMemo(
+    () =>
+      heads.map((head) => ({
+        value: head.id,
+        label: head.name,
+        description: head.description || "",
+      })),
+    [heads]
+  );
+
+  return (
+    <div className="flex flex-col gap-1">
+      <SearchableSelect
+        options={options}
+        value={value || ""}
+        onChange={onChange}
+        placeholder={placeholder}
+        searchPlaceholder="Search expense heads..."
+        disabled={disabled || heads.length === 0}
+        menuZIndex={menuZIndex}
+        triggerClassName="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white text-left flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
+        getOptionSearchText={(option) =>
+          `${option.label} ${option.description || ""}`.trim()
+        }
+      />
+      {heads.length === 0 && (
+        <p className="text-xs text-amber-600">{emptyMessage}</p>
+      )}
+    </div>
+  );
+};
 
 const isTransactionInDateRange = (createdAt, from, to) => {
   if (!from && !to) return true;
@@ -810,7 +1069,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const [txDateFrom, setTxDateFrom] = useState("");
   const [txDateTo, setTxDateTo] = useState("");
   const [detailTransactionScope, setDetailTransactionScope] =
-    useState("all_sections");
+    useState("all");
 
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
@@ -818,6 +1077,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const { uploadFiles, uploading: fileUploading } = useS3MultiUpload();
   const [submitting, setSubmitting] = useState(false);
   const [headForm, setHeadForm] = useState({ name: "", description: "" });
+  const [headSearch, setHeadSearch] = useState("");
+  const [editingHeadId, setEditingHeadId] = useState(null);
+  const [headDeleteTarget, setHeadDeleteTarget] = useState(null);
   const [formSections, setFormSections] = useState([]);
   const [sectionsLoading, setSectionsLoading] = useState(false);
 
@@ -891,10 +1153,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         ...(selectedSection?.id ? { sectionId: selectedSection.id } : {}),
       };
       const txQuery = {
-        ...summaryQuery,
-        ...(selectedProject?.id ? { projectId: selectedProject.id } : {}),
-        ...(txDateFrom ? { dateFrom: txDateFrom } : {}),
-        ...(txDateTo ? { dateTo: txDateTo } : {}),
+        ...apiFilters,
         limit: 500,
       };
 
@@ -960,12 +1219,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       setContentLoading(false);
     }
   }, [
-    selectedProject?.id,
     selectedSection?.id,
     apiFilters,
     isSectionAccountant,
-    txDateFrom,
-    txDateTo,
   ]);
 
   const fetchProjectBalance = useCallback(
@@ -1038,6 +1294,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     setFormSections([]);
     setSectionsLoading(false);
     setHeadForm({ name: "", description: "" });
+    setHeadSearch("");
+    setEditingHeadId(null);
+    setHeadDeleteTarget(null);
   };
 
   const handleSubmitDistributeToProject = async () => {
@@ -1218,30 +1477,68 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     }
   };
 
+  const refreshExpenseHeads = async () => {
+    const headsRes = await apiClient.get("/petty-cash/expense-heads");
+    if (headsRes.ok) setExpenseHeads(headsRes.data?.data || []);
+  };
+
   const handleAddHead = async () => {
     if (!headForm.name.trim()) return toast.error("Name required");
     setSubmitting(true);
     try {
-      const res = await apiClient.post("/petty-cash/expense-heads", headForm);
+      const res = editingHeadId
+        ? await apiClient.put(`/petty-cash/expense-heads/${editingHeadId}`, headForm)
+        : await apiClient.post("/petty-cash/expense-heads", headForm);
       if (res.ok) {
-        toast.success("Expense head added");
+        toast.success(editingHeadId ? "Expense head updated" : "Expense head added");
         setHeadForm({ name: "", description: "" });
-        const headsRes = await apiClient.get("/petty-cash/expense-heads");
-        if (headsRes.ok) setExpenseHeads(headsRes.data?.data || []);
+        setEditingHeadId(null);
+        await refreshExpenseHeads();
       } else toast.error(res.data?.message || "Failed");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteHead = async (id) => {
-    const res = await apiClient.delete(`/petty-cash/expense-heads/${id}`);
+  const handleEditHead = (head) => {
+    setEditingHeadId(head.id);
+    setHeadForm({
+      name: head.name || "",
+      description: head.description || "",
+    });
+  };
+
+  const cancelHeadEdit = () => {
+    setEditingHeadId(null);
+    setHeadForm({ name: "", description: "" });
+  };
+
+  const handleDeleteHead = async () => {
+    if (!headDeleteTarget?.id) return;
+    const res = await apiClient.delete(
+      `/petty-cash/expense-heads/${headDeleteTarget.id}`
+    );
     if (res.ok) {
-      toast.success("Deleted");
-      const headsRes = await apiClient.get("/petty-cash/expense-heads");
-      if (headsRes.ok) setExpenseHeads(headsRes.data?.data || []);
+      toast.success("Expense head deleted");
+      if (editingHeadId === headDeleteTarget.id) {
+        cancelHeadEdit();
+      }
+      setHeadDeleteTarget(null);
+      await refreshExpenseHeads();
+    } else {
+      toast.error(res.data?.message || "Failed to delete expense head");
     }
   };
+
+  const filteredExpenseHeads = useMemo(() => {
+    const q = headSearch.trim().toLowerCase();
+    if (!q) return expenseHeads;
+    return expenseHeads.filter(
+      (head) =>
+        head.name?.toLowerCase().includes(q) ||
+        head.description?.toLowerCase().includes(q)
+    );
+  }, [expenseHeads, headSearch]);
 
   const tableData = transactions.map((tx) => ({
     id: tx.id,
@@ -1335,6 +1632,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       if (detailTransactionScope === "project") {
         return isProjectManager ? "pm_project" : "project";
       }
+      if (detailTransactionScope === "all_sections") {
+        return "sections";
+      }
+      if (detailTransactionScope === "all") {
+        return "all_project";
+      }
       return "sections";
     }
     if (isSectionAccountant && selectedSection && activeTab === 0) {
@@ -1397,7 +1700,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         filtered = filtered.filter((r) =>
           SECTION_LEVEL_TX_TYPES.has(r.typeRaw)
         );
-      } else {
+      } else if (scope !== "all") {
         const section = projectBalance?.sections?.find((s) => s.id === scope);
         if (section) {
           filtered = filtered.filter((r) => r.sectionId === section.id);
@@ -1414,6 +1717,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   );
 
   const projectDetailSubtitle = useMemo(() => {
+    if (detailTransactionScope === "all") {
+      return "All petty cash transactions for this project";
+    }
     if (detailTransactionScope === "project") {
       return isProjectManager
         ? "Project-level transactions (internal expenses only)"
@@ -1488,11 +1794,10 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
           txByFilter === "all" || row.actorLabel === txByFilter;
         const matchesHead =
           txHeadFilter === "all" || row.head === txHeadFilter;
-        const matchesDate = isTransactionInDateRange(
-          row.createdAt,
-          txDateFrom,
-          txDateTo
-        );
+        const matchesDate =
+          !txDateFrom && !txDateTo
+            ? true
+            : isTransactionInDateRange(row.createdAt, txDateFrom, txDateTo);
         if (!matchesType || !matchesBy || !matchesHead || !matchesDate) {
           return false;
         }
@@ -1661,7 +1966,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const goBackToProjects = () => {
     setSelectedProject(null);
     setProjectBalance(null);
-    setDetailTransactionScope("all_sections");
+    setDetailTransactionScope("all");
     resetTransactionControls();
   };
 
@@ -1672,7 +1977,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const handleSelectProject = (project) => {
     setSelectedProject(project);
-    setDetailTransactionScope("all_sections");
+    setDetailTransactionScope("all");
     resetTransactionControls();
   };
 
@@ -2031,7 +2336,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txByFilter}
                       onChange={setTxByFilter}
                     />
-                    <TableFilterSelect
+                    <SearchableTableFilterSelect
                       allLabel="Expense Head: All"
                       options={expenseHeadFilterOptions}
                       value={txHeadFilter}
@@ -2189,6 +2494,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 <div className="flex flex-wrap gap-2 mb-3">
                   <button
                     type="button"
+                    onClick={() => setDetailTransactionScope("all")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                      detailTransactionScope === "all"
+                        ? "bg-[#0252AD] text-white border-[#0252AD]"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-[#0252AD]"
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setDetailTransactionScope("project")}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                       detailTransactionScope === "project"
@@ -2256,7 +2572,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txByFilter}
                       onChange={setTxByFilter}
                     />
-                    <TableFilterSelect
+                    <SearchableTableFilterSelect
                       allLabel="Expense Head: All"
                       options={expenseHeadFilterOptions}
                       value={txHeadFilter}
@@ -2324,7 +2640,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     value={txByFilter}
                     onChange={setTxByFilter}
                   />
-                  <TableFilterSelect
+                  <SearchableTableFilterSelect
                     allLabel="Expense Head: All"
                     options={expenseHeadFilterOptions}
                     value={txHeadFilter}
@@ -2588,25 +2904,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
             </select>
 
             <label className="text-sm font-medium">Expense Head *</label>
-            <select
-              className="border rounded p-2"
-              value={form.expenseHeadId || ""}
-              onChange={(e) =>
-                setForm({ ...form, expenseHeadId: e.target.value })
+            <SearchableExpenseHeadField
+              heads={expenseHeads}
+              value={form.expenseHeadId}
+              onChange={(expenseHeadId) =>
+                setForm({ ...form, expenseHeadId })
               }
-            >
-              <option value="">Select expense head</option>
-              {expenseHeads.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
-                </option>
-              ))}
-            </select>
-            {expenseHeads.length === 0 && (
-              <p className="text-xs text-amber-600">
-                No expense heads available. Contact an administrator to add expense heads.
-              </p>
-            )}
+              placeholder="Select expense head"
+            />
 
             {form.projectId && (
               <p className="text-xs text-gray-600">
@@ -2725,20 +3030,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
             )}
 
             <label className="text-sm font-medium">Expense Head *</label>
-            <select
-              className="border rounded p-2"
-              value={form.expenseHeadId || ""}
-              onChange={(e) =>
-                setForm({ ...form, expenseHeadId: e.target.value })
+            <SearchableExpenseHeadField
+              heads={expenseHeads}
+              value={form.expenseHeadId}
+              onChange={(expenseHeadId) =>
+                setForm({ ...form, expenseHeadId })
               }
-            >
-              <option value="">Select head</option>
-              {expenseHeads.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Select expense head"
+            />
             <CustomTextField
               label="Amount *"
               type="number"
@@ -2802,15 +3101,32 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                   setHeadForm({ ...headForm, description: e.target.value })
                 }
               />
-              <Button
-                buttonText="Add Head"
-                onClick={handleAddHead}
-                disabled={submitting}
-              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  buttonText={editingHeadId ? "Update Head" : "Add Head"}
+                  onClick={handleAddHead}
+                  disabled={submitting}
+                />
+                {editingHeadId && (
+                  <Button
+                    buttonText="Cancel Edit"
+                    onClick={cancelHeadEdit}
+                    disabled={submitting}
+                    className="bg-gray-200 text-gray-800"
+                  />
+                )}
+              </div>
             </div>
           )}
+          <div className="mb-3">
+            <SearchField
+              value={headSearch}
+              onChange={setHeadSearch}
+              placeholder="Search expense heads..."
+            />
+          </div>
           <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
-            {expenseHeads.map((h) => (
+            {filteredExpenseHeads.map((h) => (
               <div
                 key={h.id}
                 className="flex justify-between items-center border rounded p-2"
@@ -2822,18 +3138,30 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                   )}
                 </div>
                 {permissions.canManageHeads && (
-                  <button
-                    className="text-red-500 text-sm"
-                    onClick={() => handleDeleteHead(h.id)}
-                  >
-                    Delete
-                  </button>
+                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                    <button
+                      type="button"
+                      className="text-[#0252AD] text-sm font-medium"
+                      onClick={() => handleEditHead(h)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="text-red-500 text-sm font-medium"
+                      onClick={() => setHeadDeleteTarget(h)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
-            {expenseHeads.length === 0 && (
+            {filteredExpenseHeads.length === 0 && (
               <p className="text-sm text-gray-500 text-center py-4">
-                No expense heads yet. Add Utility Bills, Lunch, Groceries, etc.
+                {expenseHeads.length === 0
+                  ? "No expense heads yet. Add Utility Bills, Lunch, Groceries, etc."
+                  : "No expense heads match your search."}
               </p>
             )}
           </div>
@@ -2844,6 +3172,15 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
           />
         </Box>
       </Modal>
+
+      {headDeleteTarget && (
+        <DeleteModal
+          zIndex={1400}
+          message={`Delete expense head "${headDeleteTarget.name}"? This cannot be undone.`}
+          onClose={() => setHeadDeleteTarget(null)}
+          onConfirm={handleDeleteHead}
+        />
+      )}
     </div>
   );
 };

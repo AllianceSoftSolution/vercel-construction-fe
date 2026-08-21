@@ -224,6 +224,10 @@ const SiStoreDetail = () => {
     }, [open, modalType, stockInForm.stockInType]);
 
     const handleStockInSubmit = async () => {
+      if (!stockInForm.documentFiles.length) {
+        toast.error("Attachment is required");
+        return;
+      }
       setLoading(true);
       try {
         const payload = {
@@ -235,13 +239,11 @@ const SiStoreDetail = () => {
             stockInForm.stockInType === "PO" && stockInForm.po
               ? stockInForm.po
               : undefined,
-        };
-        if (stockInForm.documentFiles.length) {
-          payload.documentUrls = await uploadFiles(
+          documentUrls: await uploadFiles(
             stockInForm.documentFiles,
             UPLOAD_FOLDERS.document
-          );
-        }
+          ),
+        };
         const res = await apiClient.post(`/stores/${id}/stock-in`, payload);
         if (res.ok) {
           toast.success("Stock In successful!");
@@ -262,6 +264,10 @@ const SiStoreDetail = () => {
         toast.error("Please select a destination store");
         return;
       }
+      if (!stockOutForm.documentFiles.length) {
+        toast.error("Attachment is required");
+        return;
+      }
       setLoading(true);
       try {
         const outType = stockOutForm.stockOutType || "MANUAL";
@@ -274,13 +280,11 @@ const SiStoreDetail = () => {
             outType === "TRANSFER" && stockOutForm.toStoreId
               ? stockOutForm.toStoreId
               : undefined,
-        };
-        if (stockOutForm.documentFiles.length) {
-          payload.documentUrls = await uploadFiles(
+          documentUrls: await uploadFiles(
             stockOutForm.documentFiles,
             UPLOAD_FOLDERS.document
-          );
-        }
+          ),
+        };
         const res = await apiClient.post(`/stores/${id}/stock-out`, payload);
         if (res.ok) {
           toast.success("Stock Out successful!");
@@ -346,7 +350,8 @@ const SiStoreDetail = () => {
                     <CustomTextField fullWidth margin="normal" label="QTY ( Quantity )" value={stockInForm.qty} type="number" onChange={(e) => handleStockInChange("qty", e.target.value)} />
                     <CustomTextField fullWidth margin="normal" label="Note" value={stockInForm.note} onChange={(e) => handleStockInChange("note", e.target.value)} />
                     <FileUploadField
-                      label="Attachment (Optional)"
+                      label="Attachment"
+                      required
                       files={stockInForm.documentFiles}
                       onChange={(documentFiles) =>
                         setStockInForm((prev) => ({ ...prev, documentFiles }))
@@ -424,7 +429,8 @@ const SiStoreDetail = () => {
 
                   <CustomTextField fullWidth margin="normal" label="Note" type="text" name="note" value={stockOutForm.note} onChange={(e) => handleStockOutChange("note", e.target.value)} />
                   <FileUploadField
-                    label="Attachment (Optional)"
+                    label="Attachment"
+                    required
                     files={stockOutForm.documentFiles}
                     onChange={(documentFiles) =>
                       setStockOutForm((prev) => ({ ...prev, documentFiles }))
