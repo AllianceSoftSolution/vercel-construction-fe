@@ -151,6 +151,19 @@ const validateAmountWithinBalance = (amount, available, balanceLabel) => {
   return true;
 };
 
+const ModalRemainingBalance = ({ label, amount, loading = false, className = "" }) => (
+  <p className={`text-sm text-gray-600 ${className}`.trim()}>
+    {label}:{" "}
+    {loading ? (
+      <span className="text-gray-400">Loading...</span>
+    ) : (
+      <span className="font-semibold text-[#22c55e]">
+        {formatAvailableAmount(amount)}
+      </span>
+    )}
+  </p>
+);
+
 const TYPE_CHIP_COLOR = {
   FUNDING: "success",
   DISTRIBUTION: "info",
@@ -1090,11 +1103,42 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const [headDeleteTarget, setHeadDeleteTarget] = useState(null);
   const [formSections, setFormSections] = useState([]);
   const [sectionsLoading, setSectionsLoading] = useState(false);
+  const [formModalBalance, setFormModalBalance] = useState(null);
+  const [formModalBalanceLoading, setFormModalBalanceLoading] = useState(false);
 
   const accessibleProjects = useMemo(() => {
     const source = projects.length > 0 ? projects : allProjects;
     return filterPettyCashSelectableProjects(source);
   }, [projects, allProjects]);
+
+  const loadFormProjectBalance = useCallback(
+    async (projectId) => {
+      if (!projectId) {
+        setFormModalBalance(null);
+        return null;
+      }
+      setFormModalBalanceLoading(true);
+      try {
+        const res = await apiClient.get(
+          `/petty-cash/projects/${projectId}/balance`,
+          apiFilters
+        );
+        if (res.ok) {
+          const data = res.data?.data ?? null;
+          setFormModalBalance(data);
+          return data;
+        }
+        setFormModalBalance(null);
+        return null;
+      } catch {
+        setFormModalBalance(null);
+        return null;
+      } finally {
+        setFormModalBalanceLoading(false);
+      }
+    },
+    [apiFilters]
+  );
 
   const loadProjectSections = useCallback(async (projectId) => {
     if (!projectId) {
@@ -1121,14 +1165,27 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const handleProjectSelect = useCallback(
     async (projectId, resetSection = true) => {
+      if (!projectId) {
+        setForm((prev) => ({
+          ...prev,
+          projectId: "",
+          ...(resetSection ? { sectionId: "", expenseHeadId: "" } : {}),
+        }));
+        setFormSections([]);
+        setFormModalBalance(null);
+        return;
+      }
       setForm((prev) => ({
         ...prev,
         projectId,
         ...(resetSection ? { sectionId: "", expenseHeadId: "" } : {}),
       }));
-      await loadProjectSections(projectId);
+      await Promise.all([
+        loadProjectSections(projectId),
+        loadFormProjectBalance(projectId),
+      ]);
     },
-    [loadProjectSections]
+    [loadProjectSections, loadFormProjectBalance]
   );
   const permissions = useMemo(
     () => ({
@@ -1157,9 +1214,10 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     ]
   );
 
-  const canUsePettyCashPool = isAdminRoleUser || isHeadOfficeAccountant;
+  const canUseHeadOfficeCentralBalance =
+    isAdminRoleUser || isHeadOfficeAccountant;
 
-  const headOfficePoolRemaining = useMemo(
+  const headOfficeCentralBalance = useMemo(
     () => clampNonNegative(summary?.headOfficeDistributableRemaining),
     [summary?.headOfficeDistributableRemaining]
   );
@@ -1307,11 +1365,15 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         allSections.find((s) => s.id === defaults.sectionId) ||
         assignedSections.find((s) => s.id === defaults.sectionId);
       if (sec) {
+        const projectId = sec.projectId || sec.project?.id || "";
         setForm((prev) => ({
           ...prev,
           sectionId: defaults.sectionId,
-          projectId: sec.projectId || sec.project?.id || "",
+          projectId,
         }));
+        if (projectId) {
+          await loadFormProjectBalance(projectId);
+        }
       }
     }
   };
@@ -1322,6 +1384,8 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     setFiles([]);
     setFormSections([]);
     setSectionsLoading(false);
+    setFormModalBalance(null);
+    setFormModalBalanceLoading(false);
     setHeadForm({ name: "", description: "" });
     setHeadSearch("");
     setEditingHeadId(null);
@@ -1364,11 +1428,11 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (!files.length) return toast.error("Proof is required");
 
     if (
-      canUsePettyCashPool &&
+      canUseHeadOfficeCentralBalance &&
       !validateAmountWithinBalance(
         form.amount,
-        headOfficePoolRemaining,
-        "petty cash pool balance"
+        headOfficeCentralBalance,
+        "head office petty cash balance"
       )
     ) {
       return;
@@ -1399,22 +1463,79 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     }
   };
 
-  const getProjectPoolAvailable = useCallback(
+  const getProjectBalanceAvailable = useCallback(
     (projectId) => {
       if (!projectId) return 0;
+
+      const modalProjectId =
+        formModalBalance?.project?.id ?? formModalBalance?.projectId;
+      if (
+        modalProjectId === projectId &&
+        formModalBalance?.projectPoolRemaining != null
+      ) {
+        return clampNonNegative(formModalBalance.projectPoolRemaining);
+      }
+
       if (
         selectedProject?.id === projectId &&
         projectBalance?.projectPoolRemaining != null
       ) {
         return clampNonNegative(projectBalance.projectPoolRemaining);
       }
-      const project = projects.find((p) => p.id === projectId);
-      if (project?.projectPoolRemaining != null) {
-        return clampNonNegative(project.projectPoolRemaining);
+
+      const fromList = [...projects, ...allProjects].find((p) => p.id === projectId);
+      if (fromList?.projectPoolRemaining != null) {
+        return clampNonNegative(fromList.projectPoolRemaining);
       }
+
       return 0;
     },
-    [selectedProject?.id, projectBalance?.projectPoolRemaining, projects]
+    [
+      formModalBalance,
+      selectedProject?.id,
+      projectBalance?.projectPoolRemaining,
+      projects,
+      allProjects,
+    ]
+  );
+
+  const getSectionBalanceAvailable = useCallback(
+    (sectionId) => {
+      if (!sectionId) return 0;
+
+      const fromModal = formModalBalance?.sections?.find(
+        (s) => s.id === sectionId
+      )?.remaining;
+      if (fromModal != null) return clampNonNegative(fromModal);
+
+      const fromFormSection = formSections.find((s) => s.id === sectionId)?.remaining;
+      if (fromFormSection != null) return clampNonNegative(fromFormSection);
+
+      const fromAssigned = assignedSections.find((s) => s.id === sectionId)?.remaining;
+      if (fromAssigned != null) return clampNonNegative(fromAssigned);
+
+      const fromAll = allSections.find((s) => s.id === sectionId)?.remaining;
+      if (fromAll != null) return clampNonNegative(fromAll);
+
+      if (selectedSection?.id === sectionId && selectedSection.remaining != null) {
+        return clampNonNegative(selectedSection.remaining);
+      }
+
+      const fromDetail = projectBalance?.sections?.find(
+        (s) => s.id === sectionId
+      )?.remaining;
+      if (fromDetail != null) return clampNonNegative(fromDetail);
+
+      return 0;
+    },
+    [
+      formModalBalance,
+      formSections,
+      assignedSections,
+      allSections,
+      selectedSection,
+      projectBalance,
+    ]
   );
 
   const handleSubmitInternalExpense = async () => {
@@ -1422,12 +1543,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (!form.expenseHeadId) return toast.error("Select expense head");
     if (!files.length) return toast.error("Proof is required");
 
-    const availablePool = getProjectPoolAvailable(form.projectId);
+    const availableBalance = getProjectBalanceAvailable(form.projectId);
 
     if (
       !validateAmountWithinBalance(
         form.amount,
-        availablePool,
+        availableBalance,
         "project balance"
       )
     ) {
@@ -1465,12 +1586,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (!form.sectionId) return toast.error("Select a section");
     if (!files.length) return toast.error("Proof is required");
 
-    const availablePool = getProjectPoolAvailable(form.projectId);
+    const availableProjectBalance = getProjectBalanceAvailable(form.projectId);
 
     if (
       !validateAmountWithinBalance(
         form.amount,
-        availablePool,
+        availableProjectBalance,
         "project balance"
       )
     ) {
@@ -1506,11 +1627,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (!form.expenseHeadId) return toast.error("Select expense head");
     if (!files.length) return toast.error("Proof is required");
 
-    const availableSectionBalance =
-      assignedSections.find((s) => s.id === form.sectionId)?.remaining ??
-      (selectedSection?.id === form.sectionId ? selectedSection.remaining : null) ??
-      projectBalance?.sections?.find((s) => s.id === form.sectionId)?.remaining ??
-      0;
+    const availableSectionBalance = getSectionBalanceAvailable(form.sectionId);
 
     if (
       !validateAmountWithinBalance(
@@ -2773,7 +2890,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         </div>
       </div>
 
-      {/* Add Petty Cash Modal (admin central pool) */}
+      {/* Add Petty Cash Modal (admin central balance) */}
       <Modal open={modal === "addPettyCash"} onClose={closeModal}>
         <Box sx={modalStyle} className="bg-white p-6">
           <h2 className="text-2xl font-bold mb-4">Add Petty Cash</h2>
@@ -2830,22 +2947,19 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       <Modal open={modal === "distributeProject"} onClose={closeModal}>
         <Box sx={modalStyle} className="bg-white p-6">
           <h2 className="text-2xl font-bold mb-4">Distribute to Project</h2>
-          {canUsePettyCashPool && (
-            <p className="text-sm text-gray-600 mb-4">
-              Available petty cash pool:{" "}
-              <span className="font-semibold text-gray-900">
-                {formatAvailableAmount(headOfficePoolRemaining)}
-              </span>
-            </p>
+          {canUseHeadOfficeCentralBalance && (
+            <ModalRemainingBalance
+              label="Available head office balance"
+              amount={headOfficeCentralBalance}
+              className="mb-4"
+            />
           )}
           <div className="flex flex-col gap-4">
             <label className="text-sm font-medium">Project *</label>
             <select
               className="border rounded-lg p-2.5 w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/30"
               value={form.projectId || ""}
-              onChange={(e) =>
-                setForm({ ...form, projectId: e.target.value })
-              }
+              onChange={(e) => handleProjectSelect(e.target.value)}
             >
               <option value="">Select project</option>
               {projectOptionsForModal.map((p) => (
@@ -2854,6 +2968,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 </option>
               ))}
             </select>
+
+            {form.projectId && (
+              <ModalRemainingBalance
+                label="Available project balance"
+                amount={getProjectBalanceAvailable(form.projectId)}
+                loading={formModalBalanceLoading}
+              />
+            )}
 
             <CustomTextField
               label="Amount *"
@@ -2918,6 +3040,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
               ))}
             </select>
 
+            {form.projectId && (
+              <ModalRemainingBalance
+                label="Available project balance"
+                amount={getProjectBalanceAvailable(form.projectId)}
+                loading={formModalBalanceLoading}
+              />
+            )}
+
             <label className="text-sm font-medium">Section *</label>
             <SectionSelectField
               projectId={form.projectId}
@@ -2931,6 +3061,15 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 })
               }
             />
+
+            {form.sectionId && (
+              <ModalRemainingBalance
+                label="Available section balance"
+                amount={getSectionBalanceAvailable(form.sectionId)}
+                loading={formModalBalanceLoading}
+              />
+            )}
+
             {form.projectId && !sectionsLoading && sectionsForProject.length === 0 && (
               <p className="text-xs text-amber-600">
                 No sections found for this project.
@@ -2966,15 +3105,6 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                   </p>
                 )}
               </div>
-            )}
-
-            {form.projectId && (
-              <p className="text-xs text-gray-600">
-                Available project balance:{" "}
-                <span className="font-semibold text-[#22c55e]">
-                  {formatCurrency(getProjectPoolAvailable(form.projectId))}
-                </span>
-              </p>
             )}
 
             <CustomTextField
@@ -3047,6 +3177,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
               ))}
             </select>
 
+            {form.projectId && (
+              <ModalRemainingBalance
+                label="Available project balance"
+                amount={getProjectBalanceAvailable(form.projectId)}
+                loading={formModalBalanceLoading}
+              />
+            )}
+
             <label className="text-sm font-medium">Expense Head *</label>
             <SearchableExpenseHeadField
               heads={expenseHeads}
@@ -3056,15 +3194,6 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
               }
               placeholder="Select expense head"
             />
-
-            {form.projectId && (
-              <p className="text-xs text-gray-600">
-                Available project balance:{" "}
-                <span className="font-semibold text-[#22c55e]">
-                  {formatCurrency(getProjectPoolAvailable(form.projectId))}
-                </span>
-              </p>
-            )}
 
             <CustomTextField
               label="Amount *"
@@ -3124,14 +3253,20 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                 <select
                   className="border rounded p-2"
                   value={form.sectionId || ""}
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const sec = allSections.find((s) => s.id === e.target.value);
+                    const projectId =
+                      sec?.projectId || sec?.project?.id || form.projectId;
                     setForm({
                       ...form,
                       sectionId: e.target.value,
-                      projectId:
-                        sec?.projectId || sec?.project?.id || form.projectId,
+                      projectId,
                     });
+                    if (projectId) {
+                      await loadFormProjectBalance(projectId);
+                    } else {
+                      setFormModalBalance(null);
+                    }
                   }}
                 >
                   <option value="">Select section</option>
@@ -3143,6 +3278,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     </option>
                   ))}
                 </select>
+
+                {form.sectionId && (
+                  <ModalRemainingBalance
+                    label="Available section balance"
+                    amount={getSectionBalanceAvailable(form.sectionId)}
+                    loading={formModalBalanceLoading}
+                  />
+                )}
               </>
             ) : (
               <>
@@ -3160,6 +3303,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                   ))}
                 </select>
 
+                {form.projectId && (
+                  <ModalRemainingBalance
+                    label="Available project balance"
+                    amount={getProjectBalanceAvailable(form.projectId)}
+                    loading={formModalBalanceLoading}
+                  />
+                )}
+
                 <label className="text-sm font-medium">Section *</label>
                 <SectionSelectField
                   projectId={form.projectId}
@@ -3170,6 +3321,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     setForm({ ...form, sectionId: e.target.value })
                   }
                 />
+
+                {form.sectionId && (
+                  <ModalRemainingBalance
+                    label="Available section balance"
+                    amount={getSectionBalanceAvailable(form.sectionId)}
+                    loading={formModalBalanceLoading}
+                  />
+                )}
               </>
             )}
 
