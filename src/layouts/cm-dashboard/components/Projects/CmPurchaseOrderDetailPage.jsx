@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../../components/ui/Loader";
+import { POPdfButtons } from "../../../../components/POPdfActions";
 
 const CmPurchaseOrderDetail = () => {
   const { id } = useParams();
@@ -88,6 +89,10 @@ const CmPurchaseOrderDetail = () => {
       <div className="bg-[#F7F7F7] rounded-md h-fit mt-4 flex flex-col p-4 gap-y-4">
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
           <p className="text-[#444444] font-semibold text-xl">{purchaseOrderData?.referenceNumber || "Order Name Here"}</p>
+          <POPdfButtons
+            poId={purchaseOrderData?.id}
+            referenceNumber={purchaseOrderData?.referenceNumber}
+          />
           <div className="flex flex-wrap gap-2">
             <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-center">{purchaseOrderData?.status || "Partial"}</div>
           </div>

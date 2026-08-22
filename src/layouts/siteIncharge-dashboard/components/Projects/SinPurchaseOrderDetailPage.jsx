@@ -9,6 +9,7 @@ import { IconButton } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import { POPdfButtons } from "../../../../components/POPdfActions";
 import { useParams } from "react-router-dom";
 const SinPurchaseOrderDetailPage = () => {
   const { id } = useParams();
@@ -145,6 +146,10 @@ const SinPurchaseOrderDetailPage = () => {
           <p className="text-[#444444] font-semibold text-lg md:text-xl">
             {purchaseOrderData.referenceNumber}
           </p>
+          <POPdfButtons
+            poId={purchaseOrderData?.id}
+            referenceNumber={purchaseOrderData?.referenceNumber}
+          />
           <div className="flex flex-wrap gap-2 items-center">
             <div className={`text-white ${getStatusColor(purchaseOrderData.status)} px-6 py-2 rounded-full text-sm`}>
               {purchaseOrderData.status}

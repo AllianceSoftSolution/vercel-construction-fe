@@ -11,6 +11,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import  apiClient  from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import { POPdfButtons } from "../../../../components/POPdfActions";
 import { useNavigate } from "react-router-dom";
 
 const SiPurchaseOrderDetailPage = () => {
@@ -93,6 +94,10 @@ const SiPurchaseOrderDetailPage = () => {
           <p className="text-[#444444] font-semibold text-xl">
             {purchaseOrderData?.referenceNumber || "Order Name Here"}
           </p>
+          <POPdfButtons
+            poId={purchaseOrderData?.id}
+            referenceNumber={purchaseOrderData?.referenceNumber}
+          />
           <div className="flex gap-2 flex-wrap sm:flex-nowrap items-center">
             <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-center text-sm">
               {purchaseOrderData?.status || "-"}

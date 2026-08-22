@@ -16,6 +16,7 @@ import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { useSelector } from "react-redux";
+import POPdfActionCell from "../../../components/POPdfActions";
 
 // Status color mapping for purchase order status
 const statusColorMap = {
@@ -96,6 +97,7 @@ const SiPurchaseOrder = () => {
       if (response.ok) {
         const data = response.data.data.map((po, index) => ({
           id: po.id,
+          referenceNumber: po.referenceNumber || "",
           demandId: po.demand?.referenceNumber || "-",
           project: po.demand?.section?.project?.name || "-",
           demandName: po.demand?.referenceNumber || "-",
@@ -208,7 +210,7 @@ const SiPurchaseOrder = () => {
     ] : []),
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
-    // { headerName: "Action", field: "id" },
+    { headerName: "Action", field: "id" },
   ];
 
   // const CustomActionComponent = ({ value : id }) => {
@@ -300,6 +302,7 @@ const SiPurchaseOrder = () => {
             cellComponents={{
               status: StatusChip,
               ...(!isStoreRole && { proofOfBill: ProofOfBillComponent }),
+              id: POPdfActionCell,
             }}
           />
         )}

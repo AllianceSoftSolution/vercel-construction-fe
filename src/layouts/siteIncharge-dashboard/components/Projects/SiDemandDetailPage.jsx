@@ -14,6 +14,7 @@ import Loader from "../../../../components/ui/Loader";
 import toast from "react-hot-toast";
 import { HiCheckCircle } from "react-icons/hi";
 import { TiTick } from "react-icons/ti";
+import POPdfActionCell from "../../../../components/POPdfActions";
 
 const ProofOfBillComponent = ({ value }) => {
   if (!value || value === "-") return <span>-</span>;
@@ -192,7 +193,7 @@ const DateComponent = ({ value }) => {
     { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
-    // { headerName: "Action", field: "id" },
+    { headerName: "Action", field: "id" },
   ];
 
   const CustomActionComponent = () => {
@@ -414,6 +415,7 @@ const DateComponent = ({ value }) => {
               tableTitle="purchase-order"
               data={demandData?.purchaseOrders?.map((po, index) => ({
                 id: po.id,
+                referenceNumber: po.referenceNumber || "",
                 demandId: po.demand?.referenceNumber || "-",
                 project: po.demand?.section?.project?.name || "-",
                 demandName: po.demand?.referenceNumber || "-",
@@ -435,6 +437,7 @@ const DateComponent = ({ value }) => {
                 createdAt: DateComponent,
                 status: StatusChip,
                 proofOfBill: ProofOfBillComponent,
+                id: POPdfActionCell,
               }}
             />
           </div>

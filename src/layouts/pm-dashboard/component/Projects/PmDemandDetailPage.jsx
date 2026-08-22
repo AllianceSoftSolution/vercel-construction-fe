@@ -12,6 +12,7 @@ import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import Loader from "../../../../components/ui/Loader";
 import toast from "react-hot-toast";
+import POPdfActionCell from "../../../../components/POPdfActions";
 
 // Status color mapping for purchase order status
 const statusColorMap = {
@@ -167,7 +168,7 @@ const DateCellComponent = ({ value }) => {
     { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
-    // { headerName: "Action", field: "id" },
+    { headerName: "Action", field: "id" },
   ];
   const CustomActionComponent = () => {
     return (
@@ -405,6 +406,7 @@ const DateCellComponent = ({ value }) => {
               tableTitle="purchase-order"
               data={demandData?.purchaseOrders?.map((po, index) => ({
                 id: po.id,
+                referenceNumber: po.referenceNumber || "",
                 demandId: po.demand?.referenceNumber || "-",
                 project: po.demand?.section?.project?.name || "-",
                 demandName: po.demand?.referenceNumber || "-",
@@ -421,6 +423,7 @@ const DateCellComponent = ({ value }) => {
               cellComponents={{
                 createdAt: DateComponent,
                 status: StatusChip,
+                id: POPdfActionCell,
               }}
             />
           </div>

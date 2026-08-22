@@ -30,6 +30,7 @@ import FileUploadField from "../../../components/ui/FileUploadField";
 import AttachmentLinks from "../../../components/ui/AttachmentLinks";
 import useS3MultiUpload from "../../../hooks/useS3MultiUpload";
 import { UPLOAD_FOLDERS } from "../../../constants/fileUpload";
+import { purchaseOrderPdfMenuItems } from "../../../utils/downloadPurchaseOrderPdf";
 
 const style = {
   position: "absolute",
@@ -989,12 +990,15 @@ const AccPayables = () => {
   );
 
   // â”€â”€ Action components (section accountant table view) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const ActionComforRegPOs = ({ value: id }) => {
+  const ActionComforRegPOs = ({ value: id, row }) => {
     const [open, setOpen] = useState(false);
     const handleSuccess = () => { fetchNewPurchaseOrders(); fetchPurchaseOrdersWithAmount(); };
     return (
       <>
-        <DropdownButton items={[{ label: "Add Price", onClick: () => setOpen(true) }]}>
+        <DropdownButton items={[
+          ...purchaseOrderPdfMenuItems(id, row?.poReference || row?.referenceNumber),
+          { label: "Add Price", onClick: () => setOpen(true) },
+        ]}>
           <IconButton><BsThreeDotsVertical /></IconButton>
         </DropdownButton>
         <AddPriceModal open={open} onClose={() => setOpen(false)} poId={id} onSuccess={handleSuccess} />
@@ -1016,7 +1020,11 @@ const AccPayables = () => {
       if (!po?.poData?.amountAddedAt) return false;
       return (new Date() - new Date(po.poData.amountAddedAt)) / (1000 * 60 * 60) <= 24;
     };
-    const items = [{ label: "View Details", onClick: handleViewDetails }];
+    const po = purchaseOrdersWithAmount.find(p => p.id === id);
+    const items = [
+      ...purchaseOrderPdfMenuItems(id, po?.poReference || po?.poData?.referenceNumber),
+      { label: "View Details", onClick: handleViewDetails },
+    ];
     return (
       <DropdownButton items={items}>
         <IconButton><BsThreeDotsVertical /></IconButton>
@@ -1122,7 +1130,10 @@ const AccPayables = () => {
     if (!po.hasAmount) {
       return (
         <>
-          <DropdownButton items={[{ label: "Add Price", onClick: () => setAddPriceOpen(true) }]}>
+          <DropdownButton items={[
+            ...purchaseOrderPdfMenuItems(po.id, po.poReference),
+            { label: "Add Price", onClick: () => setAddPriceOpen(true) },
+          ]}>
             <IconButton><BsThreeDotsVertical /></IconButton>
           </DropdownButton>
           <AddPriceModal open={addPriceOpen} onClose={() => setAddPriceOpen(false)} poId={po.id} onSuccess={handleSuccess} />
@@ -1134,7 +1145,10 @@ const AccPayables = () => {
       if (!refTime) return false;
       return (new Date() - new Date(refTime)) / (1000 * 60 * 60) <= 24;
     };
-    const items = [{ label: "View Details", onClick: () => { setSelectedPOForDetails(po.poData); setDetailsModalOpen(true); } }];
+    const items = [
+      ...purchaseOrderPdfMenuItems(po.id, po.poReference),
+      { label: "View Details", onClick: () => { setSelectedPOForDetails(po.poData); setDetailsModalOpen(true); } },
+    ];
     if (isWithin24h()) items.push({ label: "Edit", onClick: () => { setSelectedPOForEdit(po.poData); setEditModalOpen(true); } });
     return (
       <DropdownButton items={items}>

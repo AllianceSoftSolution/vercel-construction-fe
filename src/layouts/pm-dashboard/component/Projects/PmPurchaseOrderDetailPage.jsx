@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
 import Loader from "../../../../components/ui/Loader";
+import { POPdfButtons } from "../../../../components/POPdfActions";
 
 
 const PmPurchaseOrderDetailPage = () => {
@@ -89,6 +90,10 @@ const PmPurchaseOrderDetailPage = () => {
           <p className="text-[#444444] font-semibold text-xl">
             {purchaseOrderData?.referenceNumber || "Order Name Here"}
           </p>
+          <POPdfButtons
+            poId={purchaseOrderData?.id}
+            referenceNumber={purchaseOrderData?.referenceNumber}
+          />
           <div className="flex items-center gap-2">
             <div className="text-white bg-[#BF1017] px-6 sm:px-8 py-1.5 sm:py-2 rounded-full text-sm sm:text-base">
               {purchaseOrderData?.status || "Partial"}

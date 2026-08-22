@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { HiCheckCircle } from "react-icons/hi";
 import { TiTick } from "react-icons/ti";
 import { useReadOnly } from "../../../../context/ReadOnlyContext";
+import POPdfActionCell from "../../../../components/POPdfActions";
 
 const style = {
   position: "absolute",
@@ -214,7 +215,7 @@ const DemandDetails = () => {
     { headerName: "Date", field: "createdAt" },
     { headerName: "Status", field: "status" },
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
-    // { headerName: "Action", field: "id" },
+    { headerName: "Action", field: "id" },
   ];
 
   const CustomActionComponent = () => {
@@ -455,6 +456,7 @@ const DemandDetails = () => {
               tableTitle="purchase-order"
               data={demandData?.purchaseOrders?.map((po, index) => ({
                 id: po.id,
+                referenceNumber: po.referenceNumber || "",
                 demandId: po.demand?.referenceNumber || "-",
                 project: po.demand?.section?.project?.name || "-",
                 demandName: po.demand?.referenceNumber || "-",
@@ -475,6 +477,7 @@ const DemandDetails = () => {
               cellComponents={{
                 createdAt: DateComponent,
                 status: StatusChip,
+                id: POPdfActionCell,
               }}
             />
           </div>

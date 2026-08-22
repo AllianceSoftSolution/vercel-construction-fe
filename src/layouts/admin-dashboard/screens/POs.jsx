@@ -17,6 +17,7 @@ import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { useReadOnly } from "../../../context/ReadOnlyContext";
 import { buildExportFileName } from "../../../modules/tableExportHelpers";
+import { purchaseOrderPdfMenuItems } from "../../../utils/downloadPurchaseOrderPdf";
 // import { formatDate } from "../../../utils";
 
 // Status color mapping for purchase order status
@@ -134,6 +135,7 @@ const PurchaseOrder = () => {
       if (response.ok) {
         const data = response.data.data.map((po, index) => ({
           id: po.id,
+          referenceNumber: po.referenceNumber || "",
           demandId: po.demand?.referenceNumber || "-",
           project: po.demand?.section?.project?.name || "-",
           demandName: po.demand?.referenceNumber || "-",
@@ -268,11 +270,12 @@ const PurchaseOrder = () => {
     { headerName: "Action", field: "id" },
   ];
 
-  const CustomActionComponent = ({ value : id }) => {
+  const CustomActionComponent = ({ value : id, row }) => {
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
         items={[
+          ...purchaseOrderPdfMenuItems(id, row?.referenceNumber),
           ...(!isReadOnly ? [
             {
               label: "Delete",

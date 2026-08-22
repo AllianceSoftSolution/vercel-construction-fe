@@ -16,6 +16,7 @@ import { formatStatusLabel } from "../../../utils/statusLabel";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
+import POPdfActionCell from "../../../components/POPdfActions";
 
 // Status color mapping for purchase order status
 const statusColorMap = {
@@ -95,6 +96,7 @@ const PurchaseOrder = () => {
       if (response.ok) {
         const data = response.data.data.map((po, index) => ({
           id: po.id,
+          referenceNumber: po.referenceNumber || "",
           demandId: po.demand?.referenceNumber || "-",
           project: po.demand?.section?.project?.name || "-",
           demandName: po.demand?.referenceNumber || "-",
@@ -215,9 +217,9 @@ const PurchaseOrder = () => {
       { headerName: "Proof of Bill", field: "proofOfBill" },
     ] : []),
     { headerName: "Status", field: "status" },
-    {headerName: "Date" , field:"createdAt"}
+    {headerName: "Date" , field:"createdAt"},
     // { headerName: "Assigned Vendors", field: "assingedVendors" },
-    // { headerName: "Action", field: "id" },
+    { headerName: "Action", field: "id" },
   ];
 
   const CustomActionComponent = ({ value : id }) => {
@@ -308,7 +310,8 @@ const PurchaseOrder = () => {
             cellComponents={{ 
               status: StatusChip,
               ...(canViewFinancials ? { proofOfBill: ProofOfBillComponent } : {}),
-              createdAt: DateComponent 
+              createdAt: DateComponent,
+              id: POPdfActionCell,
             }}
           />
         )}

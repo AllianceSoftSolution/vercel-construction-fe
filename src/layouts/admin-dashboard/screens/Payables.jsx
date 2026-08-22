@@ -28,6 +28,7 @@ import FileUploadField from "../../../components/ui/FileUploadField";
 import AttachmentLinks from "../../../components/ui/AttachmentLinks";
 import useS3MultiUpload from "../../../hooks/useS3MultiUpload";
 import { UPLOAD_FOLDERS } from "../../../constants/fileUpload";
+import { purchaseOrderPdfMenuItems } from "../../../utils/downloadPurchaseOrderPdf";
 
 
 const PROJECT_COLORS = ['#0252AD', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
@@ -661,7 +662,10 @@ const Payables = () => {
     if (!po.hasAmount) {
       return (
         <>
-          <DropdownButton items={[{ label: 'Add Price', onClick: () => setAddPriceOpen(true) }]}>
+          <DropdownButton items={[
+            ...purchaseOrderPdfMenuItems(po.id, po.poReference),
+            { label: 'Add Price', onClick: () => setAddPriceOpen(true) },
+          ]}>
             <IconButton><BsThreeDotsVertical /></IconButton>
           </DropdownButton>
           <AddPriceModal open={addPriceOpen} onClose={() => setAddPriceOpen(false)} poId={po.id} onSuccess={handleSuccess} />
@@ -669,7 +673,10 @@ const Payables = () => {
       );
     }
     const isWithin24h = po.poData?.amountAddedAt && (new Date() - new Date(po.poData.amountAddedAt)) / (1000 * 60 * 60) <= 24;
-    const items = [{ label: 'View Details', onClick: () => { setSelectedPOForDetails(po.poData); setDetailsModalOpen(true); } }];
+    const items = [
+      ...purchaseOrderPdfMenuItems(po.id, po.poReference),
+      { label: 'View Details', onClick: () => { setSelectedPOForDetails(po.poData); setDetailsModalOpen(true); } },
+    ];
     if (isWithin24h) items.push({ label: 'Edit', onClick: () => { setSelectedPOForEdit(po.poData); setEditModalOpen(true); } });
     return <DropdownButton items={items}><IconButton><BsThreeDotsVertical /></IconButton></DropdownButton>;
   };

@@ -11,6 +11,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import { POPdfButtons } from "../../../../components/POPdfActions";
 
 const PurchaseOrderDetailPage = () => {
   const { id } = useParams();
@@ -105,6 +106,10 @@ const PurchaseOrderDetailPage = () => {
               <p className="text-[#444444] font-semibold text-lg md:text-xl">
                 {purchaseOrderData?.referenceNumber || "Order Name Here"}
               </p>
+              <POPdfButtons
+                poId={purchaseOrderData?.id}
+                referenceNumber={purchaseOrderData?.referenceNumber}
+              />
               {/* <div className="flex flex-wrap gap-2 items-center">
                 <div className="text-white bg-[#BF1017] px-6 py-2 rounded-full text-sm">
                   {purchaseOrderData?.status || "Partial"}
