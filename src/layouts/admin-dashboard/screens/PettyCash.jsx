@@ -29,6 +29,7 @@ import FileUploadField from "../../../components/ui/FileUploadField";
 import AttachmentLinks from "../../../components/ui/AttachmentLinks";
 import useS3MultiUpload from "../../../hooks/useS3MultiUpload";
 import { UPLOAD_FOLDERS } from "../../../constants/fileUpload";
+import { filterPettyCashSelectableProjects } from "../../../utils/pettyCashHelpers";
 
 const modalStyle = {
   position: "absolute",
@@ -186,6 +187,7 @@ const ACTION_BTN_STYLES = {
   internalExpense: `${ACTION_BTN_BASE} bg-[#8b5cf6] hover:bg-[#7c4fee] focus:ring-[#8b5cf6]/50`,
   sectionExpense: `${ACTION_BTN_BASE} bg-[#ef4444] hover:bg-[#dc2626] focus:ring-[#ef4444]/50`,
   manageHeads: `${ACTION_BTN_BASE} bg-[#64748b] hover:bg-[#475569] focus:ring-[#64748b]/50`,
+  addPettyCash: `${ACTION_BTN_BASE} bg-[#22c55e] hover:bg-[#16a34a] focus:ring-[#22c55e]/50`,
 };
 
 const PettyCashActionButton = ({ label, styleKey, onClick, disabled }) => (
@@ -1013,8 +1015,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       summary?.roleScope === "PROJECT_ACCOUNTANT" ||
       (user?.role === "ACCOUNTANT" &&
         isHeadUser(user) &&
-        summary?.roleScope !== "HEAD_OFFICE_ACCOUNTANT"),
+        summary?.roleScope !== "HEAD_OFFICE_ACCOUNTANT" &&
+        summary?.roleScope !== "ADMIN"),
     [user, summary?.roleScope]
+  );
+
+  const isHeadOfficeAccountant = useMemo(
+    () => summary?.roleScope === "HEAD_OFFICE_ACCOUNTANT",
+    [summary?.roleScope]
   );
 
   const isHeadOffice = useMemo(
@@ -1084,8 +1092,8 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const [sectionsLoading, setSectionsLoading] = useState(false);
 
   const accessibleProjects = useMemo(() => {
-    if (projects.length > 0) return projects;
-    return allProjects;
+    const source = projects.length > 0 ? projects : allProjects;
+    return filterPettyCashSelectableProjects(source);
   }, [projects, allProjects]);
 
   const loadProjectSections = useCallback(async (projectId) => {
@@ -1124,7 +1132,11 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   );
   const permissions = useMemo(
     () => ({
-      canAddFunding: summary?.canAddFunding ?? isAdminRoleUser,
+      canAddPettyCashPool:
+        summary?.canAddPettyCashPool ?? (isAdmin && !isReadOnly),
+      canAddFunding:
+        summary?.canAddFunding ??
+        (isAdminRoleUser || isHeadOfficeAccountant),
       canManageHeads: summary?.canManageHeads ?? isAdmin,
       canDistribute:
         summary?.canDistribute ?? (isHeadOffice || isProjectAccountant),
@@ -1133,11 +1145,28 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         (isHeadOffice || isProjectAccountant || isProjectManager),
       canAddSectionExpense: summary?.canAddSectionExpense ?? false,
     }),
-    [summary, isAdminRoleUser, isAdmin, isHeadOffice, isProjectAccountant]
+    [
+      summary,
+      isAdminRoleUser,
+      isAdmin,
+      isHeadOffice,
+      isHeadOfficeAccountant,
+      isProjectAccountant,
+      isProjectManager,
+      isReadOnly,
+    ]
+  );
+
+  const canUsePettyCashPool = isAdminRoleUser || isHeadOfficeAccountant;
+
+  const headOfficePoolRemaining = useMemo(
+    () => clampNonNegative(summary?.headOfficeDistributableRemaining),
+    [summary?.headOfficeDistributableRemaining]
   );
 
   const projectOptionsForModal = useMemo(() => {
-    if (isHeadOffice && allProjects.length > 0) return allProjects;
+    const headOfficeProjects = filterPettyCashSelectableProjects(allProjects);
+    if (isHeadOffice && headOfficeProjects.length > 0) return headOfficeProjects;
     return accessibleProjects;
   }, [isHeadOffice, allProjects, accessibleProjects]);
 
@@ -1299,11 +1328,51 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     setHeadDeleteTarget(null);
   };
 
+  const handleSubmitAddPettyCash = async () => {
+    if (!form.amount || Number(form.amount) <= 0) {
+      return toast.error("Enter a valid amount");
+    }
+    if (!files.length) return toast.error("Proof is required");
+
+    setSubmitting(true);
+    try {
+      const proofUrls = await uploadFiles(files, UPLOAD_FOLDERS.proofOfExpense);
+      const res = await apiClient.post("/petty-cash/pool", {
+        amount: form.amount,
+        description: form.description || undefined,
+        proofUrls,
+      });
+
+      if (res.ok) {
+        toast.success("Petty cash added successfully");
+        closeModal();
+        fetchData();
+      } else {
+        toast.error(res.data?.message || "Failed to add petty cash");
+      }
+    } catch {
+      toast.error("Error adding petty cash");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmitDistributeToProject = async () => {
     if (!form.projectId) return toast.error("Select a project");
     if (!form.amount || Number(form.amount) <= 0)
       return toast.error("Enter a valid amount");
     if (!files.length) return toast.error("Proof is required");
+
+    if (
+      canUsePettyCashPool &&
+      !validateAmountWithinBalance(
+        form.amount,
+        headOfficePoolRemaining,
+        "petty cash pool balance"
+      )
+    ) {
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -1607,8 +1676,9 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   const filteredProjectsList = useMemo(() => {
     const q = projectSearch.trim().toLowerCase();
-    if (!q) return projects;
-    return projects.filter(
+    const selectable = filterPettyCashSelectableProjects(projects);
+    if (!q) return selectable;
+    return selectable.filter(
       (p) =>
         p.name?.toLowerCase().includes(q) ||
         p.code?.toLowerCase().includes(q)
@@ -1992,7 +2062,14 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   );
 
   const projectOptions = useMemo(
-    () => [...new Set(allProjects.map((p) => p.name).filter(Boolean))],
+    () =>
+      [
+        ...new Set(
+          filterPettyCashSelectableProjects(allProjects)
+            .map((p) => p.name)
+            .filter(Boolean)
+        ),
+      ],
     [allProjects]
   );
 
@@ -2134,7 +2211,13 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
   return (
     <div className="w-full h-full overflow-y-auto p-4 md:p-6 relative">
-      <TopBar title="Petty Cash" />
+      <TopBar
+        title="Petty Cash"
+        buttonText={
+          permissions.canAddPettyCashPool ? "Add Petty Cash" : ""
+        }
+        onButtonClick={() => openModal("addPettyCash")}
+      />
 
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4" />
 
@@ -2690,10 +2773,71 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         </div>
       </div>
 
+      {/* Add Petty Cash Modal (admin central pool) */}
+      <Modal open={modal === "addPettyCash"} onClose={closeModal}>
+        <Box sx={modalStyle} className="bg-white p-6">
+          <h2 className="text-2xl font-bold mb-4">Add Petty Cash</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Adds to the central petty cash balance used when distributing to
+            projects.
+          </p>
+          <div className="flex flex-col gap-4">
+            <CustomTextField
+              label="Amount *"
+              type="number"
+              value={form.amount || ""}
+              onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            />
+            <CustomTextField
+              label="Note"
+              value={form.description || ""}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
+            />
+            <FileUploadField
+              label="Proof"
+              required
+              files={files}
+              onChange={setFiles}
+              disabled={submitting || fileUploading}
+            />
+            <p className="text-xs text-gray-400">Date is recorded automatically.</p>
+            <div className="flex gap-3">
+              <Button
+                buttonText="Cancel"
+                onClick={closeModal}
+                className="flex-1 bg-gray-200 text-gray-800"
+                disabled={submitting}
+              />
+              <Button
+                buttonText={submitting ? "Saving..." : "Add Petty Cash"}
+                onClick={handleSubmitAddPettyCash}
+                className="flex-1"
+                disabled={submitting}
+              />
+            </div>
+            {submitting && (
+              <div className="flex justify-center">
+                <Loader size="small" showText={false} />
+              </div>
+            )}
+          </div>
+        </Box>
+      </Modal>
+
       {/* Distribute to Project Modal */}
       <Modal open={modal === "distributeProject"} onClose={closeModal}>
         <Box sx={modalStyle} className="bg-white p-6">
           <h2 className="text-2xl font-bold mb-4">Distribute to Project</h2>
+          {canUsePettyCashPool && (
+            <p className="text-sm text-gray-600 mb-4">
+              Available petty cash pool:{" "}
+              <span className="font-semibold text-gray-900">
+                {formatAvailableAmount(headOfficePoolRemaining)}
+              </span>
+            </p>
+          )}
           <div className="flex flex-col gap-4">
             <label className="text-sm font-medium">Project *</label>
             <select
