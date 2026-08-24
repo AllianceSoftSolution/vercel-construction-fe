@@ -29,7 +29,6 @@ import FileUploadField from "../../../components/ui/FileUploadField";
 import AttachmentLinks from "../../../components/ui/AttachmentLinks";
 import useS3MultiUpload from "../../../hooks/useS3MultiUpload";
 import { UPLOAD_FOLDERS } from "../../../constants/fileUpload";
-import { filterPettyCashSelectableProjects } from "../../../utils/pettyCashHelpers";
 
 const modalStyle = {
   position: "absolute",
@@ -43,6 +42,23 @@ const modalStyle = {
   maxHeight: "90vh",
   overflowY: "auto",
 };
+
+const ADMIN_AUDIT_LOG_COLUMNS = [
+  { headerName: "Date", field: "date" },
+  { headerName: "Type", field: "directionLabel" },
+  { headerName: "Project", field: "projectName" },
+  { headerName: "Amount", field: "amount" },
+  { headerName: "By", field: "createdBy" },
+  { headerName: "Note", field: "description" },
+  { headerName: "Proof", field: "proof" },
+];
+
+const ADMIN_PETTY_CASH_TAB = 2;
+
+const AUDIT_DIRECTION_FILTER_OPTIONS = [
+  { value: "CREDIT", label: "Petty Cash Added" },
+  { value: "DEBIT", label: "Distribute to Project" },
+];
 
 const TYPE_LABELS = {
   FUNDING: "Distribute to Project",
@@ -1105,10 +1121,20 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const [sectionsLoading, setSectionsLoading] = useState(false);
   const [formModalBalance, setFormModalBalance] = useState(null);
   const [formModalBalanceLoading, setFormModalBalanceLoading] = useState(false);
+  const [adminPettyCashAuditLog, setAdminPettyCashAuditLog] = useState({
+    summary: null,
+    entries: [],
+  });
+  const [auditSearch, setAuditSearch] = useState("");
+  const [auditDirectionFilter, setAuditDirectionFilter] = useState("all");
+  const [auditProjectFilter, setAuditProjectFilter] = useState("all");
+  const [auditByFilter, setAuditByFilter] = useState("all");
+  const [auditDateFrom, setAuditDateFrom] = useState("");
+  const [auditDateTo, setAuditDateTo] = useState("");
 
   const accessibleProjects = useMemo(() => {
     const source = projects.length > 0 ? projects : allProjects;
-    return filterPettyCashSelectableProjects(source);
+    return source;
   }, [projects, allProjects]);
 
   const loadFormProjectBalance = useCallback(
@@ -1223,8 +1249,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   );
 
   const projectOptionsForModal = useMemo(() => {
-    const headOfficeProjects = filterPettyCashSelectableProjects(allProjects);
-    if (isHeadOffice && headOfficeProjects.length > 0) return headOfficeProjects;
+    if (isHeadOffice && allProjects.length > 0) return allProjects;
     return accessibleProjects;
   }, [isHeadOffice, allProjects, accessibleProjects]);
 
@@ -1269,14 +1294,19 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
           setAllSections(secRes.data?.data || []);
         }
       } else {
-        const [sumRes, projRes, txRes, headsRes, secRes] =
-          await Promise.all([
-            apiClient.get("/petty-cash/summary", apiFilters),
-            apiClient.get("/petty-cash/summary/by-project", apiFilters),
-            apiClient.get("/petty-cash/transactions", txQuery),
-            apiClient.get("/petty-cash/expense-heads"),
-            apiClient.get("/petty-cash/summary/by-section", apiFilters),
-          ]);
+        const requests = [
+          apiClient.get("/petty-cash/summary", apiFilters),
+          apiClient.get("/petty-cash/summary/by-project", apiFilters),
+          apiClient.get("/petty-cash/transactions", txQuery),
+          apiClient.get("/petty-cash/expense-heads"),
+          apiClient.get("/petty-cash/summary/by-section", apiFilters),
+        ];
+        if (isAdminRoleUser) {
+          requests.push(apiClient.get("/petty-cash/admin/audit-log"));
+        }
+
+        const results = await Promise.all(requests);
+        const [sumRes, projRes, txRes, headsRes, secRes, hoLogRes] = results;
 
         if (sumRes.ok) {
           setSummary(sumRes.data?.data || sumRes.data);
@@ -1296,6 +1326,11 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         if (secRes.ok) {
           setAllSections(secRes.data?.data || []);
         }
+        if (hoLogRes?.ok) {
+          setAdminPettyCashAuditLog(
+            hoLogRes.data?.data || { summary: null, entries: [] }
+          );
+        }
       }
     } catch (e) {
       console.error(e);
@@ -1309,6 +1344,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     selectedSection?.id,
     apiFilters,
     isSectionAccountant,
+    isAdminRoleUser,
   ]);
 
   const fetchProjectBalance = useCallback(
@@ -1432,7 +1468,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       !validateAmountWithinBalance(
         form.amount,
         headOfficeCentralBalance,
-        "head office petty cash balance"
+        "central petty cash balance"
       )
     ) {
       return;
@@ -1791,11 +1827,114 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     return map;
   }, [transactions]);
 
+  const adminAuditLogTableData = useMemo(
+    () =>
+      (adminPettyCashAuditLog.entries || []).map((entry) => ({
+        id: entry.id,
+        createdAt: entry.createdAt,
+        date: formatDateDMY(entry.createdAt),
+        direction: entry.direction,
+        directionLabel:
+          entry.direction === "CREDIT"
+            ? entry.label || "Petty Cash Added"
+            : entry.label || "Distribute to Project",
+        projectName: entry.projectName || "-",
+        amount: formatCurrency(entry.amount),
+        createdBy: entry.creator?.name || "-",
+        description: entry.description || "-",
+        proof: entry.proofUrl,
+      })),
+    [adminPettyCashAuditLog.entries]
+  );
+
+  const auditProjectFilterOptions = useMemo(() => {
+    const names = new Set(
+      adminAuditLogTableData
+        .map((row) => row.projectName)
+        .filter((name) => name && name !== "-")
+    );
+    return [...names]
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ value: name, label: name }));
+  }, [adminAuditLogTableData]);
+
+  const auditByFilterOptions = useMemo(() => {
+    const names = new Set(
+      adminAuditLogTableData
+        .map((row) => row.createdBy)
+        .filter((name) => name && name !== "-")
+    );
+    return [...names]
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ value: name, label: name }));
+  }, [adminAuditLogTableData]);
+
+  const applyAuditLogFilters = useCallback(
+    (rows) => {
+      let next = rows;
+      if (auditDirectionFilter !== "all") {
+        next = next.filter((row) => row.direction === auditDirectionFilter);
+      }
+      if (auditProjectFilter !== "all") {
+        next = next.filter((row) => row.projectName === auditProjectFilter);
+      }
+      if (auditByFilter !== "all") {
+        next = next.filter((row) => row.createdBy === auditByFilter);
+      }
+      if (auditDateFrom || auditDateTo) {
+        next = next.filter((row) =>
+          isTransactionInDateRange(row.createdAt, auditDateFrom, auditDateTo)
+        );
+      }
+      const q = auditSearch.trim().toLowerCase();
+      if (q) {
+        next = next.filter((row) =>
+          [
+            row.date,
+            row.directionLabel,
+            row.projectName,
+            row.amount,
+            row.createdBy,
+            row.description,
+          ].some((v) => String(v || "").toLowerCase().includes(q))
+        );
+      }
+      return next;
+    },
+    [
+      auditDirectionFilter,
+      auditProjectFilter,
+      auditByFilter,
+      auditDateFrom,
+      auditDateTo,
+      auditSearch,
+    ]
+  );
+
+  const filteredAdminAuditLog = useMemo(
+    () => applyAuditLogFilters(adminAuditLogTableData),
+    [adminAuditLogTableData, applyAuditLogFilters]
+  );
+
+  const auditLogCellComponents = useMemo(
+    () => ({
+      proof: ProofLink,
+      directionLabel: ({ value, row }) => (
+        <Chip
+          label={value}
+          size="small"
+          color={row.direction === "CREDIT" ? "success" : "warning"}
+          sx={{ fontWeight: 600 }}
+        />
+      ),
+    }),
+    []
+  );
+
   const filteredProjectsList = useMemo(() => {
     const q = projectSearch.trim().toLowerCase();
-    const selectable = filterPettyCashSelectableProjects(projects);
-    if (!q) return selectable;
-    return selectable.filter(
+    if (!q) return projects;
+    return projects.filter(
       (p) =>
         p.name?.toLowerCase().includes(q) ||
         p.code?.toLowerCase().includes(q)
@@ -2076,6 +2215,42 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     [tableData, applyTableFilters]
   );
 
+  const resetAuditControls = useCallback(() => {
+    setAuditSearch("");
+    setAuditDirectionFilter("all");
+    setAuditProjectFilter("all");
+    setAuditByFilter("all");
+    setAuditDateFrom("");
+    setAuditDateTo("");
+  }, []);
+
+  const handleAuditDateFromChange = useCallback(
+    (value) => {
+      if (auditDateTo && value && value > auditDateTo) {
+        toast.error("Start date cannot be after end date");
+        return;
+      }
+      setAuditDateFrom(value);
+    },
+    [auditDateTo]
+  );
+
+  const handleAuditDateToChange = useCallback(
+    (value) => {
+      if (auditDateFrom && value && value < auditDateFrom) {
+        toast.error("End date cannot be before start date");
+        return;
+      }
+      setAuditDateTo(value);
+    },
+    [auditDateFrom]
+  );
+
+  const clearAuditDateRange = useCallback(() => {
+    setAuditDateFrom("");
+    setAuditDateTo("");
+  }, []);
+
   const resetTransactionControls = useCallback(() => {
     setTxSearch("");
     setTxTypeFilter("all");
@@ -2142,12 +2317,24 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         icon: <ReceiptLong sx={{ fontSize: 18 }} />,
         badge: transactions.length,
       },
+      ...(isAdminRoleUser
+        ? [
+            {
+              id: ADMIN_PETTY_CASH_TAB,
+              label: "Petty Cash Transactions",
+              icon: <Payments sx={{ fontSize: 18 }} />,
+              badge: adminPettyCashAuditLog.entries?.length || 0,
+            },
+          ]
+        : []),
     ];
   }, [
     isSectionAccountant,
+    isAdminRoleUser,
     assignedSections.length,
     projects.length,
     transactions.length,
+    adminPettyCashAuditLog.entries?.length,
   ]);
 
   const goBackToProjects = () => {
@@ -2181,11 +2368,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   const projectOptions = useMemo(
     () =>
       [
-        ...new Set(
-          filterPettyCashSelectableProjects(allProjects)
-            .map((p) => p.name)
-            .filter(Boolean)
-        ),
+        ...new Set(allProjects.map((p) => p.name).filter(Boolean)),
       ],
     [allProjects]
   );
@@ -2310,7 +2493,8 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     {
       icon: AccountBalance,
       label:
-        summary?.roleScope === "HEAD_OFFICE_ACCOUNTANT"
+        summary?.roleScope === "HEAD_OFFICE_ACCOUNTANT" ||
+        summary?.roleScope === "ADMIN"
           ? "Remaining Balance In All Projects"
           : "Remaining Balance",
       count: formatCurrency(summary?.remainingBalance),
@@ -2423,6 +2607,11 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
               onChange={(tabId) => {
                 setActiveTab(tabId);
                 resetTransactionControls();
+                resetAuditControls();
+                if (tabId !== 0) {
+                  goBackToProjects();
+                  goBackToSections();
+                }
               }}
             />
           </div>
@@ -2887,6 +3076,107 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
               )}
             </TablePanel>
           )}
+
+          {isAdminRoleUser && activeTab === ADMIN_PETTY_CASH_TAB && (
+            <TablePanel
+              title="Petty Cash Transactions"
+              subtitle="Admin petty cash credited, debited, and remaining central balance activity"
+              count={filteredAdminAuditLog.length}
+              search={
+                <>
+                  <TableFilterSelect
+                    allLabel="Type: All"
+                    options={AUDIT_DIRECTION_FILTER_OPTIONS}
+                    value={auditDirectionFilter}
+                    onChange={setAuditDirectionFilter}
+                  />
+                  <TableFilterSelect
+                    allLabel="Project: All"
+                    options={auditProjectFilterOptions}
+                    value={auditProjectFilter}
+                    onChange={setAuditProjectFilter}
+                  />
+                  <TableFilterSelect
+                    allLabel="By: All"
+                    options={auditByFilterOptions}
+                    value={auditByFilter}
+                    onChange={setAuditByFilter}
+                  />
+                  <TableDateRangeFilter
+                    from={auditDateFrom}
+                    to={auditDateTo}
+                    onFromChange={handleAuditDateFromChange}
+                    onToChange={handleAuditDateToChange}
+                    onClear={clearAuditDateRange}
+                  />
+                  <SearchField
+                    value={auditSearch}
+                    onChange={setAuditSearch}
+                    placeholder="Search transactions..."
+                  />
+                  <ExportToExcelButton
+                    data={filteredAdminAuditLog}
+                    columns={ADMIN_AUDIT_LOG_COLUMNS}
+                    fileName="petty-cash-admin-transactions"
+                    cellComponents={auditLogCellComponents}
+                  />
+                </>
+              }
+            >
+              {adminPettyCashAuditLog.summary && (
+                <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                      Credited
+                    </p>
+                    <p className="text-lg font-bold text-[#0252AD]">
+                      {formatCurrency(
+                        adminPettyCashAuditLog.summary.totalCredited
+                      )}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                      Debited
+                    </p>
+                    <p className="text-lg font-bold text-[#8b5cf6]">
+                      {formatCurrency(
+                        adminPettyCashAuditLog.summary.totalDebited
+                      )}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                      Remaining Balance
+                    </p>
+                    <p className="text-lg font-bold text-[#22c55e]">
+                      {formatCurrency(
+                        adminPettyCashAuditLog.summary.remainingBalance
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {filteredAdminAuditLog.length === 0 ? (
+                <EmptyState
+                  icon={ReceiptLong}
+                  title="No petty cash transactions"
+                  description={
+                    adminAuditLogTableData.length === 0
+                      ? "When admins add petty cash or distribute it to projects, each entry appears here."
+                      : "No records match your filters. Try adjusting or clearing them."
+                  }
+                />
+              ) : (
+                <SimpleTable
+                  data={filteredAdminAuditLog}
+                  columns={ADMIN_AUDIT_LOG_COLUMNS}
+                  cellComponents={auditLogCellComponents}
+                  exportable={false}
+                />
+              )}
+            </TablePanel>
+          )}
         </div>
       </div>
 
@@ -2949,7 +3239,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
           <h2 className="text-2xl font-bold mb-4">Distribute to Project</h2>
           {canUseHeadOfficeCentralBalance && (
             <ModalRemainingBalance
-              label="Available head office balance"
+              label="Available central petty cash balance"
               amount={headOfficeCentralBalance}
               className="mb-4"
             />

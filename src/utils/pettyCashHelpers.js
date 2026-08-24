@@ -1,12 +1,17 @@
-const PETTY_CASH_EXCLUDED_PROJECT_CODES = new Set(["HO-Petty"]);
+export const HEAD_OFFICE_PETTY_CASH_PROJECT_CODE = "HO-Petty";
 
-export const isPettyCashSelectableProject = (project) => {
+export const isHeadOfficePettyCashProject = (project) => {
   if (!project) return false;
   const code = (project.code || "").trim();
-  if (PETTY_CASH_EXCLUDED_PROJECT_CODES.has(code)) return false;
-  const name = (project.name || "").trim().toLowerCase();
-  return name !== "head office petty cash";
+  if (code === HEAD_OFFICE_PETTY_CASH_PROJECT_CODE) return true;
+  return (project.name || "").trim().toLowerCase() === "head office petty cash";
 };
 
-export const filterPettyCashSelectableProjects = (projects = []) =>
-  projects.filter(isPettyCashSelectableProject);
+/** All projects, including HO-Petty, are valid distribute/expense targets */
+export const isPettyCashOperationalTarget = () => true;
+
+export const filterPettyCashOperationalTargets = (projects = []) =>
+  projects.filter(isPettyCashOperationalTarget);
+
+/** @deprecated Use filterPettyCashOperationalTargets */
+export const filterPettyCashSelectableProjects = filterPettyCashOperationalTargets;
