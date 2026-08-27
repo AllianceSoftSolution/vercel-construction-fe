@@ -188,8 +188,11 @@ const TYPE_CHIP_COLOR = {
   SECTION_EXPENSE: "error",
 };
 
-const formatCurrency = (n) =>
-  `Rs. ${Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 0 })}`;
+const formatCurrency = (n) => {
+  const num = Number(n);
+  if (!Number.isFinite(num)) return "Rs. 0";
+  return `Rs. ${num.toLocaleString("en-PK", { minimumFractionDigits: 0 })}`;
+};
 
 const TypeChip = ({ value, labels = TYPE_LABELS }) => {
   const label = labels[value] || value || "-";

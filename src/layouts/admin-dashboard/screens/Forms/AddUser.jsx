@@ -499,13 +499,23 @@ const AddUser = () => {
               </FormHelperText>
             )}
           </div>
-          {isEditMode && (
+          {isEditMode && !isFullEdit && (
             <span className="text-sm text-gray-500">
               Only the role can be changed. Other fields are read-only.
             </span>
           )}
-          {!isEditMode && (
+          {isEditMode && isFullEdit && (
+            <span className="text-sm text-gray-500">
+              Update user details. Leave password blank to keep the current password.
+            </span>
+          )}
+          {!isEditMode && !canSetPassword && (
             <span className="text-sm text-gray-500">User will get the Password through Email and login to the system.</span>
+          )}
+          {!isEditMode && canSetPassword && (
+            <span className="text-sm text-gray-500">
+              Set a password to create the user ready to login — welcome email with password is skipped.
+            </span>
           )}
 
         </div>
@@ -523,7 +533,13 @@ const AddUser = () => {
            onClick={formik.handleSubmit}
            disabled={loading}
          >
-           {loading ? "Saving..." : (isEditMode ? "Update Role" : "Save User")}
+           {loading
+             ? "Saving..."
+             : isEditMode
+               ? isFullEdit
+                 ? "Update User"
+                 : "Update Role"
+               : "Save User"}
          </button>
       </div>
 

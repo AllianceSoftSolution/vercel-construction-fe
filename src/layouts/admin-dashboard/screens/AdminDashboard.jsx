@@ -69,7 +69,12 @@ const DateCell = ({ value }) => (
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const authRole = useSelector((state) => state.auth?.userType || state.auth?.user?.role);
+  const authRole = useSelector(
+    (state) =>
+      state.auth?.user?.originalRole ||
+      state.auth?.userType ||
+      state.auth?.user?.role,
+  );
   const [initialLoading, setInitialLoading] = useState(true);
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);

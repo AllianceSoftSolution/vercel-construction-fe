@@ -18,6 +18,7 @@ import apiClient from "../../../../api/apiClient";
 import AssignMemberModal from "../../../../components/AssignMemberModal";
 import AssignCAPModal from "../../../../components/AssignCAPModal";
 import { useReadOnly } from "../../../../context/ReadOnlyContext";
+import CreatorNameCell from "../../../../components/ui/CreatorNameCell";
 
 const style = {
   position: "absolute",
@@ -959,6 +960,7 @@ const SectionDetailPage = () => {
                 cellComponents={{
                   cmStore: CustomStoreLinkComponent,
                   action: CMUnassignButton,
+                  "user.creator.name": CreatorNameCell,
                 }}
               />
             )}

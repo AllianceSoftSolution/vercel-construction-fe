@@ -324,13 +324,13 @@ const getRoutesByRole = (role) => {
 
 const App = () => {
   // alert(role )
-  const role = useSelector((state) => {
-    if (!state || !state.auth) return null;
-    return state.auth.user?.role;
-  });
+  const authUser = useSelector((state) => state?.auth?.user || null);
+  const role = authUser?.originalRole || authUser?.role || null;
 
   // const role = 'AD';
-  const routes = getRoutesByRole(role || "");
+  const routes = getRoutesByRole(
+    role === "SUPER_ADMIN" || role === "SUB_ADMIN" ? "ADMIN" : role || "",
+  );
   const router = createBrowserRouter(routes);
 
   return (
