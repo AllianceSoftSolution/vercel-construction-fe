@@ -12,13 +12,13 @@ import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
 import CustomModal from "../../../../comments/components/CustomModal";
 import { useSelector } from "react-redux";
-import { isPrivilegedSuperAdmin } from "../../../../utils/privilegedAdmin";
+import { isAdminUser } from "../../../../utils/privilegedAdmin";
 
 const AddUser = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const authUser = useSelector((state) => state.auth?.user);
-  const canSetPassword = isPrivilegedSuperAdmin(authUser);
+  const canSetPassword = isAdminUser(authUser);
   const [selectedOption, setSelectedOption] = useState("");
   const [loading, setLoading] = useState(false);
   const [isHead, setIsHead] = useState(false);

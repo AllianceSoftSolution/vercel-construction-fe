@@ -24,6 +24,14 @@ export const isPrivilegedSuperAdmin = (user) => {
   return role === "SUPER_ADMIN" || role === "ADMIN";
 };
 
+/** ADMIN and SUPER_ADMIN (not SUB_ADMIN) — full user management incl. password on create. */
+export const isAdminUser = (user) => {
+  if (!user) return false;
+  const role = String(user.originalRole || user.role || "").toUpperCase();
+  if (role === "SUB_ADMIN") return false;
+  return role === "SUPER_ADMIN" || role === "ADMIN";
+};
+
 /** Display name for Created By / actor columns. */
 export const getCreatorDisplayName = (creator, fallback = "-") => {
   if (!creator) return fallback;

@@ -38,6 +38,7 @@ import { useSelector } from "react-redux";
 import {
   filterHiddenPrivilegedUsers,
   getCreatorDisplayName,
+  isAdminUser,
   isPrivilegedSuperAdmin,
   isPrivilegedSuperAdminRecord,
 } from "../../../utils/privilegedAdmin";
@@ -47,7 +48,8 @@ const UserManagement = () => {
   const { id } = useParams();
   const isReadOnly = useReadOnly();
   const authUser = useSelector((state) => state.auth?.user);
-  const isPrivileged = isPrivilegedSuperAdmin(authUser);
+  const isFullAdmin = isAdminUser(authUser);
+  const isSystemAdminViewer = isPrivilegedSuperAdmin(authUser);
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [userAnalytics, setUserAnalytics] = useState({
@@ -303,7 +305,7 @@ const UserManagement = () => {
     const isActive = user?.isActive;
 
     // Hide all actions for the privileged System Admin from other admins
-    if (user && isPrivilegedSuperAdminRecord(user) && !isPrivileged) {
+    if (user && isPrivilegedSuperAdminRecord(user) && !isSystemAdminViewer) {
       return <span className="text-xs text-gray-400">—</span>;
     }
 
@@ -316,7 +318,7 @@ const UserManagement = () => {
             onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
-          ...(!isReadOnly && isPrivileged
+          ...(!isReadOnly && isFullAdmin
             ? [
                 {
                   label: "Edit User",
@@ -337,7 +339,7 @@ const UserManagement = () => {
               icon: isActive ? <FaBan /> : <MdOutlineNoAccounts />,
             },
           ] : []),
-          ...(!isReadOnly && isPrivileged
+          ...(!isReadOnly && isFullAdmin
             ? [
                 {
                   label: "Delete User",
