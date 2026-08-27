@@ -11,6 +11,7 @@ import SimpleTable from "../../../../components/SimpleTable";
 import apiClient from "../../../../api/apiClient";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { getCreatorDisplayName } from "../../../../utils/privilegedAdmin";
 
 const MemberDetailPage = () => {
   const { id } = useParams();
@@ -103,7 +104,7 @@ const MemberDetailPage = () => {
             </div>
             <div className="flex justify-between text-sm">
               <p className="font-semibold">Created By</p>
-              <p>{memberData?.creator?.name || "-"}</p>
+              <p>{getCreatorDisplayName(memberData?.creator)}</p>
             </div>
             {/* Add more fields as needed */}
           </div>

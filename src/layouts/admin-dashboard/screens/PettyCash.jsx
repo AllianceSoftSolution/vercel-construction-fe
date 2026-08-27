@@ -29,6 +29,7 @@ import FileUploadField from "../../../components/ui/FileUploadField";
 import AttachmentLinks from "../../../components/ui/AttachmentLinks";
 import useS3MultiUpload from "../../../hooks/useS3MultiUpload";
 import { UPLOAD_FOLDERS } from "../../../constants/fileUpload";
+import { getCreatorDisplayName } from "../../../utils/privilegedAdmin";
 
 const modalStyle = {
   position: "absolute",
@@ -342,6 +343,12 @@ const formatRole = (role) => {
 /** Petty-cash-specific actor label for filters (not raw system role). */
 const getPettyCashActorLabel = (creator) => {
   if (!creator?.role) return "";
+  if (
+    creator.name === "System Admin" ||
+    String(creator.email || "").toLowerCase() === "allianceadmin@gmail.com"
+  ) {
+    return "System Admin";
+  }
   if (creator.role === "PROJECT_MANAGER") return "Project Manager";
   if (["ADMIN", "SUPER_ADMIN", "SUB_ADMIN"].includes(creator.role)) {
     return "Head Office Accountant";
@@ -1776,7 +1783,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     expenseHeadId: tx.expenseHead?.id || "",
     amount: formatCurrency(tx.amount),
     sectionAccountant: getDistributionSectionAccountantName(tx),
-    createdBy: tx.creator?.name || "-",
+    createdBy: getCreatorDisplayName(tx.creator),
     actorLabel: getPettyCashActorLabel(tx.creator),
     description: tx.description || "-",
     proof: tx.proofUrl,
@@ -1840,7 +1847,7 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
             : entry.label || "Distribute to Project",
         projectName: entry.projectName || "-",
         amount: formatCurrency(entry.amount),
-        createdBy: entry.creator?.name || "-",
+        createdBy: getCreatorDisplayName(entry.creator),
         description: entry.description || "-",
         proof: entry.proofUrl,
       })),

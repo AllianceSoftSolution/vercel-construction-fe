@@ -10,6 +10,7 @@ import SimpleTable from "../../../../components/SimpleTable";
 import { useParams } from "react-router-dom";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
+import { getCreatorDisplayName } from "../../../../utils/privilegedAdmin";
 
 const SinMemberDetailPage = () => {
   const { id } = useParams();
@@ -92,7 +93,7 @@ const SinMemberDetailPage = () => {
             <InfoRow label="Employee ID" value={memberData?.employeeId || "-"} />
             <InfoRow label="Role" value={formatRole(memberData?.role)} />
             <InfoRow label="Status" value={memberData?.isActive ? "Active" : "Inactive"} />
-            <InfoRow label="Created By" value={memberData?.creator?.name || "-"} />
+            <InfoRow label="Created By" value={getCreatorDisplayName(memberData?.creator)} />
           </div>
         </div>
 

@@ -11,15 +11,20 @@ import * as Yup from "yup";
 import apiClient from "../../../../api/apiClient";
 import toast from "react-hot-toast";
 import CustomModal from "../../../../comments/components/CustomModal";
+import { useSelector } from "react-redux";
+import { isPrivilegedSuperAdmin } from "../../../../utils/privilegedAdmin";
 
 const AddUser = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const authUser = useSelector((state) => state.auth?.user);
+  const canSetPassword = isPrivilegedSuperAdmin(authUser);
   const [selectedOption, setSelectedOption] = useState("");
   const [loading, setLoading] = useState(false);
   const [isHead, setIsHead] = useState(false);
   const [isHeadOfficeAccountant, setIsHeadOfficeAccountant] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isFullEdit, setIsFullEdit] = useState(false);
   const [userData, setUserData] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -46,6 +51,7 @@ const AddUser = () => {
         const decodedUserData = JSON.parse(decodeURIComponent(userDataParam));
         setUserData(decodedUserData);
         setIsEditMode(true);
+        setIsFullEdit(!!decodedUserData.isFullEdit && canSetPassword);
         setIsHead(decodedUserData.isHead || false);
         if (decodedUserData.id) {
           apiClient.get(`/auth/users/${decodedUserData.id}`).then((res) => {
@@ -71,6 +77,19 @@ const AddUser = () => {
       .email("Invalid email address")
       .required("Email is required"),
     role: Yup.string().required("Role is required"),
+    password: Yup.string().when([], {
+      is: () => !isEditMode && canSetPassword,
+      then: (schema) =>
+        schema
+          .required("Password is required")
+          .min(8, "Password must be at least 8 characters"),
+      otherwise: (schema) =>
+        schema.test(
+          "optional-min",
+          "Password must be at least 8 characters",
+          (value) => !value || value.length >= 8,
+        ),
+    }),
   });
   
   const formik = useFormik({
@@ -80,10 +99,52 @@ const AddUser = () => {
       role: userData?.role || "",
       isHead: false,
       note: userData?.note || "",
+      password: "",
     },
     validationSchema,
     enableReinitialize: true,
     onSubmit: async (values, { resetForm }) => {
+      if (isEditMode && isFullEdit) {
+        try {
+          setLoading(true);
+          const payload = {
+            name: values.name,
+            email: values.email,
+            notes: values.note || undefined,
+            ...(values.password ? { password: values.password } : {}),
+          };
+          const response = await apiClient.put(
+            `/auth/users/${userData.id}`,
+            payload,
+          );
+          if (!response.ok) {
+            toast.error(response.data?.message || "Failed to update user");
+            return;
+          }
+          if (values.role && values.role !== userData.role) {
+            const effectiveIsHead = isHead || isHeadOfficeAccountant;
+            await apiClient.patch(`/auth/users/${userData.id}/change-role`, {
+              newRole: values.role,
+              isHead: effectiveIsHead,
+              isHeadOffice: isHeadOfficeAccountant,
+              ...((effectiveIsHead &&
+                (values.role === "ACCOUNTANT" ||
+                  values.role === "STORE_INCHARGE") &&
+                !isHeadOfficeAccountant) && { projectIds: selectedProjectIds }),
+            });
+          }
+          toast.success("User updated successfully!");
+          navigate(-1);
+        } catch (error) {
+          toast.error(
+            error?.response?.data?.message || "Failed to update user.",
+          );
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+
       if (isEditMode) {
         setShowConfirmModal(true);
       } else {
@@ -117,7 +178,15 @@ const AddUser = () => {
               (values.role === "ACCOUNTANT" || values.role === "STORE_INCHARGE") &&
               !isHeadOfficeAccountant) && { projectIds: selectedProjectIds }),
             ...(isHeadOfficeAccountant && { isHeadOffice: true }),
+            ...(canSetPassword && values.password
+              ? { password: values.password }
+              : {}),
           };
+          delete payload.isHead;
+          // keep isHead in payload properly
+          payload.isHead = effectiveIsHead;
+          if (!canSetPassword) delete payload.password;
+
           const response = await apiClient.post("/auth/register", payload);
 
           if (response.ok) {
@@ -125,7 +194,7 @@ const AddUser = () => {
             toast.success(response.data?.message || "User created successfully!");
             navigate(-1);
           } else {
-            toast.error("User creation failed!");
+            toast.error(response.data?.message || "User creation failed!");
           }
         } catch (error) {
           console.error(error);
@@ -201,8 +270,20 @@ const AddUser = () => {
         icon={
           <FaArrowLeftLong className="w-8 h-8 p-2 bg-[#EBEBEB] rounded-full" />
         }
-        title={isEditMode ? "Change User Role" : "New User"}
-        detail={isEditMode ? "Update User Role in RADC" : "Add New User Information in RADC"}
+        title={
+          isFullEdit
+            ? "Edit User"
+            : isEditMode
+              ? "Change User Role"
+              : "New User"
+        }
+        detail={
+          isFullEdit
+            ? "Update User Details in RADC"
+            : isEditMode
+              ? "Update User Role in RADC"
+              : "Add New User Information in RADC"
+        }
         showIcon={true}
       />
       <div className="h-[1px] bg-[#CDCDCD] w-full my-4"></div>
@@ -220,8 +301,16 @@ const AddUser = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.name && Boolean(formik.errors.name)}
             helperText={formik.touched.name && formik.errors.name}
-            disabled={isEditMode}
-            sx={isEditMode ? { "& .MuiInputBase-input.Mui-disabled": { WebkitTextFillColor: "#666" } } : {}}
+            disabled={isEditMode && !isFullEdit}
+            sx={
+              isEditMode && !isFullEdit
+                ? {
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#666",
+                    },
+                  }
+                : {}
+            }
           />{" "}
           <CustomTextField
             label={<span className="flex items-center gap-1">Enter Email</span>}
@@ -234,9 +323,44 @@ const AddUser = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
-            disabled={isEditMode}
-            sx={isEditMode ? { "& .MuiInputBase-input.Mui-disabled": { WebkitTextFillColor: "#666" } } : {}}
+            disabled={isEditMode && !isFullEdit}
+            sx={
+              isEditMode && !isFullEdit
+                ? {
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#666",
+                    },
+                  }
+                : {}
+            }
           />{" "}
+          {(!isEditMode && canSetPassword) || isFullEdit ? (
+            <CustomTextField
+              label={
+                <span className="flex items-center gap-1">
+                  {isFullEdit ? "Password (Optional)" : "Password"}
+                </span>
+              }
+              fullWidth
+              name="password"
+              placeholder={
+                isFullEdit
+                  ? "Leave blank to keep current password"
+                  : "Set password (min 8 characters)"
+              }
+              type="password"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={
+                (formik.touched.password && formik.errors.password) ||
+                (!isEditMode
+                  ? "User can log in immediately — welcome email with password is skipped."
+                  : " ")
+              }
+            />
+          ) : null}
           <CustomTextField
             label={<span className="flex items-center gap-1">Enter Note (Optional)</span>}
             fullWidth
@@ -246,8 +370,16 @@ const AddUser = () => {
             value={formik.values.note}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            disabled={isEditMode}
-            sx={isEditMode ? { "& .MuiInputBase-input.Mui-disabled": { WebkitTextFillColor: "#666" } } : {}}
+            disabled={isEditMode && !isFullEdit}
+            sx={
+              isEditMode && !isFullEdit
+                ? {
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#666",
+                    },
+                  }
+                : {}
+            }
           />{" "}
           <div className="w-full">
             <CustomSelect

@@ -25,6 +25,9 @@ import { IconButton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { formatToK } from '../../../utils';
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
+import { useSelector } from "react-redux";
+import { filterUsersByRoleForDashboard } from "../../../utils/privilegedAdmin";
+import CreatorNameCell from "../../../components/ui/CreatorNameCell";
 
 // Status color mapping for demands and POs
 const statusColorMap = {
@@ -66,6 +69,7 @@ const DateCell = ({ value }) => (
 function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const authRole = useSelector((state) => state.auth?.userType || state.auth?.user?.role);
   const [initialLoading, setInitialLoading] = useState(true);
   const [demands, setDemands] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -315,7 +319,12 @@ function AdminDashboard() {
         setPoDistributionByVendor(charts.poDistributionByVendor || []);
         setAmountByVendor(charts.amountByVendor || []);
         setFinancialProgress(charts.financialProgressPerProject || []);
-        setUsersByRole(charts.usersByRole || []);
+        setUsersByRole(
+          filterUsersByRoleForDashboard(
+            charts.usersByRole || [],
+            authRole,
+          ),
+        );
       } else {
         toast.error("Failed to fetch analytics data");
       }
@@ -458,7 +467,7 @@ function AdminDashboard() {
           filterPlaceholder="Filter by project or section"
           filterDropdownAlign="right"
           exportFileName="demands"
-          cellComponents={{ status: StatusChip, createdAt: DateCell }}
+          cellComponents={{ status: StatusChip, createdAt: DateCell, "creator.name": CreatorNameCell }}
         />
       </div>
       <div className="overflow-x-auto mt-8">

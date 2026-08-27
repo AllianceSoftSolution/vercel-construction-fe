@@ -14,6 +14,7 @@ import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import DeleteModal from "../../../mui/DeleteModal";
 import { formatDateDMY } from '../../../utils';
 import { buildExportFileName } from "../../../modules/tableExportHelpers";
+import CreatorNameCell from "../../../components/ui/CreatorNameCell";
 
 // Status color mapping
 const statusColorMap = {
@@ -336,7 +337,8 @@ const Demands = () => {
                   cellComponents={{ 
                     demandId: CustomActionComponent, 
                     status: StatusChip,
-                    createdAt: DateComponent 
+                    createdAt: DateComponent,
+                    "creator.name": CreatorNameCell,
                   }}
                 />
               </div>

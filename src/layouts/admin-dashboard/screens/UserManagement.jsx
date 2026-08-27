@@ -34,11 +34,20 @@ import toast from "react-hot-toast";
 import Loader from "../../../components/ui/Loader";
 import CustomFilterDropdown from "../../../components/ui/CustomFilterDropdown";
 import { useReadOnly } from "../../../context/ReadOnlyContext";
+import { useSelector } from "react-redux";
+import {
+  filterHiddenPrivilegedUsers,
+  getCreatorDisplayName,
+  isPrivilegedSuperAdmin,
+  isPrivilegedSuperAdminEmail,
+} from "../../../utils/privilegedAdmin";
 
 const UserManagement = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isReadOnly = useReadOnly();
+  const authUser = useSelector((state) => state.auth?.user);
+  const isPrivileged = isPrivilegedSuperAdmin(authUser);
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [userAnalytics, setUserAnalytics] = useState({
@@ -79,7 +88,7 @@ const UserManagement = () => {
             ...user,
             iD: user.id || index + 1,
           })) || [];
-        setUsers(data);
+        setUsers(filterHiddenPrivilegedUsers(data, authUser));
 
         // Set analytics data from API response
         if (response.data.userAnalytics) {
@@ -134,6 +143,39 @@ const UserManagement = () => {
       })
     );
     navigate(`/admin-dashboard/user-management/addUser?userData=${userData}`);
+  };
+
+  const handleOpenFullEdit = (user) => {
+    const userData = encodeURIComponent(
+      JSON.stringify({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        note: user.note || user.notes,
+        isHead: user.isHead || false,
+        isEdit: true,
+        isFullEdit: true,
+      }),
+    );
+    navigate(`/admin-dashboard/user-management/addUser?userData=${userData}`);
+  };
+
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(`Delete ${user.name || "this user"}? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      const response = await apiClient.delete(`/auth/users/${user.id}`);
+      if (response.ok) {
+        toast.success("User deleted successfully");
+        getAllUsers();
+      } else {
+        toast.error(response.data?.message || "Failed to delete user");
+      }
+    } catch (error) {
+      toast.error(error?.message || "Failed to delete user");
+    }
   };
 
   const columns = [
@@ -260,6 +302,15 @@ const UserManagement = () => {
     const user = users.find((u) => u.id === id);
     const isActive = user?.isActive;
 
+    // Hide all actions for the privileged System Admin from other admins
+    if (
+      user &&
+      isPrivilegedSuperAdminEmail(user.email) &&
+      !isPrivileged
+    ) {
+      return <span className="text-xs text-gray-400">—</span>;
+    }
+
     return (
       <DropdownButton
         className="bg-[#FF0000] font-semibold"
@@ -269,6 +320,15 @@ const UserManagement = () => {
             onClick: () => navigate(`/admin-dashboard/user-management/${id}`),
             icon: <FaEye />,
           },
+          ...(!isReadOnly && isPrivileged
+            ? [
+                {
+                  label: "Edit User",
+                  onClick: () => handleOpenFullEdit(user),
+                  icon: <FaUserEdit />,
+                },
+              ]
+            : []),
           ...(!isReadOnly ? [
             {
               label: "Change User Role",
@@ -281,6 +341,15 @@ const UserManagement = () => {
               icon: isActive ? <FaBan /> : <MdOutlineNoAccounts />,
             },
           ] : []),
+          ...(!isReadOnly && isPrivileged
+            ? [
+                {
+                  label: "Delete User",
+                  onClick: () => handleDeleteUser(user),
+                  icon: <RiDeleteBin5Fill />,
+                },
+              ]
+            : []),
         ]}
       >
         <IconButton>
@@ -303,6 +372,12 @@ const UserManagement = () => {
 
     return <span className="text-sm text-black">{formattedRole}</span>;
   };
+
+  const CreatorCell = ({ row }) => (
+    <span className="text-sm text-black">
+      {getCreatorDisplayName(row?.creator)}
+    </span>
+  );
 
   // Custom cell renderer for status to display Active/Inactive
   const StatusCell = ({ value }) => {
@@ -375,6 +450,7 @@ const UserManagement = () => {
               id: CustomActionComponent,
               role: RoleCell,
               isActive: StatusCell,
+              "creator.name": CreatorCell,
             }}
           />
         )}
