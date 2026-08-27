@@ -40,7 +40,14 @@ const Login = () => {
         login({
           token,
           isLoggedIn: true,
-          user,
+          user: {
+            ...user,
+            // Preserve email if masking ever strips it from login response.
+            email: user?.email || email,
+            originalRole:
+              user?.originalRole ||
+              (user?.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : user?.role),
+          },
         })
       );
 

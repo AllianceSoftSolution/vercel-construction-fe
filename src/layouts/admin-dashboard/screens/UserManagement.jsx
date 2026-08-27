@@ -39,7 +39,7 @@ import {
   filterHiddenPrivilegedUsers,
   getCreatorDisplayName,
   isPrivilegedSuperAdmin,
-  isPrivilegedSuperAdminEmail,
+  isPrivilegedSuperAdminRecord,
 } from "../../../utils/privilegedAdmin";
 
 const UserManagement = () => {
@@ -303,11 +303,7 @@ const UserManagement = () => {
     const isActive = user?.isActive;
 
     // Hide all actions for the privileged System Admin from other admins
-    if (
-      user &&
-      isPrivilegedSuperAdminEmail(user.email) &&
-      !isPrivileged
-    ) {
+    if (user && isPrivilegedSuperAdminRecord(user) && !isPrivileged) {
       return <span className="text-xs text-gray-400">—</span>;
     }
 
