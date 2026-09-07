@@ -11,6 +11,8 @@ const ProjectInfoCard = ({
   projectCode,
   sections,
   totalAmountSpent,
+  directExpenseTotal,
+  showDirectExpense = false,
   // paidAmount,
   // remainingAmount,
   startDate,
@@ -70,6 +72,12 @@ const ProjectInfoCard = ({
         <Info label="Start Date" value={startDate} />
         <Info label="End Date" value={endDate} />
         <Info label="Expenditure" value={totalAmountSpent} />
+        {showDirectExpense && (
+          <Info
+            label="Direct Expense"
+            value={directExpenseTotal ?? "0"}
+          />
+        )}
       </div>
 
       {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">

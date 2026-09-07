@@ -149,13 +149,12 @@ const ProjectInformationTab = ({ data }) => {
         onEdit={() => console.log("edit")}
         projectName={data?.name || "N/A"}
         projectCode={data?.code || "N/A"}
-        section={data?.sections.length || "0"}
-        totalAmount={data?.totalAmount || "0"}
-        remainingAmount={data?.remainingAmount || "0"}
-        paidAmount={data?.paidAmount || "0"}
-        date={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
-        projectLocation={data?.location || "Not specified"}
-        projectStatus={data?.status || "N/A"}
+        sections={data?.sections?.length || "0"}
+        totalAmountSpent={data?.totalAmountSpent || "0"}
+        directExpenseTotal={data?.directExpenseTotal || "0"}
+        showDirectExpense={Boolean(data?.canViewDirectExpense)}
+        startDate={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
+        endDate={data?.endDate ? formatDateDMY(data.endDate) : "N/A"}
       />
       <ProjectDescriptionCard
         title="Project Description"

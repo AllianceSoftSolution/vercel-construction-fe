@@ -720,8 +720,14 @@ const SectionDetailPage = () => {
           {/* <InfoItem label="Project Status" value="project status" /> */}
           <InfoItem
             label="Total Amount"
-            value={sectionData?.totalAmount || "0"}
+            value={sectionData?.totalAmountSpent || sectionData?.totalAmount || "0"}
           />
+          {sectionData?.canViewDirectExpense ? (
+            <InfoItem
+              label="Direct Expense"
+              value={sectionData?.directExpenseTotal || "0"}
+            />
+          ) : null}
           <InfoItem
             label="Paid Amount"
             value={sectionData?.paidAmount || "0"}

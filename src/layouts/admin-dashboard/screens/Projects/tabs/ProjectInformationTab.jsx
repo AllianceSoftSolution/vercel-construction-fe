@@ -439,6 +439,8 @@ const ProjectInformationTab = ({ data, onAssignmentSuccess }) => {
         projectCode={data?.code || "N/A"}
         sections={data?.sections.length || "0"}
         totalAmountSpent={data?.totalAmountSpent || "0"}
+        directExpenseTotal={data?.directExpenseTotal || "0"}
+        showDirectExpense={Boolean(data?.canViewDirectExpense)}
         // remainingAmount={data?.remainingAmount || "0"}
         // paidAmount={data?.paidAmount || "0"}
         startDate={data?.startDate ? formatDateDMY(data.startDate) : "N/A"}
