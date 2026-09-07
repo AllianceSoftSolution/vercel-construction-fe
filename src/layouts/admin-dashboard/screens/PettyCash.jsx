@@ -79,10 +79,89 @@ const EXPENSE_HEAD_KIND_BADGE_LABELS = {
   DIRECT_EXPENSE: "Direct Expense",
 };
 
-const defaultHeadKindFilters = (canManageHeads) => ({
-  PETTY_CASH: canManageHeads,
-  DIRECT_EXPENSE: true,
+const formatExpenseHeadLabel = (head, { withType = false } = {}) => {
+  const name = head?.name || "-";
+  if (!withType) return name;
+  const typeLabel =
+    EXPENSE_HEAD_KIND_BADGE_LABELS[head?.kind] || head?.kind || "Expense Head";
+  return `${name} (${typeLabel})`;
+};
+
+const splitExpenseHeadsByKind = (heads = []) => ({
+  pettyCash: heads.filter(
+    (head) => (head?.kind || "PETTY_CASH") !== "DIRECT_EXPENSE"
+  ),
+  directExpense: heads.filter((head) => head?.kind === "DIRECT_EXPENSE"),
 });
+
+const defaultHeadKindFilters = (canSelectAllTypes = true) => ({
+  PETTY_CASH: true,
+  DIRECT_EXPENSE: Boolean(canSelectAllTypes),
+});
+
+const filterExpenseHeadsByKind = (heads = [], kindFilters = {}) =>
+  heads.filter((head) => {
+    const kind = head?.kind || "PETTY_CASH";
+    return Boolean(kindFilters[kind]);
+  });
+
+const ExpenseHeadTypeCheckboxFilter = ({
+  filters,
+  onChange,
+  showPettyCash = true,
+  showDirect = true,
+  compact = false,
+  className = "",
+}) => (
+  <div
+    className={`${
+      compact
+        ? "inline-flex flex-wrap items-center gap-x-3 gap-y-1"
+        : "flex flex-wrap gap-x-5 gap-y-2"
+    } ${className}`}
+  >
+    {showPettyCash ? (
+      <label
+        className={`flex items-center gap-2 text-sm text-gray-800 cursor-pointer ${
+          compact ? "whitespace-nowrap" : ""
+        }`}
+      >
+        <input
+          type="checkbox"
+          className="rounded border-gray-300"
+          checked={Boolean(filters?.PETTY_CASH)}
+          onChange={(e) =>
+            onChange((prev) => ({
+              ...prev,
+              PETTY_CASH: e.target.checked,
+            }))
+          }
+        />
+        {EXPENSE_HEAD_KIND_BADGE_LABELS.PETTY_CASH}
+      </label>
+    ) : null}
+    {showDirect ? (
+      <label
+        className={`flex items-center gap-2 text-sm text-gray-800 cursor-pointer ${
+          compact ? "whitespace-nowrap" : ""
+        }`}
+      >
+        <input
+          type="checkbox"
+          className="rounded border-gray-300"
+          checked={Boolean(filters?.DIRECT_EXPENSE)}
+          onChange={(e) =>
+            onChange((prev) => ({
+              ...prev,
+              DIRECT_EXPENSE: e.target.checked,
+            }))
+          }
+        />
+        {EXPENSE_HEAD_KIND_BADGE_LABELS.DIRECT_EXPENSE}
+      </label>
+    ) : null}
+  </div>
+);
 
 const AUDIT_DIRECTION_FILTER_OPTIONS = [
   { value: "CREDIT", label: "Petty Cash Added" },
@@ -460,11 +539,14 @@ const getDistributionSectionAccountantName = (tx) => {
   return tx.section?.accountantAssignments?.[0]?.user?.name || "-";
 };
 
-const TableFilterSelect = ({ allLabel, options, value, onChange }) => (
+const TableFilterSelect = ({ allLabel, options, value, onChange, disabled = false }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="w-52 shrink-0 px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
+    disabled={disabled}
+    className={`w-52 shrink-0 px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 ${
+      disabled ? "opacity-60 cursor-not-allowed" : ""
+    }`}
   >
     <option value="all">{allLabel}</option>
     {options.map((option) => (
@@ -490,6 +572,7 @@ const SearchableSelect = ({
   triggerClassName = "w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-left flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40",
   menuZIndex = 1400,
   getOptionSearchText = (option) => option.label,
+  typeFilter = null,
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -594,6 +677,23 @@ const SearchableSelect = ({
               />
             </div>
           </div>
+          {typeFilter ? (
+            <div
+              className="px-3 py-2 border-b border-gray-100 bg-gray-50"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                Filter by type
+              </p>
+              <ExpenseHeadTypeCheckboxFilter
+                compact
+                filters={typeFilter.filters}
+                onChange={typeFilter.onChange}
+                showPettyCash={typeFilter.showPettyCash ?? true}
+                showDirect={typeFilter.showDirect ?? true}
+              />
+            </div>
+          ) : null}
           <ul role="listbox" className="max-h-52 overflow-y-auto py-1">
             {clearOption && (
               <li>
@@ -679,6 +779,8 @@ const SearchableTableFilterSelect = ({
   value,
   onChange,
   searchPlaceholder = "Search expense heads...",
+  disabled = false,
+  typeFilter = null,
 }) => (
   <SearchableSelect
     options={options}
@@ -686,8 +788,10 @@ const SearchableTableFilterSelect = ({
     onChange={onChange}
     clearOption={{ value: "all", label: allLabel }}
     searchPlaceholder={searchPlaceholder}
+    disabled={disabled}
     className="relative w-52 shrink-0"
     menuZIndex={1400}
+    typeFilter={typeFilter}
   />
 );
 
@@ -697,17 +801,27 @@ const SearchableExpenseHeadField = ({
   onChange,
   placeholder = "Select expense head",
   disabled = false,
+  showTypeLabels = false,
+  showTypeFilter = false,
+  kindFilters,
+  onKindFiltersChange,
   emptyMessage = "No expense heads available. Contact an administrator to add expense heads.",
   menuZIndex = 1500,
 }) => {
+  const filteredHeads = useMemo(() => {
+    if (!showTypeFilter || !kindFilters) return heads;
+    return filterExpenseHeadsByKind(heads, kindFilters);
+  }, [heads, showTypeFilter, kindFilters]);
+
   const options = useMemo(
     () =>
-      heads.map((head) => ({
+      filteredHeads.map((head) => ({
         value: head.id,
-        label: head.name,
+        label: formatExpenseHeadLabel(head, { withType: showTypeLabels }),
         description: head.description || "",
+        kind: head.kind,
       })),
-    [heads]
+    [filteredHeads, showTypeLabels]
   );
 
   return (
@@ -718,17 +832,70 @@ const SearchableExpenseHeadField = ({
         onChange={onChange}
         placeholder={placeholder}
         searchPlaceholder="Search expense heads..."
-        disabled={disabled || heads.length === 0}
+        disabled={disabled || filteredHeads.length === 0}
         menuZIndex={menuZIndex}
         triggerClassName="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white text-left flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
         getOptionSearchText={(option) =>
           `${option.label} ${option.description || ""}`.trim()
         }
+        typeFilter={
+          showTypeFilter && kindFilters && onKindFiltersChange
+            ? {
+                filters: kindFilters,
+                onChange: onKindFiltersChange,
+              }
+            : null
+        }
       />
-      {heads.length === 0 && (
+      {filteredHeads.length === 0 ? (
         <p className="text-xs text-amber-600">{emptyMessage}</p>
-      )}
+      ) : null}
     </div>
+  );
+};
+
+const ExpenseHeadTableFilter = ({
+  allLabel,
+  heads,
+  value,
+  onChange,
+  showTypeFilter = false,
+  kindFilters,
+  onKindFiltersChange,
+  showTypeLabels = false,
+  optionValueKey = "name",
+  disabled = false,
+}) => {
+  const filteredHeads = useMemo(() => {
+    if (!showTypeFilter || !kindFilters) return heads;
+    return filterExpenseHeadsByKind(heads, kindFilters);
+  }, [heads, showTypeFilter, kindFilters]);
+
+  const options = useMemo(
+    () =>
+      filteredHeads.map((head) => ({
+        value: optionValueKey === "id" ? head.id : head.name,
+        label: formatExpenseHeadLabel(head, { withType: showTypeLabels }),
+      })),
+    [filteredHeads, showTypeLabels, optionValueKey]
+  );
+
+  return (
+    <SearchableTableFilterSelect
+      allLabel={allLabel}
+      options={options}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      typeFilter={
+        showTypeFilter && kindFilters && onKindFiltersChange
+          ? {
+              filters: kindFilters,
+              onChange: onKindFiltersChange,
+            }
+          : null
+      }
+    />
   );
 };
 
@@ -1227,7 +1394,16 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   });
   const [headSearch, setHeadSearch] = useState("");
   const [headKindFilters, setHeadKindFilters] = useState(() =>
-    defaultHeadKindFilters(isAdmin)
+    defaultHeadKindFilters(true)
+  );
+  const [txHeadKindFilters, setTxHeadKindFilters] = useState(() =>
+    defaultHeadKindFilters(true)
+  );
+  const [deHeadKindFilters, setDeHeadKindFilters] = useState(() =>
+    defaultHeadKindFilters(true)
+  );
+  const [formHeadKindFilters, setFormHeadKindFilters] = useState(() =>
+    defaultHeadKindFilters(true)
   );
   const [editingHeadId, setEditingHeadId] = useState(null);
   const [headDeleteTarget, setHeadDeleteTarget] = useState(null);
@@ -1336,14 +1512,16 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         (isAdminRoleUser || isHeadOfficeAccountant),
       canManageHeads: summary?.canManageHeads ?? isAdmin,
       canManageDirectExpenseHeads:
-        summary?.canManageDirectExpenseHeads ??
-        (isAdmin || isHeadOfficeAccountant),
+        summary?.canManageDirectExpenseHeads ?? isAdmin,
       canViewDirectExpense:
         summary?.canViewDirectExpense ??
         (isAdmin || isHeadOfficeAccountant),
       canAddDirectExpense:
         summary?.canAddDirectExpense ??
         ((isAdmin || isHeadOfficeAccountant) && !isReadOnly),
+      canSelectAllExpenseHeadTypes:
+        summary?.canSelectAllExpenseHeadTypes ??
+        (isAdmin || isHeadOfficeAccountant),
       canDistribute:
         summary?.canDistribute ?? (isHeadOffice || isProjectAccountant),
       canAddInternalExpense:
@@ -1420,12 +1598,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         const sumRes = await apiClient.get("/petty-cash/summary", apiFilters);
         const sumData = sumRes.ok ? sumRes.data?.data || sumRes.data : null;
         const canLoadDirectExpense = Boolean(sumData?.canViewDirectExpense);
+        const canSelectAllHeadTypes = Boolean(
+          sumData?.canSelectAllExpenseHeadTypes
+        );
 
         const requests = [
           Promise.resolve(sumRes),
           apiClient.get("/petty-cash/summary/by-project", apiFilters),
           apiClient.get("/petty-cash/transactions", txQuery),
-          apiClient.get("/petty-cash/expense-heads", { kind: "PETTY_CASH" }),
+          apiClient.get("/petty-cash/expense-heads", {
+            kind: canSelectAllHeadTypes ? "ALL" : "PETTY_CASH",
+          }),
           apiClient.get("/petty-cash/summary/by-section", apiFilters),
         ];
         if (isAdminRoleUser) {
@@ -1436,9 +1619,6 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
             apiClient.get("/petty-cash/direct-expenses", { limit: 500 })
           );
           requests.push(apiClient.get("/petty-cash/direct-expenses/summary"));
-          requests.push(
-            apiClient.get("/petty-cash/expense-heads", { kind: "DIRECT_EXPENSE" })
-          );
         }
 
         const results = await Promise.all(requests);
@@ -1453,11 +1633,10 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         let hoLogRes;
         let deTxRes;
         let deSumRes;
-        let deHeadsRes;
         if (isAdminRoleUser) {
-          [hoLogRes, deTxRes, deSumRes, deHeadsRes] = restResults;
+          [hoLogRes, deTxRes, deSumRes] = restResults;
         } else if (canLoadDirectExpense) {
-          [deTxRes, deSumRes, deHeadsRes] = restResults;
+          [deTxRes, deSumRes] = restResults;
         }
 
         if (sumRes.ok) {
@@ -1471,7 +1650,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
         if (projRes.ok) setProjects(projRes.data?.data || []);
         if (txRes.ok) setTransactions(txRes.data?.data || []);
-        if (headsRes.ok) setExpenseHeads(headsRes.data?.data || []);
+        if (headsRes.ok) {
+          const allHeads = headsRes.data?.data || [];
+          if (canSelectAllHeadTypes) {
+            const split = splitExpenseHeadsByKind(allHeads);
+            setExpenseHeads(split.pettyCash);
+            setDirectExpenseHeads(split.directExpense);
+          } else {
+            setExpenseHeads(allHeads);
+            setDirectExpenseHeads([]);
+          }
+        }
         if (projRes.ok) {
           setAllProjects(projRes.data?.data || []);
         }
@@ -1485,9 +1674,6 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         }
         if (deTxRes?.ok) setDirectExpenses(deTxRes.data?.data || []);
         if (deSumRes?.ok) setDirectExpenseSummary(deSumRes.data?.data || null);
-        if (deHeadsRes?.ok) {
-          setDirectExpenseHeads(deHeadsRes.data?.data || []);
-        }
       }
     } catch (e) {
       console.error(e);
@@ -1559,8 +1745,19 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     if (type === "heads") {
       setHeadForm({ name: "", description: "", kind: defaultHeadKind });
       setHeadSearch("");
-      setHeadKindFilters(defaultHeadKindFilters(permissions.canManageHeads));
+      setHeadKindFilters(
+        defaultHeadKindFilters(permissions.canSelectAllExpenseHeadTypes)
+      );
       return;
+    }
+    if (
+      type === "directExpense" ||
+      type === "internalExpense" ||
+      type === "sectionExpense"
+    ) {
+      setFormHeadKindFilters(
+        defaultHeadKindFilters(permissions.canSelectAllExpenseHeadTypes)
+      );
     }
     if (type === "directExpense") {
       setFormModalBalance(null);
@@ -1603,7 +1800,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       kind: permissions.canManageHeads ? "PETTY_CASH" : "DIRECT_EXPENSE",
     });
     setHeadSearch("");
-    setHeadKindFilters(defaultHeadKindFilters(permissions.canManageHeads));
+    setHeadKindFilters(
+      defaultHeadKindFilters(permissions.canSelectAllExpenseHeadTypes)
+    );
+    setFormHeadKindFilters(
+      defaultHeadKindFilters(permissions.canSelectAllExpenseHeadTypes)
+    );
     setEditingHeadId(null);
     setHeadDeleteTarget(null);
   };
@@ -1920,12 +2122,18 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   };
 
   const refreshExpenseHeads = async () => {
-    const [pcRes, deRes] = await Promise.all([
-      apiClient.get("/petty-cash/expense-heads", { kind: "PETTY_CASH" }),
-      apiClient.get("/petty-cash/expense-heads", { kind: "DIRECT_EXPENSE" }),
-    ]);
-    if (pcRes.ok) setExpenseHeads(pcRes.data?.data || []);
-    if (deRes.ok) setDirectExpenseHeads(deRes.data?.data || []);
+    const kind = permissions.canSelectAllExpenseHeadTypes ? "ALL" : "PETTY_CASH";
+    const res = await apiClient.get("/petty-cash/expense-heads", { kind });
+    if (!res.ok) return;
+    const allHeads = res.data?.data || [];
+    if (permissions.canSelectAllExpenseHeadTypes) {
+      const split = splitExpenseHeadsByKind(allHeads);
+      setExpenseHeads(split.pettyCash);
+      setDirectExpenseHeads(split.directExpense);
+    } else {
+      setExpenseHeads(allHeads);
+      setDirectExpenseHeads([]);
+    }
   };
 
   const defaultHeadKind = permissions.canManageHeads
@@ -1992,30 +2200,49 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     }
   };
 
-  const managedExpenseHeads = useMemo(() => {
+  const selectableExpenseHeads = useMemo(() => {
+    if (!permissions.canSelectAllExpenseHeadTypes) return expenseHeads;
     const seen = new Set();
     const list = [];
-    const includeDirect = permissions.canViewDirectExpense;
-    const source = permissions.canManageHeads
-      ? [
-          ...expenseHeads,
-          ...(includeDirect ? directExpenseHeads : []),
-        ]
-      : includeDirect
-        ? directExpenseHeads
-        : [];
-    source.forEach((head) => {
+    [...expenseHeads, ...directExpenseHeads].forEach((head) => {
       if (!head?.id || seen.has(head.id)) return;
       seen.add(head.id);
       list.push(head);
     });
-    return list;
+    return list.sort((a, b) =>
+      formatExpenseHeadLabel(a).localeCompare(formatExpenseHeadLabel(b))
+    );
   }, [
     expenseHeads,
     directExpenseHeads,
-    permissions.canManageHeads,
-    permissions.canViewDirectExpense,
+    permissions.canSelectAllExpenseHeadTypes,
   ]);
+
+  const catalogExpenseHeads = useMemo(() => {
+    if (permissions.canSelectAllExpenseHeadTypes) return selectableExpenseHeads;
+    return expenseHeads;
+  }, [
+    selectableExpenseHeads,
+    expenseHeads,
+    permissions.canSelectAllExpenseHeadTypes,
+  ]);
+
+  const canManageAnyExpenseHead =
+    (permissions.canManageHeads || permissions.canManageDirectExpenseHeads) &&
+    !isReadOnly;
+
+  const canViewExpenseHeadCatalog =
+    canManageAnyExpenseHead ||
+    permissions.canSelectAllExpenseHeadTypes ||
+    isProjectAccountant ||
+    isSectionAccountant ||
+    isProjectManager;
+
+  const managedExpenseHeads = catalogExpenseHeads;
+
+  const formExpenseHeads = permissions.canSelectAllExpenseHeadTypes
+    ? selectableExpenseHeads
+    : expenseHeads;
 
   const canMutateExpenseHead = (head) => {
     if (isReadOnly) return false;
@@ -2093,13 +2320,24 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     });
   }, [allSections]);
 
-  const deHeadFilterOptions = useMemo(
-    () =>
-      directExpenseHeads
-        .map((head) => ({ value: head.id, label: head.name }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [directExpenseHeads]
-  );
+  const deHeadFilterOptions = useMemo(() => selectableExpenseHeads, [selectableExpenseHeads]);
+
+  const txHeadFilterHeads = useMemo(() => {
+    if (!permissions.canSelectAllExpenseHeadTypes) {
+      const names = new Set(expenseHeads.map((h) => h.name).filter(Boolean));
+      transactions.forEach((tx) => {
+        const name = tx.expenseHead?.name;
+        if (name && name !== "-") names.add(name);
+      });
+      return [...names].map((name) => ({ id: name, name, kind: "PETTY_CASH" }));
+    }
+    return selectableExpenseHeads;
+  }, [
+    permissions.canSelectAllExpenseHeadTypes,
+    selectableExpenseHeads,
+    expenseHeads,
+    transactions,
+  ]);
 
   const filteredDirectExpenses = useMemo(() => {
     let next = directExpenseTableData;
@@ -2494,17 +2732,6 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     [pettyCashRoleKey]
   );
 
-  const expenseHeadFilterOptions = useMemo(() => {
-    const names = new Set(
-      expenseHeads.map((h) => h.name).filter(Boolean)
-    );
-    tableData.forEach((row) => {
-      if (row.head && row.head !== "-") names.add(row.head);
-    });
-    return [...names]
-      .sort((a, b) => a.localeCompare(b))
-      .map((name) => ({ value: name, label: name }));
-  }, [expenseHeads, tableData]);
 
   useEffect(() => {
     if (
@@ -2527,11 +2754,35 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
   useEffect(() => {
     if (
       txHeadFilter !== "all" &&
-      !expenseHeadFilterOptions.some((option) => option.value === txHeadFilter)
+      !filterExpenseHeadsByKind(txHeadFilterHeads, txHeadKindFilters).some(
+        (head) => head.name === txHeadFilter
+      )
     ) {
       setTxHeadFilter("all");
     }
-  }, [expenseHeadFilterOptions, txHeadFilter]);
+  }, [txHeadFilterHeads, txHeadKindFilters, txHeadFilter]);
+
+  useEffect(() => {
+    if (
+      deHeadFilter !== "all" &&
+      !filterExpenseHeadsByKind(deHeadFilterOptions, deHeadKindFilters).some(
+        (head) => head.id === deHeadFilter
+      )
+    ) {
+      setDeHeadFilter("all");
+    }
+  }, [deHeadFilterOptions, deHeadKindFilters, deHeadFilter]);
+
+  useEffect(() => {
+    if (
+      form.expenseHeadId &&
+      !filterExpenseHeadsByKind(formExpenseHeads, formHeadKindFilters).some(
+        (head) => head.id === form.expenseHeadId
+      )
+    ) {
+      setForm((prev) => ({ ...prev, expenseHeadId: "" }));
+    }
+  }, [formExpenseHeads, formHeadKindFilters, form.expenseHeadId]);
 
   const filterTransactions = useCallback(
     (rows) => {
@@ -2679,9 +2930,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
     setTxTypeFilter("all");
     setTxByFilter("all");
     setTxHeadFilter("all");
+    setTxHeadKindFilters(
+      defaultHeadKindFilters(permissions.canSelectAllExpenseHeadTypes)
+    );
     setTxDateFrom("");
     setTxDateTo("");
-  }, []);
+  }, [permissions.canSelectAllExpenseHeadTypes]);
 
   const handleTxDateFromChange = useCallback(
     (value) => {
@@ -2903,10 +3157,12 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
         onClick: () => openModal("directExpense"),
       });
     }
-    if (permissions.canManageHeads || permissions.canManageDirectExpenseHeads) {
+    if (permissions.canManageHeads || permissions.canViewExpenseHeadCatalog) {
       items.push({
         key: "heads",
-        label: "Manage Expense Heads",
+        label: canManageAnyExpenseHead
+          ? "Manage Expense Heads"
+          : "View Expense Heads",
         styleKey: "manageHeads",
         onClick: () => openModal("heads"),
       });
@@ -3168,11 +3424,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txByFilter}
                       onChange={setTxByFilter}
                     />
-                    <SearchableTableFilterSelect
+                    <ExpenseHeadTableFilter
                       allLabel="Expense Head: All"
-                      options={expenseHeadFilterOptions}
+                      heads={txHeadFilterHeads}
                       value={txHeadFilter}
                       onChange={setTxHeadFilter}
+                      showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+                      kindFilters={txHeadKindFilters}
+                      onKindFiltersChange={setTxHeadKindFilters}
+                      showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+                      optionValueKey="name"
+                      disabled={!permissions.canSelectAllExpenseHeadTypes}
                     />
                     <TableDateRangeFilter
                       from={txDateFrom}
@@ -3404,11 +3666,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                       value={txByFilter}
                       onChange={setTxByFilter}
                     />
-                    <SearchableTableFilterSelect
+                    <ExpenseHeadTableFilter
                       allLabel="Expense Head: All"
-                      options={expenseHeadFilterOptions}
+                      heads={txHeadFilterHeads}
                       value={txHeadFilter}
                       onChange={setTxHeadFilter}
+                      showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+                      kindFilters={txHeadKindFilters}
+                      onKindFiltersChange={setTxHeadKindFilters}
+                      showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+                      optionValueKey="name"
+                      disabled={!permissions.canSelectAllExpenseHeadTypes}
                     />
                     <TableDateRangeFilter
                       from={txDateFrom}
@@ -3472,11 +3740,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     value={txByFilter}
                     onChange={setTxByFilter}
                   />
-                  <SearchableTableFilterSelect
+                  <ExpenseHeadTableFilter
                     allLabel="Expense Head: All"
-                    options={expenseHeadFilterOptions}
+                    heads={txHeadFilterHeads}
                     value={txHeadFilter}
                     onChange={setTxHeadFilter}
+                    showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+                    kindFilters={txHeadKindFilters}
+                    onKindFiltersChange={setTxHeadKindFilters}
+                    showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+                    optionValueKey="name"
+                    disabled={!permissions.canSelectAllExpenseHeadTypes}
                   />
                   <TableDateRangeFilter
                     from={txDateFrom}
@@ -3641,11 +3915,17 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
                     value={deSectionFilter}
                     onChange={setDeSectionFilter}
                   />
-                  <TableFilterSelect
+                  <ExpenseHeadTableFilter
                     allLabel="Head: All"
-                    options={deHeadFilterOptions}
+                    heads={deHeadFilterOptions}
                     value={deHeadFilter}
                     onChange={setDeHeadFilter}
+                    showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+                    kindFilters={deHeadKindFilters}
+                    onKindFiltersChange={setDeHeadKindFilters}
+                    showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+                    optionValueKey="id"
+                    disabled={!permissions.canSelectAllExpenseHeadTypes}
                   />
                   <TableDateRangeFilter
                     from={deDateFrom}
@@ -4014,12 +4294,16 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
             <label className="text-sm font-medium">Expense Head *</label>
             <SearchableExpenseHeadField
-              heads={expenseHeads}
+              heads={formExpenseHeads}
               value={form.expenseHeadId}
               onChange={(expenseHeadId) =>
                 setForm({ ...form, expenseHeadId })
               }
               placeholder="Select expense head"
+              showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+              showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+              kindFilters={formHeadKindFilters}
+              onKindFiltersChange={setFormHeadKindFilters}
             />
 
             <CustomTextField
@@ -4161,12 +4445,16 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
             <label className="text-sm font-medium">Expense Head *</label>
             <SearchableExpenseHeadField
-              heads={expenseHeads}
+              heads={formExpenseHeads}
               value={form.expenseHeadId}
               onChange={(expenseHeadId) =>
                 setForm({ ...form, expenseHeadId })
               }
               placeholder="Select expense head"
+              showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+              showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+              kindFilters={formHeadKindFilters}
+              onKindFiltersChange={setFormHeadKindFilters}
             />
             <CustomTextField
               label="Amount *"
@@ -4247,12 +4535,16 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
 
             <label className="text-sm font-medium">Expense Head *</label>
             <SearchableExpenseHeadField
-              heads={directExpenseHeads}
+              heads={formExpenseHeads}
               value={form.expenseHeadId}
               onChange={(expenseHeadId) =>
                 setForm({ ...form, expenseHeadId })
               }
-              placeholder="Select Direct Expense head"
+              placeholder="Select expense head"
+              showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+              showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+              kindFilters={formHeadKindFilters}
+              onKindFiltersChange={setFormHeadKindFilters}
             />
 
             <CustomTextField
@@ -4302,9 +4594,10 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
       {/* Expense Heads Modal */}
       <Modal open={modal === "heads"} onClose={closeModal}>
         <Box sx={modalStyle} className="bg-white p-6">
-          <h2 className="text-2xl font-bold mb-4">Expense Heads</h2>
-          {(permissions.canManageHeads ||
-            permissions.canManageDirectExpenseHeads) && (
+          <h2 className="text-2xl font-bold mb-4">
+            {canManageAnyExpenseHead ? "Manage Expense Heads" : "View Expense Heads"}
+          </h2>
+          {canManageAnyExpenseHead && (
             <div className="flex flex-col gap-3 mb-4 border-b pb-4">
               <CustomTextField
                 label="Name *"
@@ -4375,40 +4668,15 @@ const PettyCashModule = ({ fullPageOverlayOnFilter = false }) => {
           )}
           <div className="mb-4 rounded-lg border border-gray-100 bg-gray-50 px-3 py-3">
             <p className="text-sm font-medium text-gray-700 mb-2">Filter by type</p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {permissions.canManageHeads && (
-                <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300"
-                    checked={Boolean(headKindFilters.PETTY_CASH)}
-                    onChange={(e) =>
-                      setHeadKindFilters((prev) => ({
-                        ...prev,
-                        PETTY_CASH: e.target.checked,
-                      }))
-                    }
-                  />
-                  {EXPENSE_HEAD_KIND_BADGE_LABELS.PETTY_CASH}
-                </label>
-              )}
-              {permissions.canViewDirectExpense && (
-                <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300"
-                    checked={Boolean(headKindFilters.DIRECT_EXPENSE)}
-                    onChange={(e) =>
-                      setHeadKindFilters((prev) => ({
-                        ...prev,
-                        DIRECT_EXPENSE: e.target.checked,
-                      }))
-                    }
-                  />
-                  {EXPENSE_HEAD_KIND_BADGE_LABELS.DIRECT_EXPENSE}
-                </label>
-              )}
-            </div>
+            <ExpenseHeadTypeCheckboxFilter
+              filters={headKindFilters}
+              onChange={setHeadKindFilters}
+              showPettyCash={
+                permissions.canManageHeads ||
+                permissions.canSelectAllExpenseHeadTypes
+              }
+              showDirect={permissions.canSelectAllExpenseHeadTypes}
+            />
           </div>
           <div className="mb-3">
             <SearchField
