@@ -12,7 +12,7 @@ import {
 import { MdSpaceDashboard, MdViewSidebar } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoPeopleSharp, IoStorefrontSharp } from "react-icons/io5";
-import { FaBars, FaDiceD6, FaHandHoldingHeart, FaMoneyBillWave, FaSearch, FaToolbox, FaUserTie, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaBars, FaDiceD6, FaFileInvoiceDollar, FaHandHoldingHeart, FaMoneyBillWave, FaSearch, FaToolbox, FaUserTie, FaEye, FaEyeSlash } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import logo from "../../assets/construction/logo.png";
@@ -250,6 +250,15 @@ const AdminDashboardLayout = ({ role }) => {
       icon: FaMoneyBillWave,
       path: "/admin-dashboard/petty-cash",
     },
+    ...(["ADMIN", "SUPER_ADMIN"].includes(userType)
+      ? [
+          {
+            label: "Direct Expense",
+            icon: FaFileInvoiceDollar,
+            path: "/admin-dashboard/direct-expense",
+          },
+        ]
+      : []),
     {
       label: "Vendors",
       icon: IoPeopleSharp,

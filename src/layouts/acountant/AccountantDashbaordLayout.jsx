@@ -5,7 +5,7 @@ import { useMediaQuery, useTheme, Avatar } from "@mui/material";
 import { MdSpaceDashboard } from "react-icons/md";
 import { IoMdNotifications, IoMdSettings } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
-import { FaBars, FaSearch, FaEye, FaEyeSlash, FaHandHoldingHeart, FaMoneyBillWave } from "react-icons/fa";
+import { FaBars, FaSearch, FaEye, FaEyeSlash, FaFileInvoiceDollar, FaHandHoldingHeart, FaMoneyBillWave } from "react-icons/fa";
 import { FaBoxesStacked } from "react-icons/fa6";
 import SideBarItem from "@/components/ui/SideBarItem";
 import LogOutModal from "../../mui/LogOutModal";
@@ -105,6 +105,24 @@ const AccountantDashboardLayout = ({ role }) => {
   const [notifLoading, setNotifLoading] = useState(false);
   const username = useSelector((state) => state.auth.username);
   const userType = useSelector((state) => state.auth.userType);
+  const [canViewDirectExpense, setCanViewDirectExpense] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiClient.get("/petty-cash/summary");
+        if (cancelled || !res.ok) return;
+        const data = res.data?.data || res.data;
+        setCanViewDirectExpense(Boolean(data?.canViewDirectExpense));
+      } catch {
+        if (!cancelled) setCanViewDirectExpense(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Load notifications from localStorage and IndexedDB on mount
   useEffect(() => {
@@ -213,6 +231,15 @@ const AccountantDashboardLayout = ({ role }) => {
       icon: FaMoneyBillWave,
       path: "/accountant-dashboard/petty-cash",
     },
+    ...(canViewDirectExpense
+      ? [
+          {
+            label: "Direct Expense",
+            icon: FaFileInvoiceDollar,
+            path: "/accountant-dashboard/direct-expense",
+          },
+        ]
+      : []),
   ];
 
   return (
