@@ -67,6 +67,7 @@ const DIRECT_EXPENSE_COLUMNS = [
 const DIRECT_EXPENSE_PROJECT_LEVEL = "__project_level__";
 
 const ADMIN_PETTY_CASH_TAB = 2;
+const DIRECT_EXPENSE_ALL_TAB = 1;
 
 const EXPENSE_HEAD_KIND_LABELS = {
   PETTY_CASH: "Petty Cash Expense Head",
@@ -1158,6 +1159,84 @@ const ProjectListCard = ({
               <div
                 className="h-full bg-[#8b5cf6] rounded-full transition-all duration-300"
                 style={{ width: `${utilization}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      <FiChevronRight className="text-gray-300 group-hover:text-[#0252AD] text-2xl ml-4 shrink-0 transition-colors" />
+    </button>
+  );
+};
+
+const DirectExpenseProjectListCard = ({ project, index, onSelect }) => {
+  const accent = getProjectAccent(index);
+  const total = Number(project.deTotal) || 0;
+  const projectLevel = Number(project.deProjectLevel) || 0;
+  const sectionLevel = Number(project.deSectionLevel) || 0;
+  const txCount = Number(project.deCount) || 0;
+  const sectionShare =
+    total > 0 ? Math.min(100, Math.round((sectionLevel / total) * 100)) : 0;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(project)}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 flex items-center justify-between p-5 text-left w-full group"
+      style={{ borderLeft: `5px solid ${accent}` }}
+    >
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <h3 className="font-bold text-lg text-gray-800 truncate group-hover:text-[#0252AD] transition-colors">
+            {project.name}
+          </h3>
+          {project.code && (
+            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+              {project.code}
+            </span>
+          )}
+          {txCount > 0 && (
+            <span className="text-xs font-semibold text-[#0252AD] bg-blue-50 px-2 py-0.5 rounded-full">
+              {txCount} txn{txCount === 1 ? "" : "s"}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-x-8 gap-y-2 mt-2">
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+              Total Direct Expense
+            </p>
+            <p className="text-sm font-semibold text-[#0f766e]">
+              {formatCurrency(total)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+              Project-level
+            </p>
+            <p className="text-sm font-semibold text-[#0252AD]">
+              {formatCurrency(projectLevel)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+              Section-level
+            </p>
+            <p className="text-sm font-semibold text-[#8b5cf6]">
+              {formatCurrency(sectionLevel)}
+            </p>
+          </div>
+        </div>
+        {total > 0 && (
+          <div className="mt-3 max-w-md">
+            <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+              <span>Section share</span>
+              <span>{sectionShare}%</span>
+            </div>
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#8b5cf6] rounded-full transition-all duration-300"
+                style={{ width: `${sectionShare}%` }}
               />
             </div>
           </div>
@@ -2354,7 +2433,14 @@ const PettyCashModule = ({
 
   const deSectionFilterOptions = useMemo(() => {
     const options = [{ value: DIRECT_EXPENSE_PROJECT_LEVEL, label: "Project-level" }];
-    allSections.forEach((section) => {
+    const source =
+      deProjectFilter === "all"
+        ? allSections
+        : allSections.filter(
+            (section) =>
+              (section.projectId || section.project?.id) === deProjectFilter
+          );
+    source.forEach((section) => {
       const projectName =
         section.project?.name || section.projectName || section.project?.code || "";
       options.push({
@@ -2367,7 +2453,7 @@ const PettyCashModule = ({
       if (b.value === DIRECT_EXPENSE_PROJECT_LEVEL) return 1;
       return a.label.localeCompare(b.label);
     });
-  }, [allSections]);
+  }, [allSections, deProjectFilter]);
 
   const deHeadFilterOptions = useMemo(() => selectableExpenseHeads, [selectableExpenseHeads]);
 
@@ -2479,6 +2565,64 @@ const PettyCashModule = ({
     deHeadFilter !== "all" ||
     Boolean(deDateFrom) ||
     Boolean(deDateTo);
+
+  const deProjectsWithStats = useMemo(() => {
+    const source = allProjects.length ? allProjects : projects;
+    const statsById = {};
+    directExpenseTableData.forEach((row) => {
+      const id = row.projectId;
+      if (!id) return;
+      if (!statsById[id]) {
+        statsById[id] = {
+          total: 0,
+          projectLevel: 0,
+          sectionLevel: 0,
+          count: 0,
+        };
+      }
+      statsById[id].total += Number(row.amountValue) || 0;
+      statsById[id].count += 1;
+      if (row.sectionId) {
+        statsById[id].sectionLevel += Number(row.amountValue) || 0;
+      } else {
+        statsById[id].projectLevel += Number(row.amountValue) || 0;
+      }
+    });
+    return source.map((project) => ({
+      ...project,
+      deTotal: statsById[project.id]?.total || 0,
+      deProjectLevel: statsById[project.id]?.projectLevel || 0,
+      deSectionLevel: statsById[project.id]?.sectionLevel || 0,
+      deCount: statsById[project.id]?.count || 0,
+    }));
+  }, [allProjects, projects, directExpenseTableData]);
+
+  const filteredDeProjectsList = useMemo(() => {
+    const q = projectSearch.trim().toLowerCase();
+    if (!q) return deProjectsWithStats;
+    return deProjectsWithStats.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(q) || p.code?.toLowerCase().includes(q)
+    );
+  }, [deProjectsWithStats, projectSearch]);
+
+  const directExpenseTabs = useMemo(
+    () => [
+      {
+        id: 0,
+        label: "By Project",
+        icon: <FolderOpen sx={{ fontSize: 18 }} />,
+        badge: deProjectsWithStats.length,
+      },
+      {
+        id: DIRECT_EXPENSE_ALL_TAB,
+        label: "All Transactions",
+        icon: <ReceiptLong sx={{ fontSize: 18 }} />,
+        badge: directExpenseTableData.length,
+      },
+    ],
+    [deProjectsWithStats.length, directExpenseTableData.length]
+  );
 
   const handleDeDateFromChange = useCallback(
     (value) => {
@@ -2871,6 +3015,16 @@ const PettyCashModule = ({
 
   useEffect(() => {
     if (
+      deSectionFilter !== "all" &&
+      deSectionFilter !== DIRECT_EXPENSE_PROJECT_LEVEL &&
+      !deSectionFilterOptions.some((option) => option.value === deSectionFilter)
+    ) {
+      setDeSectionFilter("all");
+    }
+  }, [deSectionFilter, deSectionFilterOptions]);
+
+  useEffect(() => {
+    if (
       form.expenseHeadId &&
       !filterExpenseHeadsByKind(formExpenseHeads, formHeadKindFilters).some(
         (head) => head.id === form.expenseHeadId
@@ -3110,6 +3264,36 @@ const PettyCashModule = ({
     adminPettyCashAuditLog.entries?.length,
   ]);
 
+  const resetDirectExpenseControls = useCallback(
+    ({ keepProject = false } = {}) => {
+      if (!keepProject) setDeProjectFilter("all");
+      setDeSectionFilter("all");
+      setDeHeadFilter("all");
+      setDeSearch("");
+      setDeDateFrom("");
+      setDeDateTo("");
+      setDeHeadKindFilters(
+        defaultHeadKindFilters(permissions.canSelectAllExpenseHeadTypes)
+      );
+    },
+    [permissions.canSelectAllExpenseHeadTypes]
+  );
+
+  const goBackToDirectExpenseProjects = useCallback(() => {
+    setSelectedProject(null);
+    resetDirectExpenseControls();
+  }, [resetDirectExpenseControls]);
+
+  const handleSelectDirectExpenseProject = useCallback(
+    (project) => {
+      setSelectedProject(project);
+      setActiveTab(0);
+      setDeProjectFilter(project.id);
+      resetDirectExpenseControls({ keepProject: true });
+    },
+    [resetDirectExpenseControls]
+  );
+
   const goBackToProjects = () => {
     setSelectedProject(null);
     setProjectBalance(null);
@@ -3194,7 +3378,10 @@ const PettyCashModule = ({
           key: "directExpense",
           label: "Add Direct Expense",
           styleKey: "directExpense",
-          onClick: () => openModal("directExpense"),
+          onClick: () =>
+            openModal("directExpense", {
+              projectId: selectedProject?.id,
+            }),
         });
       }
       if (permissions.canManageHeads || canViewExpenseHeadCatalog) {
@@ -3352,6 +3539,115 @@ const PettyCashModule = ({
   const visibleOverviewCards = isDirectExpenseModule
     ? directExpenseOverviewCards
     : overviewCards;
+
+  const renderDirectExpenseTablePanel = ({
+    title,
+    subtitle,
+    lockProject = false,
+  }) => (
+    <TablePanel
+      title={title}
+      subtitle={subtitle}
+      count={filteredDirectExpenses.length}
+      search={
+        <>
+          <TableFilterSelect
+            allLabel="Project: All"
+            options={deProjectFilterOptions}
+            value={deProjectFilter}
+            onChange={setDeProjectFilter}
+            disabled={lockProject}
+          />
+          <TableFilterSelect
+            allLabel="Section: All"
+            options={deSectionFilterOptions}
+            value={deSectionFilter}
+            onChange={setDeSectionFilter}
+          />
+          <ExpenseHeadTableFilter
+            allLabel="Head: All"
+            heads={deHeadFilterOptions}
+            value={deHeadFilter}
+            onChange={setDeHeadFilter}
+            showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
+            kindFilters={deHeadKindFilters}
+            onKindFiltersChange={setDeHeadKindFilters}
+            showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
+            optionValueKey="id"
+            disabled={!permissions.canSelectAllExpenseHeadTypes}
+          />
+          <TableDateRangeFilter
+            from={deDateFrom}
+            to={deDateTo}
+            onFromChange={handleDeDateFromChange}
+            onToChange={handleDeDateToChange}
+            onClear={clearDeDateRange}
+          />
+          <SearchField
+            value={deSearch}
+            onChange={setDeSearch}
+            placeholder="Search direct expenses..."
+          />
+          <ExportToExcelButton
+            data={filteredDirectExpenses}
+            columns={DIRECT_EXPENSE_COLUMNS}
+            fileName="direct-expenses"
+            cellComponents={directExpenseCellComponents}
+          />
+        </>
+      }
+    >
+      <div className="mb-5">
+        <div className="flex flex-wrap items-end justify-between gap-2 mb-3">
+          <div>
+            <h3 className="text-lg font-semibold text-primary">
+              Filtered Analytics
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Updates with Project, Section, Head, and Date Range
+              {hasDirectExpenseAnalyticsFilters
+                ? ""
+                : " — currently showing all records"}
+            </p>
+          </div>
+        </div>
+        <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {directExpenseFilteredCards.map((item) => (
+            <div
+              key={`filtered-${item.label}`}
+              className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 xl:last:after:hidden"
+            >
+              <AnalyticsCard
+                icon={item.icon}
+                label={item.label}
+                detail={item.detail}
+                count={item.count}
+                countColor={item.countColor}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      {filteredDirectExpenses.length === 0 ? (
+        <EmptyState
+          icon={ReceiptLong}
+          title="No direct expenses"
+          description={
+            directExpenseTableData.length === 0
+              ? "Direct expenses recorded by Admin or Head Office will appear here. They do not affect petty cash balances."
+              : "No records match your filters. Try adjusting or clearing them."
+          }
+        />
+      ) : (
+        <SimpleTable
+          data={filteredDirectExpenses}
+          columns={DIRECT_EXPENSE_COLUMNS}
+          cellComponents={directExpenseCellComponents}
+          exportable={false}
+        />
+      )}
+    </TablePanel>
+  );
 
   if (pageLoading) {
     return (
@@ -4074,107 +4370,125 @@ const PettyCashModule = ({
 
           {isDirectExpenseModule && (
             <div className="space-y-5">
-              <TablePanel
-                title="Direct Expense"
-                subtitle="Head Office and Admin expenses that do not debit petty cash"
-                count={filteredDirectExpenses.length}
-                search={
-                  <>
-                    <TableFilterSelect
-                      allLabel="Project: All"
-                      options={deProjectFilterOptions}
-                      value={deProjectFilter}
-                      onChange={setDeProjectFilter}
-                    />
-                    <TableFilterSelect
-                      allLabel="Section: All"
-                      options={deSectionFilterOptions}
-                      value={deSectionFilter}
-                      onChange={setDeSectionFilter}
-                    />
-                    <ExpenseHeadTableFilter
-                      allLabel="Head: All"
-                      heads={deHeadFilterOptions}
-                      value={deHeadFilter}
-                      onChange={setDeHeadFilter}
-                      showTypeFilter={permissions.canSelectAllExpenseHeadTypes}
-                      kindFilters={deHeadKindFilters}
-                      onKindFiltersChange={setDeHeadKindFilters}
-                      showTypeLabels={permissions.canSelectAllExpenseHeadTypes}
-                      optionValueKey="id"
-                      disabled={!permissions.canSelectAllExpenseHeadTypes}
-                    />
-                    <TableDateRangeFilter
-                      from={deDateFrom}
-                      to={deDateTo}
-                      onFromChange={handleDeDateFromChange}
-                      onToChange={handleDeDateToChange}
-                      onClear={clearDeDateRange}
-                    />
-                    <SearchField
-                      value={deSearch}
-                      onChange={setDeSearch}
-                      placeholder="Search direct expenses..."
-                    />
-                    <ExportToExcelButton
-                      data={filteredDirectExpenses}
-                      columns={DIRECT_EXPENSE_COLUMNS}
-                      fileName="direct-expenses"
-                      cellComponents={directExpenseCellComponents}
-                    />
-                  </>
-                }
-              >
-                <div className="mb-5">
-                  <div className="flex flex-wrap items-end justify-between gap-2 mb-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-primary">
-                        Filtered Analytics
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Updates with Project, Section, Head, and Date Range
-                        {hasDirectExpenseAnalyticsFilters
-                          ? ""
-                          : " — currently showing all records"}
-                      </p>
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-xl md:text-2xl font-semibold text-primary">
+                    Projects & Transactions
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Browse by project or view all direct expense activity in one
+                    place
+                  </p>
+                </div>
+                <PillTabs
+                  tabs={directExpenseTabs}
+                  active={activeTab}
+                  onChange={(tabId) => {
+                    setActiveTab(tabId);
+                    if (tabId !== 0) {
+                      goBackToDirectExpenseProjects();
+                    }
+                  }}
+                />
+              </div>
+
+              {activeTab === 0 && !selectedProject && (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h3 className="font-bold text-gray-800">Your projects</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {filteredDeProjectsList.length} of{" "}
+                          {deProjectsWithStats.length} shown — click to drill
+                          into direct expenses
+                        </p>
+                      </div>
+                      <SearchField
+                        value={projectSearch}
+                        onChange={setProjectSearch}
+                        placeholder="Search by name or code..."
+                      />
                     </div>
                   </div>
-                  <div className="border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {directExpenseFilteredCards.map((item) => (
-                      <div
-                        key={`filtered-${item.label}`}
-                        className="relative after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-300 xl:last:after:hidden"
-                      >
-                        <AnalyticsCard
-                          icon={item.icon}
-                          label={item.label}
-                          detail={item.detail}
-                          count={item.count}
-                          countColor={item.countColor}
+
+                  {filteredDeProjectsList.length === 0 ? (
+                    <EmptyState
+                      icon={FolderOpen}
+                      title={
+                        deProjectsWithStats.length === 0
+                          ? "No projects yet"
+                          : "No matching projects"
+                      }
+                      description={
+                        deProjectsWithStats.length === 0
+                          ? "Direct expenses recorded by Admin or Head Office will appear here."
+                          : "Try a different search term."
+                      }
+                      action={
+                        deProjectsWithStats.length === 0 &&
+                        permissions.canAddDirectExpense ? (
+                          <PettyCashActionButton
+                            label="Add Direct Expense"
+                            styleKey="directExpense"
+                            onClick={() => openModal("directExpense")}
+                          />
+                        ) : null
+                      }
+                    />
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {filteredDeProjectsList.map((p, index) => (
+                        <DirectExpenseProjectListCard
+                          key={p.id}
+                          project={p}
+                          index={index}
+                          onSelect={handleSelectDirectExpenseProject}
                         />
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {filteredDirectExpenses.length === 0 ? (
-                  <EmptyState
-                    icon={ReceiptLong}
-                    title="No direct expenses"
-                    description={
-                      directExpenseTableData.length === 0
-                        ? "Direct expenses recorded by Admin or Head Office will appear here. They do not affect petty cash balances."
-                        : "No records match your filters. Try adjusting or clearing them."
-                    }
-                  />
-                ) : (
-                  <SimpleTable
-                    data={filteredDirectExpenses}
-                    columns={DIRECT_EXPENSE_COLUMNS}
-                    cellComponents={directExpenseCellComponents}
-                    exportable={false}
-                  />
-                )}
-              </TablePanel>
+              )}
+
+              {activeTab === 0 && selectedProject && (
+                <div className="space-y-5">
+                  <nav className="flex items-center gap-1.5 text-sm text-gray-500 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={goBackToDirectExpenseProjects}
+                      className="hover:text-[#FC8908] font-medium transition-colors"
+                    >
+                      Projects
+                    </button>
+                    <FiChevronRight className="text-gray-400 shrink-0" />
+                    <span className="text-gray-800 font-semibold truncate">
+                      {selectedProject.name}
+                    </span>
+                  </nav>
+
+                  <button
+                    type="button"
+                    onClick={goBackToDirectExpenseProjects}
+                    className="inline-flex items-center gap-1.5 text-[#FC8908] hover:text-[#e07c07] text-sm font-semibold transition-colors"
+                  >
+                    <FiChevronLeft /> Back to all projects
+                  </button>
+
+                  {renderDirectExpenseTablePanel({
+                    title: "Project expenses",
+                    subtitle: `All direct expenses for ${selectedProject.name}`,
+                    lockProject: true,
+                  })}
+                </div>
+              )}
+
+              {activeTab === DIRECT_EXPENSE_ALL_TAB &&
+                renderDirectExpenseTablePanel({
+                  title: "Direct Expense",
+                  subtitle:
+                    "Head Office and Admin expenses that do not debit petty cash",
+                })}
             </div>
           )}
         </div>
